@@ -87,13 +87,34 @@ export default function NoFlashGridPage() {
         loadData();
     }, [loadData]);
 
-    // Refresh data when window gains focus (in case data was updated in another tab)
+    // Refresh data when tab becomes visible again (after being hidden for a while)
+    // This syncs data if it was updated in another tab, but only refreshes when appropriate
     useEffect(() => {
-        const handleFocus = () => {
-            loadData();
+        let hiddenTime: number | null = null;
+        const MIN_HIDDEN_TIME = 30000; // Only refresh if hidden for 30+ seconds
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // Tab became hidden - record the time
+                hiddenTime = Date.now();
+            } else {
+                // Tab became visible - check if we should refresh
+                if (hiddenTime !== null) {
+                    const hiddenDuration = Date.now() - hiddenTime;
+                    // Only refresh if tab was hidden for a meaningful duration
+                    // This prevents refresh on quick tab switches
+                    if (hiddenDuration >= MIN_HIDDEN_TIME) {
+                        loadData();
+                    }
+                    hiddenTime = null;
+                }
+            }
         };
-        window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, [loadData]);
 
     const filteredImages = useMemo<ExtendedImage[]>(() => {

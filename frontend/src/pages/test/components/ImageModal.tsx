@@ -10,6 +10,7 @@ import { generateImageSlug } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUserStore } from '@/stores/useUserStore';
 import { imageFetchService } from '@/services/imageFetchService';
+import { imageStatsService } from '@/services/imageStatsService';
 import { useNavigate } from 'react-router-dom';
 import { t } from '@/i18n';
 import leftArrowIcon from '@/assets/left-arrow.svg';
@@ -89,7 +90,71 @@ export function ImageModal({
         (img as any)?.author ||
         (img as any)?.user ||
         'Author';
+    
+    // Track view and download stats
+    const [views, setViews] = useState<number>((img as any)?.views || 0);
+    const [downloads, setDownloads] = useState<number>((img as any)?.downloads || 0);
+    const incrementedViewIds = useRef<Set<string>>(new Set());
+    const currentImageIdRef = useRef<string | null>(img?._id || null);
+    
     // No aspect ratio calculations needed - browser handles it with object-fit: contain
+
+    // Increment view count when image is viewed (only once per image)
+    useEffect(() => {
+        if (!img?._id) return;
+        
+        const imageId = img._id;
+        // Only increment if we haven't incremented for this image ID before
+        if (!incrementedViewIds.current.has(imageId)) {
+            incrementedViewIds.current.add(imageId);
+            console.log('[ImageModal] Calling incrementView for image:', imageId);
+            imageStatsService.incrementView(imageId)
+                .then((response) => {
+                    console.log('[ImageModal] incrementView response:', response);
+                    setViews(response.views);
+                })
+                .catch((error: any) => {
+                    // Handle rate limiting gracefully
+                    if (error.response?.status === 429) {
+                        const rateLimitData = error.response.data;
+                        if (rateLimitData.views !== undefined) {
+                            setViews(rateLimitData.views);
+                        }
+                        // Show user-friendly message if available
+                        if (rateLimitData.message) {
+                            toast.info(rateLimitData.message, {
+                                duration: 3000,
+                            });
+                        }
+                        // Don't remove from set on rate limit - we don't want to retry immediately
+                    } else {
+                        console.error('Failed to increment view:', error);
+                        // Remove from set on other errors so it can be retried
+                        incrementedViewIds.current.delete(imageId);
+                    }
+                });
+        }
+    }, [img?._id]);
+
+    // Update stats when image changes
+    // Always update to show current values from the image object
+    useEffect(() => {
+        if (img) {
+            const imageId = img._id;
+            const newViews = (img as any)?.views || 0;
+            const newDownloads = (img as any)?.downloads || 0;
+            
+            // Always update when image changes - the API response will update with latest values
+            if (currentImageIdRef.current !== imageId) {
+                currentImageIdRef.current = imageId;
+                // Reset the incremented set for the new image
+                incrementedViewIds.current.delete(imageId);
+            }
+            // Always set the initial values from the image object
+            setViews(newViews);
+            setDownloads(newDownloads);
+        }
+    }, [img?._id]);
 
     // lock body scroll
     useEffect(() => {
@@ -394,6 +459,31 @@ export function ImageModal({
     const handleDownload = useCallback(async (size: DownloadSize) => {
         if (!img?._id) return;
         try {
+            // Increment download count first
+            try {
+                const statsResponse = await imageStatsService.incrementDownload(img._id);
+                setDownloads(statsResponse.downloads);
+            } catch (error: any) {
+                // Handle rate limiting gracefully
+                if (error.response?.status === 429) {
+                    const rateLimitData = error.response.data;
+                    if (rateLimitData.downloads !== undefined) {
+                        setDownloads(rateLimitData.downloads);
+                    }
+                    // Show user-friendly message
+                    if (rateLimitData.message) {
+                        toast.info(rateLimitData.message, {
+                            duration: 4000,
+                        });
+                    }
+                    // Still allow download even if rate limited (don't block the user)
+                } else {
+                    console.error('Failed to increment download count:', error);
+                    // Continue with download even if increment fails
+                }
+            }
+
+            // Download image with selected size
             const response = await api.get(`/images/${img._id}/download?size=${size}`, {
                 responseType: 'blob',
                 withCredentials: true,
@@ -847,8 +937,8 @@ export function ImageModal({
                                         {img.imageTitle || 'Untitled image'}
                                     </div>
                                     <div className="image-modal-image-stats">
-                                        <span>Views: {(img as any)?.views ?? '—'}</span>
-                                        <span>Downloads: {(img as any)?.downloads ?? '—'}</span>
+                                        <span>Views: {views ?? '—'}</span>
+                                        <span>Downloads: {downloads ?? '—'}</span>
                                     </div>
                                     <div className="image-modal-image-tags">
                                         <span className="image-modal-image-tag">
