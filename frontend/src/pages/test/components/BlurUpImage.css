@@ -8,6 +8,8 @@
   border-radius: 0;
   background: #f3f4f6;
   cursor: zoom-in;
+  display: flex;
+  flex-direction: column;
 
   /* Unsplash hover effect */
   transition: box-shadow 0.2s ease;
@@ -16,6 +18,14 @@
 
 .blur-up-image-container:hover {
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* Image wrapper for mobile layout */
+.blur-up-image-image-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .blur-up-image {
@@ -27,6 +37,105 @@
   object-position: center;
   display: block;
   transition: opacity 0.3s ease;
+}
+
+/* Mobile Layout - Author at top */
+.blur-up-image-mobile-author {
+  display: none; /* Hidden on desktop */
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  cursor: pointer;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.blur-up-image-mobile-author:hover {
+  background: #f9fafb;
+}
+
+/* Mobile author username - dark text for visibility on white background */
+.blur-up-image-mobile-author .blur-up-image-username {
+  color: #111827; /* Dark gray/black for visibility on white */
+  font-weight: 600;
+  font-size: 16px; /* Larger font size for mobile */
+  text-shadow: none; /* Remove text shadow for mobile */
+}
+
+/* Mobile author avatar - visible border for white background */
+.blur-up-image-mobile-author .blur-up-image-user-avatar,
+.blur-up-image-mobile-author .blur-up-image-user-avatar-placeholder {
+  border: 1px solid #e5e7eb; /* Light gray border for visibility on white */
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+}
+
+/* Mobile author avatar placeholder - dark background for visibility */
+.blur-up-image-mobile-author .blur-up-image-user-avatar-placeholder {
+  background: #f3f4f6; /* Light gray background */
+  color: #6b7280; /* Medium gray text */
+  border: 1px solid #e5e7eb;
+}
+
+/* Mobile Layout - Actions at bottom */
+.blur-up-image-mobile-actions {
+  display: none; /* Hidden on desktop */
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.blur-up-image-mobile-actions-left {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.blur-up-image-mobile-actions-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.blur-up-image-mobile-action-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #374151;
+}
+
+.blur-up-image-mobile-action-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.blur-up-image-mobile-action-btn:active {
+  transform: scale(0.95);
+}
+
+.blur-up-image-mobile-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.blur-up-image-mobile-action-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 .blur-up-image.loading {
@@ -161,4 +270,64 @@
   overflow: hidden;
   text-overflow: ellipsis;
   backdrop-filter: blur(10px);
+}
+
+/* Responsive: Mobile Layout */
+@media (max-width: 768px) {
+  .no-flash-grid-page {
+    padding: 0;
+  }
+
+  .blur-up-image-container {
+    border-radius: 8px;
+    overflow: hidden;
+    /* Keep absolute positioning to fill grid item */
+    /* Flex layout will work within absolute positioned element */
+  }
+
+  /* Show mobile layout */
+  .blur-up-image-mobile-author {
+    display: flex;
+  }
+
+  .blur-up-image-mobile-actions {
+    display: flex;
+  }
+
+  /* Hide desktop hover overlay on mobile */
+  .blur-up-image-overlay {
+    display: none;
+  }
+
+  /* Adjust image wrapper for mobile - ensure it grows to fill space */
+  .blur-up-image-image-wrapper {
+    border-radius: 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Ensure images fill the wrapper on mobile */
+  .blur-up-image-image-wrapper .blur-up-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Desktop: Hide mobile layout, show hover overlay */
+@media (min-width: 769px) {
+  .blur-up-image-mobile-author {
+    display: none;
+  }
+
+  .blur-up-image-mobile-actions {
+    display: none;
+  }
+
+  .blur-up-image-overlay {
+    display: flex;
+  }
 }

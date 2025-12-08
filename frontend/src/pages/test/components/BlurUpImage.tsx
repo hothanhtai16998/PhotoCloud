@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
 import { preloadImage } from '../utils/imagePreloader';
-import { Heart, Download } from 'lucide-react';
+import { Heart, Download, Bookmark } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
 import { imageStatsService } from '@/services/imageStatsService';
@@ -188,6 +188,14 @@ export function BlurUpImage({
         }
     }, [user, image?._id, isTogglingFavorite]);
 
+    // Handle bookmark button (using same favorite functionality for now)
+    const handleBookmarkClick = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // For now, bookmark uses the same favorite functionality
+        // Can be changed to use collection service later if needed
+        await handleSaveClick(e);
+    }, [handleSaveClick]);
+
     // Handle download button
     const handleDownloadClick = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -255,77 +263,136 @@ export function BlurUpImage({
             onMouseLeave={handleContainerMouseLeave}
             onMouseMove={handleMouseMove}
         >
-            {/* Placeholder Image (Low Quality) */}
-            {placeholderInitial && (
-                <img
-                    src={placeholderInitial}
-                    alt={image.imageTitle || 'photo'}
-                    className="blur-up-image placeholder"
-                    style={{
-                        opacity: loaded ? 0 : 1,
-                        transition: 'opacity 0.5s ease-out'
-                    }}
-                />
+            {/* Mobile Layout: Author at top */}
+            {username && (
+                <div
+                    className="blur-up-image-mobile-author"
+                    onClick={handleAuthorClick}
+                >
+                    {userAvatar ? (
+                        <img
+                            src={userAvatar}
+                            alt={username}
+                            className="blur-up-image-user-avatar"
+                        />
+                    ) : (
+                        <div className="blur-up-image-user-avatar-placeholder">
+                            {username[0]?.toUpperCase() || 'U'}
+                        </div>
+                    )}
+                    <span className="blur-up-image-username">{username}</span>
+                </div>
             )}
 
-            {/* Full Image (High Quality) */}
-            {fullSrc && (
-                <img
-                    src={fullSrc}
-                    alt={image.imageTitle || 'photo'}
-                    className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
-                    loading="lazy"
-                    onLoad={() => {
-                        setLoaded(true);
-                        onLoadComplete?.();
-                    }}
-                />
-            )}
+            {/* Image Container */}
+            <div className="blur-up-image-image-wrapper">
+                {/* Placeholder Image (Low Quality) */}
+                {placeholderInitial && (
+                    <img
+                        src={placeholderInitial}
+                        alt={image.imageTitle || 'photo'}
+                        className="blur-up-image placeholder"
+                        style={{
+                            opacity: loaded ? 0 : 1,
+                            transition: 'opacity 0.5s ease-out'
+                        }}
+                    />
+                )}
 
-            {/* Hover Overlay */}
-            <div className="blur-up-image-overlay">
-                {/* Top-right buttons */}
-                <div className="blur-up-image-actions">
-                    {user && (
+                {/* Full Image (High Quality) */}
+                {fullSrc && (
+                    <img
+                        src={fullSrc}
+                        alt={image.imageTitle || 'photo'}
+                        className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
+                        loading="lazy"
+                        onLoad={() => {
+                            setLoaded(true);
+                            onLoadComplete?.();
+                        }}
+                    />
+                )}
+
+                {/* Desktop Hover Overlay */}
+                <div className="blur-up-image-overlay">
+                    {/* Top-right buttons */}
+                    <div className="blur-up-image-actions">
+                        {user && (
+                            <button
+                                className="blur-up-image-action-btn"
+                                onClick={handleSaveClick}
+                                disabled={isTogglingFavorite}
+                                aria-label="Save"
+                            >
+                                <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
+                            </button>
+                        )}
                         <button
                             className="blur-up-image-action-btn"
+                            onClick={handleDownloadClick}
+                            aria-label="Download"
+                        >
+                            <Download size={18} />
+                        </button>
+                    </div>
+
+                    {/* Bottom-left user info */}
+                    {username && (
+                        <div
+                            className="blur-up-image-user-info"
+                            onClick={handleAuthorClick}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            {userAvatar ? (
+                                <img
+                                    src={userAvatar}
+                                    alt={username}
+                                    className="blur-up-image-user-avatar"
+                                />
+                            ) : (
+                                <div className="blur-up-image-user-avatar-placeholder">
+                                    {username[0]?.toUpperCase() || 'U'}
+                                </div>
+                            )}
+                            <span className="blur-up-image-username">{username}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Mobile Layout: Buttons at bottom */}
+            <div className="blur-up-image-mobile-actions">
+                <div className="blur-up-image-mobile-actions-left">
+                    {user && (
+                        <button
+                            className="blur-up-image-mobile-action-btn"
                             onClick={handleSaveClick}
                             disabled={isTogglingFavorite}
-                            aria-label="Save"
+                            aria-label="Favorite"
                         >
-                            <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
+                            <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
                         </button>
                     )}
+                    {user && (
+                        <button
+                            className="blur-up-image-mobile-action-btn"
+                            onClick={handleBookmarkClick}
+                            disabled={isTogglingFavorite}
+                            aria-label="Bookmark"
+                        >
+                            <Bookmark size={20} fill={isFavorited ? 'currentColor' : 'none'} />
+                        </button>
+                    )}
+                </div>
+                <div className="blur-up-image-mobile-actions-right">
                     <button
-                        className="blur-up-image-action-btn"
+                        className="blur-up-image-mobile-action-btn"
                         onClick={handleDownloadClick}
                         aria-label="Download"
                     >
-                        <Download size={18} />
+                        <Download size={20} />
                     </button>
                 </div>
-
-                {/* Bottom-left user info */}
-                {username && (
-                    <div
-                        className="blur-up-image-user-info"
-                        onClick={handleAuthorClick}
-                        style={{ cursor: 'pointer' }}
-                    >
-                        {userAvatar ? (
-                            <img
-                                src={userAvatar}
-                                alt={username}
-                                className="blur-up-image-user-avatar"
-                            />
-                        ) : (
-                            <div className="blur-up-image-user-avatar-placeholder">
-                                {username[0]?.toUpperCase() || 'U'}
-                            </div>
-                        )}
-                        <span className="blur-up-image-username">{username}</span>
-                    </div>
-                )}
             </div>
 
             {/* Image Title Tooltip - shows after 2 seconds at mouse position */}
