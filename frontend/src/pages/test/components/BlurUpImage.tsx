@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
 import { preloadImage } from '../utils/imagePreloader';
+import { Heart, Download } from 'lucide-react';
 import './BlurUpImage.css';
 
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -102,6 +103,22 @@ export function BlurUpImage({
         }
     }, [loaded, isInView, image, backSrc]);
 
+    // Get user info
+    const uploadedBy = (image as any)?.uploadedBy;
+    const username = uploadedBy?.username || '';
+    const userAvatar = uploadedBy?.avatar || uploadedBy?.profilePicture || '';
+
+    // Handle button clicks (stop propagation to prevent opening modal)
+    const handleSaveClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // TODO: Implement save/favorite functionality
+    };
+
+    const handleDownloadClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        // TODO: Implement download functionality
+    };
+
     return (
         <div
             ref={containerRef}
@@ -118,6 +135,45 @@ export function BlurUpImage({
                     loading="lazy"
                 />
             )}
+
+            {/* Hover Overlay */}
+            <div className="blur-up-image-overlay">
+                {/* Top-right buttons */}
+                <div className="blur-up-image-actions">
+                    <button
+                        className="blur-up-image-action-btn"
+                        onClick={handleSaveClick}
+                        aria-label="Save"
+                    >
+                        <Heart size={18} />
+                    </button>
+                    <button
+                        className="blur-up-image-action-btn"
+                        onClick={handleDownloadClick}
+                        aria-label="Download"
+                    >
+                        <Download size={18} />
+                    </button>
+                </div>
+
+                {/* Bottom-left user info */}
+                {username && (
+                    <div className="blur-up-image-user-info">
+                        {userAvatar ? (
+                            <img
+                                src={userAvatar}
+                                alt={username}
+                                className="blur-up-image-user-avatar"
+                            />
+                        ) : (
+                            <div className="blur-up-image-user-avatar-placeholder">
+                                {username[0]?.toUpperCase() || 'U'}
+                            </div>
+                        )}
+                        <span className="blur-up-image-username">{username}</span>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

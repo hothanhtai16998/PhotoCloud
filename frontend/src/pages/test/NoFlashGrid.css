@@ -62,38 +62,7 @@
   /* Don't set height: 100% as it can interfere with grid row spanning */
 }
 
-/* BlurUpImage Component */
-.blur-up-image-container {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 0;
-  background: #f2f2f2;
-  cursor: pointer;
-}
-
-.blur-up-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: filter 0.25s ease, transform 0.25s ease;
-}
-
-.blur-up-image.loading {
-  filter: none;
-  transform: scale(1.02);
-}
-
-.blur-up-image.loaded {
-  filter: none;
-  transform: none;
-}
+/* BlurUpImage styles are in BlurUpImage.css */
 
 /* Modal Styles */
 .image-modal-overlay {
