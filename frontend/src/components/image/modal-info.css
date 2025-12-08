@@ -156,7 +156,7 @@
   border-radius: 6px;
   font-size: 0.8125rem;
   pointer-events: none;
-  z-index: 2010;
+  z-index: 10000;
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   line-height: 1.5;
@@ -228,4 +228,3 @@
     gap: 2px;
   }
 }
-

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import api from '@/lib/axios';
 import type { Image } from '@/types/image';
-import { Heart, Share2, ChevronDown } from 'lucide-react';
+import { Heart, Share2, ChevronDown, MapPin, ExternalLink } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
 import type { DownloadSize } from '@/components/image/DownloadSizeSelector';
@@ -12,11 +12,17 @@ import { useUserStore } from '@/stores/useUserStore';
 import { imageFetchService } from '@/services/imageFetchService';
 import { imageStatsService } from '@/services/imageStatsService';
 import { useNavigate } from 'react-router-dom';
-import { t } from '@/i18n';
+import { t, getLocale } from '@/i18n';
+import { useFormattedDate } from '@/hooks/useFormattedDate';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
+import cameraIcon from '@/assets/camera.svg';
+import dateIcon from '@/assets/date.svg';
 import { preloadImage, loadedImages } from '../utils/imagePreloader';
+import { ImageModalInfo } from '@/components/image/ImageModalInfo';
+import '@/components/image/modal-info.css';
+import '@/components/image/modal-footer.css';
 import './ImageModal.css';
 
 // Module-level cache to persist API stats across component unmounts
@@ -41,7 +47,67 @@ export function ImageModal({
     onNavigate,
     onSelectIndex,
 }: ImageModalProps) {
-    const img = images[index];
+    // Create a state for the current image so we can update it when stats change
+    const [currentImage, setCurrentImage] = useState<ExtendedImage>(images[index]);
+
+    // Fetch full image details when modal opens or image changes (to get dailyViews/dailyDownloads)
+    useEffect(() => {
+        const imageId = images[index]?._id;
+        if (!imageId) return;
+
+        // Fetch full image details to get dailyViews and dailyDownloads
+        api.get(`/images/${imageId}`)
+            .then((response) => {
+                // Backend returns { image: {...} }
+                const fullImageData = response.data?.image || response.data;
+                if (fullImageData) {
+                    setCurrentImage(prev => ({
+                        ...prev,
+                        ...fullImageData,
+                        // Preserve any stats we've already updated (prefer updated values)
+                        views: prev.views ?? fullImageData.views,
+                        downloads: prev.downloads ?? fullImageData.downloads,
+                        // Merge dailyViews and dailyDownloads (prefer updated values)
+                        dailyViews: {
+                            ...(fullImageData.dailyViews || {}),
+                            ...(prev.dailyViews || {})
+                        },
+                        dailyDownloads: {
+                            ...(fullImageData.dailyDownloads || {}),
+                            ...(prev.dailyDownloads || {})
+                        }
+                    }));
+                }
+            })
+            .catch((error) => {
+                console.error('Failed to fetch image details:', error);
+                // Fallback to using the image from the array
+                const newImage = images[index];
+                if (newImage) {
+                    setCurrentImage(newImage);
+                }
+            });
+    }, [index, images]);
+
+    // Update currentImage when index changes, but preserve stats if we have cached data
+    useEffect(() => {
+        const newImage = images[index];
+        if (!newImage) return;
+
+        // Check if we have cached stats for this image
+        const apiStats = apiStatsCache.get(newImage._id);
+        if (apiStats) {
+            // Merge cached stats with the new image
+            setCurrentImage(prev => ({
+                ...prev,
+                ...newImage,
+                views: apiStats.views ?? newImage.views,
+                downloads: apiStats.downloads ?? newImage.downloads,
+            }));
+        }
+    }, [index, images]);
+
+    const img = currentImage;
 
     // Calculate initial state based on current image
     const calculateInitialState = () => {
@@ -79,6 +145,11 @@ export function ImageModal({
     const { user } = useUserStore();
     const isFavorited = useBatchedFavoriteCheck(img?._id);
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+    const locale = getLocale();
+    const formattedDate = useFormattedDate(img?.createdAt, {
+        locale: locale === 'vi' ? 'vi-VN' : 'en-US',
+        format: 'long',
+    });
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
     const [, setShowShareMenu] = useState(false);
     const [showAuthorTooltip, setShowAuthorTooltip] = useState(false);
@@ -94,10 +165,10 @@ export function ImageModal({
         (img as any)?.author ||
         (img as any)?.user ||
         'Author';
-    
+
     const incrementedViewIds = useRef<Set<string>>(new Set());
     const currentImageIdRef = useRef<string | null>(img?._id || null);
-    
+
     // Initialize state - use API stats from cache if available, otherwise use img data as fallback
     // For views: img data might be stale (will be updated by API)
     // For downloads: img data is usually accurate (only updates when user downloads)
@@ -111,30 +182,30 @@ export function ImageModal({
             downloads: apiStats?.downloads ?? ((img as any)?.downloads || 0),
         };
     };
-    
+
     // Track view and download stats
     const [views, setViews] = useState<number>(getInitialStats().views);
     const [downloads, setDownloads] = useState<number>(getInitialStats().downloads);
-    
+
     // No aspect ratio calculations needed - browser handles it with object-fit: contain
 
     // Update stats when image changes - prioritize API stats, fallback to img data
     // Use useLayoutEffect to update synchronously before browser paint to prevent flash
     useLayoutEffect(() => {
         if (!img?._id) return;
-        
+
         const imageId = img._id;
         const isNewImage = currentImageIdRef.current !== imageId;
-        
+
         if (isNewImage) {
             currentImageIdRef.current = imageId;
             // Reset the incremented set for the new image
             incrementedViewIds.current.delete(imageId);
         }
-        
+
         // Check if we have API-updated stats for this image from cache (highest priority)
         const apiStats = apiStatsCache.get(imageId);
-        
+
         // Always update to the correct value immediately (before paint)
         if (apiStats) {
             // Use API-updated values if available (they're the most accurate)
@@ -144,7 +215,7 @@ export function ImageModal({
                 // New image, no API views yet - use img data as initial value
                 setViews((img as any)?.views || 0);
             }
-            
+
             if (apiStats.downloads !== undefined) {
                 setDownloads(apiStats.downloads);
             } else if (isNewImage) {
@@ -164,13 +235,13 @@ export function ImageModal({
     // This also fetches the current stats, so we use the response to update our state
     useEffect(() => {
         if (!img?._id) return;
-        
+
         const imageId = img._id;
         // Only increment if we haven't incremented for this image ID before
         if (!incrementedViewIds.current.has(imageId)) {
             incrementedViewIds.current.add(imageId);
             console.log('[ImageModal] Calling incrementView for image:', imageId);
-            
+
             // Call API to increment and get updated stats
             imageStatsService.incrementView(imageId)
                 .then((response) => {
@@ -181,6 +252,16 @@ export function ImageModal({
                     const stats = apiStatsCache.get(imageId) || {};
                     stats.views = response.views;
                     apiStatsCache.set(imageId, stats);
+
+                    // Update the current image with new views and dailyViews
+                    setCurrentImage(prev => ({
+                        ...prev,
+                        views: response.views,
+                        dailyViews: {
+                            ...(prev.dailyViews || {}),
+                            ...(response.dailyViews || {})
+                        }
+                    }));
                 })
                 .catch((error: any) => {
                     // Handle rate limiting gracefully
@@ -193,6 +274,23 @@ export function ImageModal({
                             const stats = apiStatsCache.get(imageId) || {};
                             stats.views = rateLimitData.views;
                             apiStatsCache.set(imageId, stats);
+
+                            // Update the current image with new views if dailyViews provided
+                            if (rateLimitData.dailyViews) {
+                                setCurrentImage(prev => ({
+                                    ...prev,
+                                    views: rateLimitData.views,
+                                    dailyViews: {
+                                        ...(prev.dailyViews || {}),
+                                        ...(rateLimitData.dailyViews || {})
+                                    }
+                                }));
+                            } else {
+                                setCurrentImage(prev => ({
+                                    ...prev,
+                                    views: rateLimitData.views
+                                }));
+                            }
                         }
                         // Show user-friendly message if available
                         if (rateLimitData.message) {
@@ -521,6 +619,16 @@ export function ImageModal({
                 const stats = apiStatsCache.get(img._id) || {};
                 stats.downloads = statsResponse.downloads;
                 apiStatsCache.set(img._id, stats);
+
+                // Update the current image with new downloads and dailyDownloads
+                setCurrentImage(prev => ({
+                    ...prev,
+                    downloads: statsResponse.downloads,
+                    dailyDownloads: {
+                        ...(prev.dailyDownloads || {}),
+                        ...(statsResponse.dailyDownloads || {})
+                    }
+                }));
             } catch (error: any) {
                 // Handle rate limiting gracefully
                 if (error.response?.status === 429) {
@@ -531,6 +639,23 @@ export function ImageModal({
                         const stats = apiStatsCache.get(img._id) || {};
                         stats.downloads = rateLimitData.downloads;
                         apiStatsCache.set(img._id, stats);
+
+                        // Update the current image with new downloads if dailyDownloads provided
+                        if (rateLimitData.dailyDownloads) {
+                            setCurrentImage(prev => ({
+                                ...prev,
+                                downloads: rateLimitData.downloads,
+                                dailyDownloads: {
+                                    ...(prev.dailyDownloads || {}),
+                                    ...(rateLimitData.dailyDownloads || {})
+                                }
+                            }));
+                        } else {
+                            setCurrentImage(prev => ({
+                                ...prev,
+                                downloads: rateLimitData.downloads
+                            }));
+                        }
                     }
                     // Show user-friendly message
                     if (rateLimitData.message) {
@@ -995,39 +1120,105 @@ export function ImageModal({
                             <div className="image-modal-bottom-info-row">
                                 {/* Left: image info */}
                                 <div className="image-modal-image-info">
+                                    {/* Views and Downloads Stats */}
+                                    <div className="image-modal-stats-header">
+                                        <div className="image-modal-stat-item">
+                                            <div className="image-modal-stat-label">Views</div>
+                                            <div className="image-modal-stat-value">{views.toLocaleString()}</div>
+                                        </div>
+                                        <div className="image-modal-stat-item">
+                                            <div className="image-modal-stat-label">Downloads</div>
+                                            <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+
                                     <div className="image-modal-image-title">
                                         {img.imageTitle || 'Untitled image'}
                                     </div>
-                                    <div className="image-modal-image-stats">
-                                        <span>Views: {views.toLocaleString()}</span>
-                                        <span>Downloads: {downloads.toLocaleString()}</span>
-                                    </div>
-                                    <div className="image-modal-image-tags">
-                                        <span className="image-modal-image-tag">
-                                            Tag 1
-                                        </span>
-                                        <span className="image-modal-image-tag">
-                                            Tag 2
-                                        </span>
-                                        <span className="image-modal-image-tag">
-                                            Tag 3
-                                        </span>
-                                    </div>
-                                    <div className="image-modal-image-description">
-                                        {(img as any)?.description || 'No description provided.'}
-                                    </div>
+
+                                    {/* Location and Camera Info */}
+                                    {(img.location || img.cameraModel) && (
+                                        <div className="image-modal-image-details">
+                                            {img.location && (
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <MapPin size={14} style={{ flexShrink: 0 }} />
+                                                    {img.coordinates ? (
+                                                        <a
+                                                            href={`https://www.google.com/maps?q=${img.coordinates.latitude},${img.coordinates.longitude}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            style={{
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: '4px',
+                                                                color: 'inherit',
+                                                                textDecoration: 'none',
+                                                                transition: 'opacity 0.2s',
+                                                            }}
+                                                            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                                                            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                                                        >
+                                                            {img.location}
+                                                            <ExternalLink size={12} style={{ flexShrink: 0, opacity: 0.7 }} />
+                                                        </a>
+                                                    ) : (
+                                                        <span>{img.location}</span>
+                                                    )}
+                                                </span>
+                                            )}
+                                            {img.location && img.cameraModel && <span> • </span>}
+                                            {img.cameraModel && (
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                    <img src={cameraIcon} alt="Camera" style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+                                                    {img.cameraModel}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Camera EXIF Info */}
+                                    {(img.focalLength || img.aperture || img.shutterSpeed || img.iso) && (
+                                        <div className="image-modal-image-exif">
+                                            {img.focalLength && <span>{img.focalLength}mm</span>}
+                                            {img.focalLength && img.aperture && <span> • </span>}
+                                            {img.aperture && <span>f/{img.aperture}</span>}
+                                            {img.aperture && img.shutterSpeed && <span> • </span>}
+                                            {img.shutterSpeed && <span>{img.shutterSpeed}</span>}
+                                            {img.shutterSpeed && img.iso && <span> • </span>}
+                                            {img.iso && <span>ISO {img.iso}</span>}
+                                        </div>
+                                    )}
+
+                                    {/* Date */}
+                                    {formattedDate && (
+                                        <div className="image-modal-image-date">
+                                            <img src={dateIcon} alt="Date" style={{ width: '14px', height: '14px', flexShrink: 0, marginRight: '6px' }} />
+                                            {formattedDate}
+                                        </div>
+                                    )}
+
+                                    {/* Tags */}
+                                    {img.tags && Array.isArray(img.tags) && img.tags.length > 0 && (
+                                        <div className="image-modal-image-tags">
+                                            {img.tags.map((tag, idx) => (
+                                                <span key={idx} className="image-modal-image-tag">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Description */}
+                                    {img.description && (
+                                        <div className="image-modal-image-description">
+                                            {img.description}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Right: actions */}
                                 <div className="image-modal-actions-container">
-                                    {['Save', 'Share', 'Report', 'Edit', 'Download'].map((label) => (
-                                        <button
-                                            key={label}
-                                            className="image-modal-action-button"
-                                        >
-                                            {label}
-                                        </button>
-                                    ))}
+                                    <ImageModalInfo image={img} />
                                 </div>
                             </div>
 

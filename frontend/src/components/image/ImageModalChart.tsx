@@ -134,9 +134,11 @@ export const ImageModalChart = ({ image, activeTab }: ImageModalChartProps) => {
         <div
           className="info-chart-tooltip"
           style={{
+            position: 'fixed',
             left: `${hoveredBar.x}px`,
             top: `${hoveredBar.y}px`,
-            transform: 'translate(-50%, -100%)'
+            transform: 'translate(-50%, -100%)',
+            zIndex: 10000
           }}
         >
           <div>{hoveredBar.date}</div>
