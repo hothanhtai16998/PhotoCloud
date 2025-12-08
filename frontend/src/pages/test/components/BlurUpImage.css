@@ -10,12 +10,11 @@
   cursor: pointer;
 
   /* Unsplash hover effect */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .blur-up-image-container:hover {
-  transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
@@ -44,8 +43,9 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.6) 0%,
     rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0) 60%,
     rgba(0, 0, 0, 0.6) 100%
   );
   opacity: 0;
@@ -141,4 +141,24 @@
   font-weight: 500;
   white-space: nowrap;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Image Title Tooltip */
+.blur-up-image-title-tooltip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.95);
+  color: #111;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  max-width: min(200px, 96%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(10px);
 }

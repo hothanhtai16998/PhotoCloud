@@ -91,6 +91,11 @@ export function BlurUpImage({
             });
     }, [isInView, image, backSrc, loaded, onLoadComplete]);
 
+    // Tooltip state
+    const [showTooltip, setShowTooltip] = useState(false);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
     // Preload on hover for better UX
     const handleMouseEnter = useCallback(() => {
         if (!loaded && isInView) {
@@ -102,6 +107,48 @@ export function BlurUpImage({
             }
         }
     }, [loaded, isInView, image, backSrc]);
+
+    // Handle mouse move to track position
+    const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            setMousePosition({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top,
+            });
+        }
+    }, []);
+
+    // Handle mouse enter - start 2 second timer
+    const handleContainerMouseEnter = useCallback(() => {
+        handleMouseEnter();
+        // Clear any existing timeout
+        if (tooltipTimeoutRef.current) {
+            clearTimeout(tooltipTimeoutRef.current);
+        }
+        // Set timeout to show tooltip after 2 seconds
+        tooltipTimeoutRef.current = setTimeout(() => {
+            setShowTooltip(true);
+        }, 2000);
+    }, [handleMouseEnter]);
+
+    // Handle mouse leave - hide tooltip and clear timeout
+    const handleContainerMouseLeave = useCallback(() => {
+        setShowTooltip(false);
+        if (tooltipTimeoutRef.current) {
+            clearTimeout(tooltipTimeoutRef.current);
+            tooltipTimeoutRef.current = null;
+        }
+    }, []);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (tooltipTimeoutRef.current) {
+                clearTimeout(tooltipTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Get user info
     const uploadedBy = (image as any)?.uploadedBy;
@@ -124,7 +171,9 @@ export function BlurUpImage({
             ref={containerRef}
             className="blur-up-image-container"
             onClick={onClick}
-            onMouseEnter={handleMouseEnter}
+            onMouseEnter={handleContainerMouseEnter}
+            onMouseLeave={handleContainerMouseLeave}
+            onMouseMove={handleMouseMove}
         >
             {backSrc && (
                 <img
@@ -174,6 +223,19 @@ export function BlurUpImage({
                     </div>
                 )}
             </div>
+
+            {/* Image Title Tooltip - shows after 2 seconds at mouse position */}
+            {showTooltip && image.imageTitle && (
+                <div
+                    className="blur-up-image-title-tooltip"
+                    style={{
+                        left: `${mousePosition.x}px`,
+                        top: `${mousePosition.y}px`,
+                    }}
+                >
+                    {image.imageTitle}
+                </div>
+            )}
         </div>
     );
 }
