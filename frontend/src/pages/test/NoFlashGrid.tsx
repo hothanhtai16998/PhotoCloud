@@ -442,10 +442,6 @@ export default function NoFlashGridPage() {
                                     }}
                                     priority={isPriority}
                                 />
-                                {/* Debug overlay - shows column, aspect ratio and height */}
-                                <div className="debug-overlay">
-                                    C: {column} | AR: {aspectRatio} | H: {actualHeight}px | R: {rowSpan} | RS: {rowStart}
-                                </div>
                             </div>
                         );
                     })}

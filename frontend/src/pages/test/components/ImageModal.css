@@ -32,10 +32,13 @@
 
 .image-modal-container.scrolled {
   margin-top: 0;
+  /* Remove top corner radius when stuck to viewport */
+  border-radius: 0 0 12px 12px;
 }
 
 .image-modal-container:not(.scrolled) {
   margin-top: 16px;
+  border-radius: 12px 12px 0 0;
 }
 
 /* Disable transition when not animating to prevent unwanted transitions on initial render */
