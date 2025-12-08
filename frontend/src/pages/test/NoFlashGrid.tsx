@@ -349,8 +349,6 @@ export default function NoFlashGridPage() {
 
     return (
         <div className="no-flash-grid-page">
-            <h1 className="no-flash-grid-title">No-Flash Grid Test</h1>
-            <p className="no-flash-grid-description">Custom grid + modal (no shared components). Blur-up, double buffer, preload. Unsplash-style grid layout.</p>
 
             <div className="category-filter-container">
                 <button

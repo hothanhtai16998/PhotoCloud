@@ -1228,41 +1228,41 @@ export function ImageModal({
                                     )}
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Related images */}
-                            <div>
-                                <div className="image-modal-related-title">Related images</div>
-                                <div className="image-modal-related-grid">
-                                    {images
-                                        .filter((_, i) => i !== index)
-                                        .slice(0, 8)
-                                        .map((related, i) => {
-                                            const originalIdx = images.findIndex((imgItem) => imgItem === related);
-                                            return (
-                                                <div
-                                                    key={related._id || i}
-                                                    className="image-modal-related-item"
-                                                    onClick={() => {
-                                                        if (onSelectIndex && originalIdx >= 0) {
-                                                            onSelectIndex(originalIdx);
-                                                        }
-                                                    }}
-                                                >
-                                                    {related.thumbnailUrl || related.smallUrl || related.imageUrl ? (
-                                                        <img
-                                                            src={related.thumbnailUrl || related.smallUrl || related.imageUrl}
-                                                            alt={related.imageTitle || 'related'}
-                                                            className="image-modal-related-image"
-                                                        />
-                                                    ) : (
-                                                        <div className="image-modal-related-placeholder">
-                                                            No preview
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                </div>
+                        {/* Related images - outside bottom bar */}
+                        <div className="image-modal-related-section">
+                            <div className="image-modal-related-title">Related images</div>
+                            <div className="image-modal-related-grid">
+                                {images
+                                    .filter((_, i) => i !== index)
+                                    .slice(0, 8)
+                                    .map((related, i) => {
+                                        const originalIdx = images.findIndex((imgItem) => imgItem === related);
+                                        return (
+                                            <div
+                                                key={related._id || i}
+                                                className="image-modal-related-item"
+                                                onClick={() => {
+                                                    if (onSelectIndex && originalIdx >= 0) {
+                                                        onSelectIndex(originalIdx);
+                                                    }
+                                                }}
+                                            >
+                                                {related.thumbnailUrl || related.smallUrl || related.imageUrl ? (
+                                                    <img
+                                                        src={related.thumbnailUrl || related.smallUrl || related.imageUrl}
+                                                        alt={related.imageTitle || 'related'}
+                                                        className="image-modal-related-image"
+                                                    />
+                                                ) : (
+                                                    <div className="image-modal-related-placeholder">
+                                                        No preview
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                             </div>
                         </div>
                     </div>
