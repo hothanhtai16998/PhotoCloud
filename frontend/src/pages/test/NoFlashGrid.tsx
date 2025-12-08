@@ -11,15 +11,11 @@ import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
 import { ImageModal } from './components/ImageModal';
 
-type Category = { name: string; _id: string };
-
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
 
 export default function NoFlashGridPage() {
     const [images, setImages] = useState<ExtendedImage[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [activeCategory, setActiveCategory] = useState<string>('');
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const gridRef = useRef<HTMLDivElement | null>(null);
@@ -39,30 +35,18 @@ export default function NoFlashGridPage() {
         return [];
     };
 
-    const toCategoryArray = (val: unknown): Category[] => {
-        const v = val as any;
-        if (Array.isArray(v)) return v;
-        if (Array.isArray(v?.data)) return v.data;
-        if (Array.isArray(v?.items)) return v.items;
-        if (Array.isArray(v?.categories)) return v.categories;
-        return [];
-    };
 
     // Store image dimensions as they load
     const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
     const loadingDimensionsRef = useRef<Set<string>>(new Set()); // Track which images we're currently loading
 
-    // Load images and categories
+    // Load images
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const [imgsRes, catsRes] = await Promise.all([
-                api.get('/images'),
-                api.get('/categories'),
-            ]);
+            const imgsRes = await api.get('/images');
             const loadedImages = toImageArray(imgsRes.data);
             setImages(loadedImages);
-            setCategories(toCategoryArray(catsRes.data));
 
             // Clear image dimensions cache when refreshing (in case images were updated)
             setImageDimensions(new Map());
@@ -76,7 +60,6 @@ export default function NoFlashGridPage() {
         } catch (e) {
             console.error('Failed to load data', e);
             setImages([]);
-            setCategories([]);
         } finally {
             setLoading(false);
         }
@@ -118,18 +101,8 @@ export default function NoFlashGridPage() {
     }, [loadData]);
 
     const filteredImages = useMemo<ExtendedImage[]>(() => {
-        if (!activeCategory) return images;
-        return images.filter((img) => {
-            // Extract category name from imageCategory (can be string or Category object)
-            const imgCategoryName =
-                typeof img.imageCategory === 'string'
-                    ? img.imageCategory
-                    : img.imageCategory?.name;
-            // Also check legacy categoryName/category properties for backward compatibility
-            const catName = imgCategoryName || img.categoryName || img.category || '';
-            return catName === activeCategory;
-        });
-    }, [images, activeCategory]);
+        return images;
+    }, [images]);
 
     // Load dimensions for images that don't have them
     useEffect(() => {
@@ -352,24 +325,9 @@ export default function NoFlashGridPage() {
 
             <div className="category-filter-container">
                 <button
-                    onClick={() => setActiveCategory('')}
-                    className={`category-filter-button ${activeCategory === '' ? 'active' : ''}`}
-                >
-                    All
-                </button>
-                {categories.map((cat) => (
-                    <button
-                        key={cat._id || cat.name}
-                        onClick={() => setActiveCategory(cat.name)}
-                        className={`category-filter-button ${activeCategory === cat.name ? 'active' : ''}`}
-                    >
-                        {cat.name}
-                    </button>
-                ))}
-                <button
                     onClick={loadData}
                     className="category-filter-button refresh-button"
-                    title="Refresh images and categories"
+                    title="Refresh images"
                 >
                     🔄 Refresh
                 </button>
