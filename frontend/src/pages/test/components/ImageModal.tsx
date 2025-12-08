@@ -770,17 +770,21 @@ export function ImageModal({
 
                             // Check if scrolled past the initial spacer (16px)
                             const nowScrolled = top > 0;
-                            setIsScrolled(nowScrolled);
 
-                            // Only animate when transitioning from not-scrolled to scrolled (scrolling down past threshold)
-                            // Make it instant when scrolling up or already at top
-                            if (nowScrolled && !wasScrolled && top > prevTop) {
+                            // Only update state if it actually changed
+                            if (nowScrolled !== wasScrolled) {
+                                // State is changing - enable animation before updating
                                 setShouldAnimate(true);
-                                // Reset animation flag after transition completes
-                                setTimeout(() => setShouldAnimate(false), 200);
-                            } else if (!nowScrolled || top <= prevTop) {
-                                // Scrolling up or at top - make it instant
-                                setShouldAnimate(false);
+                                // Update the scrolled state
+                                setIsScrolled(nowScrolled);
+
+                                // Keep animation enabled during the transition, then disable it
+                                setTimeout(() => {
+                                    setShouldAnimate(false);
+                                }, 150); // Slightly longer than CSS transition to ensure it completes
+                            } else {
+                                // Same state - just update scroll position ref
+                                setIsScrolled(nowScrolled);
                             }
                         }}
                     >
