@@ -225,7 +225,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 6px 16px;
   background: rgba(0, 0, 0, 0.05);
   border: none;
   border-radius: 8px;
@@ -308,7 +308,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 6px 16px;
   background: rgba(0, 0, 0, 0.05);
   border: none;
   border-radius: 8px;
@@ -333,7 +333,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 6px 16px;
   background: rgba(0, 0, 0, 0.05);
   border: none;
   border-radius: 8px;
@@ -452,25 +452,48 @@
 .image-modal-bottom-info {
   background: #ffffff;
   color: #333;
-  padding: 24px 16px;
+  padding: 32px 24px;
+  border-radius: 0 0 12px 12px;
 }
 
 .image-modal-bottom-info-row {
   display: flex;
-  gap: 24px;
+  gap: 32px;
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  width: 100%;
 }
 
 .image-modal-image-info {
   flex: 1 1 480px;
   min-width: 320px;
+  width: 100%;
+}
+
+.image-modal-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  width: 100%;
+  gap: 24px;
+}
+
+.image-modal-stats-header {
+  flex-shrink: 0;
+}
+
+.image-modal-stats-row .image-modal-actions-container {
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .image-modal-stats-header {
   display: flex;
   gap: 32px;
-  margin-bottom: 16px;
 }
 
 .image-modal-stat-item {
@@ -495,8 +518,10 @@
 
 .image-modal-image-title {
   font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #111;
+  line-height: 1.4;
 }
 
 .image-modal-image-details {
@@ -531,15 +556,15 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 16px;
-  margin-bottom: 12px;
+  margin-top: 24px;
+  margin-bottom: 32px;
 }
 
 .image-modal-image-tag {
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: #e0e0e0;
-  color: #424242;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: #f5f5f5;
+  color: #333333;
   border: none;
   font-size: 14px;
   font-weight: 400;
@@ -547,15 +572,23 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.15s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   white-space: nowrap;
+  line-height: 1.4;
+}
+
+.image-modal-image-tag svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+  stroke-width: 2;
 }
 
 .image-modal-image-tag:hover {
-  background: #d5d5d5;
+  background: #eeeeee;
 }
 
 .image-modal-image-date {
@@ -569,19 +602,19 @@
 }
 
 .image-modal-image-description {
-  font-size: 14px;
-  line-height: 1.5;
-  color: #333;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #111;
+  margin-top: 16px;
 }
 
 .image-modal-actions-container {
-  flex: 1 1 240px;
-  min-width: 200px;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .image-modal-action-button {
@@ -592,6 +625,12 @@
   min-width: 100px;
 }
 
+.image-modal-actions-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .image-modal-actions-container > *:last-child {
   margin-left: auto;
 }
@@ -599,13 +638,17 @@
 /* Ensure ImageModalInfo button works in bottom bar context */
 .image-modal-actions-container .modal-footer-btn {
   position: relative;
+  padding: 6px 18px;
 }
 
 /* Related Images */
 .image-modal-related-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  margin-top: 8px;
+  color: #111;
+  letter-spacing: -0.01em;
 }
 
 .image-modal-related-grid {

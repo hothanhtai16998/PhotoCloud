@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import api from '@/lib/axios';
 import type { Image } from '@/types/image';
-import { Heart, Share2, ChevronDown, MapPin, ExternalLink } from 'lucide-react';
+import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
 import type { DownloadSize } from '@/components/image/DownloadSizeSelector';
@@ -980,6 +980,19 @@ export function ImageModal({
                                 })()}
                             </div>
                             <div className="image-modal-actions">
+                                {/* Save/Favorite button */}
+                                {user && (
+                                    <button
+                                        onClick={handleToggleFavorite}
+                                        disabled={isTogglingFavorite}
+                                        className="image-modal-favorite-button"
+                                    >
+                                        <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
+                                        <span>{t('image.save')}</span>
+                                        <kbd className="image-modal-kbd">F</kbd>
+                                    </button>
+                                )}
+
                                 {/* Download button with dropdown */}
                                 <div className="image-modal-download-menu-wrapper" data-download-menu>
                                     <button
@@ -1026,29 +1039,6 @@ export function ImageModal({
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Save/Favorite button */}
-                                {user && (
-                                    <button
-                                        onClick={handleToggleFavorite}
-                                        disabled={isTogglingFavorite}
-                                        className="image-modal-favorite-button"
-                                    >
-                                        <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
-                                        <span>{t('image.save')}</span>
-                                        <kbd className="image-modal-kbd">F</kbd>
-                                    </button>
-                                )}
-
-                                {/* Share button */}
-                                <button
-                                    onClick={handleShare}
-                                    className="image-modal-share-button"
-                                >
-                                    <Share2 size={16} />
-                                    <span>{t('share.share')}</span>
-                                    <kbd className="image-modal-kbd">⌘S</kbd>
-                                </button>
                             </div>
                         </div>
 
@@ -1124,15 +1114,30 @@ export function ImageModal({
                             <div className="image-modal-bottom-info-row">
                                 {/* Left: image info */}
                                 <div className="image-modal-image-info">
-                                    {/* Views and Downloads Stats */}
-                                    <div className="image-modal-stats-header">
-                                        <div className="image-modal-stat-item">
-                                            <div className="image-modal-stat-label">Views</div>
-                                            <div className="image-modal-stat-value">{views.toLocaleString()}</div>
+                                    {/* Views and Downloads Stats with Share/Info buttons */}
+                                    <div className="image-modal-stats-row">
+                                        <div className="image-modal-stats-header">
+                                            <div className="image-modal-stat-item">
+                                                <div className="image-modal-stat-label">Views</div>
+                                                <div className="image-modal-stat-value">{views.toLocaleString()}</div>
+                                            </div>
+                                            <div className="image-modal-stat-item">
+                                                <div className="image-modal-stat-label">Downloads</div>
+                                                <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
+                                            </div>
                                         </div>
-                                        <div className="image-modal-stat-item">
-                                            <div className="image-modal-stat-label">Downloads</div>
-                                            <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
+
+                                        {/* Right: Share and Info buttons */}
+                                        <div className="image-modal-actions-container">
+                                            {/* Share button */}
+                                            <button
+                                                onClick={handleShare}
+                                                className="image-modal-share-button"
+                                            >
+                                                <Share2 size={16} />
+                                                <span>{t('share.share')}</span>
+                                            </button>
+                                            <ImageModalInfo image={img} />
                                         </div>
                                     </div>
 
@@ -1208,6 +1213,7 @@ export function ImageModal({
                                         <div className="image-modal-image-tags">
                                             {img.tags.map((tag, idx) => (
                                                 <span key={idx} className="image-modal-image-tag">
+                                                    <Tag size={14} />
                                                     {tag}
                                                 </span>
                                             ))}
@@ -1220,11 +1226,6 @@ export function ImageModal({
                                             {img.description}
                                         </div>
                                     )}
-                                </div>
-
-                                {/* Right: actions */}
-                                <div className="image-modal-actions-container">
-                                    <ImageModalInfo image={img} />
                                 </div>
                             </div>
 
