@@ -1132,9 +1132,11 @@ export function ImageModal({
                                         </div>
                                     </div>
 
-                                    <div className="image-modal-image-title">
-                                        {img.imageTitle || 'Untitled image'}
-                                    </div>
+                                    {img.imageTitle && (
+                                        <div className="image-modal-image-title">
+                                            {img.imageTitle}
+                                        </div>
+                                    )}
 
                                     {/* Location and Camera Info */}
                                     {(img.location || img.cameraModel) && (
