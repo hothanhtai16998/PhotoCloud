@@ -146,7 +146,7 @@
 /* Image Title Tooltip */
 .blur-up-image-title-tooltip {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(12px, 12px);
   background: rgba(255, 255, 255, 0.95);
   color: #111;
   padding: 2px;

@@ -2,6 +2,15 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
 import { preloadImage } from '../utils/imagePreloader';
 import { Heart, Download } from 'lucide-react';
+import { favoriteService } from '@/services/favoriteService';
+import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
+import { imageStatsService } from '@/services/imageStatsService';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
+import { t } from '@/i18n';
+import { useUserStore } from '@/stores/useUserStore';
+import { useNavigate } from 'react-router-dom';
+import type { DownloadSize } from '@/components/image/DownloadSizeSelector';
 import './BlurUpImage.css';
 
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -155,16 +164,91 @@ export function BlurUpImage({
     const username = uploadedBy?.username || '';
     const userAvatar = uploadedBy?.avatar || uploadedBy?.profilePicture || '';
 
-    // Handle button clicks (stop propagation to prevent opening modal)
-    const handleSaveClick = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        // TODO: Implement save/favorite functionality
-    };
+    // Favorite state
+    const { user } = useUserStore();
+    const isFavorited = useBatchedFavoriteCheck(image?._id);
+    const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+    const navigate = useNavigate();
 
-    const handleDownloadClick = (e: React.MouseEvent) => {
+    // Handle favorite/save button
+    const handleSaveClick = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        // TODO: Implement download functionality
-    };
+        if (!user || !image?._id || isTogglingFavorite) return;
+
+        setIsTogglingFavorite(true);
+        try {
+            const response = await favoriteService.toggleFavorite(image._id);
+            updateFavoriteCache(image._id, response.isFavorited);
+            if (response.isFavorited) {
+                toast.success(t('favorites.added'));
+            } else {
+                toast.success(t('favorites.removed'));
+            }
+        } catch (error: any) {
+            console.error('Failed to toggle favorite:', error);
+            toast.error(error?.response?.data?.message || t('favorites.error'));
+        } finally {
+            setIsTogglingFavorite(false);
+        }
+    }, [user, image?._id, isTogglingFavorite]);
+
+    // Handle download button
+    const handleDownloadClick = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!image?._id) return;
+
+        try {
+            // Increment download count
+            try {
+                await imageStatsService.incrementDownload(image._id);
+            } catch (error) {
+                // Continue with download even if increment fails
+                console.error('Failed to increment download count:', error);
+            }
+
+            // Download image with medium size (default)
+            const size: DownloadSize = 'medium';
+            const response = await api.get(`/images/${image._id}/download?size=${size}`, {
+                responseType: 'blob',
+                withCredentials: true,
+            });
+
+            const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/webp' });
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+
+            // Generate filename
+            const imageTitle = image.imageTitle || 'photo';
+            const sanitizedTitle = imageTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const extension = response.headers['content-type']?.includes('webp') ? 'webp' : 'jpg';
+            const fileName = `${sanitizedTitle}_${size}.${extension}`;
+
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+            toast.success(t('image.downloadSuccess'));
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error(t('image.downloadFailed'));
+        }
+    }, [image]);
+
+    // Handle author info click - navigate to profile
+    const handleAuthorClick = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!uploadedBy) return;
+
+        const userId = uploadedBy._id || uploadedBy;
+        if (username) {
+            navigate(`/profile/${username}`);
+        } else if (userId) {
+            navigate(`/profile/user/${userId}`);
+        }
+    }, [uploadedBy, username, navigate]);
 
     return (
         <div
@@ -189,13 +273,16 @@ export function BlurUpImage({
             <div className="blur-up-image-overlay">
                 {/* Top-right buttons */}
                 <div className="blur-up-image-actions">
-                    <button
-                        className="blur-up-image-action-btn"
-                        onClick={handleSaveClick}
-                        aria-label="Save"
-                    >
-                        <Heart size={18} />
-                    </button>
+                    {user && (
+                        <button
+                            className="blur-up-image-action-btn"
+                            onClick={handleSaveClick}
+                            disabled={isTogglingFavorite}
+                            aria-label="Save"
+                        >
+                            <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
+                        </button>
+                    )}
                     <button
                         className="blur-up-image-action-btn"
                         onClick={handleDownloadClick}
@@ -207,7 +294,11 @@ export function BlurUpImage({
 
                 {/* Bottom-left user info */}
                 {username && (
-                    <div className="blur-up-image-user-info">
+                    <div
+                        className="blur-up-image-user-info"
+                        onClick={handleAuthorClick}
+                        style={{ cursor: 'pointer' }}
+                    >
                         {userAvatar ? (
                             <img
                                 src={userAvatar}
