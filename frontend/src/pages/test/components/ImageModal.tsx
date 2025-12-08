@@ -144,6 +144,7 @@ export function ImageModal({
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const scrollPosRef = useRef(0);
     const previousImgRef = useRef<ExtendedImage | null>(img);
+    const frontImageLoadedRef = useRef<boolean>(false); // Track if front image is loaded for current image
     const [isScrolled, setIsScrolled] = useState(false);
     const [shouldAnimate, setShouldAnimate] = useState(false);
     const { user } = useUserStore();
@@ -554,6 +555,7 @@ export function ImageModal({
         // Track current image to prevent race conditions
         const currentImageId = img._id;
         previousImgRef.current = img;
+        frontImageLoadedRef.current = false; // Reset loaded flag for new image
 
         // reset scroll to top when image changes so top bar/author stay visible
         scrollPosRef.current = 0;
@@ -581,7 +583,10 @@ export function ImageModal({
         // Low-res thumbnail = thumbnailUrl or smallUrl (small file, pixelated when enlarged to full size)
         // High-res = regularUrl or imageUrl (full quality, sharp at full size)
         const thumbnail = img.thumbnailUrl || img.smallUrl || img.imageUrl || '';
-        const full = img.regularUrl || img.imageUrl || '';
+
+        // Progressive loading: Thumbnail -> Regular -> Original
+        const regular = img.regularUrl;
+        const original = img.imageUrl;
 
         // Calculate what the state should be
         const currentState = calculateInitialState();
@@ -622,7 +627,7 @@ export function ImageModal({
 
                 // Clear front layer after back layer is updated (prevents flash)
                 requestAnimationFrame(() => {
-                    if (previousImgRef.current?._id === currentImageId) {
+                    if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                         setFrontSrc(null);
                     }
                 });
@@ -634,7 +639,7 @@ export function ImageModal({
                     setBackSrc(newBackSrc);
                     // Clear front layer after back layer is updated
                     requestAnimationFrame(() => {
-                        if (previousImgRef.current?._id === currentImageId) {
+                        if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                             setFrontSrc(null);
                         }
                     });
@@ -650,7 +655,7 @@ export function ImageModal({
                                 setBackSrc(src);
                                 // Clear front layer after back layer is updated
                                 requestAnimationFrame(() => {
-                                    if (previousImgRef.current?._id === currentImageId) {
+                                    if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                                         setFrontSrc(null);
                                     }
                                 });
@@ -661,7 +666,9 @@ export function ImageModal({
                             if (previousImgRef.current?._id === currentImageId) {
                                 backSrcRef.current = newBackSrc;
                                 setBackSrc(newBackSrc);
-                                setFrontSrc(null);
+                                if (!frontImageLoadedRef.current) {
+                                    setFrontSrc(null);
+                                }
                             }
                         });
                 }
@@ -673,38 +680,74 @@ export function ImageModal({
         }
 
         // Load full image in background (front layer)
-        // This creates the double-buffer effect: back layer (low-res) + front layer (high-res)
-        // Reuse thumbnail and full already declared above (lines 437-438)
-        // Only load full image if it's different from the thumbnail
-        if (full && full !== thumbnail) {
-            // Check if already loaded
-            if (loadedImages.has(full)) {
-                setFrontSrc(full);
-                // If already cached, mark as loaded immediately
-                setFrontLoaded(true);
-            } else {
-                // Preload full image (with decode for smooth transition)
-                preloadImage(full, false)
-                    .then((src) => {
-                        // Only update if still showing the same image
+        // Progressive loading strategy:
+        // 1. Load regularUrl first (faster, good quality)
+        // 2. Then upgrade to imageUrl (best quality)
+        const loadFrontImage = async () => {
+            let loadedAny = false;
+
+            // Step 1: Load Regular URL (if available and different from thumbnail)
+            if (regular && regular !== thumbnail) {
+                try {
+                    if (loadedImages.has(regular)) {
+                        if (previousImgRef.current?._id === currentImageId) {
+                            setFrontSrc(regular);
+                            setFrontLoaded(true);
+                            frontImageLoadedRef.current = true;
+                            loadedAny = true;
+                        }
+                    } else {
+                        // Preload regular
+                        const src = await preloadImage(regular, false);
                         if (previousImgRef.current?._id === currentImageId) {
                             setFrontSrc(src);
+                            // If we don't have an original to upgrade to, mark as loaded
+                            if (!original || original === regular) {
+                                setFrontLoaded(true);
+                            }
+                            frontImageLoadedRef.current = true;
+                            loadedAny = true;
                         }
-                    })
-                    .catch(() => {
-                        // On error, keep showing back layer (thumbnail)
-                    });
+                    }
+                } catch (e) {
+                    // Ignore error, try original next
+                }
             }
-        } else if (full && full === thumbnail) {
-            // If thumbnail is the same as full, use it as front image
-            setFrontSrc(full);
-            // Mark as loaded since it's the same as back image
-            setFrontLoaded(true);
-        } else {
-            // If no full image to load, ensure front layer is cleared
-            setFrontSrc(null);
-            setFrontLoaded(false);
-        }
+
+            // Step 2: Load Original URL (if available and different from regular)
+            if (original && original !== thumbnail && original !== regular) {
+                try {
+                    // Preload original (this might take longer)
+                    const src = await preloadImage(original, false);
+                    if (previousImgRef.current?._id === currentImageId) {
+                        setFrontSrc(src);
+                        setFrontLoaded(true);
+                        frontImageLoadedRef.current = true;
+                        loadedAny = true;
+                    }
+                } catch (e) {
+                    // Ignore
+                }
+            }
+
+            // If we failed to load anything or didn't have anything to load
+            if (!loadedAny && !regular && !original) {
+                if (previousImgRef.current?._id === currentImageId) {
+                    setFrontSrc(null);
+                    setFrontLoaded(false);
+                }
+            } else if (!loadedAny && (regular || original) && previousImgRef.current?._id === currentImageId) {
+                // If we have URLs but they match thumbnail, just use them
+                const target = original || regular;
+                if (target === thumbnail) {
+                    setFrontSrc(target);
+                    setFrontLoaded(true);
+                    frontImageLoadedRef.current = true;
+                }
+            }
+        };
+
+        loadFrontImage();
     }, [img]);
 
     // No need for resize calculations - CSS handles it automatically
@@ -1247,7 +1290,7 @@ export function ImageModal({
                                     {/* Front layer: Full-quality image (shown when ready, no blur) */}
                                     {frontSrc && (
                                         <img
-                                            key={`front-${img._id}-${frontSrc}`}
+                                            key={`front-${img._id}`}
                                             ref={imgElementRef}
                                             src={frontSrc}
                                             alt={img.imageTitle || 'photo'}
