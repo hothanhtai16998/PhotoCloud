@@ -1,0 +1,1 @@
+chứa các function chạy chen giữa request và response

@@ -1,0 +1,70 @@
+/* Upload Form Container */
+.upload-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  margin-top: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0;
+}
+
+/* Form Input Fields - Title, Tags, etc. */
+.upload-form-input {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  border-radius: 0;
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+  /* Performance optimization - prevent layout shifts */
+  contain: layout style;
+}
+
+/* Category Select Field */
+.upload-form-select {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  border-radius: 0;
+  font-size: 16px;
+  background-color: white;
+  outline: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: auto;
+  line-height: 1.5;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+/* Category Loading/Empty States */
+.upload-form-category-loading,
+.upload-form-category-empty {
+  padding: 16px;
+  font-size: 14px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.upload-form-category-loading {
+  color: #666;
+}
+
+.upload-form-category-empty {
+  color: #999;
+}
+
+/* Category Error Message */
+.upload-form-error {
+  color: #ef4444;
+  font-size: 12px;
+  padding: 8px 16px;
+  margin: 0;
+  border-top: 1px solid #e5e5e5;
+}

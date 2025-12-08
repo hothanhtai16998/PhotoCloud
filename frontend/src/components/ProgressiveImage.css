@@ -1,0 +1,88 @@
+.progressive-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #f0f0f0;
+}
+
+.progressive-image {
+  width: 100%;
+  height: auto; /* Let height adjust based on aspect ratio */
+  display: block;
+  /* transition: opacity 0.2s ease-in-out; */ /* Disabled to prevent flashing when switching categories */
+  image-rendering: -webkit-optimize-contrast; /* Better quality on WebKit browsers */
+  image-rendering: high-quality; /* Better quality on modern browsers */
+  image-rendering: auto; /* Fallback - smooth scaling for photos */
+  will-change: opacity; /* Optimize for opacity transitions */
+}
+
+.progressive-image.loading {
+  opacity: 0;
+}
+
+/* Prevent loading state from showing for cached images */
+.progressive-image.loading[data-cached="true"] {
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+.progressive-image.loaded {
+  opacity: 1;
+  /* Once loaded, remove transition to prevent flashing on re-renders */
+  transition: none;
+}
+
+/* Skip transition entirely for cached images to prevent flash */
+.progressive-image.no-transition {
+  transition: none !important;
+  opacity: 1 !important;
+}
+
+/* Additional safeguard - if data-cached attribute is set, force visibility */
+.progressive-image[data-cached="true"] {
+  opacity: 1 !important;
+  transition: none !important;
+  /* Prevent any flash by ensuring immediate visibility */
+  animation: none !important;
+}
+
+/* Force immediate render for cached images - no delay */
+.progressive-image-wrapper:has(img[data-cached="true"]) img {
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+.progressive-image.error {
+  opacity: 0.5;
+}
+
+/* Blur-up effect - shows low-quality placeholder while loading */
+.progressive-image-blur {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px);
+  transform: scale(1.1); /* Slight scale to hide blur edges */
+  opacity: 0.6;
+  z-index: 0;
+  transition: opacity 0.3s ease-in-out;
+  pointer-events: none; /* Don't block interactions */
+}
+
+/* Fade out blur when image is loaded */
+.progressive-image-blur.fade-out {
+  opacity: 0;
+}
+
+/* Ensure image/picture is above blur */
+.progressive-image-wrapper picture,
+.progressive-image-wrapper .progressive-image {
+  position: relative;
+  z-index: 1;
+}
+

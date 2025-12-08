@@ -1,0 +1,71 @@
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet and below */
+@media (max-width: 1024px) {
+  .image-grid-container {
+    padding: 0 8px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 3px;
+  }
+
+  .collections-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .collection-thumbnails {
+    height: 180px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 2px;
+  }
+
+  .image-overlay {
+    padding: 12px;
+  }
+
+  .image-actions {
+    top: 12px;
+    right: 12px;
+    gap: 6px;
+  }
+
+  .image-action-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .image-title {
+    font-size: 14px;
+  }
+
+  .image-meta {
+    font-size: 12px;
+  }
+
+  .collection-card {
+    padding: 12px;
+  }
+
+  .collection-title {
+    font-size: 18px;
+  }
+
+  .collection-description {
+    font-size: 14px;
+  }
+
+  .collection-stats {
+    font-size: 12px;
+  }
+}

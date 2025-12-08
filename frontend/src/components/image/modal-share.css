@@ -1,0 +1,115 @@
+/* Share Menu */
+
+.share-menu-wrapper {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 2000;
+}
+
+.share-menu-wrapper.position-below {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+
+.share-menu {
+  background: #fff;
+  border-radius: 12px;
+  width: 200px;
+  min-width: 180px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: modalSlideUp 0.3s ease;
+  padding: 8px 0;
+}
+
+.share-menu-wrapper.position-below .share-menu {
+  animation: modalSlideDown 0.3s ease;
+}
+
+.share-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #333;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+.share-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.share-menu-item:active {
+  background: #e5e5e5;
+}
+
+.share-menu-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+.facebook-icon {
+  background: #1877f2;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.pinterest-icon {
+  background: #e60023;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.twitter-icon {
+  background: #000;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.share-menu-icon-svg {
+  color: #767676;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.share-menu-divider {
+  height: 1px;
+  background: #e5e5e5;
+  margin: 4px 0;
+}
+
+@media (max-width: 768px) {
+  .share-menu-wrapper {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .share-menu {
+    width: 220px;
+  }
+}
+

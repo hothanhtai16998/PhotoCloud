@@ -1,0 +1,241 @@
+.logo-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.logo-selector-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: min(900px, 96%);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: logoSelectorSlideIn 0.3s ease-out;
+}
+
+@keyframes logoSelectorSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid #e5e5e5;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  border-radius: 16px 16px 0 0;
+}
+
+.logo-selector-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.logo-selector-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  color: #767676;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-selector-close:hover {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.logo-selector-content {
+  padding: 24px;
+}
+
+.logo-selector-category {
+  margin-bottom: 32px;
+}
+
+.logo-selector-category:last-child {
+  margin-bottom: 0;
+}
+
+.logo-selector-category-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e5e5;
+}
+
+.logo-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.logo-selector-item {
+  position: relative;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-selector-item:hover {
+  border-color: #6366f1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.logo-selector-item.selected {
+  border-color: #6366f1;
+  background: #f0f4ff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.logo-selector-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 80px;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.logo-selector-info {
+  text-align: center;
+  width: 100%;
+}
+
+.logo-selector-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.logo-selector-info p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #767676;
+  line-height: 1.4;
+}
+
+.logo-selector-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  background: #6366f1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+}
+
+.logo-selector-footer {
+  padding: 24px;
+  border-top: 1px solid #e5e5e5;
+  background: #fafafa;
+  border-radius: 0 0 16px 16px;
+}
+
+.logo-selector-hint {
+  margin: 0 0 16px 0;
+  font-size: 0.875rem;
+  color: #767676;
+  text-align: center;
+}
+
+.logo-selector-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.logo-selector-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  color: #111;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.logo-selector-link:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: #f0f4ff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .logo-selector-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .logo-selector-item {
+    padding: 16px;
+  }
+
+  .logo-selector-preview {
+    height: 60px;
+  }
+
+  .logo-selector-actions {
+    flex-direction: column;
+  }
+
+  .logo-selector-link {
+    width: 100%;
+    justify-content: center;
+  }
+}

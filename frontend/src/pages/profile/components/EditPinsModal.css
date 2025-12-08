@@ -1,0 +1,250 @@
+.edit-pins-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.edit-pins-modal {
+  background: hsl(var(--background));
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.edit-pins-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.edit-pins-modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.edit-pins-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: hsl(var(--muted-foreground));
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.edit-pins-modal-close:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.edit-pins-modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.edit-pins-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-pins-section h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+}
+
+.edit-pins-empty {
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  padding: 40px 20px;
+  margin: 0;
+}
+
+.edit-pins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.edit-pins-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.edit-pins-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.edit-pins-item.dragging {
+  opacity: 0.5;
+}
+
+.edit-pins-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.edit-pins-item-drag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: hsl(var(--foreground));
+  padding: 4px;
+  border-radius: 4px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.edit-pins-item:hover .edit-pins-item-drag {
+  opacity: 1;
+}
+
+.edit-pins-item-drag:active {
+  cursor: grabbing;
+}
+
+.edit-pins-item-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.edit-pins-item:hover .edit-pins-item-remove {
+  opacity: 1;
+}
+
+.edit-pins-item-remove:hover {
+  background: rgba(220, 38, 38, 1);
+}
+
+.edit-pins-item-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-pins-item-number {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: hsl(var(--foreground));
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.edit-pins-item-available {
+  cursor: pointer;
+}
+
+.edit-pins-item-available:hover {
+  transform: scale(1.05);
+}
+
+.edit-pins-item-add {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.edit-pins-item-available:hover .edit-pins-item-add {
+  opacity: 1;
+}
+
+.edit-pins-item-add span {
+  color: white;
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.edit-pins-item-skeleton {
+  aspect-ratio: 1;
+  border-radius: 8px;
+}
+
+.edit-pins-modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid hsl(var(--border));
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .edit-pins-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .edit-pins-modal-content {
+    padding: 16px;
+    gap: 24px;
+  }
+
+  .edit-pins-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+}
+

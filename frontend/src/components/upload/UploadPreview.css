@@ -1,0 +1,437 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.image-upload-overlay {
+  /* Ensure overlay matches image dimensions exactly */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Match image border radius */
+  border-radius: 8px;
+}
+
+/* Scrolling Loader Styles */
+.upload-loader-container .loader {
+  --main-size: 4em;
+  --text-color: #ffffff;
+  --shine-color: #ffffff40;
+  --shadow-color: #aaaaaa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+  font-size: var(--main-size);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--text-color);
+  width: 7.3em;
+  height: 1em;
+  filter: drop-shadow(0 0 0.05em var(--shine-color));
+}
+
+.upload-loader-container .loader .text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  position: absolute;
+}
+
+.upload-loader-container .loader .text:nth-child(1) {
+  clip-path: polygon(0% 0%, 11.11% 0%, 11.11% 100%, 0% 100%);
+  font-size: calc(var(--main-size) / 20);
+  margin-left: -2.1em;
+  opacity: 0.6;
+}
+
+.upload-loader-container .loader .text:nth-child(2) {
+  clip-path: polygon(11.11% 0%, 22.22% 0%, 22.22% 100%, 11.11% 100%);
+  font-size: calc(var(--main-size) / 16);
+  margin-left: -0.98em;
+  opacity: 0.7;
+}
+
+.upload-loader-container .loader .text:nth-child(3) {
+  clip-path: polygon(22.22% 0%, 33.33% 0%, 33.33% 100%, 22.22% 100%);
+  font-size: calc(var(--main-size) / 13);
+  margin-left: -0.33em;
+  opacity: 0.8;
+}
+
+.upload-loader-container .loader .text:nth-child(4) {
+  clip-path: polygon(33.33% 0%, 44.44% 0%, 44.44% 100%, 33.33% 100%);
+  font-size: calc(var(--main-size) / 11);
+  margin-left: -0.05em;
+  opacity: 0.9;
+}
+
+.upload-loader-container .loader .text:nth-child(5) {
+  clip-path: polygon(44.44% 0%, 55.55% 0%, 55.55% 100%, 44.44% 100%);
+  font-size: calc(var(--main-size) / 10);
+  margin-left: 0em;
+  opacity: 1;
+}
+
+.upload-loader-container .loader .text:nth-child(6) {
+  clip-path: polygon(55.55% 0%, 66.66% 0%, 66.66% 100%, 55.55% 100%);
+  font-size: calc(var(--main-size) / 11);
+  margin-left: 0.05em;
+  opacity: 0.9;
+}
+
+.upload-loader-container .loader .text:nth-child(7) {
+  clip-path: polygon(66.66% 0%, 77.77% 0%, 77.77% 100%, 66.66% 100%);
+  font-size: calc(var(--main-size) / 13);
+  margin-left: 0.33em;
+  opacity: 0.8;
+}
+
+.upload-loader-container .loader .text:nth-child(8) {
+  clip-path: polygon(77.77% 0%, 88.88% 0%, 88.88% 100%, 77.77% 100%);
+  font-size: calc(var(--main-size) / 16);
+  margin-left: 0.98em;
+  opacity: 0.7;
+}
+
+.upload-loader-container .loader .text:nth-child(9) {
+  clip-path: polygon(88.88% 0%, 100% 0%, 100% 100%, 88.88% 100%);
+  font-size: calc(var(--main-size) / 20);
+  margin-left: 2.1em;
+  opacity: 0.6;
+}
+
+.upload-loader-container .loader .text span {
+  animation: scrolling 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite,
+    shadow 3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+.upload-loader-container .loader .text:nth-child(1) span {
+  background: linear-gradient(
+    to right,
+    var(--text-color) 4%,
+    var(--shadow-color) 7%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(2) span {
+  background: linear-gradient(
+    to right,
+    var(--text-color) 9%,
+    var(--shadow-color) 13%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(3) span {
+  background: linear-gradient(
+    to right,
+    var(--text-color) 15%,
+    var(--shadow-color) 18%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(4) span {
+  background: linear-gradient(
+    to right,
+    var(--text-color) 20%,
+    var(--shadow-color) 23%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(6) span {
+  background: linear-gradient(
+    to right,
+    var(--shadow-color) 29%,
+    var(--text-color) 32%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(7) span {
+  background: linear-gradient(
+    to right,
+    var(--shadow-color) 34%,
+    var(--text-color) 37%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(8) span {
+  background: linear-gradient(
+    to right,
+    var(--shadow-color) 39%,
+    var(--text-color) 42%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .text:nth-child(9) span {
+  background: linear-gradient(
+    to right,
+    var(--shadow-color) 45%,
+    var(--text-color) 48%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  color: transparent;
+}
+
+.upload-loader-container .loader .line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 0.05em;
+  width: calc(var(--main-size) / 2);
+  margin-top: 0.9em;
+  border-radius: 0.05em;
+}
+
+.upload-loader-container .loader .line::before {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: var(--text-color);
+  opacity: 0.3;
+}
+
+.upload-loader-container .loader .line::after {
+  content: '';
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-color: var(--text-color);
+  border-radius: 0.05em;
+  transform: translateX(-90%);
+  animation: wobble 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes wobble {
+  0% {
+    transform: translateX(-90%);
+  }
+  50% {
+    transform: translateX(90%);
+  }
+  100% {
+    transform: translateX(-90%);
+  }
+}
+
+@keyframes scrolling {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shadow {
+  0% {
+    background-position: -98% 0;
+  }
+  100% {
+    background-position: 102% 0;
+  }
+}
+
+/* Responsive styles - both portrait and landscape use fixed width */
+.upload-preview-container-portrait,
+.upload-preview-container-landscape {
+  width: 420px;
+}
+
+/* Image container wrapper - ensures no padding, collapses to image height */
+.upload-image-container-wrapper {
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  font-size: 0; /* Remove inline spacing */
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  /* Block display to collapse to image height exactly */
+  display: block;
+  position: relative; /* For absolutely positioned location button */
+  /* Performance optimizations */
+  will-change: auto;
+  transform: translateZ(0); /* Force GPU acceleration */
+  backface-visibility: hidden;
+}
+
+.upload-image-container-wrapper img {
+  margin: 0;
+  padding: 0;
+  display: block;
+  vertical-align: top;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  /* Ensure image determines container height exactly */
+  box-sizing: border-box;
+  flex-shrink: 0;
+  flex-grow: 0;
+  /* Performance optimizations */
+  will-change: auto;
+  transform: translateZ(0); /* Force GPU acceleration */
+  image-rendering: auto;
+}
+
+@media (max-width: 480px) {
+  .upload-preview-container-portrait,
+  .upload-preview-container-landscape {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Location Button - bottom left of image, inside image bounds */
+.upload-location-button {
+  position: absolute !important;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 200;
+  transition: background 0.2s ease;
+  pointer-events: auto;
+  margin: 0 !important;
+  /* Ensure button doesn't create any space in document flow */
+  width: auto;
+  height: auto;
+  box-sizing: border-box;
+  /* Remove from document flow completely */
+  top: auto;
+  right: auto;
+}
+
+.upload-location-button:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Location Input Overlay - appears at button position, inside image bounds */
+.upload-location-input-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 200;
+  min-width: 300px;
+  width: 400px;
+  max-width: calc(100% - 16px);
+  pointer-events: auto;
+}
+
+.upload-location-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.upload-location-input {
+  width: 100%;
+  padding: 8px 40px 8px 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.upload-location-input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.upload-location-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.upload-location-detect-button {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #6366f1;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.upload-location-detect-button:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.upload-location-detect-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-location-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  border-top: 2px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}

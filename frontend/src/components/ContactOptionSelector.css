@@ -1,0 +1,260 @@
+.contact-option-selector {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    z-index: 1001;
+}
+
+.selector-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #111;
+}
+
+.selector-toggle:hover {
+    border-color: #0066cc;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+}
+
+.selector-toggle svg {
+    color: #0066cc;
+}
+
+.selector-label {
+    font-weight: 500;
+}
+
+.selector-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1002;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.selector-menu {
+    position: fixed;
+    top: 120px;
+    right: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 1003;
+    width: 450px;
+    max-width: calc(100vw - 48px);
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.selector-menu-header {
+    padding: 20px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.selector-menu-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #111;
+}
+
+.selector-subtitle {
+    font-size: 0.875rem;
+    color: #767676;
+    margin: 0 0 16px 0;
+}
+
+.quick-recommendations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.quick-rec-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #f5f5f5;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #111;
+    transition: all 0.2s ease;
+}
+
+.quick-rec-btn:hover {
+    background: #e5e5e5;
+    border-color: #0066cc;
+}
+
+.quick-rec-btn.active {
+    background: #0066cc;
+    color: #fff;
+    border-color: #0066cc;
+}
+
+.quick-rec-btn svg {
+    flex-shrink: 0;
+}
+
+.selector-options {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.selector-option {
+    padding: 16px;
+    background: #fff;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.selector-option:hover {
+    border-color: #0066cc;
+    background: #f8f9ff;
+}
+
+.selector-option.active {
+    border-color: #0066cc;
+    background: #f0f4ff;
+}
+
+.option-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.option-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.option-label {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: #111;
+}
+
+.recommended-icon {
+    color: #ffa500;
+    flex-shrink: 0;
+}
+
+.option-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    background: #0066cc;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.option-description {
+    font-size: 0.8125rem;
+    color: #767676;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.option-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #f5f5f5;
+}
+
+.option-best-for {
+    font-size: 0.75rem;
+    color: #0066cc;
+    font-weight: 500;
+}
+
+.option-pros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.pro-tag {
+    font-size: 0.6875rem;
+    padding: 2px 6px;
+    background: #e8f4ff;
+    color: #0066cc;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .contact-option-selector {
+        top: 70px;
+        right: 16px;
+    }
+
+    .selector-toggle {
+        padding: 8px 12px;
+        font-size: 0.8125rem;
+    }
+
+    .selector-label {
+        display: none;
+    }
+
+    .selector-menu {
+        top: 100px;
+        right: 16px;
+        left: 16px;
+        width: auto;
+        max-width: none;
+    }
+}
+

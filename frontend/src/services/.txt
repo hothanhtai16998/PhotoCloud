@@ -1,0 +1,1 @@
+gọi api để gửi, lấy dữ liệu từ database

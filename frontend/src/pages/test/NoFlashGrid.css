@@ -1,0 +1,364 @@
+/* NoFlashGrid Page Styles */
+
+/* Page Container */
+.no-flash-grid-page {
+  padding: 16px;
+  max-width: 1296px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.no-flash-grid-title {
+  margin-bottom: 12px;
+}
+
+.no-flash-grid-description {
+  margin-bottom: 16px;
+}
+
+/* Category Filter Buttons */
+.category-filter-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.category-filter-button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.category-filter-button.active {
+  background: #111;
+  color: #fff;
+}
+
+.category-filter-button:not(.active) {
+  background: #fff;
+  color: #111;
+}
+
+/* Grid Container */
+.no-flash-grid {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  /* Base row height - will be overridden by inline style */
+  grid-auto-rows: 25px;
+  /* Don't use grid-auto-flow: dense - we use explicit row positioning */
+}
+
+/* Grid Item (Wrapper) */
+.grid-item-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  /* Grid will automatically size this based on gridRowEnd span */
+  /* Don't set height: 100% as it can interfere with grid row spanning */
+}
+
+/* BlurUpImage Component */
+.blur-up-image-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 0;
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+.blur-up-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+
+.blur-up-image.loading {
+  filter: none;
+  transform: scale(1.02);
+}
+
+.blur-up-image.loaded {
+  filter: none;
+  transform: none;
+}
+
+/* Modal Styles */
+.image-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 2000;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.image-modal-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.image-modal-close-button {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2001;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.image-modal-close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.image-modal-top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2001;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-modal-author-name {
+  font-weight: 700;
+}
+
+.image-modal-image-title {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.image-modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.image-modal-image-container {
+  position: relative;
+  width: 100%;
+  background: #0f0f0f;
+}
+
+.image-modal-image-wrapper {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.image-modal-gutter {
+  flex-shrink: 0;
+  background: #0f0f0f;
+}
+
+.image-modal-image-box {
+  flex: 1;
+  position: relative;
+  background: #0f0f0f;
+}
+
+.image-modal-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: none;
+  opacity: 1;
+  transition: none;
+  background: #0f0f0f;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.image-modal-image.blurred {
+  filter: none;
+}
+
+.image-modal-bottom-info {
+  background: #0a54e6;
+  color: #fff;
+  padding: 24px 16px;
+}
+
+.image-modal-info-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.image-modal-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.image-modal-info-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.image-modal-info-value {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.image-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.image-modal-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.image-modal-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.image-modal-tag {
+  padding: 6px 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+}
+
+.image-modal-description {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.image-modal-navigation {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2001;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.image-modal-navigation:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.image-modal-navigation.prev {
+  left: 16px;
+}
+
+.image-modal-navigation.next {
+  right: 16px;
+}
+
+.image-modal-related {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.image-modal-related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.image-modal-related-item {
+  position: relative;
+  width: 100%;
+  padding-bottom: 75%;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f2f2f2;
+}
+
+.image-modal-related-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Loading State */
+.loading-state {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+/* Category Filter Refresh Button */
+.category-filter-button.refresh-button {
+  margin-left: auto;
+}
+
+/* Grid Container - Dynamic styles will be applied via inline style for gridTemplateColumns */
+.no-flash-grid {
+  /* gridTemplateColumns, gap, and gridAutoRows are set dynamically */
+}
+
+/* Grid Item Wrapper - Dynamic styles */
+.grid-item-wrapper {
+  /* gridColumn, gridRowStart, gridRowEnd, and height are set dynamically */
+  height: auto;
+}
+
+/* Debug Overlay */
+.debug-overlay {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  z-index: 10;
+  pointer-events: none;
+}

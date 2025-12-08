@@ -1,0 +1,341 @@
+.search-filters-container {
+  position: relative;
+  display: inline-block;
+}
+
+.search-filters-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #767676;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  height: 100%;
+}
+
+.search-filters-toggle:hover {
+  color: #111;
+  background: transparent;
+}
+
+.search-filters-toggle.active {
+  color: #111;
+  background: transparent;
+}
+
+.filter-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.search-filters-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1499;
+  animation: fadeIn 0.2s ease;
+  /* Prevent body scrollbar when overlay is open */
+  overflow: hidden;
+}
+
+/* Note: Body scroll prevention should be handled via JavaScript
+   when the filter opens/closes to ensure cross-browser compatibility */
+
+.search-filters-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-width: min(320px, calc(100vw - 32px));
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  z-index: 1501;
+  animation: slideDown 0.2s ease;
+  max-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  /* Prevent horizontal overflow but allow vertical scrolling in content */
+  overflow: visible;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.search-filters-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.search-filters-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.search-filters-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #767676;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.search-filters-close:hover {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.search-filters-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  /* Ensure scrollbar is always visible when content overflows */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d1 #f5f5f5;
+  /* Force scrollbar to show on webkit browsers */
+  -webkit-overflow-scrolling: touch;
+}
+
+.search-filters-content::-webkit-scrollbar {
+  width: 8px;
+  display: block !important;
+}
+
+.search-filters-content::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.search-filters-content::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 4px;
+}
+
+.search-filters-content::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-option {
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-option:hover {
+  background: #e5e5e5;
+  border-color: #d4d4d4;
+}
+
+.filter-option.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.filter-color-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.filter-color-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.filter-color-option:hover {
+  background: #e5e5e5;
+  border-color: #d4d4d4;
+}
+
+.filter-color-option.active {
+  background: #f0f0f0;
+  border-color: #111;
+  border-width: 2px;
+}
+
+.filter-color-swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.filter-color-label {
+  flex: 1;
+  font-weight: 500;
+  color: #111;
+}
+
+.filter-date-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-date-input-group label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #767676;
+}
+
+.filter-date-input-group input {
+  padding: 8px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.filter-date-input-group input:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.search-filters-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.filter-reset-btn,
+.filter-apply-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-reset-btn {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.filter-reset-btn:hover:not(:disabled) {
+  background: #e5e5e5;
+}
+
+.filter-reset-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.filter-apply-btn {
+  background: #111;
+  color: #fff;
+}
+
+.filter-apply-btn:hover {
+  background: #333;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-filters-panel {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 80vh;
+  }
+
+  .search-filters-content {
+    padding: 16px;
+  }
+
+  .filter-color-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

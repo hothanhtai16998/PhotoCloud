@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"
+    />
+    <meta
+      name="description"
+      content="PhotoApp - Discover and share beautiful high-quality photos. Browse thousands of free images, upload your own photos, and build your photography portfolio."
+    />
+    <meta
+      name="keywords"
+      content="photos, images, photography, free images, stock photos, photo sharing"
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Upload</title>
+    <!-- Performance: Preconnect to external domains -->
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <!-- Performance: Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Performance: Load critical fonts with font-display swap (no inline handlers for CSP compliance) -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700&family=Proxima+Nova:wght@400;500;600&display=swap"
+    />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* CRITICAL: Hide scrollbar IMMEDIATELY on page load to prevent flash */
+      /* Must be in <head> and load BEFORE any other CSS */
+      /* This prevents scrollbar from appearing during page refresh */
+      html {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        scrollbar-gutter: stable !important;
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE and Edge */
+      }
+      html::-webkit-scrollbar {
+        display: none !important; /* Chrome, Safari, Opera */
+        width: 0 !important;
+        height: 0 !important;
+      }
+      body {
+        overflow-y: visible !important;
+        overflow-x: hidden !important;
+      }
+      /* Hide scrollbars on all elements to prevent any flash */
+      * {
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE and Edge */
+      }
+      *::-webkit-scrollbar {
+        display: none !important; /* Chrome, Safari, Opera */
+        width: 0 !important;
+        height: 0 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,61 @@
+
+/* ===== IMAGE ACTIONS ===== */
+.image-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+.image-item:hover .image-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.image-action-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.image-action-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.image-action-btn:active {
+  transform: scale(0.95);
+}
+
+.image-action-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Bookmark button states */
+.image-action-btn.bookmarked {
+  background: rgba(239, 68, 68, 0.95);
+  color: white;
+}
+
+.image-action-btn.bookmarked:hover {
+  background: rgba(239, 68, 68, 1);
+}

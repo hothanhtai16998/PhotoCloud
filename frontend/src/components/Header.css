@@ -1,0 +1,1136 @@
+/* Unsplash-style Header */
+/* Header height is now defined in index.css root variables */
+
+.unsplash-header {
+  background: var(--color-bg-primary, #fff);
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header, 1500);
+  width: 100%;
+  height: var(--header-height);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Remove header border when category navigation is sticky */
+.unsplash-header.category-nav-sticky {
+  border-bottom: none;
+}
+
+.header-top {
+  padding: 0; /* Remove padding to reduce height */
+  border-bottom: 1px solid #e5e5e5;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.3s ease;
+}
+
+/* Remove header-top border when category navigation is sticky */
+.unsplash-header.category-nav-sticky .header-top {
+  border-bottom: none;
+}
+
+.header-container {
+  /* Make container fluid on narrow viewports while keeping the
+     original max width on large screens. */
+  max-width: min(1600px, 96%);
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  gap: 24px;
+  height: 100%;
+  width: 100%;
+}
+
+/* Logo */
+.header-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.header-logo:hover {
+  opacity: 0.85;
+}
+
+.header-logo-selector-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: #767676;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+}
+
+.header-logo-container:hover .header-logo-selector-btn {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .header-logo-selector-btn {
+    opacity: 0.7;
+  }
+}
+
+.header-logo-selector-btn:hover {
+  background: #f5f5f5;
+  color: #111;
+}
+
+.header-logo-selector-btn:active {
+  transform: scale(0.95);
+}
+
+/* Search Bar Container */
+.search-bar-container {
+  /* Keep positioning but leave sizing to SearchBar.css to avoid
+     duplicate/conflicting width rules. This prevents cascade conflicts
+     and allows the SearchBar to use a responsive `clamp()` width. */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-header, 1500);
+}
+
+/* Search Bar */
+.header-search {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d1d1;
+  border-radius: 20px;
+  padding: 0;
+  transition: all 0.2s ease;
+  position: relative;
+  width: 100%;
+  background: #fff;
+}
+
+.header-search:focus-within {
+  background: #fff;
+  border-color: #999;
+}
+
+.search-icon-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: #767676;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px 8px;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #111;
+  background: transparent;
+}
+
+.search-input::placeholder {
+  color: #767676;
+}
+
+.search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  color: #767676;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-clear:hover {
+  color: #111;
+}
+
+.search-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  color: #767676;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+  border-left: 1px solid #e5e5e5;
+}
+
+.search-visual:hover {
+  color: #111;
+}
+
+/* Search Filters Wrapper - Inside form */
+.search-filters-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-left: 1px solid #e5e5e5;
+  padding-left: 8px;
+  margin-left: 8px;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.header-link {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #111;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-link:hover {
+  color: #767676;
+}
+
+.header-button {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #111;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid #d1d1d1;
+  border-radius: 6px;
+  background: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.header-button:hover {
+  border-color: #111;
+  background: #fafafa;
+}
+
+/* Upload Button */
+.header-upload-button {
+  padding: 8px 16px !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  font-weight: 400 !important;
+}
+
+.header-upload-button:hover {
+  border-color: #111 !important;
+  background: #fafafa !important;
+  color: #111 !important;
+}
+
+.header-upload-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* User Menu */
+.user-menu-trigger {
+  padding: 2px;
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  line-height: 0;
+  position: relative;
+  /* Prevent layout shifts when clicking - use transform that doesn't affect layout */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.user-menu-trigger:hover {
+  border-color: #d1d1d1;
+  background-color: #fafafa;
+  transform: translateZ(0) scale(1.05);
+}
+
+.user-menu-trigger:active {
+  transform: translateZ(0) scale(0.98);
+}
+
+/* When modal is open, prevent transforms from causing layout shifts */
+body.scroll-locked .user-menu-trigger {
+  /* Use more stable transforms that don't affect modal positioning */
+  transform: translateZ(0);
+}
+
+body.scroll-locked .user-menu-trigger:hover {
+  transform: translateZ(0) scale(1.02);
+}
+
+body.scroll-locked .user-menu-trigger:active {
+  transform: translateZ(0) scale(0.99);
+}
+
+.user-menu-trigger:focus {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+.user-menu-trigger[data-state='open'] {
+  border-color: #111;
+  background-color: #f5f5f5;
+}
+
+.user-menu-trigger .avatar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.header-user-avatar,
+.header-user-avatar-placeholder {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.header-user-avatar {
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.user-menu-trigger:hover .header-user-avatar {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #f5f5f5;
+}
+
+.header-user-avatar-placeholder {
+  background: linear-gradient(135deg, #111 0%, #333 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.user-menu-trigger:hover .header-user-avatar-placeholder {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: #f5f5f5;
+  background: linear-gradient(135deg, #000 0%, #222 100%);
+}
+
+.user-menu-content {
+  min-width: 200px;
+  max-width: min(200px, calc(100vw - 24px));
+  background: #fff !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  padding: 8px !important;
+  margin-top: 8px;
+  animation: slideDownFade 0.2s ease-out;
+  transform-origin: top right !important;
+  z-index: var(--z-modal-content, 2002) !important; /* Higher than header z-index */
+  /* Ensure dropdown doesn't cause horizontal overflow on desktop */
+  /* Prevent layout shifts when modal is open */
+  will-change: opacity, transform;
+  contain: layout style paint;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* Dropdown is already fixed via Radix UI Portal - don't override */
+}
+
+/* Prevent dropdown from causing layout shifts when modal is open */
+body.scroll-locked .user-menu-content {
+  /* Ensure dropdown respects modal's scroll lock state */
+  /* Don't interfere with body's padding-right compensation */
+  isolation: isolate !important;
+  /* Prevent any layout recalculation from affecting the modal */
+  transform: translateZ(0) !important;
+  /* Lock dropdown position to prevent recalculation */
+  contain: strict !important;
+  /* Ensure dropdown doesn't trigger layout recalculations */
+  position: fixed !important;
+  /* Prevent scrollbar changes from affecting dropdown */
+  overflow: visible !important;
+  /* Lock dimensions to prevent recalculation */
+  min-width: 200px !important;
+  max-width: min(200px, calc(100vw - 24px)) !important;
+  /* Prevent any positioning recalculation */
+  will-change: auto !important;
+}
+
+@media (min-width: 769px) {
+  .user-menu-content {
+    right: 0 !important;
+    left: auto !important;
+  }
+}
+
+/* Mobile: Position menu below avatar */
+@media (max-width: 768px) {
+  .user-menu-content {
+    transform-origin: top left !important;
+    /* Let Radix UI handle positioning, but ensure it doesn't overflow */
+    max-width: min(200px, calc(100vw - 24px)) !important;
+  }
+
+  /* Target Radix UI data attributes for mobile positioning */
+  .user-menu-content[data-side='bottom'][data-align='start'] {
+    transform-origin: top left !important;
+  }
+
+  /* Reduce padding for menu items on mobile */
+  .user-menu-content [data-slot='dropdown-menu-item'] {
+    padding: 4px 8px !important;
+    margin: 0.5px 0 !important;
+    font-size: 0.875rem !important; /* Slightly smaller font */
+    min-height: auto !important;
+  }
+
+  /* Reduce gap between icon and text on mobile */
+  .user-menu-content [data-slot='dropdown-menu-item'] a {
+    gap: 6px !important;
+  }
+
+  /* Reduce icon size on mobile */
+  .user-menu-content [data-slot='dropdown-menu-item'] svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Reduce overall menu padding on mobile */
+  .user-menu-content {
+    padding: 4px 6px !important;
+  }
+}
+
+@keyframes slideDownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.user-menu-content [data-slot='dropdown-menu-item'] {
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  margin: 2px 0 !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+  cursor: pointer;
+  font-size: 0.9375rem !important;
+  font-weight: 400;
+  color: #111 !important;
+  /* Prevent layout shifts on hover - use GPU-accelerated properties only */
+  will-change: background-color;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* Ensure item doesn't cause layout reflow */
+  contain: layout style;
+  /* Lock dimensions to prevent recalculation */
+  min-height: auto;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.user-menu-content [data-slot='dropdown-menu-item']:hover {
+  background: #f5f5f5 !important;
+  color: #111 !important;
+  /* Prevent any transform or layout changes on hover */
+  transform: translateZ(0) !important;
+  /* Lock dimensions on hover */
+  padding: 10px 12px !important;
+  margin: 2px 0 !important;
+}
+
+/* When modal is open, ensure dropdown items don't cause any layout shifts */
+body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item'] {
+  /* Lock item dimensions to prevent layout recalculation */
+  contain: strict !important;
+  transform: translateZ(0) !important;
+  /* Force stable dimensions */
+  min-height: 38px !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+  /* Prevent any layout changes */
+  position: relative !important;
+  isolation: isolate !important;
+}
+
+body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
+  transform: translateZ(0) !important;
+  /* Maintain exact same dimensions on hover */
+  padding: 10px 12px !important;
+  margin: 2px 0 !important;
+  min-height: 38px !important;
+  /* Prevent any layout recalculation */
+  contain: strict !important;
+}
+
+.user-menu-content [data-slot='dropdown-menu-item']:active {
+  background: #e5e5e5 !important;
+}
+
+.user-menu-content
+  [data-slot='dropdown-menu-item']
+  [data-slot='dropdown-menu-item'] {
+  margin: 0;
+}
+
+.user-menu-content [data-slot='dropdown-menu-item'] svg {
+  width: 18px !important;
+  height: 18px !important;
+  color: #767676 !important;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.user-menu-content [data-slot='dropdown-menu-item']:hover svg {
+  color: #111 !important;
+}
+
+.user-menu-content [data-slot='dropdown-menu-item'] a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-menu-content
+  [data-slot='dropdown-menu-item'][data-variant='destructive'] {
+  color: #dc2626 !important;
+  margin-top: 4px;
+}
+
+.user-menu-content
+  [data-slot='dropdown-menu-item'][data-variant='destructive']:hover {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.user-menu-content
+  [data-slot='dropdown-menu-item'][data-variant='destructive']
+  svg {
+  color: #dc2626 !important;
+}
+
+.user-menu-content
+  [data-slot='dropdown-menu-item'][data-variant='destructive']:hover
+  svg {
+  color: #b91c1c !important;
+}
+
+.user-menu-content [data-slot='dropdown-menu-separator'] {
+  margin: 6px 0 !important;
+  background: #e5e5e5 !important;
+  height: 1px !important;
+}
+
+/* Category Navigation */
+.header-categories {
+  padding: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.header-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.category-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 12px 20px;
+  min-width: max-content;
+}
+
+.category-link {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #767676;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.category-link:hover {
+  color: #111;
+}
+
+.category-link.active {
+  color: #111;
+  font-weight: 500;
+}
+
+.category-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #111;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .header-container {
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  .search-bar-container {
+    max-width: min(400px, 96%);
+    /* Use clamp so the search bar scales between a reasonable minimum
+       and the media max without forcing large min-widths that cause overlap */
+    width: clamp(160px, 40%, 400px);
+    min-width: 140px;
+  }
+
+  .header-actions {
+    gap: 12px;
+  }
+
+  .category-nav {
+    gap: 24px;
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-wrap: nowrap; /* Don't wrap on mobile */
+    padding: 0 12px;
+    gap: 12px;
+  }
+
+  .header-logo {
+    font-size: 1.125rem;
+  }
+
+  .header-logo-container {
+    display: flex;
+    align-items: center; /* Ensure vertical centering */
+    gap: 8px;
+  }
+
+  .search-bar-container {
+    /* Search bar positioning handled by SearchBar.css - it's in normal flow on mobile */
+    /* Keep it visible, SearchBar.css will position it correctly */
+  }
+
+  .header-actions {
+    margin-left: auto;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .header-link,
+  .header-button {
+    font-size: 0.875rem;
+    min-height: 44px; /* Better touch target */
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .header-button {
+    padding: 8px 14px;
+  }
+
+  .category-nav {
+    gap: 20px;
+    padding: 10px 12px;
+  }
+
+  .category-link {
+    font-size: 0.8125rem;
+    min-height: 44px; /* Better touch target */
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .unsplash-header {
+    border: 0;
+  }
+  .header-top {
+    padding-top: 0;
+    border: 0;
+  }
+  .header-container {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .header-logo {
+    font-size: 1rem;
+  }
+
+  .header-actions {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .header-link {
+    font-size: 0.8125rem;
+    padding: 6px 8px;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+
+  /* Only hide text on icon-only links, keep icons visible */
+  .header-link:has(svg):not(:has(span)) {
+    padding: 8px;
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  /* Keep text visible but make it smaller for links with both icon and text */
+  .header-link:has(svg):has(span) {
+    gap: 4px;
+  }
+
+  .header-link:has(svg):has(span) span {
+    font-size: 0.75rem;
+  }
+
+  .header-button {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+
+  .search-input {
+    font-size: 0.875rem;
+    padding: 8px 6px;
+  }
+
+  .search-icon-left {
+    padding: 0 8px;
+  }
+
+  .search-visual {
+    padding: 8px;
+  }
+  .search-bar-container {
+    margin-top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .search-filters-wrapper {
+    padding-left: 4px;
+    margin-left: 4px;
+  }
+
+  .mobile-menu-button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+}
+
+/* Mobile Menu Button */
+.mobile-menu-button {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #111;
+  cursor: pointer;
+  padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu-button:focus {
+  outline: 2px solid #111;
+  outline-offset: 2px;
+}
+
+/* Desktop Only - Hide on mobile */
+@media (max-width: 768px) {
+  .unsplash-header {
+    border: 0;
+  }
+  .header-top {
+    padding-top: 0;
+    border: 0;
+  }
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    order: 2;
+  }
+
+  .header-logo {
+    order: 1;
+  }
+
+  .mobile-menu-button {
+    display: flex;
+  }
+
+  .search-bar-container {
+    order: 3;
+  }
+}
+
+/* Mobile Header Icons */
+.mobile-header-actions {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mobile-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #111;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-header-icon:hover,
+.mobile-header-icon:active {
+  background: #f5f5f5;
+}
+
+.mobile-header-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-header-icon-wrapper .notification-bell-wrapper {
+  position: relative;
+}
+
+.mobile-header-icon-wrapper .notification-bell-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.mobile-header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.mobile-header-avatar-placeholder {
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .mobile-header-actions {
+    display: flex;
+  }
+}
+
+/* Mobile Menu Modal - Unsplash Style (No Overlay) */
+.mobile-menu-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 90vw;
+  background: var(--color-bg-primary, #fff);
+  z-index: var(--z-header, 1500);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.3s ease;
+  overflow-y: auto;
+  /* No overlay - background content remains visible */
+}
+
+.mobile-menu-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #111;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu-close:hover,
+.mobile-menu-close:active {
+  background: #f5f5f5;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobile-menu-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px 0;
+  padding-top: 64px; /* Space for close button */
+}
+
+/* Navigation Section */
+.mobile-menu-section {
+  flex: 1;
+  padding: 0;
+}
+
+.mobile-menu-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  color: #111;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-menu-nav-item:hover,
+.mobile-menu-nav-item:active {
+  background: #f5f5f5;
+}
+
+.mobile-menu-nav-item svg:first-child {
+  flex-shrink: 0;
+  color: #767676;
+}
+
+.mobile-menu-nav-item span {
+  flex: 1;
+}
+
+.mobile-menu-arrow {
+  flex-shrink: 0;
+  color: #767676;
+  margin-left: auto;
+}
+
+/* Actions Section */
+.mobile-menu-actions {
+  padding: 20px;
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-menu-button-primary {
+  width: 100%;
+  padding: 12px 20px;
+  background: #767676;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-menu-button-primary:hover,
+.mobile-menu-button-primary:active {
+  background: #666;
+}
+
+.mobile-menu-button-secondary {
+  width: 100%;
+  padding: 12px 20px;
+  background: transparent;
+  color: #111;
+  border: 1px solid #d1d1d1;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  display: block;
+}
+
+.mobile-menu-button-secondary:hover,
+.mobile-menu-button-secondary:active {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.mobile-menu-signup-text {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #767676;
+  margin-top: 8px;
+}
+
+.mobile-menu-signup-text a {
+  color: #111;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+/* Language Switcher */
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #d1d1d1;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.language-switcher:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+/* Language Switcher as menu item */
+.language-switcher-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.language-switcher-menu-item:hover {
+  background: #f5f5f5;
+}
+
+/* Mobile menu language switcher */
+.mobile-language-switcher {
+  border: none !important;
+  background: transparent !important;
+  padding: 16px 24px !important;
+  font-size: 1rem !important;
+  color: #111 !important;
+  justify-content: flex-start !important;
+}
+
+.mobile-language-switcher:hover {
+  background: #f5f5f5 !important;
+}

@@ -1,0 +1,94 @@
+/* Author Banner - Mobile/Page Mode */
+
+.image-modal-author-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 24px;
+  background: #fff;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-author-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-author-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Desktop: Hide author banner when modal header is shown (modal mode) */
+@media (min-width: 769px) {
+  .image-modal:not(.image-modal-page) .image-modal-author-banner {
+    display: none;
+  }
+
+  /* Author banner styling for desktop page mode */
+  .image-modal.image-modal-page .image-modal-author-banner {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e5e5;
+    position: sticky;
+    top: var(--header-height, 56px);
+    z-index: 10;
+    transition: transform 0.3s ease-in-out;
+    background: #fff;
+  }
+
+  /* Slide up animation when header is hidden */
+  .image-modal.image-modal-page .image-modal-author-banner.header-hidden {
+    transform: translateY(-100%);
+  }
+
+  /* In page mode, let the whole page scroll, not just the content container */
+  .image-modal.image-modal-page .image-modal-content {
+    overflow-y: visible;
+    max-height: none;
+    height: auto;
+  }
+
+  .image-modal.image-modal-page .modal-author-banner-left {
+    gap: 12px;
+  }
+
+  .image-modal.image-modal-page .image-modal-author-banner .modal-user-avatar,
+  .image-modal.image-modal-page
+    .image-modal-author-banner
+    .modal-user-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+
+  .image-modal.image-modal-page .image-modal-author-banner .modal-user-name {
+    font-size: 1rem;
+  }
+
+  .image-modal.image-modal-page .image-modal-author-banner .modal-user-status {
+    font-size: 0.875rem;
+  }
+
+  .modal-author-banner-right {
+    gap: 6px;
+  }
+
+  .modal-author-banner-right .modal-action-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .image-modal-content {
+    padding-bottom: 12px;
+  }
+}
+

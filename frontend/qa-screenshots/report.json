@@ -1,0 +1,65 @@
+[
+  {
+    "test": "360-mobile-Home",
+    "status": "✅ PASS",
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "screenshot": "qa-screenshots\\360-mobile-Home.png"
+  },
+  {
+    "test": "480-wide-Home",
+    "status": "✅ PASS",
+    "scrollWidth": 480,
+    "clientWidth": 480,
+    "screenshot": "qa-screenshots\\480-wide-Home.png"
+  },
+  {
+    "test": "768-tablet-Home",
+    "status": "✅ PASS",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "screenshot": "qa-screenshots\\768-tablet-Home.png"
+  },
+  {
+    "test": "360-mobile-Admin",
+    "status": "✅ PASS",
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "screenshot": "qa-screenshots\\360-mobile-Admin.png"
+  },
+  {
+    "test": "480-wide-Admin",
+    "status": "✅ PASS",
+    "scrollWidth": 480,
+    "clientWidth": 480,
+    "screenshot": "qa-screenshots\\480-wide-Admin.png"
+  },
+  {
+    "test": "768-tablet-Admin",
+    "status": "✅ PASS",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "screenshot": "qa-screenshots\\768-tablet-Admin.png"
+  },
+  {
+    "test": "360-mobile-EditProfile",
+    "status": "✅ PASS",
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "screenshot": "qa-screenshots\\360-mobile-EditProfile.png"
+  },
+  {
+    "test": "480-wide-EditProfile",
+    "status": "✅ PASS",
+    "scrollWidth": 480,
+    "clientWidth": 480,
+    "screenshot": "qa-screenshots\\480-wide-EditProfile.png"
+  },
+  {
+    "test": "768-tablet-EditProfile",
+    "status": "✅ PASS",
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "screenshot": "qa-screenshots\\768-tablet-EditProfile.png"
+  }
+]

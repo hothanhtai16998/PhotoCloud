@@ -1,0 +1,207 @@
+.contact-button-container {
+  position: fixed;
+  bottom: 60px;
+  right: 30px;
+  z-index: 999;
+}
+
+.contact-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background: #17b87c;
+  border: 2px solid #17b87c;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  font-family: inherit;
+  color: #111;
+  position: relative;
+}
+
+.contact-button::before,
+.contact-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid #17b87c;
+  background: transparent;
+}
+
+.contact-button::before {
+  animation: ripple 2s linear infinite;
+}
+
+.contact-button::after {
+  animation: ripple 2s linear 1s infinite;
+}
+
+@keyframes ripple {
+  to {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+.contact-button:active {
+  transform: scale(0.95);
+}
+
+.contact-button-text {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: rgb(24, 24, 24);
+}
+
+.contact-button-text.shaking {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes wait {
+  0%,
+  3.8% {
+    animation-timing-function: linear;
+  }
+  3.8%,
+  100% {
+    animation-timing-function: step-start;
+  }
+}
+
+.contact-social-menu {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.contact-social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  color: #111;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.contact-social-icon:hover {
+  transform: scale(1.15) translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.contact-social-icon.facebook:hover {
+  color: #1877f2;
+  border-color: #1877f2;
+}
+
+.contact-social-icon.twitter:hover {
+  color: #000;
+  border-color: #000;
+}
+
+.contact-social-icon.instagram:hover {
+  color: #e4405f;
+  border-color: #e4405f;
+}
+
+.contact-social-icon.tiktok:hover {
+  color: #000;
+  border-color: #000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contact-button-container {
+    bottom: 80px;
+    right: 16px;
+    z-index: 998; /* Below admin mobile menu but above content */
+  }
+
+  .contact-button {
+    width: 56px;
+    height: 56px;
+    font-size: 0.8125rem;
+  }
+
+  .contact-button-text {
+    font-size: 0.6875rem;
+  }
+
+  .contact-social-icon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .contact-social-menu {
+    bottom: 70px;
+    right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-button-container {
+    bottom: 70px;
+    right: 12px;
+  }
+
+  .contact-button {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .contact-button-text {
+    font-size: 0.625rem;
+  }
+}

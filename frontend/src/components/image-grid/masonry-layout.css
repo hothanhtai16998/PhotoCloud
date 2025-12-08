@@ -1,0 +1,513 @@
+/* Masonry Grid - Unsplash Style with Portrait and Landscape */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 24px;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  auto-rows: 200px; /* Base row height */
+}
+
+.masonry-grid.transitioning {
+  opacity: 1; /* Keep fully visible during transition */
+  /* Old images fade out, new ones fade in smoothly */
+}
+
+.masonry-grid.transitioning .masonry-item {
+  transition: opacity 0.4s ease;
+}
+
+/* Smooth transition when category changes */
+.masonry-grid.transitioning {
+  pointer-events: none; /* Prevent interaction during transition */
+  position: relative;
+}
+
+.masonry-grid.transitioning .masonry-item {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+/* Fading out images (old category) - stay in grid but fade out */
+.masonry-item.fading-out {
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+/* Ensure smooth fade-in when new images appear */
+.masonry-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f0f0f0;
+  aspect-ratio: auto;
+  min-height: 200px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  /* Let image determine height naturally */
+  grid-row-end: span var(--row-span, 1);
+}
+/* Prevent flash during category change */
+.masonry-grid {
+  min-height: 200px; /* Prevent layout shift */
+}
+
+/* Masonry Items */
+.masonry-item {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f0f0f0;
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  grid-column: span 1;
+}
+
+/* Portrait images - taller (span 2 rows) */
+.masonry-item.portrait {
+  grid-row: span 2;
+  aspect-ratio: 3 / 4;
+}
+
+/* Landscape images - shorter (span 1 row) */
+.masonry-item.landscape {
+  grid-row: span 1;
+  aspect-ratio: 4 / 3;
+}
+
+/* Square images */
+.masonry-item.square {
+  grid-row: span 1;
+  aspect-ratio: 1 / 1;
+}
+
+.masonry-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.masonry-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  line-height: 0;
+}
+
+.masonry-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+}
+
+/* Ensure progressive image wrapper fills the container */
+.masonry-item .progressive-image-wrapper {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.masonry-item .progressive-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.masonry-item:hover img {
+  opacity: 0.9;
+}
+
+/* Masonry Overlay */
+.masonry-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0);
+  opacity: 0;
+  transition: opacity 0.3s ease, background 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+}
+
+.masonry-item:hover .masonry-overlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: all;
+}
+
+/* Image Info - Bottom Left */
+.masonry-overlay .image-info {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 15;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.masonry-item:hover .masonry-overlay .image-info {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.masonry-overlay .author-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.masonry-overlay .author-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111;
+}
+
+/* Image Actions */
+.masonry-overlay .image-actions {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.masonry-item:hover .masonry-overlay .image-actions {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Fading out animation for category transitions */
+.masonry-item.fading-out {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.masonry-item.fading-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (max-width: 1024px) {
+  .masonry-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+    auto-rows: 180px;
+  }
+
+  .masonry-item.portrait {
+    grid-row: span 2;
+  }
+
+  .masonry-item.landscape {
+    grid-row: span 1;
+  }
+
+  .masonry-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px; /* Increased gap */
+  }
+
+  .masonry-item.portrait {
+    grid-row: span 28; /* Reduced from 35 */
+  }
+
+  .masonry-item.landscape {
+    grid-row: span 14; /* Reduced from 18 to make landscape images shorter */
+  }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 768px) {
+  .masonry-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+    auto-rows: auto;
+  }
+
+  .masonry-item.portrait {
+    grid-row: auto;
+  }
+
+  .masonry-item.landscape {
+    grid-row: auto;
+  }
+
+  .masonry-overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.2);
+    pointer-events: all;
+  }
+
+  .masonry-overlay .image-info {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .masonry-overlay .image-actions {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .masonry-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    padding: 16px;
+  }
+  .image-title-tooltip {
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  .image-actions {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .masonry-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .masonry-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px; /* Increased gap */
+    grid-auto-rows: auto; /* Let rows size based on content */
+  }
+
+  .masonry-item.portrait {
+    grid-row: auto; /* Let portrait images size naturally */
+  }
+
+  .masonry-item.landscape {
+    grid-row: auto; /* Let landscape images size naturally */
+  }
+}
+
+/* Mobile: Three-block layout (Author, Image, Buttons) */
+@media (max-width: 768px) {
+  .masonry-item {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 0;
+    overflow: hidden;
+    min-height: 0; /* Allow flex items to shrink */
+    height: auto; /* Allow item to size based on content */
+  }
+
+  /* Author Block (Top) */
+  .masonry-item-author-mobile {
+    display: flex;
+    padding: 12px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .masonry-item-author-mobile .image-author-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .masonry-item-author-mobile .author-avatar,
+  .masonry-item-author-mobile .author-avatar-placeholder {
+    width: 32px !important;
+    height: 32px !important;
+    flex-shrink: 0;
+  }
+
+  .masonry-item-author-mobile .author-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .masonry-item-author-mobile .image-author-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: none;
+  }
+
+  .masonry-item-author-mobile .author-bio {
+    font-size: 0.75rem;
+    color: #767676;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: none;
+  }
+
+  /* Image Block (Middle) - Remove padding/margin */
+  .masonry-link {
+    flex: 1;
+    min-height: 0;
+    display: block;
+    position: relative;
+    width: 100%;
+  }
+
+  .masonry-item img,
+  .masonry-item .progressive-image-wrapper,
+  .masonry-item .progressive-image {
+    width: 100%;
+    height: auto !important; /* Maintain natural aspect ratio */
+    object-fit: contain; /* Show full image without cropping */
+    display: block;
+    min-height: 0;
+  }
+
+  .masonry-item .progressive-image-wrapper {
+    height: auto;
+  }
+
+  /* Hide desktop overlay elements on mobile */
+  .masonry-overlay .image-info {
+    display: none !important;
+  }
+
+  .masonry-overlay {
+    display: none !important;
+  }
+
+  /* Buttons Block (Bottom) */
+  .masonry-item-actions-mobile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .mobile-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #e5e5e5;
+    background: #fff;
+    color: #111;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .mobile-action-btn:hover {
+    background: #f5f5f5;
+    border-color: #d1d1d1;
+  }
+
+  .mobile-action-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .mobile-action-btn.favorite-btn.favorited {
+    background: #fff;
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+
+  .mobile-action-btn.favorite-btn.favorited .favorite-icon-filled {
+    color: #ef4444;
+  }
+
+  .mobile-action-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Desktop: Hide mobile blocks */
+@media (min-width: 769px) {
+  .masonry-item-author-mobile,
+  .masonry-item-actions-mobile {
+    display: none;
+  }
+}
+
+.masonry-item:hover .image-actions {
+  opacity: 1;
+}
+
+.masonry-item:hover .image-location-badge,
+.image-item:hover .image-location-badge {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.masonry-item:hover .image-title-tooltip {
+  opacity: 1;
+}

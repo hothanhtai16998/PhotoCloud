@@ -1,0 +1,202 @@
+[
+  {
+    "route": "Home",
+    "path": "/",
+    "breakpoint": "360-mobile",
+    "width": 360,
+    "status": "❌ ERROR: page.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"networkidle\"\u001b[22m\n",
+    "screenshotFile": null
+  },
+  {
+    "route": "Home",
+    "path": "/",
+    "breakpoint": "375-iphone",
+    "width": 375,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\T\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1200\\chrome-headless-shell-win64\\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-extensions --disable-features=AcceptCHFrame,AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --enable-automation --disable-infobars --disable-search-engine-choice-screen --disable-sync --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\T\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-eeyS8d --remote-debugging-pipe --no-startup-window\n<launched> pid=23072\n[pid=23072][err] [1130/164458.812:INFO:CONSOLE:733] \"[vite] connecting...\", source: http://localhost:5173/@vite/client (733)\n[pid=23072][err] [1130/164458.835:INFO:CONSOLE:20103] \"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold\", source: http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=cb56184a (20103)\n[pid=23072][err] [1130/164458.878:INFO:CONSOLE:827] \"[vite] connected.\", source: http://localhost:5173/@vite/client (827)\n[pid=23072] <gracefully close start>",
+    "screenshotFile": null
+  },
+  {
+    "route": "Home",
+    "path": "/",
+    "breakpoint": "412-pixel",
+    "width": 412,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Home",
+    "path": "/",
+    "breakpoint": "480-mobile-wide",
+    "width": 480,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Home",
+    "path": "/",
+    "breakpoint": "768-tablet",
+    "width": 768,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Admin",
+    "path": "/admin",
+    "breakpoint": "360-mobile",
+    "width": 360,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Admin",
+    "path": "/admin",
+    "breakpoint": "375-iphone",
+    "width": 375,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Admin",
+    "path": "/admin",
+    "breakpoint": "412-pixel",
+    "width": 412,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Admin",
+    "path": "/admin",
+    "breakpoint": "480-mobile-wide",
+    "width": 480,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Admin",
+    "path": "/admin",
+    "breakpoint": "768-tablet",
+    "width": 768,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "EditProfile",
+    "path": "/profile/edit",
+    "breakpoint": "360-mobile",
+    "width": 360,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "EditProfile",
+    "path": "/profile/edit",
+    "breakpoint": "375-iphone",
+    "width": 375,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "EditProfile",
+    "path": "/profile/edit",
+    "breakpoint": "412-pixel",
+    "width": 412,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "EditProfile",
+    "path": "/profile/edit",
+    "breakpoint": "480-mobile-wide",
+    "width": 480,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "EditProfile",
+    "path": "/profile/edit",
+    "breakpoint": "768-tablet",
+    "width": 768,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Collections",
+    "path": "/collections",
+    "breakpoint": "360-mobile",
+    "width": 360,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Collections",
+    "path": "/collections",
+    "breakpoint": "375-iphone",
+    "width": 375,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Collections",
+    "path": "/collections",
+    "breakpoint": "412-pixel",
+    "width": 412,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Collections",
+    "path": "/collections",
+    "breakpoint": "480-mobile-wide",
+    "width": 480,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Collections",
+    "path": "/collections",
+    "breakpoint": "768-tablet",
+    "width": 768,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Profile",
+    "path": "/profile",
+    "breakpoint": "360-mobile",
+    "width": 360,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Profile",
+    "path": "/profile",
+    "breakpoint": "375-iphone",
+    "width": 375,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Profile",
+    "path": "/profile",
+    "breakpoint": "412-pixel",
+    "width": 412,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Profile",
+    "path": "/profile",
+    "breakpoint": "480-mobile-wide",
+    "width": 480,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  },
+  {
+    "route": "Profile",
+    "path": "/profile",
+    "breakpoint": "768-tablet",
+    "width": 768,
+    "status": "❌ ERROR: browser.newPage: Target page, context or browser has been closed",
+    "screenshotFile": null
+  }
+]
