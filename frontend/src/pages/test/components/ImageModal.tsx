@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from 'react';
 import api from '@/lib/axios';
 import type { Image } from '@/types/image';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag } from 'lucide-react';
@@ -21,6 +21,10 @@ import cameraIcon from '@/assets/camera.svg';
 import dateIcon from '@/assets/date.svg';
 import { preloadImage, loadedImages } from '../utils/imagePreloader';
 import { ImageModalInfo } from '@/components/image/ImageModalInfo';
+import { BlurUpImage } from './BlurUpImage';
+import { GRID_CONFIG } from '../constants/gridConfig';
+import { calculateImageLayout, getColumnCount } from '../utils/gridLayout';
+import { loadImageDimensions } from '../utils/imageDimensions';
 import '@/components/image/modal-info.css';
 import '@/components/image/modal-footer.css';
 import './ImageModal.css';
@@ -145,6 +149,154 @@ export function ImageModal({
     const { user } = useUserStore();
     const isFavorited = useBatchedFavoriteCheck(img?._id);
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+
+    // Related images grid layout state
+    const relatedImages = useMemo(() => {
+        return images.filter((_, i) => i !== index).slice(0, 8);
+    }, [images, index]);
+    const relatedGridRef = useRef<HTMLDivElement | null>(null);
+    const [relatedColumnCount, setRelatedColumnCount] = useState(() => {
+        if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
+        return getColumnCount(window.innerWidth);
+    });
+    const [relatedContainerWidth, setRelatedContainerWidth] = useState(1400);
+    const [relatedImageDimensions, setRelatedImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
+
+    // Load dimensions for related images
+    useEffect(() => {
+        const loadDimensions = async () => {
+            if (relatedImages.length === 0) return;
+
+            const dimensionsMap = new Map<string, { width: number; height: number }>();
+            const imagesToLoad: Array<{ image: ExtendedImage; url: string }> = [];
+
+            relatedImages.forEach((image) => {
+                if (relatedImageDimensions.has(image._id)) {
+                    dimensionsMap.set(image._id, relatedImageDimensions.get(image._id)!);
+                    return;
+                }
+
+                if (image.width && image.height) {
+                    dimensionsMap.set(image._id, { width: image.width, height: image.height });
+                    return;
+                }
+
+                const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                if (imageUrl) {
+                    imagesToLoad.push({ image, url: imageUrl });
+                }
+            });
+
+            if (dimensionsMap.size > 0) {
+                setRelatedImageDimensions(prev => {
+                    const merged = new Map(prev);
+                    dimensionsMap.forEach((value, key) => {
+                        merged.set(key, value);
+                    });
+                    return merged;
+                });
+            }
+
+            if (imagesToLoad.length > 0) {
+                const promises = imagesToLoad.map(async ({ image, url }) => {
+                    try {
+                        const dims = await loadImageDimensions(url);
+                        if (dims) {
+                            return { id: image._id, dims };
+                        }
+                    } catch {
+                        // Silently fail
+                    }
+                    return null;
+                });
+
+                const results = await Promise.all(promises);
+                const validResults = results.filter((r): r is { id: string; dims: { width: number; height: number } } => r !== null);
+
+                if (validResults.length > 0) {
+                    setRelatedImageDimensions(prev => {
+                        const merged = new Map(prev);
+                        validResults.forEach(result => {
+                            merged.set(result.id, result.dims);
+                        });
+                        return merged;
+                    });
+                }
+            }
+        };
+
+        loadDimensions();
+    }, [relatedImages]);
+
+    // Calculate grid layout for related images
+    const relatedGridLayout = useMemo(() => {
+        if (relatedImages.length === 0 || relatedContainerWidth === 0) return [];
+
+        const gapTotal = GRID_CONFIG.gap * (relatedColumnCount - 1);
+        const columnWidth = (relatedContainerWidth - gapTotal) / relatedColumnCount;
+        const columnHeights = new Array(relatedColumnCount).fill(0);
+
+        return relatedImages.map((image) => {
+            const dimensions = relatedImageDimensions.get(image._id) || null;
+            const layout = calculateImageLayout(
+                image,
+                columnWidth,
+                GRID_CONFIG.baseRowHeight,
+                dimensions
+            );
+
+            let shortestColumnIndex = 0;
+            let shortestHeight = columnHeights[0];
+            for (let i = 1; i < relatedColumnCount; i++) {
+                if (columnHeights[i] < shortestHeight) {
+                    shortestHeight = columnHeights[i];
+                    shortestColumnIndex = i;
+                }
+            }
+
+            const column = shortestColumnIndex + 1;
+            const rowUnit = GRID_CONFIG.baseRowHeight + GRID_CONFIG.gap;
+            const rowStart = Math.max(1, Math.floor(shortestHeight / rowUnit) + 1);
+
+            columnHeights[shortestColumnIndex] = shortestHeight + layout.rowSpan * rowUnit;
+
+            return {
+                image,
+                column,
+                rowSpan: layout.rowSpan,
+                rowStart,
+                columnWidth,
+            };
+        });
+    }, [relatedImages, relatedColumnCount, relatedContainerWidth, relatedImageDimensions]);
+
+    // Update related grid column count and container width on resize
+    useEffect(() => {
+        const updateLayout = () => {
+            if (!relatedGridRef.current) return;
+            const container = relatedGridRef.current.parentElement;
+            if (container) {
+                const width = container.offsetWidth - 32;
+                setRelatedContainerWidth(Math.max(300, width));
+            }
+            const viewportWidth = window.innerWidth;
+            setRelatedColumnCount(getColumnCount(viewportWidth));
+        };
+
+        updateLayout();
+
+        let timeoutId: NodeJS.Timeout;
+        const handleResize = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(updateLayout, 150);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timeoutId);
+        };
+    }, []);
     const locale = getLocale();
     const formattedDate = useFormattedDate(img?.createdAt, {
         locale: locale === 'vi' ? 'vi-VN' : 'en-US',
@@ -1233,36 +1385,41 @@ export function ImageModal({
                         {/* Related images - outside bottom bar */}
                         <div className="image-modal-related-section">
                             <div className="image-modal-related-title">Related images</div>
-                            <div className="image-modal-related-grid">
-                                {images
-                                    .filter((_, i) => i !== index)
-                                    .slice(0, 8)
-                                    .map((related, i) => {
-                                        const originalIdx = images.findIndex((imgItem) => imgItem === related);
-                                        return (
-                                            <div
-                                                key={related._id || i}
-                                                className="image-modal-related-item"
+                            <div
+                                ref={relatedGridRef}
+                                className="image-modal-related-grid"
+                                style={{
+                                    gridTemplateColumns: `repeat(${relatedColumnCount}, 1fr)`,
+                                    gap: `${GRID_CONFIG.gap}px`,
+                                    gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
+                                }}
+                            >
+                                {relatedGridLayout.map((layout, idx) => {
+                                    const { image, column, rowSpan, rowStart } = layout;
+                                    const originalIdx = images.findIndex((imgItem) => imgItem._id === image._id);
+                                    return (
+                                        <div
+                                            key={`${image._id || idx}-${column}-${rowStart}`}
+                                            className="image-modal-related-item-wrapper"
+                                            style={{
+                                                gridColumn: column,
+                                                gridRowStart: rowStart,
+                                                gridRowEnd: `span ${rowSpan}`,
+                                                height: 'auto',
+                                            }}
+                                        >
+                                            <BlurUpImage
+                                                image={image}
                                                 onClick={() => {
                                                     if (onSelectIndex && originalIdx >= 0) {
                                                         onSelectIndex(originalIdx);
                                                     }
                                                 }}
-                                            >
-                                                {related.thumbnailUrl || related.smallUrl || related.imageUrl ? (
-                                                    <img
-                                                        src={related.thumbnailUrl || related.smallUrl || related.imageUrl}
-                                                        alt={related.imageTitle || 'related'}
-                                                        className="image-modal-related-image"
-                                                    />
-                                                ) : (
-                                                    <div className="image-modal-related-placeholder">
-                                                        No preview
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                                priority={idx < 4}
+                                            />
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
