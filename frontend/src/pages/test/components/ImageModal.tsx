@@ -155,12 +155,14 @@ export function ImageModal({
         return images.filter((_, i) => i !== index).slice(0, 8);
     }, [images, index]);
     const relatedGridRef = useRef<HTMLDivElement | null>(null);
+    const relatedSectionRef = useRef<HTMLDivElement | null>(null);
     const [relatedColumnCount, setRelatedColumnCount] = useState(() => {
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
         return getColumnCount(window.innerWidth);
     });
     const [relatedContainerWidth, setRelatedContainerWidth] = useState(1400);
     const [relatedImageDimensions, setRelatedImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
+    const [isAtRelatedSection, setIsAtRelatedSection] = useState(false);
 
     // Load dimensions for related images
     useEffect(() => {
@@ -308,6 +310,7 @@ export function ImageModal({
     const [tooltipAnimating, setTooltipAnimating] = useState(false);
     const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const authorAreaRef = useRef<HTMLDivElement | null>(null);
+    const topInfoRef = useRef<HTMLDivElement | null>(null);
     const [authorImages, setAuthorImages] = useState<ExtendedImage[]>([]);
     const [loadingAuthorImages, setLoadingAuthorImages] = useState(false);
     const [, setLocaleUpdate] = useState(0);
@@ -561,6 +564,7 @@ export function ImageModal({
         requestAnimationFrame(() => {
             setIsScrolled(false);
             setShouldAnimate(false);
+            setIsAtRelatedSection(false);
         });
 
         // Close menus when image changes
@@ -923,6 +927,22 @@ export function ImageModal({
                             // Check if scrolled past the initial spacer (16px)
                             const nowScrolled = top > 0;
 
+                            // Check if we've reached the related section
+                            if (relatedSectionRef.current && scrollRef.current) {
+                                const relatedSectionRect = relatedSectionRef.current.getBoundingClientRect();
+                                const scrollAreaRect = scrollRef.current.getBoundingClientRect();
+                                const topBarHeight = 60; // Height of the sticky top bar
+                                // The sticky top bar is at top: 0 of the scroll container
+                                // So in viewport coordinates, it's at scrollAreaRect.top
+                                // Check if the related section has reached the bottom of the top bar
+                                // This triggers the slide-up animation when the related section reaches the top bar
+                                const reachedRelated = relatedSectionRect.top <= scrollAreaRect.top + topBarHeight;
+
+                                if (reachedRelated !== isAtRelatedSection) {
+                                    setIsAtRelatedSection(reachedRelated);
+                                }
+                            }
+
                             // Only update state if it actually changed
                             if (nowScrolled !== wasScrolled) {
                                 // State is changing - enable animation before updating
@@ -941,7 +961,7 @@ export function ImageModal({
                         }}
                     >
                         {/* Top info - Sticky: starts with space, sticks to viewport top when scrolling */}
-                        <div className="image-modal-top-info">
+                        <div ref={topInfoRef} className={`image-modal-top-info ${isAtRelatedSection ? 'slide-up' : ''}`}>
                             <div
                                 ref={authorAreaRef}
                                 className="image-modal-author-area"
@@ -1023,15 +1043,18 @@ export function ImageModal({
                                 </div>
 
                                 {/* Author tooltip/popup */}
-                                {showAuthorTooltip && authorAreaRef.current && (() => {
-                                    const rect = authorAreaRef.current!.getBoundingClientRect();
+                                {showAuthorTooltip && authorAreaRef.current && topInfoRef.current && modalRef.current && (() => {
+                                    const authorRect = authorAreaRef.current!.getBoundingClientRect();
+                                    const topInfoRect = topInfoRef.current!.getBoundingClientRect();
+                                    const modalRect = modalRef.current!.getBoundingClientRect();
+                                    // Align tooltip left edge with the left edge of modal container (where the red line is)
                                     return (
                                         <div
                                             data-author-tooltip
                                             className={`image-modal-author-tooltip ${tooltipAnimating ? 'animating' : ''}`}
                                             style={{
-                                                top: `${rect.bottom + 4}px`,
-                                                left: `${rect.left}px`,
+                                                top: `${authorRect.bottom - 10}px`,
+                                                left: `${modalRect.left - 140}px`,
                                             }}
                                             onMouseEnter={() => {
                                                 // Clear any hide timeout from author area
@@ -1383,7 +1406,7 @@ export function ImageModal({
                         </div>
 
                         {/* Related images - outside bottom bar */}
-                        <div className="image-modal-related-section">
+                        <div ref={relatedSectionRef} className="image-modal-related-section">
                             <div className="image-modal-related-title">Related images</div>
                             <div
                                 ref={relatedGridRef}
