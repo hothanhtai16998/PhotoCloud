@@ -70,6 +70,7 @@ router.post('/upload', protectedRoute, uploadLimiter, singleUpload, validateImag
 router.patch('/:imageId', protectedRoute, updateImage);
 router.patch('/:imageId/replace', protectedRoute, uploadLimiter, singleUpload, replaceImage);
 router.patch('/batch/replace', protectedRoute, uploadLimiter, multipleUpload, batchReplaceImages);
-router.get('/user/:userId', protectedRoute, validateUserId, validateGetImages, getImagesByUserId);
+// Public route - get images by user ID (works for both authenticated and anonymous users)
+router.get('/user/:userId', optionalAuth, validateUserId, validateGetImages, getImagesByUserId);
 
 export default router;

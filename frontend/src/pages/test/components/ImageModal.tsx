@@ -96,6 +96,8 @@ export function ImageModal({
     const [downloads, setDownloads] = useState<number>((img as any)?.downloads || 0);
     const incrementedViewIds = useRef<Set<string>>(new Set());
     const currentImageIdRef = useRef<string | null>(img?._id || null);
+    // Track stats that have been updated via API (so we don't reset them from stale img data)
+    const apiUpdatedStats = useRef<Map<string, { views?: number; downloads?: number }>>(new Map());
     
     // No aspect ratio calculations needed - browser handles it with object-fit: contain
 
@@ -112,6 +114,10 @@ export function ImageModal({
                 .then((response) => {
                     console.log('[ImageModal] incrementView response:', response);
                     setViews(response.views);
+                    // Track that this stat was updated via API
+                    const stats = apiUpdatedStats.current.get(imageId) || {};
+                    stats.views = response.views;
+                    apiUpdatedStats.current.set(imageId, stats);
                 })
                 .catch((error: any) => {
                     // Handle rate limiting gracefully
@@ -119,6 +125,10 @@ export function ImageModal({
                         const rateLimitData = error.response.data;
                         if (rateLimitData.views !== undefined) {
                             setViews(rateLimitData.views);
+                            // Track that this stat was updated via API (even if rate limited)
+                            const stats = apiUpdatedStats.current.get(imageId) || {};
+                            stats.views = rateLimitData.views;
+                            apiUpdatedStats.current.set(imageId, stats);
                         }
                         // Show user-friendly message if available
                         if (rateLimitData.message) {
@@ -137,22 +147,54 @@ export function ImageModal({
     }, [img?._id]);
 
     // Update stats when image changes
-    // Always update to show current values from the image object
+    // Only update from img object if we don't have API-updated values for this image
     useEffect(() => {
         if (img) {
             const imageId = img._id;
             const newViews = (img as any)?.views || 0;
             const newDownloads = (img as any)?.downloads || 0;
             
-            // Always update when image changes - the API response will update with latest values
+            // Check if this is a different image
             if (currentImageIdRef.current !== imageId) {
                 currentImageIdRef.current = imageId;
                 // Reset the incremented set for the new image
                 incrementedViewIds.current.delete(imageId);
+                
+                // Check if we have API-updated stats for this image
+                const apiStats = apiUpdatedStats.current.get(imageId);
+                
+                // Only set from img object if we don't have API-updated values
+                // This prevents showing old numbers then updating to new numbers
+                if (apiStats) {
+                    // Use API-updated values if available
+                    if (apiStats.views !== undefined) {
+                        setViews(apiStats.views);
+                    } else {
+                        setViews(newViews);
+                    }
+                    if (apiStats.downloads !== undefined) {
+                        setDownloads(apiStats.downloads);
+                    } else {
+                        setDownloads(newDownloads);
+                    }
+                } else {
+                    // No API stats yet, use values from img object
+                    setViews(newViews);
+                    setDownloads(newDownloads);
+                }
+            } else {
+                // Same image - preserve API-updated stats, don't reset from img object
+                const apiStats = apiUpdatedStats.current.get(imageId);
+                if (apiStats) {
+                    // Only update if we have API values
+                    if (apiStats.views !== undefined) {
+                        setViews(apiStats.views);
+                    }
+                    if (apiStats.downloads !== undefined) {
+                        setDownloads(apiStats.downloads);
+                    }
+                }
             }
-            // Always set the initial values from the image object
-            setViews(newViews);
-            setDownloads(newDownloads);
         }
     }, [img?._id]);
 
@@ -463,12 +505,20 @@ export function ImageModal({
             try {
                 const statsResponse = await imageStatsService.incrementDownload(img._id);
                 setDownloads(statsResponse.downloads);
+                // Track that this stat was updated via API
+                const stats = apiUpdatedStats.current.get(img._id) || {};
+                stats.downloads = statsResponse.downloads;
+                apiUpdatedStats.current.set(img._id, stats);
             } catch (error: any) {
                 // Handle rate limiting gracefully
                 if (error.response?.status === 429) {
                     const rateLimitData = error.response.data;
                     if (rateLimitData.downloads !== undefined) {
                         setDownloads(rateLimitData.downloads);
+                        // Track that this stat was updated via API (even if rate limited)
+                        const stats = apiUpdatedStats.current.get(img._id) || {};
+                        stats.downloads = rateLimitData.downloads;
+                        apiUpdatedStats.current.set(img._id, stats);
                     }
                     // Show user-friendly message
                     if (rateLimitData.message) {
