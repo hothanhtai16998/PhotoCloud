@@ -33,10 +33,9 @@ export function BlurUpImage({
     const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
     const placeholderInitial = base64Placeholder || networkPlaceholder;
     const [loaded, setLoaded] = useState(false);
-    const [backSrc, setBackSrc] = useState<string | null>(placeholderInitial);
+    const [fullSrc, setFullSrc] = useState<string | null>(null);
     const [isInView, setIsInView] = useState(priority);
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const frontRef = useRef<HTMLImageElement | null>(null);
     const loadingRef = useRef(false);
 
     // Intersection Observer for lazy loading
@@ -81,24 +80,21 @@ export function BlurUpImage({
         const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
 
         // If already using full image, no need to reload
-        if (backSrc === full && loaded) return;
+        if (fullSrc === full) return;
 
         loadingRef.current = true;
         // Skip decode for grid images to load faster (like admin page)
         preloadImage(full, true)
             .then((src) => {
-                setBackSrc(src);
-                setLoaded(true);
-                onLoadComplete?.();
+                setFullSrc(src);
             })
             .catch(() => {
                 // Keep placeholder on error
-                setLoaded(true);
             })
             .finally(() => {
                 loadingRef.current = false;
             });
-    }, [isInView, image, backSrc, loaded, onLoadComplete]);
+    }, [isInView, image, fullSrc]);
 
     // Tooltip state
     const [showTooltip, setShowTooltip] = useState(false);
@@ -110,12 +106,12 @@ export function BlurUpImage({
         if (!loaded && isInView) {
             // Use regularUrl for hover preload (grid images)
             const full = image.regularUrl || image.imageUrl || image.thumbnailUrl || image.smallUrl;
-            if (full && full !== backSrc) {
+            if (full && full !== fullSrc) {
                 // Skip decode for hover preload (grid images)
                 preloadImage(full, true).catch(() => { });
             }
         }
-    }, [loaded, isInView, image, backSrc]);
+    }, [loaded, isInView, image, fullSrc]);
 
     // Handle mouse move to track position
     const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -259,13 +255,30 @@ export function BlurUpImage({
             onMouseLeave={handleContainerMouseLeave}
             onMouseMove={handleMouseMove}
         >
-            {backSrc && (
+            {/* Placeholder Image (Low Quality) */}
+            {placeholderInitial && (
                 <img
-                    src={backSrc}
+                    src={placeholderInitial}
                     alt={image.imageTitle || 'photo'}
-                    className={`blur-up-image ${loaded ? 'loaded' : 'loading'}`}
-                    ref={frontRef}
+                    className="blur-up-image placeholder"
+                    style={{
+                        opacity: loaded ? 0 : 1,
+                        transition: 'opacity 0.5s ease-out'
+                    }}
+                />
+            )}
+
+            {/* Full Image (High Quality) */}
+            {fullSrc && (
+                <img
+                    src={fullSrc}
+                    alt={image.imageTitle || 'photo'}
+                    className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
                     loading="lazy"
+                    onLoad={() => {
+                        setLoaded(true);
+                        onLoadComplete?.();
+                    }}
                 />
             )}
 
