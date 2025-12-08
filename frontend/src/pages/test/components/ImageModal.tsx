@@ -136,6 +136,7 @@ export function ImageModal({
     const [frontLoaded, setFrontLoaded] = useState(false); // Track if front image is actually loaded and ready
     const [backSrc, setBackSrc] = useState<string | null>(imageState.src); // Low-quality placeholder (back layer)
     const backSrcRef = useRef<string | null>(imageState.src); // Track current backSrc to prevent unnecessary updates
+    const previousFrontSrcRef = useRef<string | null>(null); // Track previous frontSrc for smooth transitions
     // const isFullQuality = imageState.isFullQuality || frontSrc !== null; // True if front layer is ready
 
     // Initialize refs (simplified - no aspect ratio calculations needed)
@@ -581,7 +582,12 @@ export function ImageModal({
         // Low-res thumbnail = thumbnailUrl or smallUrl (small file, pixelated when enlarged to full size)
         // High-res = regularUrl or imageUrl (full quality, sharp at full size)
         const thumbnail = img.thumbnailUrl || img.smallUrl || img.imageUrl || '';
-        const full = img.regularUrl || img.imageUrl || '';
+        const regularUrl = img.regularUrl || '';
+        const imageUrl = img.imageUrl || '';
+
+        // Priority: prefer imageUrl over regularUrl, but use regularUrl if imageUrl is not available
+        const targetFullUrl = imageUrl || regularUrl || '';
+        const currentFullUrl = frontSrc || regularUrl || imageUrl || '';
 
         // Calculate what the state should be
         const currentState = calculateInitialState();
@@ -590,9 +596,12 @@ export function ImageModal({
         // Update imageState (for tracking, but don't use it directly for backSrc)
         setImageState(currentState);
 
-        // Don't reset frontSrc immediately - keep old image visible until new backSrc is ready
-        // This prevents flash when both layers change at once
-        // We'll clear it after the new backSrc is set
+        // Strategy: Always use imageUrl for final display if available
+        // If currently showing regularUrl or base64, smoothly transition to imageUrl
+        const shouldSwitchToImageUrl = imageUrl && (
+            (currentFullUrl && currentFullUrl !== imageUrl && currentFullUrl === regularUrl) ||
+            (newBackSrc && newBackSrc.startsWith('data:') && imageUrl)
+        );
 
         // Update backSrc: Use base64 for instant display, then immediately load network thumbnail
         if (newBackSrc && newBackSrc !== backSrcRef.current) {
@@ -603,29 +612,63 @@ export function ImageModal({
                 backSrcRef.current = newBackSrc;
                 setBackSrc(newBackSrc);
 
-                // Immediately load network thumbnail (larger, better quality) to replace base64
-                const networkThumbnail = img.thumbnailUrl || img.smallUrl || img.imageUrl || '';
-                if (networkThumbnail && networkThumbnail !== newBackSrc) {
-                    // Preload network thumbnail immediately (small file, loads fast)
-                    preloadImage(networkThumbnail, true) // Skip decode for faster loading
+                // If we have imageUrl, load it directly instead of thumbnail
+                if (shouldSwitchToImageUrl && imageUrl) {
+                    // Preload imageUrl (will be used as both back and front)
+                    preloadImage(imageUrl, false) // Decode for smooth transition
                         .then((src) => {
-                            // Replace base64 with network thumbnail once loaded
                             if (previousImgRef.current?._id === currentImageId) {
+                                // Update backSrc to imageUrl
                                 backSrcRef.current = src;
                                 setBackSrc(src);
+                                // Also set as frontSrc since it's the final quality
+                                setFrontSrc(src);
+                                setFrontLoaded(true);
                             }
                         })
                         .catch(() => {
-                            // Keep base64 if network thumbnail fails
+                            // Fallback to network thumbnail if imageUrl fails
+                            const networkThumbnail = img.thumbnailUrl || img.smallUrl || '';
+                            if (networkThumbnail && networkThumbnail !== newBackSrc) {
+                                preloadImage(networkThumbnail, true)
+                                    .then((src) => {
+                                        if (previousImgRef.current?._id === currentImageId) {
+                                            backSrcRef.current = src;
+                                            setBackSrc(src);
+                                        }
+                                    })
+                                    .catch(() => {
+                                        // Keep base64 if all fails
+                                    });
+                            }
                         });
+                } else {
+                    // Load network thumbnail (larger, better quality) to replace base64
+                    const networkThumbnail = img.thumbnailUrl || img.smallUrl || img.imageUrl || '';
+                    if (networkThumbnail && networkThumbnail !== newBackSrc) {
+                        // Preload network thumbnail immediately (small file, loads fast)
+                        preloadImage(networkThumbnail, true) // Skip decode for faster loading
+                            .then((src) => {
+                                // Replace base64 with network thumbnail once loaded
+                                if (previousImgRef.current?._id === currentImageId) {
+                                    backSrcRef.current = src;
+                                    setBackSrc(src);
+                                }
+                            })
+                            .catch(() => {
+                                // Keep base64 if network thumbnail fails
+                            });
+                    }
                 }
 
                 // Clear front layer after back layer is updated (prevents flash)
-                requestAnimationFrame(() => {
-                    if (previousImgRef.current?._id === currentImageId) {
-                        setFrontSrc(null);
-                    }
-                });
+                if (!shouldSwitchToImageUrl) {
+                    requestAnimationFrame(() => {
+                        if (previousImgRef.current?._id === currentImageId) {
+                            setFrontSrc(null);
+                        }
+                    });
+                }
             } else {
                 // For network thumbnails, check cache first
                 if (loadedImages.has(newBackSrc)) {
@@ -673,31 +716,161 @@ export function ImageModal({
         }
 
         // Load full image in background (front layer)
-        // This creates the double-buffer effect: back layer (low-res) + front layer (high-res)
-        // Reuse thumbnail and full already declared above (lines 437-438)
-        // Only load full image if it's different from the thumbnail
-        if (full && full !== thumbnail) {
-            // Check if already loaded
-            if (loadedImages.has(full)) {
-                setFrontSrc(full);
-                // If already cached, mark as loaded immediately
-                setFrontLoaded(true);
-            } else {
-                // Preload full image (with decode for smooth transition)
-                preloadImage(full, false)
-                    .then((src) => {
-                        // Only update if still showing the same image
-                        if (previousImgRef.current?._id === currentImageId) {
-                            setFrontSrc(src);
+        // Priority: Always prefer imageUrl over regularUrl if available
+        // Unsplash technique: Keep old image visible, load new image on top, fade in smoothly
+        if (targetFullUrl && targetFullUrl !== thumbnail) {
+            // Check if we're currently showing regularUrl and need to switch to imageUrl
+            // Also check if regularUrl is in backSrc (should be moved to frontSrc first, then we switch)
+            const isCurrentlyRegularUrl = (frontSrc === regularUrl || backSrcRef.current === regularUrl) && regularUrl && imageUrl && imageUrl !== regularUrl;
+
+            if (isCurrentlyRegularUrl && imageUrl) {
+                // Smoothly transition from regularUrl to imageUrl
+                // Strategy: Move regularUrl to backSrc FIRST, then load imageUrl as frontSrc
+                // This keeps regularUrl visible while imageUrl loads and fades in
+
+                // First, ensure regularUrl is set as back layer (this keeps it visible)
+                if (regularUrl !== backSrcRef.current) {
+                    backSrcRef.current = regularUrl;
+                    setBackSrc(regularUrl);
+                }
+
+                // Wait a frame to ensure backSrc is rendered before switching frontSrc
+                requestAnimationFrame(() => {
+                    if (previousImgRef.current?._id === currentImageId) {
+                        if (loadedImages.has(imageUrl)) {
+                            // Already cached - set imageUrl as front
+                            setFrontLoaded(false);
+                            setFrontSrc(imageUrl);
+                            // Mark as loaded after a frame to ensure smooth transition
+                            requestAnimationFrame(() => {
+                                requestAnimationFrame(() => {
+                                    if (previousImgRef.current?._id === currentImageId) {
+                                        setFrontLoaded(true);
+                                    }
+                                });
+                            });
+                        } else {
+                            // Preload imageUrl (with decode for smooth transition)
+                            preloadImage(imageUrl, false)
+                                .then((src) => {
+                                    // Only update if still showing the same image
+                                    if (previousImgRef.current?._id === currentImageId) {
+                                        // Reset frontLoaded to trigger fade-in
+                                        setFrontLoaded(false);
+                                        setFrontSrc(src);
+                                        // Mark as loaded after image is rendered
+                                        requestAnimationFrame(() => {
+                                            requestAnimationFrame(() => {
+                                                if (previousImgRef.current?._id === currentImageId) {
+                                                    setFrontLoaded(true);
+                                                }
+                                            });
+                                        });
+                                    }
+                                })
+                                .catch(() => {
+                                    // On error, keep showing current image (regularUrl)
+                                });
                         }
-                    })
-                    .catch(() => {
-                        // On error, keep showing back layer (thumbnail)
-                    });
+                    }
+                });
+            } else if (imageUrl && !frontSrc) {
+                // First load: prefer imageUrl if available
+                // Strategy: Use regularUrl as backSrc, imageUrl as frontSrc
+                // This ensures regularUrl is visible immediately while imageUrl loads
+                if (regularUrl && regularUrl !== imageUrl && regularUrl !== thumbnail) {
+                    // Set regularUrl as back layer first (visible immediately)
+                    if (regularUrl !== backSrcRef.current) {
+                        backSrcRef.current = regularUrl;
+                        setBackSrc(regularUrl);
+                    }
+                }
+
+                if (loadedImages.has(imageUrl)) {
+                    // Already cached - set as front layer
+                    setFrontSrc(imageUrl);
+                    setFrontLoaded(true);
+                } else {
+                    // Preload imageUrl - it will fade in over regularUrl
+                    preloadImage(imageUrl, false)
+                        .then((src) => {
+                            if (previousImgRef.current?._id === currentImageId) {
+                                setFrontSrc(src);
+                            }
+                        })
+                        .catch(() => {
+                            // Fallback to regularUrl if imageUrl fails
+                            if (regularUrl) {
+                                preloadImage(regularUrl, false)
+                                    .then((src) => {
+                                        if (previousImgRef.current?._id === currentImageId) {
+                                            setFrontSrc(src);
+                                        }
+                                    })
+                                    .catch(() => { });
+                            }
+                        });
+                }
+            } else if (regularUrl && !imageUrl && !frontSrc) {
+                // Only regularUrl available - use it as frontSrc
+                if (loadedImages.has(regularUrl)) {
+                    setFrontSrc(regularUrl);
+                    setFrontLoaded(true);
+                } else {
+                    preloadImage(regularUrl, false)
+                        .then((src) => {
+                            if (previousImgRef.current?._id === currentImageId) {
+                                setFrontSrc(src);
+                            }
+                        })
+                        .catch(() => { });
+                }
+            } else {
+                // Normal flow: load the target full URL
+                // If we have both regularUrl and imageUrl, use regularUrl as back, imageUrl as front
+                if (regularUrl && imageUrl && imageUrl !== regularUrl && !frontSrc) {
+                    // Set regularUrl as back layer first
+                    if (regularUrl !== backSrcRef.current && regularUrl !== thumbnail) {
+                        backSrcRef.current = regularUrl;
+                        setBackSrc(regularUrl);
+                    }
+                    // Then load imageUrl as front
+                    if (loadedImages.has(imageUrl)) {
+                        setFrontSrc(imageUrl);
+                        setFrontLoaded(true);
+                    } else {
+                        preloadImage(imageUrl, false)
+                            .then((src) => {
+                                if (previousImgRef.current?._id === currentImageId) {
+                                    setFrontSrc(src);
+                                }
+                            })
+                            .catch(() => { });
+                    }
+                } else {
+                    // Standard flow: load target URL
+                    if (loadedImages.has(targetFullUrl)) {
+                        setFrontSrc(targetFullUrl);
+                        // If already cached, mark as loaded immediately
+                        setFrontLoaded(true);
+                    } else {
+                        // Preload full image (with decode for smooth transition)
+                        preloadImage(targetFullUrl, false)
+                            .then((src) => {
+                                // Only update if still showing the same image
+                                if (previousImgRef.current?._id === currentImageId) {
+                                    setFrontSrc(src);
+                                }
+                            })
+                            .catch(() => {
+                                // On error, keep showing back layer (thumbnail)
+                            });
+                    }
+                }
             }
-        } else if (full && full === thumbnail) {
+        } else if (targetFullUrl && targetFullUrl === thumbnail) {
             // If thumbnail is the same as full, use it as front image
-            setFrontSrc(full);
+            setFrontSrc(targetFullUrl);
             // Mark as loaded since it's the same as back image
             setFrontLoaded(true);
         } else {
@@ -1227,14 +1400,14 @@ export function ImageModal({
                                         aspectRatio: img.width && img.height ? `${img.width} / ${img.height}` : undefined,
                                     }}
                                 >
-                                    {/* Back layer: Always render, hide with opacity when front is ready */}
+                                    {/* Back layer: Low-quality image (thumbnail/base64/regularUrl) - Always visible until front loads */}
                                     {/* This prevents flash by keeping an image in DOM at all times */}
                                     {backSrc && !backSrc.startsWith('data:') && (
                                         <img
-                                            key={`back-${img._id}`}
+                                            key={`back-${img._id}-${backSrc}`}
                                             src={backSrc}
                                             alt={img.imageTitle || 'photo'}
-                                            className={`image-modal-back-image ${frontLoaded ? 'loaded' : ''}`}
+                                            className={`image-modal-back-image ${frontLoaded && frontSrc ? 'loaded' : ''}`}
                                             draggable={false}
                                             onLoad={(e) => {
                                                 const imgEl = e.currentTarget;
@@ -1244,7 +1417,7 @@ export function ImageModal({
                                             }}
                                         />
                                     )}
-                                    {/* Front layer: Full-quality image (shown when ready, no blur) */}
+                                    {/* Front layer: High-quality image (imageUrl/regularUrl) - Fades in when ready */}
                                     {frontSrc && (
                                         <img
                                             key={`front-${img._id}-${frontSrc}`}
@@ -1260,17 +1433,23 @@ export function ImageModal({
                                                         // Wait a frame to ensure image is rendered before marking as loaded
                                                         requestAnimationFrame(() => {
                                                             requestAnimationFrame(() => {
-                                                                setFrontLoaded(true);
+                                                                if (previousImgRef.current?._id === img._id) {
+                                                                    setFrontLoaded(true);
+                                                                }
                                                             });
                                                         });
                                                     }).catch(() => {
                                                         requestAnimationFrame(() => {
-                                                            setFrontLoaded(true);
+                                                            if (previousImgRef.current?._id === img._id) {
+                                                                setFrontLoaded(true);
+                                                            }
                                                         });
                                                     });
                                                 } else {
                                                     requestAnimationFrame(() => {
-                                                        setFrontLoaded(true);
+                                                        if (previousImgRef.current?._id === img._id) {
+                                                            setFrontLoaded(true);
+                                                        }
                                                     });
                                                 }
                                             }}

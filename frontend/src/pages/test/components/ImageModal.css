@@ -398,6 +398,7 @@
   max-height: calc(100vh - 180px);
   overflow: hidden;
   background: #ffffff;
+  min-height: 200px; /* Ensure container has height for absolute positioning */
 }
 
 .image-modal-image-container.has-aspect-ratio {
@@ -409,21 +410,24 @@
   min-height: 300px;
 }
 
-/* Back Layer Image */
+/* Back Layer Image - Always visible, fades out when front is loaded */
 .image-modal-back-image {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   max-width: 100%;
   max-height: calc(100vh - 180px);
   object-fit: contain;
   filter: none;
-  transition: none;
+  transition: opacity 0.3s ease-in-out;
   display: block;
   user-select: none;
   pointer-events: none;
   z-index: 1;
   background: #ffffff;
+  opacity: 1;
 }
 
 .image-modal-back-image.loaded {
@@ -434,33 +438,32 @@
   opacity: 1;
 }
 
-/* Front Layer Image */
+/* Front Layer Image - Fades in when loaded, overlays back image */
 .image-modal-front-image {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   max-width: 100%;
   max-height: calc(100vh - 180px);
   object-fit: contain;
   filter: none;
-  opacity: 1;
-  transition: none;
+  transition: opacity 0.3s ease-in-out;
   display: block;
   user-select: none;
   pointer-events: none;
   z-index: 2;
   background: #ffffff;
+  opacity: 0;
 }
 
 .image-modal-front-image.loaded {
-  position: relative;
-  top: auto;
-  left: auto;
+  opacity: 1;
 }
 
 .image-modal-front-image:not(.loaded) {
-  position: absolute;
-  top: 0;
-  left: 0;
+  opacity: 0;
 }
 
 /* Bottom Info */
