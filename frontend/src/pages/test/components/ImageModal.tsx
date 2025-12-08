@@ -144,6 +144,7 @@ export function ImageModal({
     const scrollRef = useRef<HTMLDivElement | null>(null);
     const scrollPosRef = useRef(0);
     const previousImgRef = useRef<ExtendedImage | null>(img);
+    const frontImageLoadedRef = useRef<boolean>(false); // Track if front image is loaded for current image
     const [isScrolled, setIsScrolled] = useState(false);
     const [shouldAnimate, setShouldAnimate] = useState(false);
     const { user } = useUserStore();
@@ -554,6 +555,7 @@ export function ImageModal({
         // Track current image to prevent race conditions
         const currentImageId = img._id;
         previousImgRef.current = img;
+        frontImageLoadedRef.current = false; // Reset loaded flag for new image
 
         // reset scroll to top when image changes so top bar/author stay visible
         scrollPosRef.current = 0;
@@ -581,7 +583,7 @@ export function ImageModal({
         // Low-res thumbnail = thumbnailUrl or smallUrl (small file, pixelated when enlarged to full size)
         // High-res = regularUrl or imageUrl (full quality, sharp at full size)
         const thumbnail = img.thumbnailUrl || img.smallUrl || img.imageUrl || '';
-        
+
         // Progressive loading: Thumbnail -> Regular -> Original
         const regular = img.regularUrl;
         const original = img.imageUrl;
@@ -625,7 +627,7 @@ export function ImageModal({
 
                 // Clear front layer after back layer is updated (prevents flash)
                 requestAnimationFrame(() => {
-                    if (previousImgRef.current?._id === currentImageId) {
+                    if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                         setFrontSrc(null);
                     }
                 });
@@ -637,7 +639,7 @@ export function ImageModal({
                     setBackSrc(newBackSrc);
                     // Clear front layer after back layer is updated
                     requestAnimationFrame(() => {
-                        if (previousImgRef.current?._id === currentImageId) {
+                        if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                             setFrontSrc(null);
                         }
                     });
@@ -653,7 +655,7 @@ export function ImageModal({
                                 setBackSrc(src);
                                 // Clear front layer after back layer is updated
                                 requestAnimationFrame(() => {
-                                    if (previousImgRef.current?._id === currentImageId) {
+                                    if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                                         setFrontSrc(null);
                                     }
                                 });
@@ -664,7 +666,9 @@ export function ImageModal({
                             if (previousImgRef.current?._id === currentImageId) {
                                 backSrcRef.current = newBackSrc;
                                 setBackSrc(newBackSrc);
-                                setFrontSrc(null);
+                                if (!frontImageLoadedRef.current) {
+                                    setFrontSrc(null);
+                                }
                             }
                         });
                 }
@@ -689,6 +693,7 @@ export function ImageModal({
                         if (previousImgRef.current?._id === currentImageId) {
                             setFrontSrc(regular);
                             setFrontLoaded(true);
+                            frontImageLoadedRef.current = true;
                             loadedAny = true;
                         }
                     } else {
@@ -700,6 +705,7 @@ export function ImageModal({
                             if (!original || original === regular) {
                                 setFrontLoaded(true);
                             }
+                            frontImageLoadedRef.current = true;
                             loadedAny = true;
                         }
                     }
@@ -716,6 +722,7 @@ export function ImageModal({
                     if (previousImgRef.current?._id === currentImageId) {
                         setFrontSrc(src);
                         setFrontLoaded(true);
+                        frontImageLoadedRef.current = true;
                         loadedAny = true;
                     }
                 } catch (e) {
@@ -735,6 +742,7 @@ export function ImageModal({
                 if (target === thumbnail) {
                     setFrontSrc(target);
                     setFrontLoaded(true);
+                    frontImageLoadedRef.current = true;
                 }
             }
         };
