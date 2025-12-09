@@ -3,8 +3,6 @@ import type { Image } from '@/types/image';
 import type { User } from '@/types/user';
 import { Avatar } from '../Avatar';
 import { DownloadSizeSelector, type DownloadSize } from './DownloadSizeSelector';
-import { useUserProfileCard } from './hooks/useUserProfileCard';
-import { UserProfileCard } from './UserProfileCard';
 import { getDisplayName, AVATAR_SIZE, ICON_SIZE } from './imageModalUtils';
 import { t } from '@/i18n';
 
@@ -39,22 +37,6 @@ export const ImageModalHeader = ({
   onImageSelect,
   isHeaderHidden = false,
 }: ImageModalHeaderProps) => {
-  const {
-    showUserProfileCard,
-    isClosingProfileCard,
-    userImages,
-    isLoadingUserImages,
-    userInfoRef,
-    userProfileCardRef,
-    handleMouseEnter,
-    handleMouseLeave,
-    handleUserImageClick,
-  } = useUserProfileCard({
-    image,
-    modalContentRef,
-    onImageSelect,
-  });
-
   const displayName = getDisplayName(image.uploadedBy);
 
   // Desktop Header
@@ -64,9 +46,6 @@ export const ImageModalHeader = ({
         {/* Left: User Info */}
         <div
           className="modal-header-left clickable-user-info"
-          ref={userInfoRef}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
           onClick={handleViewProfile}
           title={t('image.viewProfile')}
         >
@@ -83,21 +62,6 @@ export const ImageModalHeader = ({
             </div>
             <div className="modal-user-status">{t('image.availableForHire')}</div>
           </div>
-
-          {/* User Profile Card */}
-          <UserProfileCard
-            image={image}
-            user={user}
-            showUserProfileCard={showUserProfileCard}
-            isClosingProfileCard={isClosingProfileCard}
-            userImages={userImages}
-            isLoadingUserImages={isLoadingUserImages}
-            userProfileCardRef={userProfileCardRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onViewProfile={handleViewProfile}
-            onUserImageClick={handleUserImageClick}
-          />
         </div>
 
         {/* Right: Download Button and Close Button */}
@@ -125,9 +89,6 @@ export const ImageModalHeader = ({
       <div className={`image-modal-author-banner ${isHeaderHidden ? 'header-hidden' : ''}`}>
         <div
           className="modal-author-banner-left clickable-user-info"
-          ref={userInfoRef}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
           onClick={handleViewProfile}
           title={t('image.viewProfile')}
         >
@@ -144,21 +105,6 @@ export const ImageModalHeader = ({
             </div>
             <div className="modal-user-status">{t('image.availableForHire')}</div>
           </div>
-
-          {/* User Profile Card */}
-          <UserProfileCard
-            image={image}
-            user={user}
-            showUserProfileCard={showUserProfileCard}
-            isClosingProfileCard={isClosingProfileCard}
-            userImages={userImages}
-            isLoadingUserImages={isLoadingUserImages}
-            userProfileCardRef={userProfileCardRef}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onViewProfile={handleViewProfile}
-            onUserImageClick={handleUserImageClick}
-          />
         </div>
 
         <div className="modal-author-banner-right">

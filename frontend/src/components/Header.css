@@ -664,10 +664,16 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 }
 
 @media (max-width: 768px) {
+  /* Reduce header height on mobile */
+  .unsplash-header {
+    height: 48px !important; /* Reduced from 56px */
+  }
+
   .header-container {
     flex-wrap: nowrap; /* Don't wrap on mobile */
     padding: 0 12px;
     gap: 12px;
+    height: 48px; /* Match reduced header height */
   }
 
   .header-logo {
@@ -683,6 +689,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   .search-bar-container {
     /* Search bar positioning handled by SearchBar.css - it's in normal flow on mobile */
     /* Keep it visible, SearchBar.css will position it correctly */
+    top: 48px !important; /* Updated to match reduced header height */
   }
 
   .header-actions {
@@ -694,24 +701,24 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   .header-link,
   .header-button {
     font-size: 0.875rem;
-    min-height: 44px; /* Better touch target */
+    min-height: 40px; /* Reduced from 44px */
     display: flex;
     align-items: center;
     white-space: nowrap;
   }
 
   .header-button {
-    padding: 8px 14px;
+    padding: 6px 12px; /* Reduced padding */
   }
 
   .category-nav {
     gap: 20px;
-    padding: 10px 12px;
+    padding: 8px 12px; /* Reduced padding */
   }
 
   .category-link {
     font-size: 0.8125rem;
-    min-height: 44px; /* Better touch target */
+    min-height: 40px; /* Reduced from 44px */
     display: flex;
     align-items: center;
   }

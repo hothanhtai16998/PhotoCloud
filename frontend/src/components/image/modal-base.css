@@ -171,10 +171,8 @@ body.scroll-locked .image-modal {
     width: 100%;
     max-width: none;
     border-radius: 0;
-    top: calc(
-      var(--header-height, 56px) + 55px
-    ); /* Header (56px) + Search bar (55px) */
-    height: calc(100vh - var(--header-height, 56px) - 55px);
+    top: 96px; /* Header (48px) + Search bar (48px) */
+    height: calc(100vh - 96px);
   }
 
   /* Page mode on mobile - no fixed positioning */

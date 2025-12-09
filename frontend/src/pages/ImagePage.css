@@ -65,8 +65,8 @@
 /* Mobile page mode: account for fixed header + search bar */
 @media (max-width: 768px) {
   .image-page-container.page-mode {
-    /* Account for fixed header (56px) + fixed search bar (55px) on mobile */
-    padding-top: calc(var(--header-height, 56px) + 55px);
+    /* Account for fixed header (48px) + fixed search bar (48px) on mobile */
+    padding-top: 96px; /* 48px header + 48px search bar */
   }
 }
 
