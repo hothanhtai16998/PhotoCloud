@@ -59,9 +59,15 @@
   position: relative;
   background: hsl(var(--background));
   min-height: 100vh;
-  /* Account for fixed header (56px) + fixed search bar (55px) on mobile */
-  /* padding-top: calc(var(--header-height, 56px) + 55px); */
   margin-top: 0;
+}
+
+/* Mobile page mode: account for fixed header + search bar */
+@media (max-width: 768px) {
+  .image-page-container.page-mode {
+    /* Account for fixed header (56px) + fixed search bar (55px) on mobile */
+    padding-top: calc(var(--header-height, 56px) + 55px);
+  }
 }
 
 @media (min-width: 769px) {

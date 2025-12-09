@@ -18,6 +18,8 @@ interface ImageModalContentProps {
   setIsModalImageLoaded: (loaded: boolean) => void;
   zoomProps: UseImageZoomReturn;
   wasCachedInitially: boolean;
+  isMobile?: boolean;
+  renderAsPage?: boolean;
 }
 
 export const ImageModalContent = ({
@@ -29,6 +31,8 @@ export const ImageModalContent = ({
   setIsModalImageLoaded,
   zoomProps,
   wasCachedInitially: _wasCachedInitially,
+  isMobile = false,
+  renderAsPage = false,
 }: ImageModalContentProps) => {
   // Use modalImageSrc if available, otherwise fallback to image URLs
   // const imageSrc = modalImageSrc || image.regularUrl || image.imageUrl || image.smallUrl || '';
@@ -180,7 +184,7 @@ export const ImageModalContent = ({
           ref={zoomImageRef}
           src={displayedSrc}
           alt={image.imageTitle ?? 'Photo'}
-          style={getModalImageStyles(displayedPlaceholder)}
+          style={getModalImageStyles(displayedPlaceholder, isMobile && renderAsPage)}
           className={`${getImageClassName(true, imageType)} modal-image-back`}
           loading="eager"
           decoding="async"
@@ -198,7 +202,7 @@ export const ImageModalContent = ({
             src={frontImage.src}
             alt={image.imageTitle ?? 'Photo'}
             style={{
-              ...getModalImageStyles(frontImage.placeholder),
+              ...getModalImageStyles(frontImage.placeholder, isMobile && renderAsPage),
               opacity: frontLoaded ? 1 : 0,
               transition: 'opacity 0.18s ease-out',
             }}

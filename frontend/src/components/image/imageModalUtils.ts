@@ -94,14 +94,23 @@ export const generateModalSrcSet = (
  * Get inline styles for modal image
  */
 export const getModalImageStyles = (
-  placeholderSrc: string | null
-): React.CSSProperties => ({
-  backgroundImage: placeholderSrc ? `url("${placeholderSrc}")` : undefined,
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundColor: '#f0f0f0',
-  maxWidth: '100%',
-  maxHeight: `calc(100vh - ${MODAL_IMAGE.HEADER_HEIGHT_PX}px)`,
-  width: 'auto',
-  height: 'auto',
-});
+  placeholderSrc: string | null,
+  skipMaxHeight: boolean = false
+): React.CSSProperties => {
+  const styles: React.CSSProperties = {
+    backgroundImage: placeholderSrc ? `url("${placeholderSrc}")` : undefined,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundColor: '#f0f0f0',
+    maxWidth: '100%',
+    width: 'auto',
+    height: 'auto',
+  };
+  
+  // Only add maxHeight if not skipping (for page mode on mobile)
+  if (!skipMaxHeight) {
+    styles.maxHeight = `calc(100vh - ${MODAL_IMAGE.HEADER_HEIGHT_PX}px)`;
+  }
+  
+  return styles;
+};

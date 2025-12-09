@@ -143,6 +143,12 @@ const ImageModal = ({
 
   // Detect when related images section reaches the banner position (top of scroll container)
   useEffect(() => {
+    // Disable header hiding on mobile page mode - always show the banner
+    if (isMobile && renderAsPage) {
+      setIsHeaderHidden(false);
+      return;
+    }
+
     if (!renderAsPage || !modalContentRef.current) return;
 
     const scrollContainer = modalContentRef.current;
@@ -196,7 +202,7 @@ const ImageModal = ({
       clearTimeout(timeoutId);
       scrollContainer.removeEventListener('scroll', handleScroll);
     };
-  }, [renderAsPage, relatedImages.length]);
+  }, [renderAsPage, relatedImages.length, isMobile]);
 
   // Handle wheel events to redirect scroll to content
   const handleModalWheel = (e: React.WheelEvent) => {
@@ -315,6 +321,8 @@ const ImageModal = ({
             setIsModalImageLoaded={setIsModalImageLoaded}
             wasCachedInitially={wasCachedInitial}
             zoomProps={zoomProps}
+            isMobile={isMobile}
+            renderAsPage={renderAsPage}
           />
 
           {/* Modal Footer / Sidebar */}
