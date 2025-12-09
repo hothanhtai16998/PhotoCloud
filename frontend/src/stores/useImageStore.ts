@@ -24,15 +24,18 @@ import {
 const categoryCache = new Map<string, { images: Image[]; pagination: Pagination | null }>();
 
 function getCategoryCacheKey(params?: FetchImagesParams): string {
-  const category = params?.category || 'all';
+  // Normalize category: undefined, null, or empty string all become 'all'
+  const category = params?.category 
+    ? String(params.category).trim() || 'all'
+    : 'all';
   const search = params?.search || '';
   const location = params?.location || '';
   // Only cache when no search/location filters (category-only queries)
   if (search || location) {
     return ''; // Don't cache filtered queries
   }
-  // Normalize category key (handle undefined as 'all')
-  return category || 'all';
+  // Return normalized category key
+  return category;
 }
 
 export const useImageStore = create(
@@ -162,11 +165,11 @@ export const useImageStore = create(
         return;
       }
 
-      // Check cache for category-only queries (no search/location filters)
+      // Check cache FIRST, before any state changes (critical for zero-flash)
       const cacheKey = getCategoryCacheKey(params);
       const cached = cacheKey ? categoryCache.get(cacheKey) : null;
       
-      // If we have cached data and not refreshing, use it immediately
+      // If we have cached data and not refreshing, use it IMMEDIATELY and synchronously
       if (cached && !params?._refresh && (params?.page === 1 || !params?.page)) {
         // Filter out deleted images from cache
         const filteredCachedImages = filterDeletedImages(
@@ -174,29 +177,49 @@ export const useImageStore = create(
           state.deletedImageIds
         );
         
-        // Only update if images are different (avoid unnecessary re-renders)
-        if (filteredCachedImages.length > 0 || state.images.length === 0) {
+        // Only update if we actually have images or if current images are empty
+        // This prevents unnecessary re-renders when cache has same images
+        const needsUpdate = 
+          filteredCachedImages.length !== state.images.length ||
+          filteredCachedImages.some((img, idx) => img._id !== state.images[idx]?._id) ||
+          state.images.length === 0 ||
+          state.currentCategory !== params?.category;
+        
+        if (needsUpdate) {
+          // CRITICAL: Update state synchronously in a single batch
+          // This ensures zero flash - images appear instantly without intermediate renders
           set((draft) => {
+            // Update all state in one go to prevent flash
             draft.images = filteredCachedImages;
             draft.pagination = cached.pagination;
-            draft.loading = false;
             draft.currentSearch = params?.search;
             draft.currentCategory = params?.category;
             draft.currentLocation = params?.location;
+            // Set loading to false AFTER images are set (prevents flash)
+            draft.loading = false;
           });
         }
+        
         return; // Use cached data, no need to fetch
       }
 
       // Prepare state for new fetch
       // For category changes, keep old images visible until new ones load (prevents flashing)
       set((draft) => {
-        draft.loading = true;
+        // CRITICAL: Only set loading if we don't have images to show
+        // If we have images from previous category, keep them visible (no loading state)
+        // This prevents flash - old images stay visible while new ones load
+        if (draft.images.length === 0) {
+          draft.loading = true;
+        } else {
+          // We have images to show - don't set loading to true
+          // This keeps the grid visible during category switch
+          draft.loading = false;
+        }
         draft.error = null;
 
-        // Only clear images if it's a page 1 refresh without filter changes
-        // For category/search/location changes, NEVER clear images - keep them visible
-        // This prevents flashing during category changes (like Unsplash)
+        // NEVER clear images on category/search/location changes
+        // Only clear on explicit refresh without filter changes
         if (
           (params?.page === 1 || !params?.page) &&
           !categoryChanged &&

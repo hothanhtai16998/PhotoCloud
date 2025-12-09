@@ -224,3 +224,5 @@ export function getColumnCount(width: number): number {
   return GRID_CONFIG.columns.desktop;
 }
 
+
+

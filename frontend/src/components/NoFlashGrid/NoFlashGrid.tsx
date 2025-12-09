@@ -18,9 +18,10 @@ export interface NoFlashGridProps {
     loading?: boolean;
     onLoadData?: () => Promise<void>;
     className?: string;
+    onImageClick?: (image: ExtendedImage, index: number) => void; // Optional: if provided, use this instead of modal
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '' }: NoFlashGridProps) {
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick }: NoFlashGridProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const gridRef = useRef<HTMLDivElement | null>(null);
     const [columnCount, setColumnCount] = useState(() => {
@@ -317,7 +318,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     const isLoading = externalLoading ?? false;
 
     return (
-        <div className={`no-flash-grid-container ${className}`}>
+        <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
             {/* Only show loading state if we have no images - keep grid visible during category change */}
             {isLoading && filteredImages.length === 0 ? (
                 <div className="loading-state">Loading...</div>
@@ -357,6 +358,22 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                 <BlurUpImage
                                     image={image}
                                     onClick={async () => {
+                                        // If onImageClick is provided, use it (for navigation)
+                                        if (onImageClick) {
+                                            const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                            if (full) {
+                                                try {
+                                                    // Preload image before navigation
+                                                    await preloadImage(full, false);
+                                                } catch {
+                                                    // Continue even if preload fails
+                                                }
+                                            }
+                                            onImageClick(image, idx);
+                                            return;
+                                        }
+
+                                        // Otherwise, use modal (default behavior)
                                         // Unsplash technique: Preload image COMPLETELY before opening modal
                                         const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
                                         if (full) {
@@ -382,7 +399,8 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 </div>
             )}
 
-            {selectedIndex !== null && filteredImages[selectedIndex] && (
+            {/* Only render ImageModal if onImageClick is NOT provided (use internal modal) */}
+            {!onImageClick && selectedIndex !== null && filteredImages[selectedIndex] && (
                 <ImageModal
                     key={filteredImages[selectedIndex]._id || selectedIndex}
                     images={filteredImages}

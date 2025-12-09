@@ -1,82 +1,54 @@
-.image-page-layout {
-  display: flex;
+/* Image Page - Base styles */
+.image-page {
+  position: relative;
   width: 100%;
+  min-height: 100vh;
+  display: flex;
+  background: #ffffff;
 }
 
+/* Modal-style mode - full page that looks like modal */
+.image-page.modal-style {
+  position: fixed;
+  inset: 0;
+  z-index: 9999; /* Same as NoFlashGrid ImageModal overlay */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0;
+  background: transparent; /* Overlay handles background */
+}
+
+/* Image Page Sidebar - Only shown when NOT in modal-style */
 .image-page-sidebar {
   width: 56px;
   padding: 16px 0;
   border-right: 1px solid hsl(var(--border));
-  background: hsl(var(--background));
+  background: #ffffff;
   display: none; /* Hidden by default on mobile */
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   z-index: 20;
+  flex-shrink: 0;
 }
 
 @media (min-width: 768px) {
   .image-page-sidebar {
-    display: flex; /* Show on tablet and up */
-    position: fixed;
-    left: 0;
-    top: var(--header-height, 56px);
-    bottom: 0;
-    height: auto;
-  }
-
-  /* Add left offset so main content doesn't go under the sidebar */
-  .image-page-container.page-mode {
-    padding-left: 56px;
-  }
-}
-
-.image-page-container {
-  width: 100%;
-}
-
-/* Modal mode - when coming from grid */
-.image-page-container.modal-mode {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  background: transparent;
-}
-
-/* Modal mode on mobile: account for fixed header + search bar */
-@media (max-width: 768px) {
-  .image-page-container.modal-mode {
-    /* Account for fixed header (56px) + fixed search bar (55px) on mobile */
-    padding-top: calc(var(--header-height, 56px) + 55px);
-  }
-}
-
-/* Page mode - when refreshed or direct access */
-.image-page-container.page-mode {
+    display: flex;
   position: relative;
-  background: hsl(var(--background));
+    height: 100vh;
   min-height: 100vh;
-  margin-top: 0;
-}
-
-/* Mobile page mode: account for fixed header + search bar */
-@media (max-width: 768px) {
-  .image-page-container.page-mode {
-    /* Account for fixed header (48px) + fixed search bar (48px) on mobile */
-    padding-top: 96px; /* 48px header + 48px search bar */
+    align-self: stretch;
   }
 }
 
-@media (min-width: 769px) {
-  .image-page-container.page-mode {
-    /* Desktop: no padding-top needed - author banner is sticky and handles positioning */
-    padding-top: 0;
-  }
+/* Hide sidebar in modal-style */
+.image-page.modal-style .image-page-sidebar {
+  display: none;
 }
 
+/* Loading and Error States */
 .image-page-loading,
 .image-page-error {
   display: flex;
@@ -127,4 +99,27 @@
 
 .image-page-error button:hover {
   background: hsl(var(--foreground) / 0.9);
+}
+
+/* Regular page mode - full width container */
+.image-page .image-modal-container {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  min-height: calc(100vh - var(--header-height, 56px));
+  border-radius: 0;
+  margin: 0;
+  margin-top: var(--header-height, 56px);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .image-page.modal-style {
+    padding: 0;
+    align-items: flex-start;
+  }
+  
+  .image-page:not(.modal-style) .image-modal-container {
+    margin-top: 96px; /* Header + search bar */
+  }
 }

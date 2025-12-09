@@ -23,6 +23,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   const categoryNavRef = useRef<HTMLDivElement>(null)
   const categoryNavElementRef = useRef<HTMLElement>(null)
   const initialNavTopRef = useRef<number | null>(null)
+  const forceStickyRef = useRef<boolean>(false) // Flag to prevent scroll handler from resetting sticky when forced
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -187,7 +188,8 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
       }
 
       // If at top, don't stick and reset initial position for recalculation
-      if (scrollY === 0) {
+      // BUT: Don't reset if we've forced sticky via category click
+      if (scrollY === 0 && !forceStickyRef.current) {
         if (lastStickyState !== false) {
           setIsSticky(false)
           lastStickyState = false
@@ -195,6 +197,18 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
         // Reset initial position when at top to allow recalculation after layout changes
         initialNavTopRef.current = null
         return
+      }
+      
+      // If we've forced sticky and scrolled past threshold, clear the force flag
+      if (forceStickyRef.current && scrollY > 0) {
+        // Check if we're past the sticky threshold
+        if (initialNavTopRef.current !== null) {
+          const scrollPositionWhereHeaderReachesNav = initialNavTopRef.current - headerHeight
+          if (scrollY >= scrollPositionWhereHeaderReachesNav) {
+            // We're past the threshold, sticky state is now natural - clear force flag
+            forceStickyRef.current = false
+          }
+        }
       }
 
       // Calculate: when would the header (at top of viewport) reach the nav's original position?
@@ -382,6 +396,10 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
       return;
     }
 
+    // Force category nav to stick with header when clicking a category
+    forceStickyRef.current = true; // Set flag to prevent scroll handler from resetting
+    setIsSticky(true);
+
     // For normal pages, navigate to route-based URLs
     if (!categoryNameVi) {
       // Navigate to homepage (All category)
@@ -391,6 +409,54 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
       const slug = categoryNameToSlug(categoryNameVi);
       navigate(`/t/${slug}`);
     }
+
+    // Scroll to image grid after navigation (only when clicking category, not on initial load)
+    // Use setTimeout to wait for DOM to update after navigation
+    setTimeout(() => {
+      const imageGridContainer = document.getElementById('image-grid-container');
+      if (imageGridContainer && categoryNavRef.current && headerHeight > 0) {
+        // Store initial position if not already set (needed for sticky calculation)
+        if (initialNavTopRef.current === null && categoryNavRef.current) {
+          const nav = categoryNavRef.current;
+          const rect = nav.getBoundingClientRect();
+          const scrollY = window.scrollY || window.pageYOffset;
+          initialNavTopRef.current = rect.top + scrollY;
+        }
+
+        // Get the position of the image grid container
+        const rect = imageGridContainer.getBoundingClientRect();
+        const scrollY = window.scrollY || window.pageYOffset;
+        const targetPosition = rect.top + scrollY;
+
+        // Category nav is now sticky, so account for both header and sticky nav height
+        const navHeight = categoryNavRef.current.offsetHeight;
+        const spacingBelowNav = 30; // Spacing between sticky nav and content (red line)
+        const offset = headerHeight + navHeight + spacingBelowNav; // Header + Nav + Spacing
+
+        // Calculate minimum scroll position to maintain sticky state
+        // The nav should stick when scrollY >= (initialNavTop - headerHeight)
+        // We need to scroll past this threshold to keep it sticky
+        const minScrollForSticky = initialNavTopRef.current 
+          ? Math.max(initialNavTopRef.current - headerHeight, headerHeight + navHeight + spacingBelowNav)
+          : headerHeight + navHeight + spacingBelowNav;
+
+        // Scroll to image grid position, ensuring we're past the sticky threshold
+        // This will show the content below the sticky nav with proper spacing (red line)
+        const finalScrollPosition = Math.max(
+          targetPosition - offset,
+          minScrollForSticky + 1 // Add 1px to ensure we're past the threshold
+        );
+
+        // Scroll instantly to the image grid position, accounting for sticky nav
+        window.scrollTo({
+          top: finalScrollPosition,
+          behavior: 'auto' // Instant scroll
+        });
+        
+        // After scrolling, the scroll handler will naturally maintain sticky state
+        // The force flag will be cleared once we're past the threshold
+      }
+    }, 100); // Small delay to ensure DOM has updated after navigation
   }
 
   // Show on homepage, category pages (/t/:slug), and test page
@@ -404,11 +470,11 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
 
   return (
     <>
-      {/* Spacer to prevent layout shift when sticky */}
+      {/* Spacer to prevent layout shift when sticky - includes nav height + spacing */}
       {isSticky && navHeight > 0 && (
         <div
           style={{
-            height: `${navHeight}px`,
+            height: `${navHeight + 30}px`, // navHeight + margin-bottom spacing (30px)
             flexShrink: 0,
             pointerEvents: 'none'
           }}

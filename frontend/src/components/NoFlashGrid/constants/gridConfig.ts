@@ -15,3 +15,5 @@ export const GRID_CONFIG = {
   maxRowSpan: 160, // Maximum rows (5px * 160 = 800px max for very tall portraits, plus gaps)
 } as const;
 
+
+

@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense, useContext, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";
@@ -9,6 +10,8 @@ import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import CategoryNavigation from "@/components/CategoryNavigation";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { useImageGridCategory } from "./ImageGrid/hooks/useImageGridCategory";
+import { generateImageSlug } from "@/lib/utils";
+import type { Image } from "@/types/image";
 
 // Lazy load Slider - conditionally rendered
 const Slider = lazy(() => import("@/components/Slider"));
@@ -18,6 +21,7 @@ function HomePage() {
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
     const prevCategoryRef = useRef<string | null>(null);
+    const navigate = useNavigate();
 
     // Check if modal is open (image param exists)
     const isModalOpen = actualLocation?.pathname?.startsWith('/photos/') || false;
@@ -69,6 +73,17 @@ function HomePage() {
         });
     }, [fetchImages, category]);
 
+    // Handle image click - navigate to ImagePage with modal-style
+    const handleImageClick = useCallback((image: Image, index: number) => {
+        const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+        navigate(`/photos/${slug}`, {
+            state: {
+                images,
+                fromGrid: true
+            }
+        });
+    }, [navigate, images]);
+
     return (
         <>
             <Header />
@@ -88,6 +103,7 @@ function HomePage() {
                     images={images}
                     loading={loading}
                     onLoadData={loadData}
+                    onImageClick={handleImageClick}
                 />
             </main>
         </>
