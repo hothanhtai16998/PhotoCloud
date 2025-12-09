@@ -205,6 +205,16 @@ export default function NoFlashGridPage() {
     const gridLayout = useMemo(() => {
         if (filteredImages.length === 0 || containerWidth === 0) return [];
 
+        // Check if we're on mobile (1 column)
+        const isMobile = columnCount === 1;
+        // Mobile UI bars take up space:
+        // - Author bar: 12px top + 42px avatar + 12px bottom + text line-height = ~66px
+        // - Actions bar: 12px top + 40px buttons + 12px bottom = ~64px
+        // Total: ~130px
+        // Convert to row units to add to rowSpan
+        const mobileUIBarsHeight = 130; // Total height of mobile author + actions bars
+        const rowUnit = GRID_CONFIG.baseRowHeight + GRID_CONFIG.gap;
+        const mobileUIBarsRowSpan = Math.ceil(mobileUIBarsHeight / rowUnit);
 
         // Calculate column width
         const gapTotal = GRID_CONFIG.gap * (columnCount - 1);
@@ -226,6 +236,13 @@ export default function NoFlashGridPage() {
                 dimensions
             );
 
+            // On mobile only (columnCount === 1), add extra rowSpan to compensate for mobile UI bars
+            // Desktop (3 columns) and tablet (2 columns) are NOT affected - they use original rowSpan
+            // This ensures the image itself gets the intended height on mobile
+            const finalRowSpan = isMobile 
+                ? layout.rowSpan + mobileUIBarsRowSpan 
+                : layout.rowSpan;
+
             // Calculate actual image height
             // const imageHeight = layout.rowSpan * GRID_CONFIG.baseRowHeight;
 
@@ -243,7 +260,6 @@ export default function NoFlashGridPage() {
             const column = shortestColumnIndex + 1; // CSS Grid columns are 1-indexed
 
             // Convert pixel position to grid row using full row unit (height + gap)
-            const rowUnit = GRID_CONFIG.baseRowHeight + GRID_CONFIG.gap;
             const rowStart = Math.max(1, Math.floor(shortestHeight / rowUnit) + 1);
             // Use rowStart only, let grid-row-end: span X handle the rest
             // This ensures CSS Grid handles gaps correctly
@@ -251,12 +267,12 @@ export default function NoFlashGridPage() {
             // Update the column's height for the next item
             // Move by an exact number of full row units to the next top line
             columnHeights[shortestColumnIndex] =
-                shortestHeight + layout.rowSpan * rowUnit;
+                shortestHeight + finalRowSpan * rowUnit;
 
             return {
                 image,
                 column,
-                rowSpan: layout.rowSpan,
+                rowSpan: finalRowSpan,
                 rowStart,
                 columnWidth,
             };
