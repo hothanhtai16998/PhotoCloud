@@ -67,11 +67,11 @@ export const useKeyboardNavigation = ({
         return;
       }
 
-      // Close modal on Escape
-      if (e.key === 'Escape' && isModalOpenRef.current) {
-        onClose();
-        return;
-      }
+      // Close modal on Escape - DISABLED: removed to prevent navigation to homepage
+      // if (e.key === 'Escape' && isModalOpenRef.current) {
+      //   onClose();
+      //   return;
+      // }
 
       // Only handle modal shortcuts when modal is open (not typing in inputs)
       if (!isModalOpenRef.current || isInputFocused) {

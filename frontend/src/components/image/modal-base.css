@@ -156,6 +156,7 @@ body.scroll-locked .image-modal {
   padding: 0;
   min-height: 0;
   padding-bottom: 40px;
+  gap: 0; /* Remove any gap between flex children */
   /* Hide scrollbar but keep scrolling functionality */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */

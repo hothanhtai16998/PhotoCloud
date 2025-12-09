@@ -72,8 +72,8 @@
 
 @media (min-width: 769px) {
   .image-page-container.page-mode {
-    /* Desktop: only account for header, search bar is in header */
-    padding-top: var(--header-height, 56px);
+    /* Desktop: no padding-top needed - author banner is sticky and handles positioning */
+    padding-top: 0;
   }
 }
 
