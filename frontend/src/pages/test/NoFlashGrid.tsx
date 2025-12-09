@@ -239,8 +239,8 @@ export default function NoFlashGridPage() {
             // On mobile only (columnCount === 1), add extra rowSpan to compensate for mobile UI bars
             // Desktop (3 columns) and tablet (2 columns) are NOT affected - they use original rowSpan
             // This ensures the image itself gets the intended height on mobile
-            const finalRowSpan = isMobile 
-                ? layout.rowSpan + mobileUIBarsRowSpan 
+            const finalRowSpan = isMobile
+                ? layout.rowSpan + mobileUIBarsRowSpan
                 : layout.rowSpan;
 
             // Calculate actual image height
@@ -338,17 +338,6 @@ export default function NoFlashGridPage() {
 
     return (
         <div className="no-flash-grid-page">
-
-            <div className="category-filter-container">
-                <button
-                    onClick={loadData}
-                    className="category-filter-button refresh-button"
-                    title="Refresh images"
-                >
-                    🔄 Refresh
-                </button>
-            </div>
-
             {loading ? (
                 <div className="loading-state">Loading...</div>
             ) : (

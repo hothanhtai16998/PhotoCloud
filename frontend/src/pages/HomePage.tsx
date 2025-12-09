@@ -5,9 +5,9 @@ import { useImageStore } from "@/stores/useImageStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
-import ImageGrid from "./ImageGrid";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import CategoryNavigation from "@/components/CategoryNavigation";
+import NoFlashGrid from "./test/NoFlashGrid";
 
 // Lazy load Slider - conditionally rendered
 const Slider = lazy(() => import("@/components/Slider"));
@@ -47,7 +47,7 @@ function HomePage() {
                     </Suspense>
                 )}
                 <CategoryNavigation />
-                <ImageGrid />
+                <NoFlashGrid />
             </main>
         </>
     );
