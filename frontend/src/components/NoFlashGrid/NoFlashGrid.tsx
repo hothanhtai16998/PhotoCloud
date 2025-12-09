@@ -318,7 +318,8 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
     return (
         <div className={`no-flash-grid-container ${className}`}>
-            {isLoading ? (
+            {/* Only show loading state if we have no images - keep grid visible during category change */}
+            {isLoading && filteredImages.length === 0 ? (
                 <div className="loading-state">Loading...</div>
             ) : (
                 <div

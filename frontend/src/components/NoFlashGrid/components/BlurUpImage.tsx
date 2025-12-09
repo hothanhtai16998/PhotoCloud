@@ -38,6 +38,7 @@ export function BlurUpImage({
     const [isInView, setIsInView] = useState(priority);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const loadingRef = useRef(false);
+    const imgRef = useRef<HTMLImageElement | null>(null);
 
     // Intersection Observer for lazy loading
     useEffect(() => {
@@ -88,6 +89,16 @@ export function BlurUpImage({
         preloadImage(full, true)
             .then((src) => {
                 setFullSrc(src);
+                // Check if image is already cached by creating a test image
+                const testImg = new Image();
+                testImg.onload = () => {
+                    // Image is cached - set loaded immediately to prevent flash
+                    setLoaded(true);
+                };
+                testImg.onerror = () => {
+                    // Image not cached - will load normally
+                };
+                testImg.src = src;
             })
             .catch(() => {
                 // Keep placeholder on error
@@ -306,7 +317,8 @@ export function BlurUpImage({
                         onClick={isMobile ? onClick : undefined}
                         style={{
                             opacity: loaded ? 0 : 1,
-                            transition: 'opacity 0.5s ease-out',
+                            /* Disable transition during initial load to prevent flashing */
+                            transition: loaded ? 'opacity 0.15s ease-out' : 'opacity 0s',
                             cursor: isMobile ? 'pointer' : undefined
                         }}
                     />
@@ -315,6 +327,13 @@ export function BlurUpImage({
                 {/* Full Image (High Quality) */}
                 {fullSrc && (
                     <img
+                        ref={(el) => {
+                            imgRef.current = el;
+                            // Check if image is already loaded (cached) to prevent flash
+                            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+                                setLoaded(true);
+                            }
+                        }}
                         src={fullSrc}
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
@@ -324,6 +343,10 @@ export function BlurUpImage({
                         onLoad={() => {
                             setLoaded(true);
                             onLoadComplete?.();
+                        }}
+                        onError={() => {
+                            // If image fails to load, still show placeholder
+                            setLoaded(false);
                         }}
                     />
                 )}

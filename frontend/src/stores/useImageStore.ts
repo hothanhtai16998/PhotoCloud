@@ -138,17 +138,20 @@ export const useImageStore = create(
         draft.loading = true;
         draft.error = null;
 
-        // Clear images for new query
+        // Only clear images if it's a page 1 refresh without filter changes
+        // For category/search/location changes, keep old images visible until new ones load
+        // This prevents flashing during category changes
         if (
-          categoryChanged ||
-          searchChanged ||
-          locationChanged ||
-          params?.page === 1 ||
-          !params?.page
+          (params?.page === 1 || !params?.page) &&
+          !categoryChanged &&
+          !searchChanged &&
+          !locationChanged
         ) {
+          // Only clear on initial load or refresh without filter changes
           draft.images = [];
           draft.pagination = null;
         }
+        // For filter changes, keep images visible - they'll be replaced after loading
       });
 
       try {
@@ -185,13 +188,25 @@ export const useImageStore = create(
             draft.currentCategory = params?.category;
             draft.currentLocation = params?.location;
 
-            // For new queries, merge with recent uploads
-            const recentUploads = filterRecentUploads(
-              draft.images,
-              params,
-              params?._refresh === true
-            );
-            draft.images = mergeImages(draft.images, newImages, recentUploads);
+            // For category/search/location changes, replace images completely
+            // This happens after loading, so old images were visible during the transition
+            if (categoryChanged || searchChanged || locationChanged) {
+              // Replace images completely for filter changes
+              const recentUploads = filterRecentUploads(
+                [],
+                params,
+                params?._refresh === true
+              );
+              draft.images = mergeImages([], newImages, recentUploads);
+            } else {
+              // For refresh without filter changes, merge with existing
+              const recentUploads = filterRecentUploads(
+                draft.images,
+                params,
+                params?._refresh === true
+              );
+              draft.images = mergeImages(draft.images, newImages, recentUploads);
+            }
           } else {
             // For pagination, append without duplicates
             draft.images = appendImages(draft.images, newImages);

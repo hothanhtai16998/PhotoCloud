@@ -36,7 +36,8 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  transition: opacity 0.3s ease;
+  /* Disable transition during initial load to prevent flashing */
+  transition: opacity 0s;
 }
 
 /* Mobile Layout - Author at top */
@@ -140,6 +141,16 @@
 
 .blur-up-image.loaded {
   opacity: 1;
+}
+
+/* Disable transition on full image during initial load to prevent flashing */
+.blur-up-image.full {
+  transition: opacity 0s;
+}
+
+/* Only enable transition after image is loaded to prevent flash */
+.blur-up-image.full.loaded {
+  transition: opacity 0.15s ease;
 }
 
 /* Hover Overlay - Unsplash Style */

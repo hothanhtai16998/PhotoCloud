@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { imageService } from "@/services/imageService";
 import type { Image } from "@/types/image";
 import { sliderConfig, type TransitionType } from "@/config/sliderConfig";
@@ -152,15 +152,6 @@ function Slider() {
         abortControllerRef.current.abort();
       }
     };
-  }, []);
-
-  // Handle transition type change
-  const handleTransitionTypeChange = useCallback((type: TransitionType) => {
-    setTransitionType(type);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(TRANSITION_STORAGE_KEY, type);
-    }
-    setShowTransitionMenu(false);
   }, []);
 
   const goToSlide = useCallback((index: number) => {
@@ -613,31 +604,6 @@ function Slider() {
           />
         </div>
       )}
-
-      {/* Transition Type Selector */}
-      <div className="slider-transition-selector" ref={transitionMenuRef}>
-        <button
-          className="slider-transition-toggle"
-          onClick={() => setShowTransitionMenu(!showTransitionMenu)}
-          aria-label="Transition settings"
-        >
-          <Settings2 size={18} />
-        </button>
-        {showTransitionMenu && (
-          <div className="slider-transition-menu">
-            <div className="slider-transition-menu-header">Transition Style</div>
-            {sliderConfig.transition.availableTypes.map((type) => (
-              <button
-                key={type}
-                className={`slider-transition-option ${transitionType === type ? 'active' : ''}`}
-                onClick={() => handleTransitionTypeChange(type)}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Main Carousel */}
       <div className={`main-carousel-container transition-${transitionType} slide-direction-${slideDirection}`}>
