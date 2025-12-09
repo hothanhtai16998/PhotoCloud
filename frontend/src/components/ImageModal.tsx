@@ -262,28 +262,49 @@ const ImageModal = ({
         onClick={(e) => !renderAsPage && e.stopPropagation()}
         onWheel={handleModalWheel}
       >
-        {/* Modal Header */}
-        <ImageModalHeader
-          image={image}
-          user={user}
-          isMobile={isMobile}
-          renderAsPage={renderAsPage}
-          isFavorited={isFavorited}
-          handleToggleFavorite={handleToggleFavorite}
-          handleDownloadWithSize={handleDownloadWithSize}
-          handleViewProfile={handleViewProfile}
-          handleOpenCollection={handleOpenCollection}
-          onClose={onClose}
-          modalContentRef={modalContentRef}
-          onImageSelect={onImageSelect}
-          isHeaderHidden={isHeaderHidden}
-        />
+        {/* Modal Header - Desktop only */}
+        {!isMobile && !renderAsPage && (
+          <ImageModalHeader
+            image={image}
+            user={user}
+            isMobile={isMobile}
+            renderAsPage={renderAsPage}
+            isFavorited={isFavorited}
+            handleToggleFavorite={handleToggleFavorite}
+            handleDownloadWithSize={handleDownloadWithSize}
+            handleViewProfile={handleViewProfile}
+            handleOpenCollection={handleOpenCollection}
+            onClose={onClose}
+            modalContentRef={modalContentRef}
+            onImageSelect={onImageSelect}
+            isHeaderHidden={isHeaderHidden}
+          />
+        )}
 
         {/* Modal Image Content - Scrollable */}
         <div
           className="image-modal-content"
           ref={modalContentRef}
         >
+          {/* Author Banner - Mobile/Page Mode (inside content for visibility) */}
+          {(isMobile || renderAsPage) && (
+            <ImageModalHeader
+              image={image}
+              user={user}
+              isMobile={isMobile}
+              renderAsPage={renderAsPage}
+              isFavorited={isFavorited}
+              handleToggleFavorite={handleToggleFavorite}
+              handleDownloadWithSize={handleDownloadWithSize}
+              handleViewProfile={handleViewProfile}
+              handleOpenCollection={handleOpenCollection}
+              onClose={onClose}
+              modalContentRef={modalContentRef}
+              onImageSelect={onImageSelect}
+              isHeaderHidden={isHeaderHidden}
+            />
+          )}
+
           {/* Main Image with Zoom */}
           <ImageModalContent
             image={image}

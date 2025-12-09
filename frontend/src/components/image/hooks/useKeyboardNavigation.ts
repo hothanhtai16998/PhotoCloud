@@ -182,9 +182,13 @@ export const useKeyboardNavigation = ({
     // Prevent scroll events on body/window
     const preventBodyScroll = (e: Event) => {
       // Allow scrolling within modal content
-      const target = e.target as HTMLElement;
-      if (target.closest('.image-modal-content') || target.closest('.image-modal')) {
-        return;
+      const target = e.target;
+      // Check if target is an HTMLElement and has closest method
+      if (target && typeof target === 'object' && 'closest' in target && typeof (target as HTMLElement).closest === 'function') {
+        const htmlTarget = target as HTMLElement;
+        if (htmlTarget.closest('.image-modal-content') || htmlTarget.closest('.image-modal')) {
+          return;
+        }
       }
       e.preventDefault();
       e.stopPropagation();
