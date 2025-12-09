@@ -278,9 +278,9 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Check scroll position and update button visibility
+  // Check scroll position and update button visibility (works on both desktop and mobile)
   const checkScrollButtons = useCallback(() => {
-    if (!categoryNavElementRef.current || !isMobile) {
+    if (!categoryNavElementRef.current) {
       setCanScrollLeft(false)
       setCanScrollRight(false)
       return
@@ -288,43 +288,60 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
 
     const nav = categoryNavElementRef.current
     const { scrollLeft, scrollWidth, clientWidth } = nav
-    setCanScrollLeft(scrollLeft > 0)
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1) // -1 for rounding
-  }, [isMobile])
+    const canScroll = scrollWidth > clientWidth
+    const isAtStart = scrollLeft <= 1 // Allow 1px tolerance for rounding
+    const isAtEnd = scrollLeft >= scrollWidth - clientWidth - 1 // -1 for rounding
+    
+    // Show left button only when scrolled right (not at start)
+    setCanScrollLeft(canScroll && !isAtStart)
+    // Show right button when there's content to scroll and not at end
+    setCanScrollRight(canScroll && !isAtEnd)
+  }, [])
 
   // Update scroll button visibility when categories change or on scroll
   useEffect(() => {
     if (!categoryNavElementRef.current) return
 
-    checkScrollButtons()
+    // Initial check with a small delay to ensure layout is complete
+    const initialCheck = setTimeout(() => {
+      checkScrollButtons()
+    }, 100)
 
     const nav = categoryNavElementRef.current
-    nav.addEventListener('scroll', checkScrollButtons)
+    nav.addEventListener('scroll', checkScrollButtons, { passive: true })
     
-    // Also check on resize
+    // Also check on resize with debouncing
+    let resizeTimer: number | null = null
     const handleResize = () => {
-      checkScrollButtons()
+      if (resizeTimer) clearTimeout(resizeTimer)
+      resizeTimer = window.setTimeout(() => {
+        checkScrollButtons()
+      }, 150)
     }
     window.addEventListener('resize', handleResize)
 
     return () => {
+      clearTimeout(initialCheck)
+      if (resizeTimer) clearTimeout(resizeTimer)
       nav.removeEventListener('scroll', checkScrollButtons)
       window.removeEventListener('resize', handleResize)
     }
   }, [categoryObjects, checkScrollButtons])
 
-  // Scroll handlers
+  // Scroll handlers - match Unsplash's smooth scrolling behavior
   const scrollLeft = useCallback(() => {
     if (!categoryNavElementRef.current) return
     const nav = categoryNavElementRef.current
-    const scrollAmount = nav.clientWidth * 0.8 // Scroll 80% of visible width
+    // Scroll approximately 3-4 category items at a time
+    const scrollAmount = nav.clientWidth * 0.75 // Scroll 75% of visible width
     nav.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
   }, [])
 
   const scrollRight = useCallback(() => {
     if (!categoryNavElementRef.current) return
     const nav = categoryNavElementRef.current
-    const scrollAmount = nav.clientWidth * 0.8 // Scroll 80% of visible width
+    // Scroll approximately 3-4 category items at a time
+    const scrollAmount = nav.clientWidth * 0.75 // Scroll 75% of visible width
     nav.scrollBy({ left: scrollAmount, behavior: 'smooth' })
   }, [])
 
@@ -403,8 +420,8 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
         ref={categoryNavRef}
       >
         <div className="category-navigation-wrapper">
-          {/* Left scroll button - only on mobile */}
-          {isMobile && canScrollLeft && (
+          {/* Left scroll button - shown when scrolled right */}
+          {canScrollLeft && (
             <button
               className="category-scroll-btn category-scroll-btn-left"
               onClick={scrollLeft}
@@ -433,8 +450,8 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
             })}
           </nav>
 
-          {/* Right scroll button - only on mobile */}
-          {isMobile && canScrollRight && (
+          {/* Right scroll button - shown when there's content to scroll right */}
+          {canScrollRight && (
             <button
               className="category-scroll-btn category-scroll-btn-right"
               onClick={scrollRight}

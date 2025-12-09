@@ -17,6 +17,7 @@ export function useImageGridState({ category }: UseImageGridStateProps) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const isInitialMount = useRef(true);
   const [searchParams] = useSearchParams();
 
   const [imageTypes, setImageTypes] = useState<
@@ -110,14 +111,39 @@ export function useImageGridState({ category }: UseImageGridStateProps) {
     []
   );
 
+  // Track previous category to detect changes
+  const prevCategoryRef = useRef<string | null>(null);
+  
   useEffect(() => {
-    if (!category) return; // Wait until category is resolved
-    // Don't clear images here to prevent flashing
-    // Instead, only update page and hasMore, then fetch new images
-    // The setImages in fetchImages will replace them after loading
-    setPage(1);
-    setHasMore(true);
-    fetchImages(1, category, filters.color, true); // Force refresh when category changes
+    // If category is null, it means we're waiting for category resolution (from slug)
+    // In this case, clear images and show loading state
+    if (category === null) {
+      // Only clear if we had a previous category (to avoid clearing on initial load)
+      if (prevCategoryRef.current !== null && !isInitialMount.current) {
+        setImages([]);
+        setLoading(true);
+      }
+      setPage(1);
+      setHasMore(true);
+      // Don't update prevCategoryRef here - keep the previous value to detect when it resolves
+      return;
+    }
+    
+    // Category is resolved (either a string or 'all')
+    // Check if category actually changed or if this is the initial mount
+    const categoryChanged = prevCategoryRef.current !== category;
+    const shouldFetch = categoryChanged || isInitialMount.current;
+    
+    if (shouldFetch) {
+      // Don't clear images here to prevent flashing
+      // Instead, only update page and hasMore, then fetch new images
+      // The setImages in fetchImages will replace them after loading
+      setPage(1);
+      setHasMore(true);
+      fetchImages(1, category, filters.color, true); // Force refresh when category changes
+      prevCategoryRef.current = category;
+      isInitialMount.current = false;
+    }
   }, [category, filters.color, fetchImages]);
 
   // Listen for new image uploads to refresh the grid

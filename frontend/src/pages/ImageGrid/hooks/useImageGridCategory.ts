@@ -25,13 +25,22 @@ export function useImageGridCategory() {
   // Fetch categories to convert slug to name
   useEffect(() => {
     const loadCategories = async () => {
+      // Reset category name immediately when slug changes to prevent stale data
+      setCategoryName(null);
+      
       try {
         const fetchedCategories = await categoryService.fetchCategories();
 
         // If we have a category slug, convert it to name
         if (categorySlug) {
           const name = getCategoryNameFromSlug(categorySlug, fetchedCategories);
-          setCategoryName(name);
+          if (name) {
+            setCategoryName(name);
+          } else {
+            // Category slug not found - could be invalid slug
+            console.warn(`Category slug "${categorySlug}" not found`);
+            setCategoryName(null);
+          }
         } else {
           setCategoryName(null);
         }

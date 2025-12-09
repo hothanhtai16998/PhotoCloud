@@ -36,29 +36,39 @@
 
 .category-navigation-wrapper {
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 0;
   max-width: min(1600px, 96%); /* Match image-grid-container max-width */
   position: relative;
   display: flex;
   align-items: center;
+  overflow: visible; /* Allow buttons to be visible outside */
 }
 
 .category-navigation {
   display: flex;
   align-items: center;
   gap: 32px;
-  padding: 12px 0;
+  padding: 12px 20px; /* Base padding */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   flex: 1;
   scroll-behavior: smooth;
+  /* Add extra padding when scroll buttons are present */
+  padding-left: 48px;
+  padding-right: 48px;
 }
 
-/* Desktop: Allow scrolling if needed */
+/* Desktop: Allow scrolling if needed and show buttons when needed */
 @media (min-width: 769px) {
   .category-navigation {
     overflow-x: auto;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+  
+  .category-scroll-btn {
+    display: flex; /* Show on desktop when conditionally rendered */
   }
 }
 
@@ -100,7 +110,7 @@
   background: var(--color-text-primary, #111);
 }
 
-/* Scroll buttons - only visible on mobile */
+/* Scroll buttons - visible when needed (both desktop and mobile) */
 .category-scroll-btn {
   position: absolute;
   top: 50%;
@@ -109,32 +119,46 @@
   height: 32px;
   border-radius: 50%;
   background: #fff;
-  border: 1px solid #e5e5e5;
-  display: none; /* Hidden by default, shown on mobile */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex; /* Show by default when conditionally rendered */
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
   flex-shrink: 0;
+  opacity: 0.9;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.9;
+  }
 }
 
 .category-scroll-btn:hover {
-  background: #f5f5f5;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  background: #fff;
+  opacity: 1;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .category-scroll-btn:active {
   transform: translateY(-50%) scale(0.95);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .category-scroll-btn-left {
-  left: 4px;
+  left: 8px;
 }
 
 .category-scroll-btn-right {
-  right: 4px;
+  right: 8px;
 }
 
 .category-scroll-btn svg {
@@ -143,24 +167,21 @@
 
 /* Responsive */
 @media (min-width: 768px) {
-  .category-navigation-wrapper {
-    padding: 0 20px;
+  .category-navigation {
+    padding: 12px 48px; /* Space for scroll buttons */
   }
 }
 
 @media (min-width: 1024px) {
-  .category-navigation-wrapper {
-    padding: 0 30px;
+  .category-navigation {
+    padding: 12px 48px; /* Space for scroll buttons */
   }
 }
 
 @media (max-width: 1024px) {
-  .category-navigation-wrapper {
-    padding: 0 16px;
-  }
-
   .category-navigation {
     gap: 24px;
+    padding: 12px 48px; /* Space for scroll buttons */
   }
 }
 
@@ -176,14 +197,14 @@
   }
 
   .category-navigation-wrapper {
-    padding: 0 20px; /* Space for scroll buttons */
+    padding: 0 0; /* No padding, buttons positioned absolutely */
     width: 100%;
     max-width: 100%;
   }
 
   .category-navigation {
     gap: 20px;
-    padding: 10px 0;
+    padding: 10px 48px; /* Space for scroll buttons */
     overflow-x: auto !important; /* Enable scrolling on mobile */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -197,10 +218,7 @@
     pointer-events: auto;
   }
 
-  /* Show scroll buttons on mobile */
-  .category-scroll-btn {
-    display: flex;
-  }
+  /* Scroll buttons already shown via conditional rendering */
 }
 
 @media (max-width: 480px) {
@@ -215,13 +233,13 @@
   }
 
   .category-navigation-wrapper {
-    padding: 0 18px; /* Space for scroll buttons */
+    padding: 0 0; /* No padding, buttons positioned absolutely */
     width: 100%;
   }
 
   .category-navigation {
     gap: 16px;
-    padding: 0;
+    padding: 8px 44px; /* Space for scroll buttons */
     overflow-x: auto !important; /* Enable scrolling on mobile */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
