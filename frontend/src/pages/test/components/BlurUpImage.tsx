@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { t } from '@/i18n';
 import { useUserStore } from '@/stores/useUserStore';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import type { DownloadSize } from '@/components/image/DownloadSizeSelector';
 import './BlurUpImage.css';
 
@@ -165,6 +166,7 @@ export function BlurUpImage({
     const isFavorited = useBatchedFavoriteCheck(image?._id);
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
     const navigate = useNavigate();
+    const isMobile = useIsMobile();
 
     // Handle favorite/save button
     const handleSaveClick = useCallback(async (e: React.MouseEvent) => {
@@ -258,29 +260,38 @@ export function BlurUpImage({
         <div
             ref={containerRef}
             className="blur-up-image-container"
-            onClick={onClick}
+            onClick={!isMobile ? onClick : undefined}
             onMouseEnter={handleContainerMouseEnter}
             onMouseLeave={handleContainerMouseLeave}
             onMouseMove={handleMouseMove}
         >
             {/* Mobile Layout: Author at top */}
             {username && (
-                <div
-                    className="blur-up-image-mobile-author"
-                    onClick={handleAuthorClick}
-                >
+                <div className="blur-up-image-mobile-author">
                     {userAvatar ? (
                         <img
                             src={userAvatar}
                             alt={username}
                             className="blur-up-image-user-avatar"
+                            onClick={handleAuthorClick}
+                            style={{ cursor: 'pointer' }}
                         />
                     ) : (
-                        <div className="blur-up-image-user-avatar-placeholder">
+                        <div 
+                            className="blur-up-image-user-avatar-placeholder"
+                            onClick={handleAuthorClick}
+                            style={{ cursor: 'pointer' }}
+                        >
                             {username[0]?.toUpperCase() || 'U'}
                         </div>
                     )}
-                    <span className="blur-up-image-username">{username}</span>
+                    <span 
+                        className="blur-up-image-username"
+                        onClick={handleAuthorClick}
+                        style={{ cursor: 'pointer' }}
+                    >
+                        {username}
+                    </span>
                 </div>
             )}
 
@@ -292,9 +303,11 @@ export function BlurUpImage({
                         src={placeholderInitial}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
+                        onClick={isMobile ? onClick : undefined}
                         style={{
                             opacity: loaded ? 0 : 1,
-                            transition: 'opacity 0.5s ease-out'
+                            transition: 'opacity 0.5s ease-out',
+                            cursor: isMobile ? 'pointer' : undefined
                         }}
                     />
                 )}
@@ -306,6 +319,8 @@ export function BlurUpImage({
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
                         loading="lazy"
+                        onClick={isMobile ? onClick : undefined}
+                        style={{ cursor: isMobile ? 'pointer' : undefined }}
                         onLoad={() => {
                             setLoaded(true);
                             onLoadComplete?.();
