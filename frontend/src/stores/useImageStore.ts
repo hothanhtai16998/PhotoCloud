@@ -19,6 +19,22 @@ import {
   trimDeletedIds,
 } from './helpers/imageStoreHelpers';
 
+// Category cache: Map<categoryKey, { images: Image[], pagination: Pagination | null }>
+// categoryKey format: "category:search:location" or "all" for no filters
+const categoryCache = new Map<string, { images: Image[]; pagination: Pagination | null }>();
+
+function getCategoryCacheKey(params?: FetchImagesParams): string {
+  const category = params?.category || 'all';
+  const search = params?.search || '';
+  const location = params?.location || '';
+  // Only cache when no search/location filters (category-only queries)
+  if (search || location) {
+    return ''; // Don't cache filtered queries
+  }
+  // Normalize category key (handle undefined as 'all')
+  return category || 'all';
+}
+
 export const useImageStore = create(
   immer<ImageState>((set, get) => ({
     // State
@@ -133,25 +149,66 @@ export const useImageStore = create(
           state.currentLocation
         );
 
+      // Check if we're already showing the requested category (avoid unnecessary updates)
+      const isSameCategory = 
+        state.currentCategory === params?.category &&
+        state.currentSearch === params?.search &&
+        state.currentLocation === params?.location &&
+        !params?._refresh &&
+        (params?.page === 1 || !params?.page);
+      
+      if (isSameCategory && state.images.length > 0) {
+        // Already showing this category, no need to fetch
+        return;
+      }
+
+      // Check cache for category-only queries (no search/location filters)
+      const cacheKey = getCategoryCacheKey(params);
+      const cached = cacheKey ? categoryCache.get(cacheKey) : null;
+      
+      // If we have cached data and not refreshing, use it immediately
+      if (cached && !params?._refresh && (params?.page === 1 || !params?.page)) {
+        // Filter out deleted images from cache
+        const filteredCachedImages = filterDeletedImages(
+          cached.images,
+          state.deletedImageIds
+        );
+        
+        // Only update if images are different (avoid unnecessary re-renders)
+        if (filteredCachedImages.length > 0 || state.images.length === 0) {
+          set((draft) => {
+            draft.images = filteredCachedImages;
+            draft.pagination = cached.pagination;
+            draft.loading = false;
+            draft.currentSearch = params?.search;
+            draft.currentCategory = params?.category;
+            draft.currentLocation = params?.location;
+          });
+        }
+        return; // Use cached data, no need to fetch
+      }
+
       // Prepare state for new fetch
+      // For category changes, keep old images visible until new ones load (prevents flashing)
       set((draft) => {
         draft.loading = true;
         draft.error = null;
 
         // Only clear images if it's a page 1 refresh without filter changes
-        // For category/search/location changes, keep old images visible until new ones load
-        // This prevents flashing during category changes
+        // For category/search/location changes, NEVER clear images - keep them visible
+        // This prevents flashing during category changes (like Unsplash)
         if (
           (params?.page === 1 || !params?.page) &&
           !categoryChanged &&
           !searchChanged &&
-          !locationChanged
+          !locationChanged &&
+          params?._refresh
         ) {
-          // Only clear on initial load or refresh without filter changes
+          // Only clear on explicit refresh without filter changes
           draft.images = [];
           draft.pagination = null;
         }
-        // For filter changes, keep images visible - they'll be replaced after loading
+        // For filter changes, ALWAYS keep images visible - they'll be replaced after loading
       });
 
       try {
@@ -217,6 +274,18 @@ export const useImageStore = create(
             : response.pagination || null;
           draft.loading = false;
         });
+
+        // Cache category images (only for category-only queries, page 1, not refreshing)
+        if (cacheKey && (params?.page === 1 || !params?.page) && !params?._refresh) {
+          const finalState = get();
+          categoryCache.set(cacheKey, {
+            images: finalState.images,
+            pagination: finalState.pagination,
+          });
+        } else if (params?._refresh && cacheKey) {
+          // Clear cache when refreshing
+          categoryCache.delete(cacheKey);
+        }
       } catch (error) {
         // Silently ignore cancelled requests
         if (isCancelledRequest(error)) {
@@ -242,6 +311,9 @@ export const useImageStore = create(
      * Remove an image from the store and track it to prevent re-fetching
      */
     removeImage: (imageId: string) => {
+      const state = get();
+      const cacheKey = getCategoryCacheKey({ category: state.currentCategory });
+      
       set((state) => {
         // Add to deleted IDs for filtering in future fetches
         if (!state.deletedImageIds.includes(imageId)) {
@@ -259,6 +331,11 @@ export const useImageStore = create(
           state.pagination.total = Math.max(0, state.pagination.total - 1);
         }
       });
+
+      // Invalidate cache for current category when image is removed
+      if (cacheKey) {
+        categoryCache.delete(cacheKey);
+      }
     },
   }))
 );

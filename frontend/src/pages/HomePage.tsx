@@ -47,11 +47,13 @@ function HomePage() {
         
         if (categoryChanged || prevCategoryRef.current === null) {
             // Fetch images with category filter
+            // Don't use _refresh: true - let cache handle it for instant display
             const categoryParam = category === 'all' ? undefined : category;
             fetchImages({ 
                 page: 1, 
                 category: categoryParam,
-                _refresh: true 
+                // Only refresh on initial load, not when switching categories
+                _refresh: prevCategoryRef.current === null
             });
             prevCategoryRef.current = category;
         }
@@ -63,7 +65,7 @@ function HomePage() {
         await fetchImages({ 
             page: 1, 
             category: categoryParam,
-            _refresh: true 
+            _refresh: true // Only refresh when explicitly loading data
         });
     }, [fetchImages, category]);
 
