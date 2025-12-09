@@ -1,0 +1,55 @@
+/* NoFlashGrid Component Styles */
+
+/* Container */
+.no-flash-grid-container {
+  padding: 16px;
+  max-width: 1296px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Grid Container */
+.no-flash-grid {
+  display: grid;
+  gap: 24px;
+  width: 100%;
+  /* Base row height - will be overridden by inline style */
+  grid-auto-rows: 25px;
+  /* Don't use grid-auto-flow: dense - we use explicit row positioning */
+}
+
+/* Grid Item (Wrapper) */
+.grid-item-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  /* Grid will automatically size this based on gridRowEnd span */
+  /* Don't set height: 100% as it can interfere with grid row spanning */
+  height: auto;
+}
+
+/* BlurUpImage styles are in BlurUpImage.css */
+
+/* Loading State */
+.loading-state {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+}
+
+/* Responsive: Mobile Layout */
+@media (max-width: 768px) {
+  .no-flash-grid-container {
+    padding: 0;
+  }
+}
+
+/* Page Container - for backward compatibility */
+.no-flash-grid-page {
+  padding: 16px;
+  max-width: 1296px;
+  margin: 0 auto;
+  width: 100%;
+}
+

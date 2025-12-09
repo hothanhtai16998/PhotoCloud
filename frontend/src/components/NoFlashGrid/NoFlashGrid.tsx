@@ -1,23 +1,27 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import api from '@/lib/axios';
 import type { Image } from '@/types/image';
 import './NoFlashGrid.css';
 
 // Import extracted modules
-import { GRID_CONFIG } from '../components/NoFlashGrid/constants/gridConfig';
-import { preloadImage, preloadImages, loadedImages } from '../components/NoFlashGrid/utils/imagePreloader';
-import { loadImageDimensions } from '../components/NoFlashGrid/utils/imageDimensions';
-import { calculateImageLayout, getColumnCount } from '../components/NoFlashGrid/utils/gridLayout';
-import { BlurUpImage } from '../components/NoFlashGrid/components/BlurUpImage';
-import { ImageModal } from '../components/NoFlashGrid/components/ImageModal';
+import { GRID_CONFIG } from './constants/gridConfig';
+import { preloadImage, preloadImages, loadedImages } from './utils/imagePreloader';
+import { loadImageDimensions } from './utils/imageDimensions';
+import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
+import { BlurUpImage } from './components/BlurUpImage';
+import { ImageModal } from './components/ImageModal';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
 
-export default function NoFlashGridPage() {
-    const [images, setImages] = useState<ExtendedImage[]>([]);
+export interface NoFlashGridProps {
+    images: ExtendedImage[];
+    loading?: boolean;
+    onLoadData?: () => Promise<void>;
+    className?: string;
+}
+
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '' }: NoFlashGridProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true);
     const gridRef = useRef<HTMLDivElement | null>(null);
     const [columnCount, setColumnCount] = useState(() => {
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
@@ -25,54 +29,22 @@ export default function NoFlashGridPage() {
     });
     const [containerWidth, setContainerWidth] = useState(1400); // Default, will be updated
 
-    const toImageArray = (val: unknown): ExtendedImage[] => {
-        const v = val as any;
-        if (Array.isArray(v)) return v;
-        if (Array.isArray(v?.data)) return v.data;
-        if (Array.isArray(v?.items)) return v.items;
-        if (Array.isArray(v?.categories)) return v.categories;
-        if (Array.isArray(v?.images)) return v.images;
-        return [];
-    };
-
-
     // Store image dimensions as they load
     const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
     const loadingDimensionsRef = useRef<Set<string>>(new Set()); // Track which images we're currently loading
 
-    // Load images
+    // Load data using provided callback
     const loadData = useCallback(async () => {
-        try {
-            setLoading(true);
-            const imgsRes = await api.get('/images');
-            const loadedImages = toImageArray(imgsRes.data);
-            setImages(loadedImages);
-
-            // Clear image dimensions cache when refreshing (in case images were updated)
-            setImageDimensions(new Map());
-            loadingDimensionsRef.current.clear();
-
-            // Preload thumbnails for first batch of images
-            const thumbnails = loadedImages.slice(0, 20)
-                .map(img => img.thumbnailUrl || img.smallUrl)
-                .filter((src): src is string => Boolean(src));
-            preloadImages(thumbnails, true);
-        } catch (e) {
-            console.error('Failed to load data', e);
-            setImages([]);
-        } finally {
-            setLoading(false);
+        if (onLoadData) {
+            await onLoadData();
         }
-    }, []);
-
-    // Load data on mount
-    useEffect(() => {
-        loadData();
-    }, [loadData]);
+    }, [onLoadData]);
 
     // Refresh data when tab becomes visible again (after being hidden for a while)
     // This syncs data if it was updated in another tab, but only refreshes when appropriate
     useEffect(() => {
+        if (!onLoadData) return;
+        
         let hiddenTime: number | null = null;
         const MIN_HIDDEN_TIME = 30000; // Only refresh if hidden for 30+ seconds
 
@@ -98,10 +70,19 @@ export default function NoFlashGridPage() {
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
-    }, [loadData]);
+    }, [loadData, onLoadData]);
 
     const filteredImages = useMemo<ExtendedImage[]>(() => {
         return images;
+    }, [images]);
+
+    // Preload thumbnails for first batch of images when images change
+    useEffect(() => {
+        if (images.length === 0) return;
+        const thumbnails = images.slice(0, 20)
+            .map(img => img.thumbnailUrl || img.smallUrl)
+            .filter((src): src is string => Boolean(src));
+        preloadImages(thumbnails, true);
     }, [images]);
 
     // Load dimensions for images that don't have them
@@ -243,9 +224,6 @@ export default function NoFlashGridPage() {
                 ? layout.rowSpan + mobileUIBarsRowSpan
                 : layout.rowSpan;
 
-            // Calculate actual image height
-            // const imageHeight = layout.rowSpan * GRID_CONFIG.baseRowHeight;
-
             // Find the shortest column (by pixel height)
             let shortestColumnIndex = 0;
             let shortestHeight = columnHeights[0];
@@ -336,9 +314,11 @@ export default function NoFlashGridPage() {
         }
     }, [selectedIndex, filteredImages]);
 
+    const isLoading = externalLoading ?? false;
+
     return (
-        <div className="no-flash-grid-page">
-            {loading ? (
+        <div className={`no-flash-grid-container ${className}`}>
+            {isLoading ? (
                 <div className="loading-state">Loading...</div>
             ) : (
                 <div
@@ -357,14 +337,6 @@ export default function NoFlashGridPage() {
                         const { image, column, rowSpan, rowStart } = layout;
                         // Priority loading for first 12 images (above the fold)
                         const isPriority = idx < 12;
-
-                        // Calculate aspect ratio for debug display
-                        const dimensions = imageDimensions.get(image._id) || null;
-                        const finalWidth = dimensions?.width || image.width || 0;
-                        const finalHeight = dimensions?.height || image.height || 0;
-                        const aspectRatio = finalWidth && finalHeight ? (finalWidth / finalHeight).toFixed(2) : 'N/A';
-                        // Actual height includes gaps: rowSpan rows + (rowSpan - 1) gaps
-                        const actualHeight = rowSpan * GRID_CONFIG.baseRowHeight + (rowSpan - 1) * GRID_CONFIG.gap;
 
                         return (
                             <div

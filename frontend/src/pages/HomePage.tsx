@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useContext } from "react";
+import { useEffect, lazy, Suspense, useContext, useCallback } from "react";
 import Header from "../components/Header";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";
@@ -7,13 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import CategoryNavigation from "@/components/CategoryNavigation";
-import NoFlashGrid from "./test/NoFlashGrid";
+import { NoFlashGrid } from "@/components/NoFlashGrid";
 
 // Lazy load Slider - conditionally rendered
 const Slider = lazy(() => import("@/components/Slider"));
 
 function HomePage() {
-    const { currentSearch } = useImageStore();
+    const { currentSearch, images, loading, fetchImages } = useImageStore();
     const actualLocation = useContext(ActualLocationContext);
 
     // Check if modal is open (image param exists)
@@ -32,6 +32,16 @@ function HomePage() {
         }
     }, [currentSearch]);
 
+    // Load images when component mounts
+    useEffect(() => {
+        fetchImages({ page: 1 });
+    }, [fetchImages]);
+
+    // Load data callback for NoFlashGrid
+    const loadData = useCallback(async () => {
+        await fetchImages({ page: 1, _refresh: true });
+    }, [fetchImages]);
+
     return (
         <>
             <Header />
@@ -47,7 +57,11 @@ function HomePage() {
                     </Suspense>
                 )}
                 <CategoryNavigation />
-                <NoFlashGrid />
+                <NoFlashGrid 
+                    images={images} 
+                    loading={loading}
+                    onLoadData={loadData}
+                />
             </main>
         </>
     );
