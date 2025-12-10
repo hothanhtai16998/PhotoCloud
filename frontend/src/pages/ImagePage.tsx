@@ -22,7 +22,8 @@ import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
 import { calculateImageLayout, getColumnCount } from '@/components/NoFlashGrid/utils/gridLayout';
 import { loadImageDimensions } from '@/components/NoFlashGrid/utils/imageDimensions';
-import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
+import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
+import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
 import { INLINE_MODAL_FLAG_KEY } from '@/constants/modalKeys';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
@@ -216,6 +217,11 @@ function ImagePage() {
   const previousBackSrcRef = useRef<string | null>(imageState.src);
   // Track the image ID that the previousBackSrcRef belongs to
   const previousBackSrcImageIdRef = useRef<string | null>(image?._id || null);
+  // Progress tracking for image loading
+  const [imageProgress, setImageProgress] = useState(0);
+  const [showProgressBar, setShowProgressBar] = useState(false);
+  const currentLoadingUrlRef = useRef<string | null>(null);
+  const isLoadingRef = useRef<boolean>(false); // Track if we're actively loading
 
   // Stats state
   const getInitialStats = useCallback(() => {
@@ -464,24 +470,24 @@ function ImagePage() {
     if (newBackSrc) {
       const isBase64 = newBackSrc.startsWith('data:');
 
-       if (isBase64) {
-         // Base64 is instant, update immediately
-         if (imageChanged || newBackSrc !== backSrcRef.current) {
-           // CRITICAL: Only update previousBackSrcRef if we're changing images
-           // Keep old value until new one is confirmed loaded
-           if (imageChanged) {
-             // previousBackSrcRef already set above, don't overwrite yet
-           }
-           backSrcRef.current = newBackSrc;
-           setBackSrc(newBackSrc);
-           // Update previous after new image is set and rendered
-           requestAnimationFrame(() => {
-             requestAnimationFrame(() => {
-               previousBackSrcRef.current = newBackSrc;
-               previousBackSrcImageIdRef.current = currentImageId;
-             });
-           });
-         }
+      if (isBase64) {
+        // Base64 is instant, update immediately
+        if (imageChanged || newBackSrc !== backSrcRef.current) {
+          // CRITICAL: Only update previousBackSrcRef if we're changing images
+          // Keep old value until new one is confirmed loaded
+          if (imageChanged) {
+            // previousBackSrcRef already set above, don't overwrite yet
+          }
+          backSrcRef.current = newBackSrc;
+          setBackSrc(newBackSrc);
+          // Update previous after new image is set and rendered
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              previousBackSrcRef.current = newBackSrc;
+              previousBackSrcImageIdRef.current = currentImageId;
+            });
+          });
+        }
 
         const networkThumbnail = image.thumbnailUrl || image.smallUrl || image.imageUrl || '';
         if (networkThumbnail && networkThumbnail !== newBackSrc) {
@@ -503,21 +509,21 @@ function ImagePage() {
         });
       } else {
         // Network image - check if cached first
-         if (loadedImages.has(newBackSrc)) {
-           // Cached - update immediately
-           if (imageChanged || newBackSrc !== backSrcRef.current) {
-             // CRITICAL: previousBackSrcRef already set above when imageChanged
-             // Don't overwrite it here - keep old image visible during transition
-             backSrcRef.current = newBackSrc;
-             setBackSrc(newBackSrc);
-             // Update previous after new image is confirmed visible
-             requestAnimationFrame(() => {
-               requestAnimationFrame(() => {
-                 previousBackSrcRef.current = newBackSrc;
-                 previousBackSrcImageIdRef.current = currentImageId;
-               });
-             });
-           }
+        if (loadedImages.has(newBackSrc)) {
+          // Cached - update immediately
+          if (imageChanged || newBackSrc !== backSrcRef.current) {
+            // CRITICAL: previousBackSrcRef already set above when imageChanged
+            // Don't overwrite it here - keep old image visible during transition
+            backSrcRef.current = newBackSrc;
+            setBackSrc(newBackSrc);
+            // Update previous after new image is confirmed visible
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                previousBackSrcRef.current = newBackSrc;
+                previousBackSrcImageIdRef.current = currentImageId;
+              });
+            });
+          }
           requestAnimationFrame(() => {
             if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
               setFrontSrc(null);
@@ -525,20 +531,20 @@ function ImagePage() {
           });
         } else {
           // Not cached - preload but keep old image visible until ready
-           preloadImage(newBackSrc, false)
-             .then((src) => {
-               if (previousImgRef.current?._id === currentImageId) {
-                 // CRITICAL: previousBackSrcRef already set above when imageChanged
-                 // Keep old image visible until new one is loaded
-                 backSrcRef.current = src;
-                 setBackSrc(src);
-                 // Update previous after new image is confirmed loaded and visible
-                 requestAnimationFrame(() => {
-                   requestAnimationFrame(() => {
-                     previousBackSrcRef.current = src;
-                     previousBackSrcImageIdRef.current = currentImageId;
-                   });
-                 });
+          preloadImage(newBackSrc, false)
+            .then((src) => {
+              if (previousImgRef.current?._id === currentImageId) {
+                // CRITICAL: previousBackSrcRef already set above when imageChanged
+                // Keep old image visible until new one is loaded
+                backSrcRef.current = src;
+                setBackSrc(src);
+                // Update previous after new image is confirmed loaded and visible
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    previousBackSrcRef.current = src;
+                    previousBackSrcImageIdRef.current = currentImageId;
+                  });
+                });
                 requestAnimationFrame(() => {
                   if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                     setFrontSrc(null);
@@ -574,9 +580,22 @@ function ImagePage() {
     const loadFrontImage = async () => {
       let loadedAny = false;
 
+      // Cancel any existing progress tracking
+      if (currentLoadingUrlRef.current) {
+        currentLoadingUrlRef.current = null;
+      }
+
+      // Reset progress
+      setImageProgress(0);
+      setShowProgressBar(true);
+      console.log('[ImagePage] Showing progress bar, loading:', regular || original);
+
       if (regular && regular !== thumbnail) {
         try {
           if (loadedImages.has(regular)) {
+            // Already cached - no progress needed
+            isLoadingRef.current = false;
+            setShowProgressBar(false);
             if (previousImgRef.current?._id === currentImageId) {
               setFrontSrc(regular);
               setFrontLoaded(true);
@@ -584,32 +603,82 @@ function ImagePage() {
               loadedAny = true;
             }
           } else {
-            const src = await preloadImage(regular, false);
-            if (previousImgRef.current?._id === currentImageId) {
+            // Preload regular with progress tracking
+            currentLoadingUrlRef.current = regular;
+            console.log('[ImagePage] Starting progress tracking for:', regular);
+            // Ensure progress bar is visible before starting
+            setShowProgressBar(true);
+            const src = await preloadImageWithProgress(
+              regular,
+              (progress) => {
+                console.log('[ImagePage] Progress update:', progress, '%', 'isLoadingRef:', isLoadingRef.current);
+                if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
+                  setImageProgress(progress);
+                  // Keep progress bar visible while loading - use ref to ensure it stays visible
+                  if (isLoadingRef.current) {
+                    setShowProgressBar(true);
+                  }
+                }
+              },
+              false
+            );
+            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
               setFrontSrc(src);
               if (!original || original === regular) {
                 setFrontLoaded(true);
+                isLoadingRef.current = false;
+                setShowProgressBar(false);
               }
               frontImageLoadedRef.current = true;
               loadedAny = true;
             }
           }
         } catch (e) {
-          // Ignore
+          // Ignore error, try original next
+          if (previousImgRef.current?._id === currentImageId) {
+            setShowProgressBar(false);
+          }
         }
       }
 
       if (original && original !== thumbnail && original !== regular) {
         try {
-          const src = await preloadImage(original, false);
-          if (previousImgRef.current?._id === currentImageId) {
+          // Reset progress for original (starts from 0 or continue from regular)
+          if (!loadedAny) {
+            setImageProgress(0);
+          }
+
+          // Preload original with progress tracking
+          currentLoadingUrlRef.current = original;
+          // Ensure progress bar is visible before starting
+          setShowProgressBar(true);
+          const src = await preloadImageWithProgress(
+            original,
+            (progress) => {
+              console.log('[ImagePage] Original progress update:', progress, '%', 'isLoadingRef:', isLoadingRef.current);
+              if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
+                setImageProgress(progress);
+                // Keep progress bar visible while loading - use ref to ensure it stays visible
+                if (isLoadingRef.current) {
+                  setShowProgressBar(true);
+                }
+              }
+            },
+            false
+          );
+          if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
             setFrontSrc(src);
             setFrontLoaded(true);
+            isLoadingRef.current = false;
+            setShowProgressBar(false);
             frontImageLoadedRef.current = true;
             loadedAny = true;
           }
         } catch (e) {
           // Ignore
+          if (previousImgRef.current?._id === currentImageId) {
+            setShowProgressBar(false);
+          }
         }
       }
 
@@ -1364,15 +1433,15 @@ function ImagePage() {
               // CRITICAL: Use previousBackSrcRef as fallback ONLY if it belongs to a different image
               // This prevents showing old image when new one is ready
               // Priority: backSrc (current) > previousBackSrcRef (if different image) > image URLs (fallback)
-              const canUsePrevious = previousBackSrcRef.current && 
-                                     previousBackSrcImageIdRef.current && 
-                                     previousBackSrcImageIdRef.current !== image._id;
-              const backImageSrc = backSrc || (canUsePrevious ? previousBackSrcRef.current : null) || 
-                                   image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
-              
+              const canUsePrevious = previousBackSrcRef.current &&
+                previousBackSrcImageIdRef.current &&
+                previousBackSrcImageIdRef.current !== image._id;
+              const backImageSrc = backSrc || (canUsePrevious ? previousBackSrcRef.current : null) ||
+                image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+
               // Only render if we have a source
               if (!backImageSrc) return null;
-              
+
               // Render back image if it's not hidden by front image
               const isBase64 = backSrc?.startsWith('data:');
               const shouldRenderBack = !(isBase64 && frontLoaded);
@@ -1380,15 +1449,15 @@ function ImagePage() {
 
               // CRITICAL: Determine if this is the old image (from previousBackSrcRef)
               const isOldImage = !backSrc && canUsePrevious && backImageSrc === previousBackSrcRef.current;
-              
+
               // CRITICAL: Use CSS to hide old image once new one starts loading
               // This prevents flash while keeping old image visible during transition
               const shouldHide = isOldImage && backSrcRef.current !== null;
 
               // Use image ID in key to ensure React handles transitions properly
               // But don't change key when using previousBackSrcRef to keep it mounted
-              const imageKey = isOldImage 
-                ? `back-previous-${previousBackSrcImageIdRef.current}` 
+              const imageKey = isOldImage
+                ? `back-previous-${previousBackSrcImageIdRef.current}`
                 : `back-${image._id}`;
 
               return (
@@ -1652,6 +1721,8 @@ function ImagePage() {
 
   return (
     <>
+      {/* Progress bar at top of viewport */}
+      <ImageProgressBar progress={imageProgress} visible={showProgressBar || isLoadingRef.current} />
       {!showModalStyle && <Header />}
       {showModalStyle ? (
         // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)

@@ -19,7 +19,8 @@ import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
 import cameraIcon from '@/assets/camera.svg';
 import dateIcon from '@/assets/date.svg';
-import { preloadImage, loadedImages } from '../utils/imagePreloader';
+import { preloadImage, loadedImages, preloadImageWithProgress, cancelImageLoad } from '../utils/imagePreloader';
+import { ImageProgressBar } from './ImageProgressBar';
 import { ImageModalInfo } from '@/components/image/ImageModalInfo';
 import { BlurUpImage } from './BlurUpImage';
 import { GRID_CONFIG } from '../constants/gridConfig';
@@ -578,6 +579,14 @@ export function ImageModal({
             clearTimeout(authorTooltipTimeoutRef.current);
             authorTooltipTimeoutRef.current = null;
         }
+        
+        // Cancel any ongoing progress tracking and hide progress bar
+        if (currentLoadingUrlRef.current) {
+            cancelImageLoad(currentLoadingUrlRef.current);
+            currentLoadingUrlRef.current = null;
+        }
+        setShowProgressBar(false);
+        setImageProgress(0);
 
         // Unsplash technique: Use different image sizes
         // Low-res thumbnail = thumbnailUrl or smallUrl (small file, pixelated when enlarged to full size)
@@ -686,10 +695,22 @@ export function ImageModal({
         const loadFrontImage = async () => {
             let loadedAny = false;
 
+            // Cancel any existing progress tracking
+            if (currentLoadingUrlRef.current) {
+                cancelImageLoad(currentLoadingUrlRef.current);
+                currentLoadingUrlRef.current = null;
+            }
+
+            // Reset progress
+            setImageProgress(0);
+            setShowProgressBar(true);
+
             // Step 1: Load Regular URL (if available and different from thumbnail)
             if (regular && regular !== thumbnail) {
                 try {
                     if (loadedImages.has(regular)) {
+                        // Already cached - no progress needed
+                        setShowProgressBar(false);
                         if (previousImgRef.current?._id === currentImageId) {
                             setFrontSrc(regular);
                             setFrontLoaded(true);
@@ -697,13 +718,25 @@ export function ImageModal({
                             loadedAny = true;
                         }
                     } else {
-                        // Preload regular
-                        const src = await preloadImage(regular, false);
-                        if (previousImgRef.current?._id === currentImageId) {
+                        // Preload regular with progress tracking
+                        currentLoadingUrlRef.current = regular;
+                        console.log('[ImageModal] Starting progress tracking for:', regular);
+                        const src = await preloadImageWithProgress(
+                            regular,
+                            (progress) => {
+                                console.log('[ImageModal] Progress update:', progress, '%');
+                                if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
+                                    setImageProgress(progress);
+                                }
+                            },
+                            false
+                        );
+                        if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
                             setFrontSrc(src);
                             // If we don't have an original to upgrade to, mark as loaded
                             if (!original || original === regular) {
                                 setFrontLoaded(true);
+                                setShowProgressBar(false);
                             }
                             frontImageLoadedRef.current = true;
                             loadedAny = true;
@@ -711,22 +744,54 @@ export function ImageModal({
                     }
                 } catch (e) {
                     // Ignore error, try original next
+                    if (previousImgRef.current?._id === currentImageId) {
+                        setShowProgressBar(false);
+                    }
                 }
             }
 
             // Step 2: Load Original URL (if available and different from regular)
             if (original && original !== thumbnail && original !== regular) {
                 try {
-                    // Preload original (this might take longer)
-                    const src = await preloadImage(original, false);
-                    if (previousImgRef.current?._id === currentImageId) {
+                    // Reset progress for original (starts from 0 or continue from regular)
+                    if (!loadedAny) {
+                        setImageProgress(0);
+                    }
+                    
+                    // Preload original with progress tracking (this might take longer)
+                    currentLoadingUrlRef.current = original;
+                    const src = await preloadImageWithProgress(
+                        original,
+                        (progress) => {
+                            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
+                                setImageProgress(progress);
+                            }
+                        },
+                        false
+                    );
+                    if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
                         setFrontSrc(src);
                         setFrontLoaded(true);
+                        setShowProgressBar(false);
                         frontImageLoadedRef.current = true;
                         loadedAny = true;
                     }
                 } catch (e) {
                     // Ignore
+                    if (previousImgRef.current?._id === currentImageId) {
+                        setShowProgressBar(false);
+                    }
+                }
+            }
+
+            // If no image to load, hide progress bar
+            if (!regular && !original) {
+                setShowProgressBar(false);
+            } else if (!loadedAny && (regular || original) && previousImgRef.current?._id === currentImageId) {
+                // If we have URLs but they match thumbnail, just use them
+                const target = original || regular;
+                if (target === thumbnail) {
+                    setShowProgressBar(false);
                 }
             }
 
@@ -947,8 +1012,12 @@ export function ImageModal({
         setShowShareMenu(false);
     }, [img]);
 
+    if (!img) return null;
+
     return (
-        !img ? null :
+        <>
+            {/* Progress bar at top of viewport */}
+            <ImageProgressBar progress={imageProgress} visible={showProgressBar} />
             <div
                 onClick={handleOverlayClick}
                 className="image-modal-overlay"
@@ -1542,5 +1611,6 @@ export function ImageModal({
                     />
                 </button>
             </div>
+        </>
     );
 }
