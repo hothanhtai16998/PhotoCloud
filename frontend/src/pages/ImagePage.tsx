@@ -99,14 +99,14 @@ function ImagePage() {
   useEffect(() => {
     if (isInitialMountRef.current) {
       isInitialMountRef.current = false;
-      
+
       // Check if this is a refresh by looking at navigation type
       const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       const isRefresh = navEntry?.type === 'reload';
-      
+
       // Also check if location.state is null (React Router always null on refresh)
       const isStateNull = location.state == null;
-      
+
       // If it's a refresh OR state is null, clear flags and ensure regular page
       if (isRefresh || isStateNull) {
         if (typeof window !== 'undefined') {
@@ -149,7 +149,7 @@ function ImagePage() {
     // Check if we have location.state with modal navigation indicators
     // location.state exists only when navigating (not on refresh)
     const hasState = typeof location.state === 'object' && location.state !== null && Object.keys(location.state).length > 0;
-    
+
     if (!hasState) {
       // Empty state object = regular page
       console.log('[ImagePage] showModalStyle: empty state object → regular page');
@@ -161,7 +161,7 @@ function ImagePage() {
     const hasInlineModalState = !!location.state?.inlineModal;
     const hasFromGridState = !!location.state?.fromGrid;
     const hasFromImagePageState = !!location.state?.fromImagePage;
-    
+
     // Debug logging (remove after testing)
     console.log('[ImagePage] showModalStyle check:', {
       hasState,
@@ -175,7 +175,7 @@ function ImagePage() {
       stateType: typeof location.state,
       hasNavigated: hasNavigatedRef.current
     });
-    
+
     // Show modal-style if state indicates we came from grid/modal/ImagePage
     // We check state flags directly - if they exist, show modal-style
     // (hasNavigatedRef is just for tracking, but state presence is the real indicator)
@@ -702,38 +702,23 @@ function ImagePage() {
   const handleClose = useCallback(() => {
     // Check if we have a background location (where we came from)
     const background = location.state?.background as { pathname?: string } | undefined;
-    
+
     // If we have a background location, navigate there
     // This handles: homepage → ImagePage (close) → homepage
     // And: ImagePage1 → ImagePage2 (close) → ImagePage1
     if (background?.pathname) {
-      // Restore scroll position if it was saved (from grid)
-      if (typeof window !== 'undefined') {
-        const savedScroll = sessionStorage.getItem('imageGridScrollPosition');
-        if (savedScroll) {
-          const scrollPos = parseInt(savedScroll, 10);
-          navigate(background.pathname, { state: background });
-          // Restore scroll after navigation
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.scrollTo(0, scrollPos);
-              sessionStorage.removeItem('imageGridScrollPosition');
-            });
-          });
-          sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-          return;
-        }
-      }
       // Navigate to background location
+      // The HomePage's useEffect will handle scroll restoration on mount
       navigate(background.pathname, { state: background });
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
       }
       return;
     }
-    
+
     // No background location - go back in history
     // This handles edge cases where background is not set
+    // The HomePage's useEffect will handle scroll restoration on mount
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
     }
@@ -754,7 +739,7 @@ function ImagePage() {
     // Always create modal state when navigating to another image
     // This ensures the new ImagePage opens as modal-style, even if current page is regular
     const currentState = location.state || {};
-    
+
     // Determine background location:
     // 1. If we have a background from grid/homepage, preserve it (for proper back navigation)
     // 2. If we're on a regular ImagePage (no background), use current location as background
@@ -766,14 +751,14 @@ function ImagePage() {
       state: location.state,
       key: location.key
     };
-    
-    const navigationState = { 
+
+    const navigationState = {
       ...currentState,
       background, // Preserve original background or use current location
       inlineModal: true, // Always set inlineModal to true for modal-style
-      images 
+      images
     };
-    
+
     // Debug logging (remove after testing)
     console.log('[ImagePage] handleImageSelect:', {
       newSlug,
@@ -782,10 +767,10 @@ function ImagePage() {
       currentLocationState: location.state,
       backgroundPathname: background.pathname
     });
-    
+
     // Always use replace: true to avoid history buildup when navigating between images
     // The state will be properly set and detected by showModalStyle
-    navigate(`/photos/${newSlug}`, { 
+    navigate(`/photos/${newSlug}`, {
       replace: true,
       state: navigationState
     });
@@ -1346,7 +1331,7 @@ function ImagePage() {
                   alt={image.imageTitle || 'photo'}
                   className="image-modal-front-image"
                   draggable={false}
-                  onLoad={() => {}}
+                  onLoad={() => { }}
                   onError={(e) => {
                     console.error('[ImagePage] Fallback image error:', e.currentTarget.src);
                   }}

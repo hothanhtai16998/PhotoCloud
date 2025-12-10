@@ -147,8 +147,12 @@ export function useScrollLock(
       document.body.style.paddingRight = originalStyles.bodyPaddingRight;
       document.body.classList.remove('scroll-locked');
 
-      // Restore scroll position
-      window.scrollTo(0, scrollY);
+      // Restore scroll position only if scroll restoration is not in progress
+      // This prevents interfering with grid scroll position restoration
+      const scrollRestoreInProgress = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
+      if (!scrollRestoreInProgress) {
+        window.scrollTo(0, scrollY);
+      }
     };
   }, [enabled, contentSelector]);
 }
