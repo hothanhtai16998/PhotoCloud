@@ -425,9 +425,9 @@
   min-height: 0;
 }
 
-/* Back Layer Image - Always relative to set container height */
+/* Back Layer Image - Relative when visible to set container height, absolute when hidden */
 .image-modal-back-image {
-  position: relative !important;
+  position: relative;
   width: auto;
   height: auto;
   max-width: 100%;
@@ -444,15 +444,16 @@
 }
 
 .image-modal-back-image.loaded {
-  opacity: 0 !important;
+  opacity: 0;
   visibility: hidden;
-  position: absolute !important;
+  position: absolute;
   top: 0;
   left: 0;
-  width: 0 !important;
-  height: 0 !important;
+  width: 0;
+  height: 0;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 .image-modal-back-image:not(.loaded) {
@@ -483,10 +484,10 @@
 
 .image-modal-front-image.loaded {
   opacity: 1;
-  position: relative !important;
-  top: auto !important;
-  left: auto !important;
-  transform: none !important;
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
   margin: 0 auto;
 }
 

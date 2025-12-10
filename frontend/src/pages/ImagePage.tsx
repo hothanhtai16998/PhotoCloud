@@ -23,6 +23,7 @@ import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
 import { calculateImageLayout, getColumnCount } from '@/components/NoFlashGrid/utils/gridLayout';
 import { loadImageDimensions } from '@/components/NoFlashGrid/utils/imageDimensions';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
+import { INLINE_MODAL_FLAG_KEY } from '@/constants/modalKeys';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
@@ -89,26 +90,56 @@ function ImagePage() {
     return images.findIndex((img) => img._id === image._id);
   }, [image, images]);
 
-  // Modal-style logic - show modal-style on first access, regular page after refresh
+  // Modal-style state - can be controlled by close button
+  const [forceRegularPage, setForceRegularPage] = useState(false);
+  // Track if we've explicitly closed modal to prevent showing it again on same page
+  const closedModalForSlugRef = useRef<string | null>(null);
+
+  // Check if we're coming from a grid/modal (has inlineModal flag or background state)
+  // Priority: sessionStorage flag > location state (more reliable)
+  const isFromGridOrModal = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    
+    // Primary check: sessionStorage flag (set by grid when clicking image)
+    const inlineModalFlag = sessionStorage.getItem(INLINE_MODAL_FLAG_KEY) === 'true';
+    if (inlineModalFlag) return true;
+    
+    // Secondary check: location state (may be lost on navigation)
+    const hasBackgroundState = !!location.state?.background;
+    const hasInlineModalState = !!location.state?.inlineModal;
+    const hasFromGridState = !!location.state?.fromGrid;
+    
+    // Show modal-style if we have any indication we're coming from a grid/modal
+    return hasBackgroundState || hasInlineModalState || hasFromGridState;
+  }, [location.state]);
+
+  // Modal-style logic - show modal-style when coming from grid/modal, regular page otherwise
   const showModalStyle = useMemo(() => {
     // Mobile: always regular page
     if (isMobile) return false;
 
     if (!slug) return false;
 
-    const modalStyleShownKey = `modalStyleShown_${slug}`;
-    const hasShownModalStyle = typeof window !== 'undefined' &&
-      sessionStorage.getItem(modalStyleShownKey) === 'true';
+    // If forceRegularPage is set, show regular page
+    if (forceRegularPage) return false;
 
-    // First access: show modal-style page, mark it
-    if (!hasShownModalStyle) {
-      sessionStorage.setItem(modalStyleShownKey, 'true');
-      return true; // Modal-style
+    // If we explicitly closed modal for this slug, don't show modal-style
+    if (closedModalForSlugRef.current === slug) return false;
+
+    // Show modal-style when coming from a grid/modal
+    // This ensures consistent behavior: modal-style when navigating from grid, regular page for direct access
+    return isFromGridOrModal;
+  }, [slug, isMobile, forceRegularPage, isFromGridOrModal]);
+
+  // Reset forceRegularPage when slug changes and we're coming from grid/modal
+  // This allows modal-style to show for new images when navigating from grid
+  useEffect(() => {
+    if (slug && isFromGridOrModal) {
+      setForceRegularPage(false);
+      // Clear the closed modal ref for new slug
+      closedModalForSlugRef.current = null;
     }
-
-    // After refresh: show regular page
-    return false; // Regular page
-  }, [slug, isMobile]);
+  }, [slug, isFromGridOrModal]);
 
   // Scroll state for container styling
   const [isScrolled, setIsScrolled] = useState(false);
@@ -627,11 +658,17 @@ function ImagePage() {
   // Handlers
   const handleClose = useCallback(() => {
     if (location.state?.background) {
+      // Came from a modal/grid, go back
       navigate(-1);
     } else {
-      navigate('/');
+      // On ImagePage directly - switch to regular page mode
+      setForceRegularPage(true);
+      // Remember we closed modal for this slug
+      if (slug) {
+        closedModalForSlugRef.current = slug;
+      }
     }
-  }, [navigate, location.state]);
+  }, [navigate, location.state, slug]);
 
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent) => {
@@ -644,11 +681,16 @@ function ImagePage() {
 
   const handleImageSelect = useCallback((selectedImage: Image) => {
     const newSlug = generateImageSlug(selectedImage.imageTitle || "", selectedImage._id);
-    // Clear modal-style flag for new image so it shows modal-style
-    const newModalStyleShownKey = `modalStyleShown_${newSlug}`;
-    sessionStorage.removeItem(newModalStyleShownKey);
-    navigate(`/photos/${newSlug}`, { replace: true, state: { images } });
-  }, [navigate, images]);
+    // Preserve navigation state to maintain modal-style when navigating between images
+    const currentState = location.state || {};
+    navigate(`/photos/${newSlug}`, { 
+      replace: true, 
+      state: { 
+        ...currentState,
+        images 
+      } 
+    });
+  }, [navigate, images, location.state]);
 
   const handleDownload = useCallback(async (size: 'small' | 'medium' | 'large' | 'original') => {
     if (!image?._id) return;
