@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { imageService } from "@/services/imageService";
 import type { Image } from "@/types/image";
@@ -54,6 +54,8 @@ function Slider() {
   const [showTransitionMenu, setShowTransitionMenu] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [imageLoadStates, setImageLoadStates] = useState<Map<string, 'loading' | 'loaded' | 'error'>>(new Map());
+  // Ref to track cached images synchronously (prevents flash on refresh)
+  const cachedImagesRef = useRef<Set<string>>(new Set());
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const transitionMenuRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<number | null>(null);
@@ -376,6 +378,8 @@ function Slider() {
 
   // Progressive image loading handler
   const handleImageLoad = useCallback((imageId: string, imageUrl: string) => {
+    // Mark as loaded in both state and ref for synchronous access
+    cachedImagesRef.current.add(imageId);
     setLoadedImages(prev => new Set(prev).add(imageId));
     setImageLoadStates(prev => {
       const next = new Map(prev);
@@ -400,6 +404,59 @@ function Slider() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showTransitionMenu]);
+
+  // CRITICAL: Check cache synchronously when images are set (on refresh)
+  // This must run before the progressive loading effect to prevent flash
+  useLayoutEffect(() => {
+    if (images.length === 0) return;
+    
+    // Batch state updates to prevent multiple re-renders
+    const newLoadedImages = new Set<string>();
+    const newLoadStates = new Map<string, 'loading' | 'loaded' | 'error'>();
+    
+    // Check if images are cached and mark as loaded immediately
+    // This prevents flash on refresh
+    images.forEach((image) => {
+      const imageId = image._id;
+      if (loadedImages.has(imageId) || cachedImagesRef.current.has(imageId)) {
+        cachedImagesRef.current.add(imageId);
+        newLoadedImages.add(imageId);
+        newLoadStates.set(imageId, 'loaded');
+        return; // Already marked as loaded
+      }
+      
+      const imageUrl = getImageUrl(image);
+      if (!imageUrl) return;
+      
+      // Check browser cache synchronously
+      // Note: This only works reliably if the image was loaded in a previous render
+      // For first-time loads, we rely on the progressive loading effect
+      const img = new window.Image();
+      img.src = imageUrl;
+      
+      // If complete is true immediately, image is cached
+      // Check naturalWidth/Height to ensure it's a valid loaded image
+      if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+        cachedImagesRef.current.add(imageId);
+        newLoadedImages.add(imageId);
+        newLoadStates.set(imageId, 'loaded');
+      }
+    });
+    
+    // Batch update state once
+    if (newLoadedImages.size > 0) {
+      setLoadedImages(prev => {
+        const combined = new Set(prev);
+        newLoadedImages.forEach(id => combined.add(id));
+        return combined;
+      });
+      setImageLoadStates(prev => {
+        const next = new Map(prev);
+        newLoadStates.forEach((state, id) => next.set(id, state));
+        return next;
+      });
+    }
+  }, [images]);
 
   // Preload images progressively
   useEffect(() => {
@@ -609,11 +666,14 @@ function Slider() {
       <div className={`main-carousel-container transition-${transitionType} slide-direction-${slideDirection}`}>
         {images.map((image, index) => {
           const imageUrl = getImageUrl(image);
-          const thumbnailUrl = getThumbnailForBlur(image);
+          // Use smallUrl for placeholder instead of tiny thumbnail to avoid 20x20 issue
+          const placeholderUrl = image.smallAvifUrl || image.smallUrl || image.thumbnailAvifUrl || image.thumbnailUrl || null;
           const isActive = index === currentSlide;
-          const isLoaded = loadedImages.has(image._id);
+          // CRITICAL: Check both state and ref for cached images (synchronous check)
+          const isLoaded = loadedImages.has(image._id) || cachedImagesRef.current.has(image._id);
           const loadState = imageLoadStates.get(image._id) || 'loading';
-          const showBlurUp = sliderConfig.loading.enableBlurUp && thumbnailUrl && !isLoaded;
+          // CRITICAL: Always show blur-up if placeholder exists (ignore config to prevent flash)
+          const showBlurUp = placeholderUrl && !isLoaded;
 
           return (
             <div
@@ -621,32 +681,21 @@ function Slider() {
               className={`main-slide ${isActive ? "active" : ""} transition-${transitionType}`}
               style={{ backgroundColor: '#1a1a1a' }}
             >
-              {/* Blurred background layer */}
-              {imageUrl && (
+              {/* Blurred background layer - use placeholder if available to prevent flash */}
+              {(placeholderUrl || imageUrl) && (
                 <div
                   className="blur-background-layer"
                   style={{
-                    backgroundImage: `url("${imageUrl}")`,
+                    backgroundImage: `url("${placeholderUrl || imageUrl}")`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                  }}
-                />
-              )}
-
-              {/* Blur-up placeholder (thumbnail) */}
-              {showBlurUp && (
-                <div
-                  className="blur-up-placeholder"
-                  style={{
-                    backgroundImage: `url("${thumbnailUrl}")`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    filter: 'blur(20px)',
-                    opacity: isLoaded ? 0 : 1,
+                    // Hide if main image is loaded (blur-up placeholder will handle transition)
+                    opacity: isLoaded ? 0 : 0.5,
                     transition: 'opacity 0.3s ease-out',
                   }}
                 />
               )}
+
 
               {/* Main image layer - separate from blurred background */}
               {imageUrl && (
@@ -657,15 +706,18 @@ function Slider() {
                     backgroundSize: 'contain',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                    opacity: isLoaded ? 1 : (showBlurUp ? 0 : 0.3),
-                    transition: 'opacity 0.5s ease-in-out',
+                    // CRITICAL: Keep main image completely hidden until loaded
+                    // This prevents flash on refresh and ensures smooth transition
+                    opacity: isLoaded ? 1 : 0,
+                    transition: isLoaded ? 'opacity 0.5s ease-in-out' : 'none',
+                    zIndex: 2,
                   }}
                 />
               )}
 
-              {/* Loading skeleton overlay */}
+              {/* Loading skeleton overlay - only show if no blur-up and not loaded */}
               {loadState === 'loading' && !showBlurUp && (
-                <div className="slide-loading-skeleton" />
+                <div className="slide-loading-skeleton" style={{ zIndex: 3 }} />
               )}
             </div>
           );

@@ -257,9 +257,12 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
-  transform: scale(1.1);
+  z-index: 1;
   will-change: opacity;
+  /* Match main image layer positioning exactly */
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Loading skeleton for slides */
