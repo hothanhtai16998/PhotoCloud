@@ -23,7 +23,6 @@ import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
 import { calculateImageLayout, getColumnCount } from '@/components/NoFlashGrid/utils/gridLayout';
 import { loadImageDimensions } from '@/components/NoFlashGrid/utils/imageDimensions';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
-import { NoFlashGrid } from '@/components/NoFlashGrid/NoFlashGrid';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
@@ -94,19 +93,19 @@ function ImagePage() {
   const showModalStyle = useMemo(() => {
     // Mobile: always regular page
     if (isMobile) return false;
-    
+
     if (!slug) return false;
-    
+
     const modalStyleShownKey = `modalStyleShown_${slug}`;
-    const hasShownModalStyle = typeof window !== 'undefined' && 
+    const hasShownModalStyle = typeof window !== 'undefined' &&
       sessionStorage.getItem(modalStyleShownKey) === 'true';
-    
+
     // First access: show modal-style page, mark it
     if (!hasShownModalStyle) {
       sessionStorage.setItem(modalStyleShownKey, 'true');
       return true; // Modal-style
     }
-    
+
     // After refresh: show regular page
     return false; // Regular page
   }, [slug, isMobile]);
@@ -129,7 +128,7 @@ function ImagePage() {
     };
   }, []);
 
-  const [imageState, setImageState] = useState(() => 
+  const [imageState, setImageState] = useState(() =>
     image ? calculateInitialState(image) : { src: null, isFullQuality: false }
   );
   const [frontSrc, setFrontSrc] = useState<string | null>(null);
@@ -315,17 +314,8 @@ function ImagePage() {
   // Image loading logic (matching NoFlashGrid ImageModal)
   useLayoutEffect(() => {
     if (!image) {
-      console.log('[ImagePage] No image to load');
       return;
     }
-
-    console.log('[ImagePage] Starting image load for:', image._id, {
-      imageUrl: image.imageUrl,
-      regularUrl: image.regularUrl,
-      smallUrl: image.smallUrl,
-      thumbnailUrl: image.thumbnailUrl,
-      base64Thumbnail: image.base64Thumbnail ? 'exists' : 'none'
-    });
 
     const currentImageId = image._id;
     previousImgRef.current = image;
@@ -354,21 +344,15 @@ function ImagePage() {
     const regular = image.regularUrl;
     const original = image.imageUrl;
 
-    console.log('[ImagePage] Image URLs:', { thumbnail, regular, original });
-
     const currentState = calculateInitialState(image);
     const newBackSrc = currentState.src;
-    
-    console.log('[ImagePage] Initial state:', { newBackSrc, isBase64: currentState.isBase64 });
 
     setImageState(currentState);
 
     if (newBackSrc && newBackSrc !== backSrcRef.current) {
-      console.log('[ImagePage] Setting backSrc:', newBackSrc);
       const isBase64 = newBackSrc.startsWith('data:');
 
       if (isBase64) {
-        console.log('[ImagePage] Using base64 thumbnail');
         backSrcRef.current = newBackSrc;
         setBackSrc(newBackSrc);
 
@@ -381,7 +365,7 @@ function ImagePage() {
                 setBackSrc(src);
               }
             })
-            .catch(() => {});
+            .catch(() => { });
         }
 
         requestAnimationFrame(() => {
@@ -389,9 +373,8 @@ function ImagePage() {
             setFrontSrc(null);
           }
         });
-        } else {
+      } else {
         if (loadedImages.has(newBackSrc)) {
-          console.log('[ImagePage] Using cached thumbnail');
           backSrcRef.current = newBackSrc;
           setBackSrc(newBackSrc);
           requestAnimationFrame(() => {
@@ -430,11 +413,9 @@ function ImagePage() {
 
     // Load full image in background
     const loadFrontImage = async () => {
-      console.log('[ImagePage] Loading front image...');
       let loadedAny = false;
 
       if (regular && regular !== thumbnail) {
-        console.log('[ImagePage] Preloading regular URL:', regular);
         try {
           if (loadedImages.has(regular)) {
             if (previousImgRef.current?._id === currentImageId) {
@@ -445,13 +426,10 @@ function ImagePage() {
             }
           } else {
             const src = await preloadImage(regular, false);
-            console.log('[ImagePage] Regular URL preloaded:', src);
             if (previousImgRef.current?._id === currentImageId) {
               setFrontSrc(src);
-              console.log('[ImagePage] Set frontSrc to:', src);
               if (!original || original === regular) {
                 setFrontLoaded(true);
-                console.log('[ImagePage] Front image loaded (no original)');
               }
               frontImageLoadedRef.current = true;
               loadedAny = true;
@@ -464,13 +442,10 @@ function ImagePage() {
 
       if (original && original !== thumbnail && original !== regular) {
         try {
-          console.log('[ImagePage] Preloading original URL:', original);
           const src = await preloadImage(original, false);
-          console.log('[ImagePage] Original URL preloaded:', src);
           if (previousImgRef.current?._id === currentImageId) {
             setFrontSrc(src);
             setFrontLoaded(true);
-            console.log('[ImagePage] Set frontSrc to original and marked as loaded');
             frontImageLoadedRef.current = true;
             loadedAny = true;
           }
@@ -561,7 +536,7 @@ function ImagePage() {
     };
 
     loadDimensions();
-  }, [relatedImages, relatedImageDimensions]);
+  }, [relatedImages]);
 
   // Calculate grid layout for related images
   const relatedGridLayout = useMemo(() => {
@@ -644,9 +619,9 @@ function ImagePage() {
   const authorName = useMemo(() => {
     if (!image) return 'Author';
     return (image.uploadedBy as any)?.username ||
-           (image.uploadedBy as any)?.displayName ||
-           (image.uploadedBy as any)?.author ||
-           'Author';
+      (image.uploadedBy as any)?.displayName ||
+      (image.uploadedBy as any)?.author ||
+      'Author';
   }, [image]);
 
   // Handlers
@@ -717,7 +692,7 @@ function ImagePage() {
         if (fileNameMatch) {
           fileName = fileNameMatch[1];
         }
-    } else {
+      } else {
         const sanitizedTitle = (image.imageTitle || 'photo').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const urlExtension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
         fileName = `${sanitizedTitle}.${urlExtension}`;
@@ -764,7 +739,7 @@ function ImagePage() {
         title: image.imageTitle || 'Photo',
         text: `Check out this photo: ${image.imageTitle || 'Untitled'}`,
         url: shareUrl,
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       shareService.copyToClipboard(shareUrl).then((success) => {
         if (success) {
@@ -818,7 +793,7 @@ function ImagePage() {
           handleImageSelect(images[currentImageIndex - 1]);
         }
       } else if (e.key === 'Escape') {
-    e.preventDefault();
+        e.preventDefault();
         handleClose();
       }
     };
@@ -927,498 +902,477 @@ function ImagePage() {
         }
       }}
     >
-            {/* Top info - Sticky: starts with space, sticks to viewport top when scrolling */}
-            <div ref={topInfoRef} className={`image-modal-top-info ${isAtRelatedSection ? 'slide-up' : ''}`}>
+      {/* Top info - Sticky: starts with space, sticks to viewport top when scrolling */}
+      <div ref={topInfoRef} className={`image-modal-top-info ${isAtRelatedSection ? 'slide-up' : ''}`}>
+        <div
+          ref={authorAreaRef}
+          className="image-modal-author-area"
+          onMouseEnter={() => {
+            if ((authorAreaRef.current as any)?.hideTimeout) {
+              clearTimeout((authorAreaRef.current as any).hideTimeout);
+              (authorAreaRef.current as any).hideTimeout = null;
+            }
+            if (authorTooltipTimeoutRef.current) {
+              clearTimeout(authorTooltipTimeoutRef.current);
+            }
+            authorTooltipTimeoutRef.current = setTimeout(async () => {
+              setShowAuthorTooltip(true);
+              const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
+              if (userId && !loadingAuthorImages) {
+                setLoadingAuthorImages(true);
+                try {
+                  const response = await imageFetchService.fetchUserImages(userId, { page: 1, limit: 3 });
+                  setAuthorImages(response.images || []);
+                } catch (error) {
+                  console.error('Failed to fetch author images:', error);
+                  setAuthorImages([]);
+                } finally {
+                  setLoadingAuthorImages(false);
+                }
+              }
+            }, 1000);
+          }}
+          onMouseLeave={(e) => {
+            const hideTimeout = setTimeout(() => {
+              const tooltipElement = document.querySelector('[data-author-tooltip]') as HTMLElement;
+              if (!tooltipElement) {
+                setShowAuthorTooltip(false);
+                return;
+              }
+              const tooltipRect = tooltipElement.getBoundingClientRect();
+              const mouseX = (e as any).clientX || 0;
+              const mouseY = (e as any).clientY || 0;
+              const isOverTooltip = (
+                mouseX >= tooltipRect.left - 10 &&
+                mouseX <= tooltipRect.right + 10 &&
+                mouseY >= tooltipRect.top - 10 &&
+                mouseY <= tooltipRect.bottom + 10
+              );
+              if (!isOverTooltip) {
+                setTooltipAnimating(false);
+                setTimeout(() => {
+                  setShowAuthorTooltip(false);
+                }, 200);
+              }
+              if (authorTooltipTimeoutRef.current) {
+                clearTimeout(authorTooltipTimeoutRef.current);
+                authorTooltipTimeoutRef.current = null;
+              }
+            }, 150);
+            (authorAreaRef.current as any).hideTimeout = hideTimeout;
+          }}
+          onClick={handleViewProfile}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className="image-modal-author-avatar">
+            {authorName ? authorName[0]?.toUpperCase() : 'A'}
+          </div>
+          <div>
+            <div className="image-modal-author-name">{authorName}</div>
+            <div className="image-modal-author-title">{image.imageTitle || t('image.topInfo')}</div>
+          </div>
+
+          {/* Author tooltip/popup */}
+          {showAuthorTooltip && authorAreaRef.current && topInfoRef.current && modalRef.current && (() => {
+            const authorRect = authorAreaRef.current!.getBoundingClientRect();
+            const modalRect = modalRef.current!.getBoundingClientRect();
+            return (
               <div
-                ref={authorAreaRef}
-                className="image-modal-author-area"
+                data-author-tooltip
+                className={`image-modal-author-tooltip ${tooltipAnimating ? 'animating' : ''}`}
+                style={{
+                  top: `${authorRect.bottom - 10}px`,
+                  left: `${modalRect.left - 140}px`,
+                }}
                 onMouseEnter={() => {
-                  if ((authorAreaRef.current as any)?.hideTimeout) {
+                  if (authorAreaRef.current && (authorAreaRef.current as any).hideTimeout) {
                     clearTimeout((authorAreaRef.current as any).hideTimeout);
                     (authorAreaRef.current as any).hideTimeout = null;
                   }
-                  if (authorTooltipTimeoutRef.current) {
-                    clearTimeout(authorTooltipTimeoutRef.current);
-                  }
-                  authorTooltipTimeoutRef.current = setTimeout(async () => {
-                    setShowAuthorTooltip(true);
-                    const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
-                    if (userId && !loadingAuthorImages) {
-                      setLoadingAuthorImages(true);
-                      try {
-                        const response = await imageFetchService.fetchUserImages(userId, { page: 1, limit: 3 });
-                        setAuthorImages(response.images || []);
-                      } catch (error) {
-                        console.error('Failed to fetch author images:', error);
-                        setAuthorImages([]);
-                      } finally {
-                        setLoadingAuthorImages(false);
-                      }
-                    }
-                  }, 1000);
                 }}
                 onMouseLeave={(e) => {
                   const hideTimeout = setTimeout(() => {
-                    const tooltipElement = document.querySelector('[data-author-tooltip]') as HTMLElement;
-                    if (!tooltipElement) {
-                      setShowAuthorTooltip(false);
-                      return;
-                    }
-                    const tooltipRect = tooltipElement.getBoundingClientRect();
-                    const mouseX = (e as any).clientX || 0;
-                    const mouseY = (e as any).clientY || 0;
-                    const isOverTooltip = (
-                      mouseX >= tooltipRect.left - 10 &&
-                      mouseX <= tooltipRect.right + 10 &&
-                      mouseY >= tooltipRect.top - 10 &&
-                      mouseY <= tooltipRect.bottom + 10
-                    );
-                    if (!isOverTooltip) {
+                    if (!authorAreaRef.current?.matches(':hover')) {
                       setTooltipAnimating(false);
                       setTimeout(() => {
                         setShowAuthorTooltip(false);
                       }, 200);
                     }
-                    if (authorTooltipTimeoutRef.current) {
-                      clearTimeout(authorTooltipTimeoutRef.current);
-                      authorTooltipTimeoutRef.current = null;
-                    }
                   }, 150);
-                  (authorAreaRef.current as any).hideTimeout = hideTimeout;
+                  (e.currentTarget as any).hideTimeout = hideTimeout;
                 }}
-                onClick={handleViewProfile}
-                style={{ cursor: 'pointer' }}
               >
-                <div className="image-modal-author-avatar">
-                  {authorName ? authorName[0]?.toUpperCase() : 'A'}
-                </div>
-                <div>
-                  <div className="image-modal-author-name">{authorName}</div>
-                  <div className="image-modal-author-title">{image.imageTitle || t('image.topInfo')}</div>
-                </div>
-
-                {/* Author tooltip/popup */}
-                {showAuthorTooltip && authorAreaRef.current && topInfoRef.current && modalRef.current && (() => {
-                  const authorRect = authorAreaRef.current!.getBoundingClientRect();
-                  const modalRect = modalRef.current!.getBoundingClientRect();
-  return (
-                    <div
-                      data-author-tooltip
-                      className={`image-modal-author-tooltip ${tooltipAnimating ? 'animating' : ''}`}
-                      style={{
-                        top: `${authorRect.bottom - 10}px`,
-                        left: `${modalRect.left - 140}px`,
-                      }}
-                      onMouseEnter={() => {
-                        if (authorAreaRef.current && (authorAreaRef.current as any).hideTimeout) {
-                          clearTimeout((authorAreaRef.current as any).hideTimeout);
-                          (authorAreaRef.current as any).hideTimeout = null;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        const hideTimeout = setTimeout(() => {
-                          if (!authorAreaRef.current?.matches(':hover')) {
-                            setTooltipAnimating(false);
-                            setTimeout(() => {
-                              setShowAuthorTooltip(false);
-                            }, 200);
-                          }
-                        }, 150);
-                        (e.currentTarget as any).hideTimeout = hideTimeout;
-                      }}
-                    >
-                      <div className="image-modal-author-tooltip-header">
-                        <div className="image-modal-author-tooltip-avatar">
-                          {authorName ? authorName[0]?.toUpperCase() : 'A'}
-            </div>
-                        <div>
-                          <div className="image-modal-author-tooltip-name">
-                            {authorName}
-                          </div>
-                          <div className="image-modal-author-tooltip-bio">
-                            {(image.uploadedBy as any)?.bio || t('image.photographer')}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="image-modal-author-tooltip-location">
-                        {(image.uploadedBy as any)?.location || t('image.noLocation')}
-                      </div>
-                      {authorImages.length > 0 && (
-                        <div className="image-modal-author-images-section">
-                          <div className="image-modal-author-images-grid">
-                            {authorImages.slice(0, 3).map((authorImg, idx) => (
-                              <div
-                                key={authorImg._id || idx}
-                                className="image-modal-author-image-item"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleImageSelect(authorImg);
-                                }}
-                              >
-                                {authorImg.thumbnailUrl || authorImg.smallUrl || authorImg.imageUrl ? (
-                                  <img
-                                    src={authorImg.thumbnailUrl || authorImg.smallUrl || authorImg.imageUrl}
-                                    alt={authorImg.imageTitle || 'Photo'}
-                                    className="image-modal-author-image"
-                                  />
-                                ) : (
-                                  <div className="image-modal-author-image-placeholder">
-                                    {t('image.noImage')}
-        </div>
-                                )}
-      </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewProfile(e as any);
-                          setShowAuthorTooltip(false);
-                        }}
-                        className="image-modal-view-profile-button"
-                      >
-                        {t('image.viewProfile')}
-                      </button>
+                <div className="image-modal-author-tooltip-header">
+                  <div className="image-modal-author-tooltip-avatar">
+                    {authorName ? authorName[0]?.toUpperCase() : 'A'}
+                  </div>
+                  <div>
+                    <div className="image-modal-author-tooltip-name">
+                      {authorName}
                     </div>
-                  );
-                })()}
-              </div>
-              <div className="image-modal-actions">
-                {/* Save/Favorite button */}
-                {user && (
-                  <button
-                    onClick={handleToggleFavorite}
-                    disabled={isTogglingFavorite}
-                    className="image-modal-favorite-button"
-                  >
-                    <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
-                    <span>{t('image.save')}</span>
-                    <kbd className="image-modal-kbd">F</kbd>
-                  </button>
-                )}
-
-                {/* Download button with dropdown */}
-                <div className="image-modal-download-menu-wrapper" data-download-menu>
-                  <button
-                    onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                    className="image-modal-download-button"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
-                    }}
-                  >
-                    <span>{t('image.download')}</span>
-                    <ChevronDown size={16} />
-                  </button>
-                  {showDownloadMenu && (
-                    <div
-                      className="image-modal-download-menu"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {[
-                        { value: 'small' as const, label: t('image.small'), dimension: '640px' },
-                        { value: 'medium' as const, label: t('image.medium'), dimension: '1920px' },
-                        { value: 'large' as const, label: t('image.large'), dimension: '2400px' },
-                        { value: 'original' as const, label: t('image.original'), dimension: t('image.fullSize') },
-                      ].map((option) => (
-                        <button
-                          key={option.value}
-                          onClick={() => {
-                            handleDownload(option.value);
-                            setShowDownloadMenu(false);
-                          }}
-                          className="image-modal-download-menu-item"
-                        >
-                          <div>
-                            <div className="image-modal-download-option-label">{option.label}</div>
-                            <div className="image-modal-download-option-dimension">{option.dimension}</div>
-                          </div>
-                          {option.value === 'medium' && (
-                            <span className="image-modal-download-option-default">{t('image.default')}</span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Middle image with gutters */}
-            <div className="image-modal-middle-container">
-              <div className="image-modal-image-wrapper">
-                <div
-                  className={`image-modal-image-container ${image.width && image.height ? 'has-aspect-ratio' : 'no-aspect-ratio'}`}
-                  style={{
-                    aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined,
-                  }}
-                >
-                  {/* Back layer - fallback to image URL if backSrc not set */}
-                  {(() => {
-                    const backImageSrc = backSrc || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
-                    const shouldRenderBack = backImageSrc && !(backSrc && backSrc.startsWith('data:'));
-                    console.log('[ImagePage] Render check - back layer:', {
-                      backSrc,
-                      backImageSrc,
-                      shouldRenderBack,
-                      hasImageUrls: !!(image.imageUrl || image.regularUrl || image.smallUrl || image.thumbnailUrl)
-                    });
-                    return shouldRenderBack ? (
-                      <img
-                        key={`back-${image._id}`}
-                        src={backImageSrc}
-                        alt={image.imageTitle || 'photo'}
-                        className={`image-modal-back-image ${frontLoaded ? 'loaded' : ''}`}
-                        draggable={false}
-                        onLoad={(e) => {
-                          console.log('[ImagePage] Back image loaded:', e.currentTarget.src);
-                          const imgEl = e.currentTarget;
-                          if (imgEl.decode) {
-                            imgEl.decode().catch(() => {});
-                          }
-                        }}
-                        onError={(e) => {
-                          console.error('[ImagePage] Back image error:', e.currentTarget.src);
-                        }}
-                      />
-                    ) : null;
-                  })()}
-                  {/* Front layer */}
-                  {(() => {
-                    console.log('[ImagePage] Render check - front layer:', {
-                      frontSrc,
-                      frontLoaded
-                    });
-                    return frontSrc ? (
-                      <img
-                        key={`front-${image._id}`}
-                        ref={imgElementRef}
-                        src={frontSrc}
-                        alt={image.imageTitle || 'photo'}
-                        className={`image-modal-front-image ${frontLoaded ? 'loaded' : ''}`}
-                        draggable={false}
-                        onLoad={(e) => {
-                          console.log('[ImagePage] Front image loaded:', e.currentTarget.src);
-                          const imgEl = e.currentTarget;
-                          if (imgEl.decode) {
-                            imgEl.decode().then(() => {
-                              requestAnimationFrame(() => {
-                                requestAnimationFrame(() => {
-                                  setFrontLoaded(true);
-                                  console.log('[ImagePage] Front image decoded and loaded');
-                                });
-                              });
-                            }).catch(() => {
-                              requestAnimationFrame(() => {
-                                setFrontLoaded(true);
-                                console.log('[ImagePage] Front image loaded (decode failed)');
-                              });
-                            });
-                          } else {
-                            requestAnimationFrame(() => {
-                              setFrontLoaded(true);
-                              console.log('[ImagePage] Front image loaded (no decode)');
-                            });
-                          }
-                        }}
-                        onError={(e) => {
-                          console.error('[ImagePage] Front image error:', e.currentTarget.src);
-                          setFrontLoaded(false);
-                        }}
-                      />
-                    ) : null;
-                  })()}
-                  {/* Fallback: if no backSrc or frontSrc, show image directly */}
-                  {(() => {
-                    const fallbackSrc = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
-                    const shouldRenderFallback = !backSrc && !frontSrc && !!fallbackSrc;
-                    console.log('[ImagePage] Render check - fallback:', {
-                      backSrc,
-                      frontSrc,
-                      fallbackSrc,
-                      shouldRenderFallback
-                    });
-                    return shouldRenderFallback ? (
-                      <img
-                        key={`fallback-${image._id}`}
-                        src={fallbackSrc}
-                        alt={image.imageTitle || 'photo'}
-                        className="image-modal-front-image"
-                        draggable={false}
-                        onLoad={(e) => {
-                          console.log('[ImagePage] Fallback image loaded:', e.currentTarget.src);
-                        }}
-                        onError={(e) => {
-                          console.error('[ImagePage] Fallback image error:', e.currentTarget.src);
-                        }}
-                      />
-                    ) : null;
-                  })()}
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom info (scrolls with content) */}
-            <div className="image-modal-bottom-info">
-              <div className="image-modal-bottom-info-row">
-                {/* Left: image info */}
-                <div className="image-modal-image-info">
-                  {/* Views and Downloads Stats with Share/Info buttons */}
-                  <div className="image-modal-stats-row">
-                    <div className="image-modal-stats-header">
-                      <div className="image-modal-stat-item">
-                        <div className="image-modal-stat-label">Views</div>
-                        <div className="image-modal-stat-value">{views.toLocaleString()}</div>
-                      </div>
-                      <div className="image-modal-stat-item">
-                        <div className="image-modal-stat-label">Downloads</div>
-                        <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
-                      </div>
-                    </div>
-
-                    {/* Right: Share and Info buttons */}
-                    <div className="image-modal-actions-container">
-                      <button
-                        onClick={handleShare}
-                        className="image-modal-share-button"
-                      >
-                        <Share2 size={16} />
-                        <span>{t('share.share')}</span>
-                      </button>
-                      <ImageModalInfo image={image} />
+                    <div className="image-modal-author-tooltip-bio">
+                      {(image.uploadedBy as any)?.bio || t('image.photographer')}
                     </div>
                   </div>
-
-                  {image.imageTitle && (
-                    <div className="image-modal-image-title">
-                      {image.imageTitle}
-                    </div>
-                  )}
-
-                  {/* Location and Camera Info */}
-                  {(image.location || image.cameraModel) && (
-                    <div className="image-modal-image-details">
-                      {image.location && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <MapPin size={14} style={{ flexShrink: 0 }} />
-                          {image.coordinates ? (
-                            <a
-                              href={`https://www.google.com/maps?q=${image.coordinates.latitude},${image.coordinates.longitude}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                color: 'inherit',
-                                textDecoration: 'none',
-                                transition: 'opacity 0.2s',
-                              }}
-                              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
-                              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-                            >
-                              {image.location}
-                              <ExternalLink size={12} style={{ flexShrink: 0, opacity: 0.7 }} />
-                            </a>
+                </div>
+                <div className="image-modal-author-tooltip-location">
+                  {(image.uploadedBy as any)?.location || t('image.noLocation')}
+                </div>
+                {authorImages.length > 0 && (
+                  <div className="image-modal-author-images-section">
+                    <div className="image-modal-author-images-grid">
+                      {authorImages.slice(0, 3).map((authorImg, idx) => (
+                        <div
+                          key={authorImg._id || idx}
+                          className="image-modal-author-image-item"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageSelect(authorImg);
+                          }}
+                        >
+                          {authorImg.thumbnailUrl || authorImg.smallUrl || authorImg.imageUrl ? (
+                            <img
+                              src={authorImg.thumbnailUrl || authorImg.smallUrl || authorImg.imageUrl}
+                              alt={authorImg.imageTitle || 'Photo'}
+                              className="image-modal-author-image"
+                            />
                           ) : (
-                            <span>{image.location}</span>
+                            <div className="image-modal-author-image-placeholder">
+                              {t('image.noImage')}
+                            </div>
                           )}
-                        </span>
-                      )}
-                      {image.location && image.cameraModel && <span> • </span>}
-                      {image.cameraModel && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <img src={cameraIcon} alt="Camera" style={{ width: '14px', height: '14px', flexShrink: 0 }} />
-                          {image.cameraModel}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Camera EXIF Info */}
-                  {(image.focalLength || image.aperture || image.shutterSpeed || image.iso) && (
-                    <div className="image-modal-image-exif">
-                      {image.focalLength && <span>{image.focalLength}mm</span>}
-                      {image.focalLength && image.aperture && <span> • </span>}
-                      {image.aperture && <span>f/{image.aperture}</span>}
-                      {image.aperture && image.shutterSpeed && <span> • </span>}
-                      {image.shutterSpeed && <span>{image.shutterSpeed}</span>}
-                      {image.shutterSpeed && image.iso && <span> • </span>}
-                      {image.iso && <span>ISO {image.iso}</span>}
-                    </div>
-                  )}
-
-                  {/* Date */}
-                  {formattedDate && (
-                    <div className="image-modal-image-date">
-                      <img src={dateIcon} alt="Date" style={{ width: '14px', height: '14px', flexShrink: 0, marginRight: '6px' }} />
-                      {formattedDate}
-                    </div>
-                  )}
-
-                  {/* Tags */}
-                  {image.tags && Array.isArray(image.tags) && image.tags.length > 0 && (
-                    <div className="image-modal-image-tags">
-                      {image.tags.map((tag, idx) => (
-                        <span key={idx} className="image-modal-image-tag">
-                          <Tag size={14} />
-                          {tag}
-                        </span>
+                        </div>
                       ))}
                     </div>
-                  )}
+                  </div>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewProfile(e as any);
+                    setShowAuthorTooltip(false);
+                  }}
+                  className="image-modal-view-profile-button"
+                >
+                  {t('image.viewProfile')}
+                </button>
+              </div>
+            );
+          })()}
+        </div>
+        <div className="image-modal-actions">
+          {/* Save/Favorite button */}
+          {user && (
+            <button
+              onClick={handleToggleFavorite}
+              disabled={isTogglingFavorite}
+              className="image-modal-favorite-button"
+            >
+              <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
+              <span>{t('image.save')}</span>
+              <kbd className="image-modal-kbd">F</kbd>
+            </button>
+          )}
 
-                  {/* Description */}
-                  {image.description && (
-                    <div className="image-modal-image-description">
-                      {image.description}
+          {/* Download button with dropdown */}
+          <div className="image-modal-download-menu-wrapper" data-download-menu>
+            <button
+              onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+              className="image-modal-download-button"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
+              }}
+            >
+              <span>{t('image.download')}</span>
+              <ChevronDown size={16} />
+            </button>
+            {showDownloadMenu && (
+              <div
+                className="image-modal-download-menu"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {[
+                  { value: 'small' as const, label: t('image.small'), dimension: '640px' },
+                  { value: 'medium' as const, label: t('image.medium'), dimension: '1920px' },
+                  { value: 'large' as const, label: t('image.large'), dimension: '2400px' },
+                  { value: 'original' as const, label: t('image.original'), dimension: t('image.fullSize') },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      handleDownload(option.value);
+                      setShowDownloadMenu(false);
+                    }}
+                    className="image-modal-download-menu-item"
+                  >
+                    <div>
+                      <div className="image-modal-download-option-label">{option.label}</div>
+                      <div className="image-modal-download-option-dimension">{option.dimension}</div>
                     </div>
-                  )}
+                    {option.value === 'medium' && (
+                      <span className="image-modal-download-option-default">{t('image.default')}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Middle image with gutters */}
+      <div className="image-modal-middle-container">
+        <div className="image-modal-image-wrapper">
+          <div
+            className={`image-modal-image-container ${image.width && image.height ? 'has-aspect-ratio' : 'no-aspect-ratio'}`}
+            style={{
+              // Don't use aspect-ratio as it constrains height too much for wide images
+              // aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined,
+              minHeight: '0',
+            }}
+          >
+            {/* Back layer - fallback to image URL if backSrc not set */}
+            {(() => {
+              const backImageSrc = backSrc || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+              const shouldRenderBack = backImageSrc && !(backSrc && backSrc.startsWith('data:'));
+              return shouldRenderBack ? (
+                <img
+                  key={`back-${image._id}`}
+                  src={backImageSrc}
+                  alt={image.imageTitle || 'photo'}
+                  className={`image-modal-back-image ${frontLoaded ? 'loaded' : ''}`}
+                  draggable={false}
+                  onLoad={(e) => {
+                    const imgEl = e.currentTarget;
+                    if (imgEl.decode) {
+                      imgEl.decode().catch(() => { });
+                    }
+                  }}
+                  onError={(e) => {
+                    console.error('[ImagePage] Back image error:', e.currentTarget.src);
+                  }}
+                />
+              ) : null;
+            })()}
+            {/* Front layer */}
+            {(() => {
+              return frontSrc ? (
+                <img
+                  key={`front-${image._id}`}
+                  ref={imgElementRef}
+                  src={frontSrc}
+                  alt={image.imageTitle || 'photo'}
+                  className={`image-modal-front-image ${frontLoaded ? 'loaded' : ''}`}
+                  draggable={false}
+                  onLoad={(e) => {
+                    const imgEl = e.currentTarget;
+                    if (imgEl.decode) {
+                      imgEl.decode().then(() => {
+                        requestAnimationFrame(() => {
+                          requestAnimationFrame(() => {
+                            setFrontLoaded(true);
+                          });
+                        });
+                      }).catch(() => {
+                        requestAnimationFrame(() => {
+                          setFrontLoaded(true);
+                        });
+                      });
+                    } else {
+                      requestAnimationFrame(() => {
+                        setFrontLoaded(true);
+                      });
+                    }
+                  }}
+                  onError={(e) => {
+                    console.error('[ImagePage] Front image error:', e.currentTarget.src);
+                    setFrontLoaded(false);
+                  }}
+                />
+              ) : null;
+            })()}
+            {/* Fallback: if no backSrc or frontSrc, show image directly */}
+            {(() => {
+              const fallbackSrc = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+              const shouldRenderFallback = !backSrc && !frontSrc && !!fallbackSrc;
+              return shouldRenderFallback ? (
+                <img
+                  key={`fallback-${image._id}`}
+                  src={fallbackSrc}
+                  alt={image.imageTitle || 'photo'}
+                  className="image-modal-front-image"
+                  draggable={false}
+                  onLoad={() => {}}
+                  onError={(e) => {
+                    console.error('[ImagePage] Fallback image error:', e.currentTarget.src);
+                  }}
+                />
+              ) : null;
+            })()}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom info (scrolls with content) */}
+      <div className="image-modal-bottom-info">
+        <div className="image-modal-bottom-info-row">
+          {/* Left: image info */}
+          <div className="image-modal-image-info">
+            {/* Views and Downloads Stats with Share/Info buttons */}
+            <div className="image-modal-stats-row">
+              <div className="image-modal-stats-header">
+                <div className="image-modal-stat-item">
+                  <div className="image-modal-stat-label">Views</div>
+                  <div className="image-modal-stat-value">{views.toLocaleString()}</div>
+                </div>
+                <div className="image-modal-stat-item">
+                  <div className="image-modal-stat-label">Downloads</div>
+                  <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
                 </div>
               </div>
-            </div>
 
-            {/* Related images - outside bottom bar */}
-            <div ref={relatedSectionRef} className="image-modal-related-section">
-              <div className="image-modal-related-title">Related images</div>
-              <div
-                ref={relatedGridRef}
-                className="image-modal-related-grid"
-                style={{
-                  gridTemplateColumns: `repeat(${relatedColumnCount}, 1fr)`,
-                  gap: `${GRID_CONFIG.gap}px`,
-                  gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
-                }}
-              >
-                {relatedGridLayout.map((layout, idx) => {
-                  const { image: relatedImage, column, rowSpan, rowStart } = layout;
-                  return (
-                    <div
-                      key={`${relatedImage._id || idx}-${column}-${rowStart}`}
-                      className="image-modal-related-item-wrapper"
-                      style={{
-                        gridColumn: column,
-                        gridRowStart: rowStart,
-                        gridRowEnd: `span ${rowSpan}`,
-                        height: 'auto',
-                      }}
-                    >
-                      <BlurUpImage
-                        image={relatedImage}
-                        onClick={() => {
-                          handleRelatedImageClick(relatedImage);
-                        }}
-                        priority={idx < 4}
-                      />
-                    </div>
-                  );
-                })}
+              {/* Right: Share and Info buttons */}
+              <div className="image-modal-actions-container">
+                <button
+                  onClick={handleShare}
+                  className="image-modal-share-button"
+                >
+                  <Share2 size={16} />
+                  <span>{t('share.share')}</span>
+                </button>
+                <ImageModalInfo image={image} />
               </div>
             </div>
+
+            {image.imageTitle && (
+              <div className="image-modal-image-title">
+                {image.imageTitle}
+              </div>
+            )}
+
+            {/* Location and Camera Info */}
+            {(image.location || image.cameraModel) && (
+              <div className="image-modal-image-details">
+                {image.location && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <MapPin size={14} style={{ flexShrink: 0 }} />
+                    {image.coordinates ? (
+                      <a
+                        href={`https://www.google.com/maps?q=${image.coordinates.latitude},${image.coordinates.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: 'inherit',
+                          textDecoration: 'none',
+                          transition: 'opacity 0.2s',
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.7'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                      >
+                        {image.location}
+                        <ExternalLink size={12} style={{ flexShrink: 0, opacity: 0.7 }} />
+                      </a>
+                    ) : (
+                      <span>{image.location}</span>
+                    )}
+                  </span>
+                )}
+                {image.location && image.cameraModel && <span> • </span>}
+                {image.cameraModel && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <img src={cameraIcon} alt="Camera" style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+                    {image.cameraModel}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Camera EXIF Info */}
+            {(image.focalLength || image.aperture || image.shutterSpeed || image.iso) && (
+              <div className="image-modal-image-exif">
+                {image.focalLength && <span>{image.focalLength}mm</span>}
+                {image.focalLength && image.aperture && <span> • </span>}
+                {image.aperture && <span>f/{image.aperture}</span>}
+                {image.aperture && image.shutterSpeed && <span> • </span>}
+                {image.shutterSpeed && <span>{image.shutterSpeed}</span>}
+                {image.shutterSpeed && image.iso && <span> • </span>}
+                {image.iso && <span>ISO {image.iso}</span>}
+              </div>
+            )}
+
+            {/* Date */}
+            {formattedDate && (
+              <div className="image-modal-image-date">
+                <img src={dateIcon} alt="Date" style={{ width: '14px', height: '14px', flexShrink: 0, marginRight: '6px' }} />
+                {formattedDate}
+              </div>
+            )}
+
+            {/* Tags */}
+            {image.tags && Array.isArray(image.tags) && image.tags.length > 0 && (
+              <div className="image-modal-image-tags">
+                {image.tags.map((tag, idx) => (
+                  <span key={idx} className="image-modal-image-tag">
+                    <Tag size={14} />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Description */}
+            {image.description && (
+              <div className="image-modal-image-description">
+                {image.description}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Related images - outside bottom bar */}
+      <div ref={relatedSectionRef} className="image-modal-related-section">
+        <div className="image-modal-related-title">Related images</div>
+        <div
+          ref={relatedGridRef}
+          className="image-modal-related-grid"
+          style={{
+            gridTemplateColumns: `repeat(${relatedColumnCount}, 1fr)`,
+            gap: `${GRID_CONFIG.gap}px`,
+            gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
+          }}
+        >
+          {relatedGridLayout.map((layout, idx) => {
+            const { image: relatedImage, column, rowSpan, rowStart } = layout;
+            return (
+              <div
+                key={`${relatedImage._id || idx}-${column}-${rowStart}`}
+                className="image-modal-related-item-wrapper"
+                style={{
+                  gridColumn: column,
+                  gridRowStart: rowStart,
+                  gridRowEnd: `span ${rowSpan}`,
+                  height: 'auto',
+                }}
+              >
+                <BlurUpImage
+                  image={relatedImage}
+                  onClick={() => {
+                    handleRelatedImageClick(relatedImage);
+                  }}
+                  priority={idx < 4}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 
@@ -1437,7 +1391,7 @@ function ImagePage() {
           >
             {modalContent}
           </div>
-            </div>
+        </div>
       ) : (
         // Regular page: Wrapper with sidebar
         <div className="image-page">
@@ -1447,8 +1401,8 @@ function ImagePage() {
             className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''}`}
           >
             {modalContent}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Close button - only in modal-style */}

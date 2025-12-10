@@ -252,7 +252,15 @@ const ImageModal = ({
   useScrollLock(lockBodyScroll && !renderAsPage, '.image-modal-content');
 
   // Avoid initial flash: only show overlay/container when we have at least a placeholder
-  const isVisualReady = !!(modalPlaceholderSrc || modalImageSrc);
+  // Check both props and image object URLs
+  const isVisualReady = !!(
+    modalPlaceholderSrc || 
+    modalImageSrc || 
+    image.thumbnailUrl || 
+    image.smallUrl || 
+    image.regularUrl || 
+    image.imageUrl
+  );
 
   return (
     <>

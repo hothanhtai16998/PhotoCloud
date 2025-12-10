@@ -25,8 +25,8 @@ interface ImageModalContentProps {
 export const ImageModalContent = ({
   image,
   imageTypes,
-  modalImageSrc: _modalImageSrc,
-  modalPlaceholderSrc: _modalPlaceholderSrc,
+  modalImageSrc,
+  modalPlaceholderSrc,
   isModalImageLoaded: _isModalImageLoaded,
   setIsModalImageLoaded,
   zoomProps,
@@ -35,7 +35,6 @@ export const ImageModalContent = ({
   renderAsPage = false,
 }: ImageModalContentProps) => {
   // Use modalImageSrc if available, otherwise fallback to image URLs
-  // const imageSrc = modalImageSrc || image.regularUrl || image.imageUrl || image.smallUrl || '';
   const derivePlaceholder = (img: Image) =>
     img.thumbnailUrl ||
     img.smallUrl ||
@@ -45,11 +44,22 @@ export const ImageModalContent = ({
   const deriveFull = (img: Image) =>
     img.regularUrl || img.imageUrl || img.smallUrl || '';
 
-  const [displayedSrc, setDisplayedSrc] = useState(() => {
-    const placeholder = derivePlaceholder(image);
-    return placeholder || deriveFull(image);
-  });
-  const [displayedPlaceholder, setDisplayedPlaceholder] = useState(() => derivePlaceholder(image));
+  // Use props from parent if available, otherwise derive from image
+  const getPlaceholder = () => modalPlaceholderSrc || derivePlaceholder(image);
+  const getFull = () => modalImageSrc || deriveFull(image);
+
+  // Initialize with any available URL - prioritize props, then image URLs
+  // Directly use image properties to avoid closure issues
+  const initializeSrc = () => {
+    const placeholder = modalPlaceholderSrc || derivePlaceholder(image);
+    const full = modalImageSrc || deriveFull(image);
+    return placeholder || full || image.imageUrl || '';
+  };
+
+  const [displayedSrc, setDisplayedSrc] = useState(initializeSrc);
+  const [displayedPlaceholder, setDisplayedPlaceholder] = useState(() => 
+    modalPlaceholderSrc || derivePlaceholder(image)
+  );
   const [frontImage, setFrontImage] = useState<{
     id: string;
     src: string;
@@ -105,29 +115,61 @@ export const ImageModalContent = ({
   // Track previous image to detect changes and reset loaded state
   const prevImageIdRef = useRef<string | null>(null);
 
+  // Track previous props to detect changes
+  const prevModalImageSrcRef = useRef<string | null>(null);
+  const prevModalPlaceholderSrcRef = useRef<string | null>(null);
+
   // Reset loaded state when image changes to prevent showing old image
   useEffect(() => {
     const imageChanged = prevImageIdRef.current !== image._id;
+    const propsChanged = 
+      prevModalImageSrcRef.current !== modalImageSrc ||
+      prevModalPlaceholderSrcRef.current !== modalPlaceholderSrc;
+    
+    const nextSrc = getFull();
+    const nextPlaceholder = getPlaceholder();
+    
+    // Always ensure we have a valid src - try all possible sources
+    const finalSrc = nextPlaceholder || nextSrc || image.regularUrl || image.imageUrl || image.smallUrl || '';
+    
     if (imageChanged) {
       prevImageIdRef.current = image._id;
+      prevModalImageSrcRef.current = modalImageSrc;
+      prevModalPlaceholderSrcRef.current = modalPlaceholderSrc;
       setIsModalImageLoaded(false);
-      const nextSrc = deriveFull(image);
-      const nextPlaceholder = derivePlaceholder(image);
-      setDisplayedSrc(nextPlaceholder || nextSrc);
+      
+      // Always set displayed src - use placeholder first, then full, then fallback
+      // Ensure we always have a src, even if it's empty (will be handled by fallback in img src)
+      setDisplayedSrc(finalSrc);
       setDisplayedPlaceholder(nextPlaceholder);
-      if (nextSrc && nextSrc !== displayedSrc) {
+      
+      // If we have both placeholder and full image, and they're different, load full in front
+      if (nextSrc && nextPlaceholder && nextSrc !== nextPlaceholder && nextSrc !== finalSrc) {
         setFrontLoaded(false);
         setFrontImage({
           id: image._id,
           src: nextSrc,
           placeholder: nextPlaceholder,
         });
-      } else {
-        // If same src, just keep as loaded.
-        setIsModalImageLoaded(true);
       }
-    };
-  }, [image, displayedSrc, setIsModalImageLoaded]);
+    } else if (propsChanged && finalSrc) {
+      // Image didn't change, but props might have (e.g., modalImageSrc became available)
+      // Update displayed src if props changed and we have a new valid URL
+      prevModalImageSrcRef.current = modalImageSrc;
+      prevModalPlaceholderSrcRef.current = modalPlaceholderSrc;
+      
+      setDisplayedSrc(finalSrc);
+      setDisplayedPlaceholder(nextPlaceholder);
+      if (nextSrc && nextPlaceholder && nextSrc !== nextPlaceholder && nextSrc !== finalSrc) {
+        setFrontLoaded(false);
+        setFrontImage({
+          id: image._id,
+          src: nextSrc,
+          placeholder: nextPlaceholder,
+        });
+      }
+    }
+  }, [image._id, image.imageUrl, image.regularUrl, image.smallUrl, modalImageSrc, modalPlaceholderSrc, setIsModalImageLoaded]);
 
   // Shared image load handler
   const handleFrontImageLoad = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -182,7 +224,16 @@ export const ImageModalContent = ({
         {/* Back layer: last displayed image */}
         <img
           ref={zoomImageRef}
-          src={displayedSrc}
+          src={
+            displayedSrc || 
+            modalImageSrc || 
+            modalPlaceholderSrc || 
+            image.regularUrl || 
+            image.imageUrl || 
+            image.smallUrl || 
+            image.thumbnailUrl || 
+            ''
+          }
           alt={image.imageTitle ?? 'Photo'}
           style={getModalImageStyles(displayedPlaceholder, isMobile && renderAsPage)}
           className={`${getImageClassName(true, imageType)} modal-image-back`}
@@ -193,6 +244,14 @@ export const ImageModalContent = ({
           onDoubleClick={handleDoubleClick}
           draggable={false}
           onLoad={() => setIsModalImageLoaded(true)}
+          onError={(e) => {
+            // Try to fallback to a different URL if available
+            const currentSrc = displayedSrc || image.imageUrl || image.regularUrl || image.smallUrl || '';
+            const fallback = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+            if (fallback && fallback !== currentSrc) {
+              setDisplayedSrc(fallback);
+            }
+          }}
         />
 
         {/* Front layer: new image being loaded */}
