@@ -38,6 +38,7 @@ export const Header = memo(function Header() {
     updateFaviconWithImage(LOGO_CONFIG.faviconLogo)
   }, [])
 
+
   const handleLogoClick = () => {
     if (window.location.pathname !== '/') {
       navigate('/')
@@ -242,8 +243,6 @@ export const Header = memo(function Header() {
           </div>
         </div>
       </div>
-
-
 
       {/* Upload Modal - Lazy loaded, only render when open */}
       {uploadModalOpen && (

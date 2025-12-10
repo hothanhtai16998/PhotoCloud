@@ -209,6 +209,8 @@ function ImagePage() {
   const [frontLoaded, setFrontLoaded] = useState(false);
   const [backSrc, setBackSrc] = useState<string | null>(imageState.src);
   const backSrcRef = useRef<string | null>(imageState.src);
+  // Keep previous backSrc to prevent flashing during transitions
+  const previousBackSrcRef = useRef<string | null>(imageState.src);
 
   // Stats state
   const getInitialStats = useCallback(() => {
@@ -392,26 +394,36 @@ function ImagePage() {
     }
 
     const currentImageId = image._id;
+    const previousImageId = previousImgRef.current?._id;
+    const imageChanged = previousImageId !== currentImageId;
     previousImgRef.current = image;
-    frontImageLoadedRef.current = false;
+
+    // Only reset frontImageLoadedRef if image actually changed
+    if (imageChanged) {
+      frontImageLoadedRef.current = false;
+      // Keep previous backSrc until new one is ready to prevent flashing
+      previousBackSrcRef.current = backSrcRef.current;
+    }
 
     // Reset scroll to top when image changes
-    scrollPosRef.current = 0;
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
-    requestAnimationFrame(() => {
-      setIsScrolled(false);
-      setShouldAnimate(false);
-      setIsAtRelatedSection(false);
-    });
+    if (imageChanged) {
+      scrollPosRef.current = 0;
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+      requestAnimationFrame(() => {
+        setIsScrolled(false);
+        setShouldAnimate(false);
+        setIsAtRelatedSection(false);
+      });
 
-    // Close menus when image changes
-    setShowDownloadMenu(false);
-    setShowAuthorTooltip(false);
-    if (authorTooltipTimeoutRef.current) {
-      clearTimeout(authorTooltipTimeoutRef.current);
-      authorTooltipTimeoutRef.current = null;
+      // Close menus when image changes
+      setShowDownloadMenu(false);
+      setShowAuthorTooltip(false);
+      if (authorTooltipTimeoutRef.current) {
+        clearTimeout(authorTooltipTimeoutRef.current);
+        authorTooltipTimeoutRef.current = null;
+      }
     }
 
     const thumbnail = image.thumbnailUrl || image.smallUrl || image.imageUrl || '';
@@ -423,12 +435,25 @@ function ImagePage() {
 
     setImageState(currentState);
 
-    if (newBackSrc && newBackSrc !== backSrcRef.current) {
+    // Update backSrc only when we have a new valid source
+    // Keep old backSrc visible until new one is ready to prevent flashing
+    if (newBackSrc) {
       const isBase64 = newBackSrc.startsWith('data:');
 
       if (isBase64) {
-        backSrcRef.current = newBackSrc;
-        setBackSrc(newBackSrc);
+        // Base64 is instant, update immediately
+        if (imageChanged || newBackSrc !== backSrcRef.current) {
+          // Update previous before setting new to prevent flash
+          if (imageChanged && backSrcRef.current) {
+            previousBackSrcRef.current = backSrcRef.current;
+          }
+          backSrcRef.current = newBackSrc;
+          setBackSrc(newBackSrc);
+          // Update previous after a short delay to allow transition
+          requestAnimationFrame(() => {
+            previousBackSrcRef.current = newBackSrc;
+          });
+        }
 
         const networkThumbnail = image.thumbnailUrl || image.smallUrl || image.imageUrl || '';
         if (networkThumbnail && networkThumbnail !== newBackSrc) {
@@ -437,6 +462,7 @@ function ImagePage() {
               if (previousImgRef.current?._id === currentImageId) {
                 backSrcRef.current = src;
                 setBackSrc(src);
+                previousBackSrcRef.current = src;
               }
             })
             .catch(() => { });
@@ -448,20 +474,41 @@ function ImagePage() {
           }
         });
       } else {
+        // Network image - check if cached first
         if (loadedImages.has(newBackSrc)) {
-          backSrcRef.current = newBackSrc;
-          setBackSrc(newBackSrc);
+          // Cached - update immediately
+          if (imageChanged || newBackSrc !== backSrcRef.current) {
+            // Update previous before setting new to prevent flash
+            if (imageChanged && backSrcRef.current) {
+              previousBackSrcRef.current = backSrcRef.current;
+            }
+            backSrcRef.current = newBackSrc;
+            setBackSrc(newBackSrc);
+            // Update previous after a short delay to allow transition
+            requestAnimationFrame(() => {
+              previousBackSrcRef.current = newBackSrc;
+            });
+          }
           requestAnimationFrame(() => {
             if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
               setFrontSrc(null);
             }
           });
         } else {
+          // Not cached - preload but keep old image visible until ready
           preloadImage(newBackSrc, false)
             .then((src) => {
               if (previousImgRef.current?._id === currentImageId) {
+                // Update previous before setting new to prevent flash
+                if (!previousBackSrcRef.current && backSrcRef.current) {
+                  previousBackSrcRef.current = backSrcRef.current;
+                }
                 backSrcRef.current = src;
                 setBackSrc(src);
+                // Update previous after setting new
+                requestAnimationFrame(() => {
+                  previousBackSrcRef.current = src;
+                });
                 requestAnimationFrame(() => {
                   if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
                     setFrontSrc(null);
@@ -470,9 +517,11 @@ function ImagePage() {
               }
             })
             .catch(() => {
+              // On error, still set the src (browser will handle it)
               if (previousImgRef.current?._id === currentImageId) {
                 backSrcRef.current = newBackSrc;
                 setBackSrc(newBackSrc);
+                previousBackSrcRef.current = newBackSrc;
                 if (!frontImageLoadedRef.current) {
                   setFrontSrc(null);
                 }
@@ -480,9 +529,15 @@ function ImagePage() {
             });
         }
       }
-    } else if (!newBackSrc) {
-      backSrcRef.current = null;
-      setBackSrc(null);
+    } else {
+      // No new backSrc - only clear if image changed
+      if (imageChanged) {
+        // Keep previous backSrc as fallback instead of clearing
+        if (!previousBackSrcRef.current) {
+          backSrcRef.current = null;
+          setBackSrc(null);
+        }
+      }
     }
 
     // Load full image in background
@@ -1262,11 +1317,23 @@ function ImagePage() {
           >
             {/* Back layer - fallback to image URL if backSrc not set */}
             {(() => {
-              const backImageSrc = backSrc || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
-              const shouldRenderBack = backImageSrc && !(backSrc && backSrc.startsWith('data:'));
+              // Use backSrc, fallback to previousBackSrcRef, then image URLs
+              // This prevents flashing when transitioning between images
+              // Use backSrc if available, otherwise fallback to previousBackSrcRef or image URLs
+              // This ensures we always have something to display, preventing flashes
+              const backImageSrc = backSrc || previousBackSrcRef.current || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+              // Render back image if we have a source and it's not hidden by front image
+              const isBase64 = backSrc?.startsWith('data:');
+              const shouldRenderBack = backImageSrc && !(isBase64 && frontLoaded);
+
+              // Use image._id in key, but ensure we don't unmount until new src is ready
+              // If backSrc is not ready yet, use previousBackSrcRef to keep old image visible
+              const displaySrc = backSrc || previousBackSrcRef.current;
+              const imageKey = displaySrc ? `back-${image._id}-${displaySrc.slice(0, 20)}` : `back-${image._id}`;
+
               return shouldRenderBack ? (
                 <img
-                  key={`back-${image._id}`}
+                  key={imageKey}
                   src={backImageSrc}
                   alt={image.imageTitle || 'photo'}
                   className={`image-modal-back-image ${frontLoaded ? 'loaded' : ''}`}

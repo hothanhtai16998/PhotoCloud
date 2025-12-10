@@ -1,13 +1,13 @@
 import { useEffect, lazy, Suspense, useContext, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
+import CategoryNavigation from "../components/CategoryNavigation";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
-import CategoryNavigation from "@/components/CategoryNavigation";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { useImageGridCategory } from "./ImageGrid/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
@@ -285,6 +285,7 @@ function HomePage() {
     return (
         <>
             <Header />
+            <CategoryNavigation />
             <main className="homepage">
                 {/* Hide Slider when user is searching to show ImageGrid immediately */}
                 {!currentSearch && (
@@ -296,7 +297,6 @@ function HomePage() {
                         <Slider />
                     </Suspense>
                 )}
-                <CategoryNavigation />
                 <NoFlashGrid
                     images={images}
                     loading={loading}

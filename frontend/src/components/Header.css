@@ -10,31 +10,16 @@
   right: 0;
   z-index: var(--z-header, 1500);
   width: 100%;
-  height: var(--header-height);
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   transition: background 0.3s ease, border-color 0.3s ease;
-}
-
-/* Remove header border when category navigation is sticky */
-.unsplash-header.category-nav-sticky {
-  border-bottom: none;
 }
 
 .header-top {
   padding: 0; /* Remove padding to reduce height */
   border-bottom: 1px solid #e5e5e5;
-  height: 100%;
   display: flex;
   align-items: center;
   transition: border-color 0.3s ease;
-}
-
-/* Remove header-top border when category navigation is sticky */
-.unsplash-header.category-nav-sticky .header-top {
-  border-bottom: none;
 }
 
 .header-container {
