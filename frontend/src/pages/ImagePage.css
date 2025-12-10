@@ -36,9 +36,12 @@
 @media (min-width: 768px) {
   .image-page-sidebar {
     display: flex;
-  position: relative;
-    height: 100vh;
-  min-height: 100vh;
+    position: fixed; /* Fixed to viewport */
+    left: 0;
+    top: 66px; /* Below header (66px = 10px padding + 56px content) */
+    bottom: 0;
+    height: calc(100vh - 66px); /* Full viewport height minus header */
+    min-height: calc(100vh - 66px);
     align-self: stretch;
   }
 }
@@ -112,16 +115,30 @@
   border-radius: 0 !important;
   margin: 0 !important;
   margin-top: 66px !important; /* Full header height including padding */
+  margin-left: 0 !important; /* No left margin on mobile */
   display: flex !important;
   flex-direction: column !important;
   flex: 1 !important;
   position: relative !important;
 }
 
+/* On desktop, add left margin to account for fixed sidebar */
+@media (min-width: 768px) {
+  .image-page .image-modal-container {
+    margin-left: 56px !important; /* Sidebar width */
+  }
+}
+
 /* Override scrolled state margin in regular page mode */
 .image-page .image-modal-container.scrolled {
   margin-top: 66px !important; /* Keep margin even when scrolled */
   border-radius: 0 !important;
+}
+
+@media (min-width: 768px) {
+  .image-page .image-modal-container.scrolled {
+    margin-left: 56px !important; /* Keep left margin for sidebar */
+  }
 }
 
 .image-page .image-modal-container:not(.scrolled) {
