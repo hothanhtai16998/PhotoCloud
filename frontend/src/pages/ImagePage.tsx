@@ -78,6 +78,25 @@ function ImagePage() {
   // Track container height to maintain it during transitions
   const containerHeightRef = useRef<number | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Calculate initial container height based on image dimensions
+  const calculateInitialHeight = useCallback((img: Image | null): number | null => {
+    if (!img || !imageContainerRef.current) return null;
+    
+    // If we have image dimensions, calculate expected height
+    if (img.width && img.height) {
+      const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
+      if (containerWidth > 0) {
+        const aspectRatio = img.width / img.height;
+        const calculatedHeight = containerWidth / aspectRatio;
+        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
+        return Math.max(300, maxHeight); // Minimum 300px to prevent collapse
+      }
+    }
+    
+    // Fallback: use saved height or reasonable default
+    return containerHeightRef.current || 400; // Default 400px if no dimensions
+  }, []);
 
   // Detect mobile
   const isMobile = useIsMobile();
@@ -226,11 +245,12 @@ function ImagePage() {
     const isOriginalCached = original && (loadedImages.has(original) || checkBrowserCache(original));
     
     // Priority order for initial placeholder (ONLY use aspect-ratio-preserving sources):
-    // 1. base64Thumbnail (preserves aspect ratio, instant, no network)
-    // 2. regularUrl if cached (preserves aspect ratio with fit: 'inside', already loaded)
-    // 3. imageUrl if cached (original, preserves aspect ratio, already loaded)
-    // 4. regularUrl (preserves aspect ratio with fit: 'inside')
-    // 5. imageUrl (original, preserves aspect ratio)
+    // Strategy: Prefer higher quality sources to reduce flashing from quality upgrades
+    // 1. regularUrl if cached (preserves aspect ratio, already loaded - no flash)
+    // 2. imageUrl if cached (original, already loaded - no flash)
+    // 3. regularUrl if available (preserves aspect ratio, will load - better than base64)
+    // 4. imageUrl if available (original, will load - better than base64)
+    // 5. base64Thumbnail as last resort (very small, blurry, but instant)
     // SKIP: thumbnailUrl (200x200 square/cropped with fit: 'cover') - causes flash
     // SKIP: smallUrl (500x500 square/cropped with fit: 'cover') - also causes flash
     
@@ -251,12 +271,28 @@ function ImagePage() {
       };
     }
     
-    // Otherwise, prefer base64 > regularUrl > imageUrl
-    // Skip thumbnailUrl and smallUrl (both are square/cropped) to avoid flash
-    const initialSrc = base64Placeholder || regular || original || '';
+    // Prefer regularUrl/imageUrl over base64 to reduce flashing
+    // Base64 is very small (20x20) and blurry, so showing regularUrl directly
+    // (even if it needs to load) is better than base64 -> regularUrl transition
+    if (regular) {
+      return {
+        src: regular,
+        isFullQuality: false, // Will upgrade to original later
+        isBase64: false
+      };
+    }
     
+    if (original) {
+      return {
+        src: original,
+        isFullQuality: true,
+        isBase64: false
+      };
+    }
+    
+    // Last resort: use base64 if nothing else is available
     return {
-      src: initialSrc,
+      src: base64Placeholder || '',
       isFullQuality: false,
       isBase64: !!base64Placeholder
     };
@@ -483,6 +519,18 @@ function ImagePage() {
         const currentHeight = imageContainerRef.current.offsetHeight;
         if (currentHeight > 0) {
           containerHeightRef.current = currentHeight;
+        } else {
+          // If no current height, calculate initial height from new image dimensions
+          const initialHeight = calculateInitialHeight(image);
+          if (initialHeight) {
+            containerHeightRef.current = initialHeight;
+          }
+        }
+      } else {
+        // Container not mounted yet, calculate initial height
+        const initialHeight = calculateInitialHeight(image);
+        if (initialHeight) {
+          containerHeightRef.current = initialHeight;
         }
       }
       // Don't clear backSrc immediately - let it stay until new one is ready
@@ -548,16 +596,21 @@ function ImagePage() {
           });
         }
 
-        // After base64 loads, upgrade to regularUrl (preserves aspect ratio)
+        // After base64 loads (only if we actually used base64), upgrade to regularUrl
         // Skip thumbnailUrl and smallUrl (both are square/cropped) to prevent flash
+        // Note: With new logic, we rarely start with base64 (only if regularUrl/imageUrl don't exist)
         const networkUpgrade = image.regularUrl || image.imageUrl || '';
         if (networkUpgrade && networkUpgrade !== newBackSrc) {
-          preloadImage(networkUpgrade, true)
+          // Use skipDecode=false to ensure smooth transition (prevents flash)
+          preloadImage(networkUpgrade, false)
             .then((src) => {
               if (previousImgRef.current?._id === currentImageId) {
-                backSrcRef.current = src;
-                setBackSrc(src);
-                previousBackSrcRef.current = src;
+                // Only update if we're still on base64 (avoid unnecessary updates)
+                if (backSrcRef.current === newBackSrc) {
+                  backSrcRef.current = src;
+                  setBackSrc(src);
+                  previousBackSrcRef.current = src;
+                }
               }
             })
             .catch(() => { });
@@ -592,24 +645,26 @@ function ImagePage() {
           });
         } else {
           // Not cached - preload but keep old image visible until ready
+          // Use skipDecode=false to ensure image is fully decoded before showing (prevents flash)
           preloadImage(newBackSrc, false)
             .then((src) => {
               if (previousImgRef.current?._id === currentImageId) {
                 // CRITICAL: previousBackSrcRef already set above when imageChanged
-                // Keep old image visible until new one is loaded
-                backSrcRef.current = src;
-                setBackSrc(src);
-                // Update previous after new image is confirmed loaded and visible
+                // Keep old image visible until new one is loaded and decoded
+                // Use double RAF to ensure smooth transition
                 requestAnimationFrame(() => {
                   requestAnimationFrame(() => {
-                    previousBackSrcRef.current = src;
-                    previousBackSrcImageIdRef.current = currentImageId;
+                    if (previousImgRef.current?._id === currentImageId) {
+                      backSrcRef.current = src;
+                      setBackSrc(src);
+                      // Update previous after new image is confirmed loaded and visible
+                      previousBackSrcRef.current = src;
+                      previousBackSrcImageIdRef.current = currentImageId;
+                      if (!frontImageLoadedRef.current) {
+                        setFrontSrc(null);
+                      }
+                    }
                   });
-                });
-                requestAnimationFrame(() => {
-                  if (previousImgRef.current?._id === currentImageId && !frontImageLoadedRef.current) {
-                    setFrontSrc(null);
-                  }
                 });
               }
             })
@@ -758,6 +813,44 @@ function ImagePage() {
     loadFrontImage();
   }, [image, calculateInitialState]);
 
+  // Set initial container height when image changes (before images load)
+  useEffect(() => {
+    if (!image || !imageContainerRef.current) return;
+    
+    // Calculate initial height from image dimensions
+    if (image.width && image.height) {
+      // Use requestAnimationFrame to ensure container is rendered
+      requestAnimationFrame(() => {
+        if (imageContainerRef.current) {
+          const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
+          if (containerWidth > 0) {
+            const aspectRatio = image.width / image.height;
+            const calculatedHeight = containerWidth / aspectRatio;
+            const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
+            const initialHeight = Math.max(300, maxHeight);
+            
+            // Only set if we don't have a saved height or if it's significantly different
+            if (!containerHeightRef.current || Math.abs(containerHeightRef.current - initialHeight) > 50) {
+              containerHeightRef.current = initialHeight;
+            }
+          } else {
+            // Container not measured yet, use a reasonable default based on aspect ratio
+            const aspectRatio = image.width / image.height;
+            const estimatedWidth = 1400; // Typical container width
+            const estimatedHeight = estimatedWidth / aspectRatio;
+            const maxHeight = Math.min(estimatedHeight, window.innerHeight - 180);
+            containerHeightRef.current = Math.max(300, maxHeight);
+          }
+        }
+      });
+    } else {
+      // No dimensions, use default
+      if (!containerHeightRef.current) {
+        containerHeightRef.current = 400;
+      }
+    }
+  }, [image?._id, image?.width, image?.height]);
+
   // Load dimensions for related images
   useEffect(() => {
     const loadDimensions = async () => {
@@ -877,6 +970,20 @@ function ImagePage() {
       }
       const viewportWidth = window.innerWidth;
       setRelatedColumnCount(getColumnCount(viewportWidth));
+      
+      // Also update image container height if dimensions are available
+      if (image && imageContainerRef.current && image.width && image.height) {
+        const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
+        if (containerWidth > 0) {
+          const aspectRatio = image.width / image.height;
+          const calculatedHeight = containerWidth / aspectRatio;
+          const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
+          const newHeight = Math.max(300, maxHeight);
+          if (newHeight !== containerHeightRef.current) {
+            containerHeightRef.current = newHeight;
+          }
+        }
+      }
     };
 
     updateLayout();
@@ -892,7 +999,7 @@ function ImagePage() {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
     };
-  }, []);
+  }, [image]);
 
   // Locale and date formatting
   const locale = getLocale();
@@ -1486,15 +1593,13 @@ function ImagePage() {
             className={`image-modal-image-container ${image.width && image.height ? 'has-aspect-ratio' : 'no-aspect-ratio'}`}
             style={{
               // CRITICAL: Maintain container height during transitions to prevent layout shift
-              // Use saved height if available, otherwise let it be auto
-              minHeight: containerHeightRef.current ? `${containerHeightRef.current}px` : '0',
-            }}
-            onLoad={(e) => {
-              // Update container height when image loads
-              const container = e.currentTarget;
-              if (container.offsetHeight > 0) {
-                containerHeightRef.current = container.offsetHeight;
-              }
+              // Use saved height if available, otherwise calculate from image dimensions
+              minHeight: containerHeightRef.current 
+                ? `${containerHeightRef.current}px` 
+                : (() => {
+                    const initialHeight = calculateInitialHeight(image);
+                    return initialHeight ? `${initialHeight}px` : '400px'; // Fallback to 400px
+                  })(),
             }}
           >
             {/* Back layer - fallback to image URL if backSrc not set */}
@@ -1548,11 +1653,16 @@ function ImagePage() {
                     const imgEl = e.currentTarget;
                     // CRITICAL: Update container height when new image loads
                     if (!isOldImage && imageContainerRef.current) {
+                      // Wait for layout to settle, then capture the actual rendered height
                       requestAnimationFrame(() => {
-                        const newHeight = imageContainerRef.current?.offsetHeight;
-                        if (newHeight && newHeight > 0) {
-                          containerHeightRef.current = newHeight;
-                        }
+                        requestAnimationFrame(() => {
+                          if (imageContainerRef.current) {
+                            const actualHeight = imageContainerRef.current.offsetHeight;
+                            if (actualHeight > 0) {
+                              containerHeightRef.current = actualHeight;
+                            }
+                          }
+                        });
                       });
                     }
                     // CRITICAL: If this is old image and new one is ready, hide it immediately
@@ -1582,21 +1692,65 @@ function ImagePage() {
                   draggable={false}
                   onLoad={(e) => {
                     const imgEl = e.currentTarget;
+                    // CRITICAL: Update container height when front image loads and changes position
+                    // This ensures bottom bar stays in correct position when image goes from absolute to relative
+                    if (imageContainerRef.current) {
+                      // Wait for position change (absolute -> relative) to complete, then capture height
+                      requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                          // Check again after frontLoaded state updates (which triggers position change)
+                          setTimeout(() => {
+                            if (imageContainerRef.current) {
+                              const actualHeight = imageContainerRef.current.offsetHeight;
+                              if (actualHeight > 0) {
+                                containerHeightRef.current = actualHeight;
+                              }
+                            }
+                          }, 0);
+                        });
+                      });
+                    }
+                    
                     if (imgEl.decode) {
                       imgEl.decode().then(() => {
                         requestAnimationFrame(() => {
                           requestAnimationFrame(() => {
                             setFrontLoaded(true);
+                            // Update height again after frontLoaded state change (position change)
+                            if (imageContainerRef.current) {
+                              requestAnimationFrame(() => {
+                                const actualHeight = imageContainerRef.current?.offsetHeight;
+                                if (actualHeight && actualHeight > 0) {
+                                  containerHeightRef.current = actualHeight;
+                                }
+                              });
+                            }
                           });
                         });
                       }).catch(() => {
                         requestAnimationFrame(() => {
                           setFrontLoaded(true);
+                          if (imageContainerRef.current) {
+                            requestAnimationFrame(() => {
+                              const actualHeight = imageContainerRef.current?.offsetHeight;
+                              if (actualHeight && actualHeight > 0) {
+                                containerHeightRef.current = actualHeight;
+                              }
+                            });
+                          }
                         });
                       });
                     } else {
                       requestAnimationFrame(() => {
                         setFrontLoaded(true);
+                        if (imageContainerRef.current) {
+                          requestAnimationFrame(() => {
+                            const actualHeight = imageContainerRef.current?.offsetHeight;
+                            if (actualHeight && actualHeight > 0) {
+                              containerHeightRef.current = actualHeight;
+                            }
+                          });
+                        }
                       });
                     }
                   }}

@@ -477,7 +477,8 @@
   max-height: calc(100vh - 180px);
   object-fit: contain;
   filter: none;
-  transition: opacity 0.18s ease-out;
+  /* Remove transition to prevent flashing - instant opacity change */
+  transition: none;
   display: block;
   margin: 0;
   user-select: none;
@@ -496,10 +497,14 @@
   transform: none;
   margin: 0 auto;
   width: 100%;
+  /* Smooth position change without opacity transition to prevent flash */
+  transition: none;
 }
 
 .image-modal-front-image:not(.loaded) {
   opacity: 0;
+  /* No transition - instant hide/show to prevent flash */
+  transition: none;
 }
 
 /* Bottom Info */
