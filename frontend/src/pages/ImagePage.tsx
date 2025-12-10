@@ -193,18 +193,74 @@ function ImagePage() {
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [isAtRelatedSection, setIsAtRelatedSection] = useState(false);
 
+  // Helper to check if image is in browser cache synchronously
+  const checkBrowserCache = useCallback((url: string): boolean => {
+    if (!url || typeof window === 'undefined') return false;
+    try {
+      const testImg = new Image();
+      testImg.src = url;
+      // If image loads synchronously (complete = true immediately), it's cached
+      if (testImg.complete && testImg.naturalWidth > 0) {
+        // Add to loadedImages cache for future checks
+        loadedImages.add(url);
+        return true;
+      }
+    } catch {
+      // Ignore errors in cache check
+    }
+    return false;
+  }, []);
+
   // Image loading state (matching NoFlashGrid ImageModal)
   const calculateInitialState = useCallback((img: Image) => {
     if (!img) return { src: null, isFullQuality: false };
+    
+    const regular = img.regularUrl || '';
+    const original = img.imageUrl || '';
     const base64Placeholder = img.base64Thumbnail || null;
-    const networkThumbnail = img.thumbnailUrl || img.smallUrl || img.imageUrl || '';
-    const full = img.regularUrl || img.imageUrl || '';
+    
+    // Check both in-memory cache and browser cache for regularUrl
+    const isRegularCached = regular && (loadedImages.has(regular) || checkBrowserCache(regular));
+    
+    // Check both in-memory cache and browser cache for imageUrl
+    const isOriginalCached = original && (loadedImages.has(original) || checkBrowserCache(original));
+    
+    // Priority order for initial placeholder (ONLY use aspect-ratio-preserving sources):
+    // 1. base64Thumbnail (preserves aspect ratio, instant, no network)
+    // 2. regularUrl if cached (preserves aspect ratio with fit: 'inside', already loaded)
+    // 3. imageUrl if cached (original, preserves aspect ratio, already loaded)
+    // 4. regularUrl (preserves aspect ratio with fit: 'inside')
+    // 5. imageUrl (original, preserves aspect ratio)
+    // SKIP: thumbnailUrl (200x200 square/cropped with fit: 'cover') - causes flash
+    // SKIP: smallUrl (500x500 square/cropped with fit: 'cover') - also causes flash
+    
+    // If regularUrl or imageUrl is cached (in memory or browser), use it directly to prevent flash
+    if (isRegularCached && regular) {
+      return {
+        src: regular,
+        isFullQuality: true, // It's the regular size, which is good quality
+        isBase64: false
+      };
+    }
+    
+    if (isOriginalCached && original) {
+      return {
+        src: original,
+        isFullQuality: true, // It's the original, full quality
+        isBase64: false
+      };
+    }
+    
+    // Otherwise, prefer base64 > regularUrl > imageUrl
+    // Skip thumbnailUrl and smallUrl (both are square/cropped) to avoid flash
+    const initialSrc = base64Placeholder || regular || original || '';
+    
     return {
-      src: base64Placeholder || networkThumbnail || full,
+      src: initialSrc,
       isFullQuality: false,
       isBase64: !!base64Placeholder
     };
-  }, []);
+  }, [checkBrowserCache]);
 
   const [imageState, setImageState] = useState(() =>
     image ? calculateInitialState(image) : { src: null, isFullQuality: false }
@@ -492,9 +548,11 @@ function ImagePage() {
           });
         }
 
-        const networkThumbnail = image.thumbnailUrl || image.smallUrl || image.imageUrl || '';
-        if (networkThumbnail && networkThumbnail !== newBackSrc) {
-          preloadImage(networkThumbnail, true)
+        // After base64 loads, upgrade to regularUrl (preserves aspect ratio)
+        // Skip thumbnailUrl and smallUrl (both are square/cropped) to prevent flash
+        const networkUpgrade = image.regularUrl || image.imageUrl || '';
+        if (networkUpgrade && networkUpgrade !== newBackSrc) {
+          preloadImage(networkUpgrade, true)
             .then((src) => {
               if (previousImgRef.current?._id === currentImageId) {
                 backSrcRef.current = src;
@@ -1447,8 +1505,9 @@ function ImagePage() {
               const canUsePrevious = previousBackSrcRef.current &&
                 previousBackSrcImageIdRef.current &&
                 previousBackSrcImageIdRef.current !== image._id;
+              // Fallback: use aspect-ratio-preserving sources only (skip square thumbnails)
               const backImageSrc = backSrc || (canUsePrevious ? previousBackSrcRef.current : null) ||
-                image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+                image.regularUrl || image.imageUrl || '';
 
               // Only render if we have a source
               if (!backImageSrc) return null;
@@ -1550,7 +1609,8 @@ function ImagePage() {
             })()}
             {/* Fallback: if no backSrc or frontSrc, show image directly */}
             {(() => {
-              const fallbackSrc = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+              // Fallback: use aspect-ratio-preserving sources only (skip square thumbnails)
+              const fallbackSrc = image.regularUrl || image.imageUrl || '';
               const shouldRenderFallback = !backSrc && !frontSrc && !!fallbackSrc;
               return shouldRenderFallback ? (
                 <img
