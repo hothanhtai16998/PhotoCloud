@@ -1062,6 +1062,17 @@ function ImagePage() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle navigation if user is typing in an input, textarea, or contenteditable element
+      const target = e.target as HTMLElement;
+      const isInputElement = target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        target.closest('input, textarea, [contenteditable="true"]');
+
+      if (isInputElement) {
+        return; // Let the input handle the key event
+      }
+
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         if (currentImageIndex < images.length - 1) {
