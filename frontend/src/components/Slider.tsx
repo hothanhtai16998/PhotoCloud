@@ -689,9 +689,8 @@ function Slider() {
                     backgroundImage: `url("${placeholderUrl || imageUrl}")`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    // Hide if main image is loaded (blur-up placeholder will handle transition)
-                    opacity: isLoaded ? 0 : 0.5,
-                    transition: 'opacity 0.3s ease-out',
+                    // Always keep blur visible to fill empty space around contained image
+                    opacity: 1,
                   }}
                 />
               )}

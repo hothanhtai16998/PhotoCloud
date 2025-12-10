@@ -3,14 +3,30 @@
    ============================================ */
 
 /* Base Slider Container and Main Carousel */
+/* 
+  HEADER SIZE CALCULATION:
+  Desktop Header:
+    - Header top: 10px (padding-top) + 56px (container height) = 66px
+    - Category nav: 4px (padding-top) + 6px (nav padding) + ~22px (content) + 6px (nav padding bottom) = 38px
+    - Total: 66px + 38px = 104px
+  
+  Mobile Header:
+    - Header top: 10px (padding-top) + 48px (container height) = 58px
+    - Category nav: 4px (padding-top) + 6px (nav padding) + ~22px (content) + 6px (nav padding bottom) = 38px
+    - Total: 58px + 38px = 96px
+    - With search bar: 96px + 56px = 152px
+*/
 .tripzo-page {
   position: relative;
   width: 100%;
-  min-height: calc(100vh - var(--header-height, 56px));
-  height: calc(100vh - var(--header-height, 56px));
+  min-height: calc(100vh - var(--header-height, 56px) - 34px);
+  height: calc(100vh - var(--header-height, 56px) - 34px);
   overflow: hidden;
   background: #222;
-  margin-top: var(--header-height, 56px);
+  margin-top: calc(
+    var(--header-height, 56px) + 34px
+  ); /* Header top bar + category nav */
+  margin-bottom: 30px;
   touch-action: pan-y; /* Allow vertical scrolling but handle horizontal swipes */
 }
 
@@ -18,8 +34,9 @@
 @media (max-width: 768px) {
   .tripzo-page {
     margin-top: calc(
-      var(--header-height, 56px) + 56px
-    ) !important; /* Header (56px) + search bar (~56px), no gap */
+      var(--header-height, 56px) + 56px + 34px
+    ) !important; /* Header (56px) + search bar (~56px) + category nav (34px), no gap */
+    margin-bottom: 20px !important; /* Reduced margin on mobile */
     padding-top: 0 !important; /* Remove any padding */
   }
 
@@ -30,16 +47,16 @@
 }
 
 /* Loading States */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - var(--header-height, 56px));
-  color: #fff;
-  font-size: 24px;
-  gap: 20px;
-}
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - var(--header-height, 56px) - 34px);
+    color: #fff;
+    font-size: 24px;
+    gap: 20px;
+  }
 
 .skeleton-main-slide {
   width: 80%;
@@ -78,7 +95,9 @@
 .main-carousel-container {
   position: relative;
   width: 100%;
-  height: calc(100vh - var(--header-height, 56px));
+  height: calc(
+    100vh - var(--header-height, 56px) - 34px
+  ); /* Account for header + category nav */
   overflow: hidden;
 }
 
@@ -93,6 +112,8 @@
   transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
   z-index: 1;
   visibility: hidden;
+  background: #1a1a1a;
+  overflow: hidden;
 }
 
 /* Transition: Fade (default) */
@@ -161,14 +182,15 @@
   left: 0;
   width: 100%;
   height: 100%;
-  filter: blur(50px) brightness(0.6);
+  filter: blur(50px) brightness(0.7) saturate(1.3);
   transform: scale(1.2);
   z-index: 0;
-  opacity: 0.5;
+  opacity: 1;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
   /* The main image with contain will naturally cover this, so blur only shows in black space */
+  will-change: opacity;
 }
 
 /* Overlay only on blurred background layer (not main image) */
@@ -179,9 +201,16 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.2) 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
   z-index: 1;
   pointer-events: none;
+  mix-blend-mode: multiply;
 }
 
 /* Main image layer for Option 1 - separate bright layer */
@@ -199,6 +228,9 @@
   backface-visibility: hidden;
   transform: translateZ(0);
   will-change: opacity;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .main-image-layer.loaded {
@@ -209,37 +241,38 @@
   opacity: 0;
 }
 
-/* Mobile: Fill screen better, reduce empty space */
+/* Mobile: Keep contain to show full image */
 @media (max-width: 768px) {
   .main-image-layer {
-    background-size: cover !important; /* Fill screen on mobile */
+    background-size: contain !important; /* Show full image on mobile */
     background-position: center;
   }
 
   .main-carousel-container {
     height: calc(
-      100vh - var(--header-height, 56px) - 220px
-    ); /* Account for search bar on mobile - reduced height */
+      100vh - var(--header-height, 56px) - 220px - 34px
+    ); /* Account for search bar + category nav on mobile */
   }
 
   .tripzo-page {
-    height: calc(100vh - var(--header-height, 56px) - 220px);
-    min-height: calc(100vh - var(--header-height, 56px) - 220px);
+    height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
+    min-height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
     margin-top: calc(
-      var(--header-height, 56px) + 70px
-    ); /* Push down for search bar */
+      var(--header-height, 56px) + 70px + 34px
+    ); /* Push down for search bar + category nav */
   }
 }
 
 @media (max-width: 480px) {
   .main-carousel-container {
-    height: calc(100vh - var(--header-height, 56px) - 220px);
+    height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
   }
 
   .tripzo-page {
-    height: calc(100vh - var(--header-height, 56px) - 220px);
-    min-height: calc(100vh - var(--header-height, 56px) - 220px);
-    margin-top: calc(var(--header-height, 56px) + 70px);
+    height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
+    min-height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
+    margin-top: calc(var(--header-height, 56px) + 70px + 34px);
+    margin-bottom: 16px; /* Smaller margin on small mobile */
   }
 }
 

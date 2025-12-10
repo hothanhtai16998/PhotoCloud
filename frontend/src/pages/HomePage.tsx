@@ -1,7 +1,6 @@
 import { useEffect, lazy, Suspense, useContext, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
-import CategoryNavigation from "../components/CategoryNavigation";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
@@ -285,7 +284,6 @@ function HomePage() {
     return (
         <>
             <Header />
-            <CategoryNavigation />
             <main className="homepage">
                 {/* Hide Slider when user is searching to show ImageGrid immediately */}
                 {!currentSearch && (

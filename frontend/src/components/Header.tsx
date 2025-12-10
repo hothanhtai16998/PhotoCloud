@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
+import CategoryNavigation from "./CategoryNavigation"
 import './Header.css'
 
 // Lazy load UploadModal to improve initial page load
@@ -243,6 +244,9 @@ export const Header = memo(function Header() {
           </div>
         </div>
       </div>
+
+      {/* Category Navigation - Second row in header */}
+      <CategoryNavigation />
 
       {/* Upload Modal - Lazy loaded, only render when open */}
       {uploadModalOpen && (

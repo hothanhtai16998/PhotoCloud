@@ -3,4 +3,7 @@
   min-height: 100vh;
   background: var(--color-bg-primary, #fff);
   width: 100%;
+  /* Add padding-top to account for fixed header (top bar + category nav) */
+  /* Header top bar: 56px (desktop) / 48px (mobile) */
+  /* Category nav: ~34px (6px padding top + 6px padding bottom + ~22px content) */
 }

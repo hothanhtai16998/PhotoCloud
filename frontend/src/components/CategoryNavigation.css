@@ -4,8 +4,9 @@
   width: 100%;
   background: var(--color-bg-primary, #fff);
   border-bottom: 1px solid var(--color-border, #e5e5e5);
-  margin-bottom: 0;
-  z-index: 1;
+  margin: 0;
+  padding-top: 4px;
+  z-index: var(--z-category-nav, 1499);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
 }
@@ -24,7 +25,7 @@
   display: flex;
   align-items: center;
   gap: 32px;
-  padding: 12px 20px; /* Base padding */
+  padding: 6px 20px; /* Reduced padding for smaller size */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -79,7 +80,7 @@
 .category-nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: -12px;
+  bottom: -6px; /* Adjusted for reduced padding */
   left: 0;
   right: 0;
   height: 2px;
@@ -145,32 +146,27 @@
 /* Responsive */
 @media (min-width: 768px) {
   .category-navigation {
-    padding: 12px 48px; /* Space for scroll buttons */
+    padding: 6px 48px; /* Reduced padding for smaller size */
   }
 }
 
 @media (min-width: 1024px) {
   .category-navigation {
-    padding: 12px 48px; /* Space for scroll buttons */
+    padding: 6px 48px; /* Reduced padding for smaller size */
   }
 }
 
 @media (max-width: 1024px) {
   .category-navigation {
     gap: 24px;
-    padding: 12px 48px; /* Space for scroll buttons */
+    padding: 6px 48px; /* Reduced padding for smaller size */
   }
 }
 
 /* Mobile - Using mobileBreakpoint (768px) */
 @media (max-width: 768px) {
   .category-navigation-container {
-    margin-top: 20px; /* Add smaller distance from slider on mobile */
-    z-index: 1499;
-  }
-
-  .category-navigation-container.is-sticky {
-    top: var(--header-height, 56px) !important;
+    z-index: var(--z-category-nav, 1499);
   }
 
   .category-navigation-wrapper {
@@ -181,7 +177,7 @@
 
   .category-navigation {
     gap: 20px;
-    padding: 10px 48px; /* Space for scroll buttons */
+    padding: 6px 48px; /* Reduced padding for smaller size */
     overflow-x: auto !important; /* Enable scrolling on mobile */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
@@ -200,13 +196,7 @@
 
 @media (max-width: 480px) {
   .category-navigation-container {
-    margin-top: 16px; /* Add smaller distance from slider on small mobile */
-    margin-bottom: 20px;
-    z-index: 1499;
-  }
-
-  .category-navigation-container.is-sticky {
-    top: var(--header-height, 56px) !important;
+    z-index: var(--z-category-nav, 1499);
   }
 
   .category-navigation-wrapper {
@@ -216,7 +206,7 @@
 
   .category-navigation {
     gap: 16px;
-    padding: 8px 44px; /* Space for scroll buttons */
+    padding: 6px 44px; /* Reduced padding for smaller size */
     overflow-x: auto !important; /* Enable scrolling on mobile */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
