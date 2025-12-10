@@ -4,28 +4,25 @@
 
 /* Base Slider Container and Main Carousel */
 /* 
-  HEADER SIZE CALCULATION:
+  HEADER SIZE CALCULATION (category nav is now part of header):
   Desktop Header:
     - Header top: 10px (padding-top) + 56px (container height) = 66px
-    - Category nav: 4px (padding-top) + 6px (nav padding) + ~22px (content) + 6px (nav padding bottom) = 38px
-    - Total: 66px + 38px = 104px
+    - Category nav: 6px (nav padding top) + ~22px (content) + 6px (nav padding bottom) = ~34px
+    - Total Desktop Header: 66px + 34px = 100px
   
   Mobile Header:
     - Header top: 10px (padding-top) + 48px (container height) = 58px
-    - Category nav: 4px (padding-top) + 6px (nav padding) + ~22px (content) + 6px (nav padding bottom) = 38px
-    - Total: 58px + 38px = 96px
-    - With search bar: 96px + 56px = 152px
+    - Category nav: 6px (nav padding top) + ~22px (content) + 6px (nav padding bottom) = ~34px
+    - Total Mobile Header: 58px + 34px = 92px
 */
 .tripzo-page {
   position: relative;
   width: 100%;
-  min-height: calc(100vh - var(--header-height, 56px) - 34px);
-  height: calc(100vh - var(--header-height, 56px) - 34px);
+  min-height: calc(100vh - 100px); /* Desktop: 100vh - total header (100px) */
+  height: calc(100vh - 100px);
   overflow: hidden;
   background: #222;
-  margin-top: calc(
-    var(--header-height, 56px) + 34px
-  ); /* Header top bar + category nav */
+  margin-top: 100px; /* Desktop: header-top (66px) + category nav (34px) = 100px */
   margin-bottom: 30px;
   touch-action: pan-y; /* Allow vertical scrolling but handle horizontal swipes */
 }
@@ -33,9 +30,9 @@
 /* Mobile: Remove gap between search bar and slider - MOBILE ONLY */
 @media (max-width: 768px) {
   .tripzo-page {
-    margin-top: calc(
-      var(--header-height, 56px) + 56px + 34px
-    ) !important; /* Header (56px) + search bar (~56px) + category nav (34px), no gap */
+    margin-top: 92px !important; /* Mobile: total header (58px top + 34px category = 92px) */
+    min-height: calc(100vh - 92px) !important;
+    height: calc(100vh - 92px) !important;
     margin-bottom: 20px !important; /* Reduced margin on mobile */
     padding-top: 0 !important; /* Remove any padding */
   }
@@ -43,6 +40,7 @@
   .main-carousel-container {
     margin-top: 0 !important; /* Remove any margin */
     padding-top: 0 !important; /* Remove any padding */
+    height: calc(100vh - 92px - 220px) !important; /* Mobile header (92px) + search bar space (220px) */
   }
 }
 
@@ -52,7 +50,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: calc(100vh - var(--header-height, 56px) - 34px);
+    height: calc(100vh - 100px); /* Desktop: total header height */
     color: #fff;
     font-size: 24px;
     gap: 20px;
@@ -95,9 +93,7 @@
 .main-carousel-container {
   position: relative;
   width: 100%;
-  height: calc(
-    100vh - var(--header-height, 56px) - 34px
-  ); /* Account for header + category nav */
+  height: calc(100vh - 100px); /* Desktop: total header height (100px) */
   overflow: hidden;
 }
 
@@ -249,29 +245,25 @@
   }
 
   .main-carousel-container {
-    height: calc(
-      100vh - var(--header-height, 56px) - 220px - 34px
-    ); /* Account for search bar + category nav on mobile */
+    height: calc(100vh - 92px - 220px) !important; /* Mobile header (92px) + search bar space (220px) */
   }
 
   .tripzo-page {
-    height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
-    min-height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
-    margin-top: calc(
-      var(--header-height, 56px) + 70px + 34px
-    ); /* Push down for search bar + category nav */
+    height: calc(100vh - 92px - 220px) !important;
+    min-height: calc(100vh - 92px - 220px) !important;
+    margin-top: 92px !important; /* Mobile: total header (58px top + 34px category = 92px) */
   }
 }
 
 @media (max-width: 480px) {
   .main-carousel-container {
-    height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
+    height: calc(100vh - 92px - 220px); /* Mobile header (92px) + search bar space (220px) */
   }
 
   .tripzo-page {
-    height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
-    min-height: calc(100vh - var(--header-height, 56px) - 220px - 34px);
-    margin-top: calc(var(--header-height, 56px) + 70px + 34px);
+    height: calc(100vh - 92px - 220px);
+    min-height: calc(100vh - 92px - 220px);
+    margin-top: 92px; /* Mobile: total header (58px top + 34px category = 92px) */
     margin-bottom: 16px; /* Smaller margin on small mobile */
   }
 }
