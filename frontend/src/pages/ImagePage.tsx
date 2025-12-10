@@ -74,6 +74,9 @@ function ImagePage() {
   const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const incrementedViewIds = useRef<Set<string>>(new Set());
   const currentImageIdRef = useRef<string | null>(null);
+  // Track container height to maintain it during transitions
+  const containerHeightRef = useRef<number | null>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   // Detect mobile
   const isMobile = useIsMobile();
@@ -408,6 +411,14 @@ function ImagePage() {
       if (backSrcRef.current && previousImageId) {
         previousBackSrcRef.current = backSrcRef.current;
         previousBackSrcImageIdRef.current = previousImageId;
+      }
+      // CRITICAL: Save current container height to maintain it during transition
+      // This prevents bottom bar and related images from jumping
+      if (imageContainerRef.current) {
+        const currentHeight = imageContainerRef.current.offsetHeight;
+        if (currentHeight > 0) {
+          containerHeightRef.current = currentHeight;
+        }
       }
       // Don't clear backSrc immediately - let it stay until new one is ready
       // This prevents flash when clicking related images
@@ -1333,11 +1344,19 @@ function ImagePage() {
       <div className="image-modal-middle-container">
         <div className="image-modal-image-wrapper">
           <div
+            ref={imageContainerRef}
             className={`image-modal-image-container ${image.width && image.height ? 'has-aspect-ratio' : 'no-aspect-ratio'}`}
             style={{
-              // Don't use aspect-ratio as it constrains height too much for wide images
-              // aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined,
-              minHeight: '0',
+              // CRITICAL: Maintain container height during transitions to prevent layout shift
+              // Use saved height if available, otherwise let it be auto
+              minHeight: containerHeightRef.current ? `${containerHeightRef.current}px` : '0',
+            }}
+            onLoad={(e) => {
+              // Update container height when image loads
+              const container = e.currentTarget;
+              if (container.offsetHeight > 0) {
+                containerHeightRef.current = container.offsetHeight;
+              }
             }}
           >
             {/* Back layer - fallback to image URL if backSrc not set */}
@@ -1388,6 +1407,15 @@ function ImagePage() {
                   draggable={false}
                   onLoad={(e) => {
                     const imgEl = e.currentTarget;
+                    // CRITICAL: Update container height when new image loads
+                    if (!isOldImage && imageContainerRef.current) {
+                      requestAnimationFrame(() => {
+                        const newHeight = imageContainerRef.current?.offsetHeight;
+                        if (newHeight && newHeight > 0) {
+                          containerHeightRef.current = newHeight;
+                        }
+                      });
+                    }
                     // CRITICAL: If this is old image and new one is ready, hide it immediately
                     if (isOldImage && backSrcRef.current) {
                       imgEl.style.display = 'none';
