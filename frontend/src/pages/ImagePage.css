@@ -102,17 +102,45 @@
 }
 
 /* Regular page mode - full width container */
+/* Override ImageModal.css styles for regular page mode */
+/* Header is 66px total (10px padding + 56px content) */
 .image-page .image-modal-container {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  min-height: calc(100vh - var(--header-height, 56px));
-  border-radius: 0;
-  margin: 0;
-  margin-top: var(--header-height, 56px);
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: calc(100vh - 66px) !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  margin-top: 66px !important; /* Full header height including padding */
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  position: relative !important;
+}
+
+/* Override scrolled state margin in regular page mode */
+.image-page .image-modal-container.scrolled {
+  margin-top: 66px !important; /* Keep margin even when scrolled */
+  border-radius: 0 !important;
+}
+
+.image-page .image-modal-container:not(.scrolled) {
+  margin-top: 66px !important; /* Full header height */
+  border-radius: 0 !important;
+}
+
+/* In regular page mode, adjust top-info to not cover header */
+/* The top-info should stick to top of scroll container, which is already below header */
+.image-page .image-modal-top-info {
+  position: sticky !important;
+  top: 0 !important; /* Sticks to top of scroll container (which starts below header) */
+  z-index: 1499 !important; /* Lower than header z-index (1500) to ensure header stays on top */
+}
+
+/* Ensure scroll area starts properly in regular page mode */
+.image-page .image-modal-scroll-area {
+  /* Scroll area starts at top of container, which is already below header */
+  /* No additional positioning needed */
 }
 
 /* Mobile adjustments */
