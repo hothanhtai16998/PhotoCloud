@@ -26,7 +26,7 @@ export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditIm
   const [shutterSpeed, setShutterSpeed] = useState(image.shutterSpeed || '');
   const [iso, setIso] = useState(image.iso?.toString() || '');
   const [tags, setTags] = useState<string[]>(image.tags || []);
-  const [description, setDescription] = useState(''); // Placeholder for future description field
+  const [description, setDescription] = useState(image.description || '');
 
   // Reset form when image changes or modal opens
   useEffect(() => {
@@ -40,7 +40,7 @@ export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditIm
       setShutterSpeed(image.shutterSpeed || '');
       setIso(image.iso?.toString() || '');
       setTags(image.tags || []);
-      setDescription('');
+      setDescription(image.description || '');
     }
   }, [isOpen, image]);
 
@@ -63,6 +63,7 @@ export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditIm
     try {
       const updatedImage = await imageService.updateImage(image._id, {
         imageTitle: imageTitle.trim(),
+        description: description.trim() || undefined,
         location: location.trim() || undefined,
         cameraModel: cameraModel.trim() || undefined,
         cameraMake: cameraMake.trim() || undefined,
@@ -85,7 +86,7 @@ export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditIm
     } finally {
       setIsSubmitting(false);
     }
-  }, [image._id, imageTitle, location, cameraModel, cameraMake, focalLength, aperture, shutterSpeed, iso, tags, canEdit, onUpdate, onClose]);
+  }, [image._id, imageTitle, description, location, cameraModel, cameraMake, focalLength, aperture, shutterSpeed, iso, tags, canEdit, onUpdate, onClose]);
 
   // Handle saving edited image
   const handleSaveEditedImage = useCallback(async (editedImageBlob: Blob) => {

@@ -6,13 +6,7 @@ interface ImageProgressBarProps {
 }
 
 export function ImageProgressBar({ progress, visible }: ImageProgressBarProps) {
-  // Debug logging
-  if (visible) {
-    console.log('[ImageProgressBar] Rendering with progress:', progress, '%', 'visible:', visible);
-  }
-
   if (!visible) {
-    console.log('[ImageProgressBar] Not visible, returning null');
     return null;
   }
 

@@ -130,25 +130,16 @@ export const preloadImageWithProgress = (
     // Store XHR for potential cancellation
     activeXhrRequests.set(src, xhr);
     
-    console.log('[preloadImageWithProgress] Starting XHR request for:', src);
-    
     xhr.open('GET', src, true);
     xhr.responseType = 'blob';
     
     // Track progress
     xhr.onprogress = (e) => {
-      console.log('[preloadImageWithProgress] Progress event:', {
-        lengthComputable: e.lengthComputable,
-        loaded: e.loaded,
-        total: e.total
-      });
       if (e.lengthComputable && e.total > 0) {
         const progress = Math.round((e.loaded / e.total) * 100);
-        console.log('[preloadImageWithProgress] Progress:', progress, '%', `(${e.loaded}/${e.total} bytes)`);
         onProgress?.(progress);
       } else {
         // If length not computable, show indeterminate progress
-        console.log('[preloadImageWithProgress] Indeterminate progress, loaded:', e.loaded);
         // Show progress based on loaded bytes (estimate)
         if (e.loaded > 0) {
           onProgress?.(Math.min(90, Math.round((e.loaded / 1000000) * 10))); // Rough estimate
@@ -159,14 +150,12 @@ export const preloadImageWithProgress = (
     };
     
     xhr.onload = () => {
-      console.log('[preloadImageWithProgress] XHR onload, status:', xhr.status);
       activeXhrRequests.delete(src);
       if (xhr.status === 200) {
         const blob = xhr.response;
         const objectUrl = URL.createObjectURL(blob);
         
         // Always call progress 100% on load
-        console.log('[preloadImageWithProgress] Loaded, calling onProgress(100)');
         onProgress?.(100);
         
         // Decode image if needed

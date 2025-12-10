@@ -16,7 +16,7 @@ import { shareService } from '@/utils/shareService';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { toast } from 'sonner';
-import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag } from 'lucide-react';
+import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2 } from 'lucide-react';
 import { ImageModalInfo } from '@/components/image/ImageModalInfo';
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
@@ -242,6 +242,9 @@ function ImagePage() {
 
   // Download menu state
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Author tooltip state
   const [showAuthorTooltip, setShowAuthorTooltip] = useState(false);
@@ -587,8 +590,8 @@ function ImagePage() {
 
       // Reset progress
       setImageProgress(0);
+      isLoadingRef.current = true;
       setShowProgressBar(true);
-      console.log('[ImagePage] Showing progress bar, loading:', regular || original);
 
       if (regular && regular !== thumbnail) {
         try {
@@ -605,13 +608,11 @@ function ImagePage() {
           } else {
             // Preload regular with progress tracking
             currentLoadingUrlRef.current = regular;
-            console.log('[ImagePage] Starting progress tracking for:', regular);
             // Ensure progress bar is visible before starting
             setShowProgressBar(true);
             const src = await preloadImageWithProgress(
               regular,
               (progress) => {
-                console.log('[ImagePage] Progress update:', progress, '%', 'isLoadingRef:', isLoadingRef.current);
                 if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
                   setImageProgress(progress);
                   // Keep progress bar visible while loading - use ref to ensure it stays visible
@@ -655,7 +656,6 @@ function ImagePage() {
           const src = await preloadImageWithProgress(
             original,
             (progress) => {
-              console.log('[ImagePage] Original progress update:', progress, '%', 'isLoadingRef:', isLoadingRef.current);
               if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
                 setImageProgress(progress);
                 // Keep progress bar visible while loading - use ref to ensure it stays visible
@@ -1587,6 +1587,22 @@ function ImagePage() {
                   <span>{t('share.share')}</span>
                 </button>
                 <ImageModalInfo image={image} />
+                {/* Edit button - only show if user is owner or admin */}
+                {user && image && (
+                  (user._id === (image.uploadedBy as any)?._id ||
+                    (user as any)?.isAdmin ||
+                    (user as any)?.isSuperAdmin) && (
+                    <button
+                      onClick={() => setShowEditModal(true)}
+                      className="image-modal-share-button"
+                      aria-label="Edit image"
+                      title="Edit image"
+                    >
+                      <Edit2 size={16} />
+                      <span>Edit</span>
+                    </button>
+                  )
+                )}
               </div>
             </div>
 
@@ -1807,7 +1823,22 @@ function ImagePage() {
         </button>
       )}
 
-      {/* Edit Image Modal - TODO: Add edit functionality */}
+      {/* Edit Image Modal */}
+      {image && (
+        <EditImageModal
+          image={image}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onUpdate={(updatedImage) => {
+            setImage(updatedImage);
+            setShowEditModal(false);
+            // Update in images array if it exists there
+            setImages(prev => prev.map(img =>
+              img._id === updatedImage._id ? updatedImage : img
+            ));
+          }}
+        />
+      )}
       {/* Collection Modal - TODO: Add collection functionality */}
     </>
   );

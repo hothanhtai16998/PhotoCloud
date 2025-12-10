@@ -7,6 +7,7 @@ export const imageUpdateService = {
     imageId: string,
     data: {
       imageTitle?: string;
+      description?: string;
       location?: string;
       coordinates?: Coordinates | null;
       cameraModel?: string;

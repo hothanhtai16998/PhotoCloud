@@ -10,7 +10,12 @@ import exifParser from 'exif-parser';
 export const extractExifData = async (imageBuffer) => {
     try {
         // Get metadata from Sharp (includes some basic info)
+        // Sharp preserves EXIF data even when processing images
+        // Sharp supports HEIC/HEIF format and can extract EXIF from it
         const metadata = await sharp(imageBuffer).metadata();
+        
+        // Log format for debugging (especially important for HEIC files)
+        logger.debug(`EXIF extraction - Format: ${metadata.format}, Has EXIF buffer: ${!!metadata.exif}, Make: ${metadata.make || 'none'}, Model: ${metadata.model || 'none'}`);
         
         // Helper function to parse EXIF values
         const parseExifValue = (value) => {
@@ -28,7 +33,8 @@ export const extractExifData = async (imageBuffer) => {
         let iso = metadata.iso || undefined;
 
         // Try to parse EXIF directly from image buffer using exif-parser
-        // This works for JPEG files
+        // This works for JPEG files, but may not work for HEIC/HEIF
+        // For HEIC files, Sharp's metadata is usually more reliable
         try {
             const parser = exifParser.create(imageBuffer);
             const exifData = parser.parse();
@@ -177,7 +183,7 @@ export const extractExifData = async (imageBuffer) => {
         if (hasExifData) {
             logger.info('Extracted EXIF data:', result);
         } else {
-            logger.debug('No EXIF data found in image');
+            logger.warn('No EXIF data found in image. Format:', metadata.format, 'Has EXIF buffer:', !!metadata.exif, 'Make from Sharp:', metadata.make, 'Model from Sharp:', metadata.model);
         }
 
         return result;

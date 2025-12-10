@@ -14,6 +14,12 @@ const imageSchema = new mongoose.Schema(
             trim: true,
             index: true,
         },
+        description: {
+            type: String,
+            required: false,
+            trim: true,
+            maxlength: 600, // Limit description length
+        },
         imageUrl: {
             type: String,
             required: true,
@@ -208,7 +214,8 @@ imageSchema.index({ imageCategory: 1, createdAt: -1 });
 // Text index for fast full-text search (replaces slow regex queries)
 imageSchema.index({
     imageTitle: 'text',
-    location: 'text'
+    location: 'text',
+    description: 'text'
 });
 
 // Compound index for search + category queries

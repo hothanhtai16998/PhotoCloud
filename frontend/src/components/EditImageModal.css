@@ -5,7 +5,7 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
-  z-index: 2002; /* Above image modal (2001) */
+  z-index: 10002; /* Above image modal overlay (9999) and all modal content */
   display: flex;
   align-items: center;
   justify-content: center;

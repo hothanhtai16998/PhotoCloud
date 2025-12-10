@@ -95,20 +95,6 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
           {activeTab === 'details' && (
             <div className="edit-modal-tab-panel">
               <div className="edit-form-group">
-                <label htmlFor="description">{t('image.description')}</label>
-                <textarea
-                  id="description"
-                  className="edit-form-textarea"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t('image.descriptionPlaceholder')}
-                  maxLength={600}
-                  rows={4}
-                />
-                <div className="edit-form-char-count">{description.length}/600</div>
-              </div>
-
-              <div className="edit-form-group">
                 <label htmlFor="title">{t('image.title')}</label>
                 <input
                   id="title"
@@ -146,6 +132,20 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                     <X size={16} />
                   </button>
                 )}
+              </div>
+
+              <div className="edit-form-group">
+                <label htmlFor="description">{t('image.description')}</label>
+                <textarea
+                  id="description"
+                  className="edit-form-textarea"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder={t('image.descriptionPlaceholder')}
+                  maxLength={600}
+                  rows={4}
+                />
+                <div className="edit-form-char-count">{description.length}/600</div>
               </div>
             </div>
           )}

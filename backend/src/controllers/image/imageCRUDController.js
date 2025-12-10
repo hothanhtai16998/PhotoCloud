@@ -231,7 +231,7 @@ export const downloadImage = asyncHandler(async (req, res) => {
 export const updateImage = asyncHandler(async (req, res) => {
     const imageId = req.params.imageId;
     const userId = req.user?._id;
-    const { imageTitle, location, coordinates, cameraModel, cameraMake, focalLength, aperture, shutterSpeed, iso, tags } = req.body;
+    const { imageTitle, description, location, coordinates, cameraModel, cameraMake, focalLength, aperture, shutterSpeed, iso, tags } = req.body;
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(imageId)) {
@@ -263,6 +263,11 @@ export const updateImage = asyncHandler(async (req, res) => {
 
     if (imageTitle !== undefined) {
         updateData.imageTitle = String(imageTitle || '').trim().substring(0, 255);
+    }
+
+    if (description !== undefined) {
+        const desc = String(description || '').trim();
+        updateData.description = desc.length ? desc.substring(0, 600) : null;
     }
 
     if (location !== undefined) {
