@@ -357,6 +357,8 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                             >
                                 <BlurUpImage
                                     image={image}
+                                    images={filteredImages}
+                                    currentIndex={idx}
                                     onClick={async () => {
                                         // If onImageClick is provided, use it (for navigation)
                                         if (onImageClick) {

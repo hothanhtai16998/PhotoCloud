@@ -21,6 +21,8 @@ interface BlurUpImageProps {
     onClick?: () => void;
     priority?: boolean;
     onLoadComplete?: () => void;
+    images?: ExtendedImage[]; // Full images array for preloading adjacent images
+    currentIndex?: number; // Current index in images array
 }
 
 export function BlurUpImage({
@@ -28,6 +30,8 @@ export function BlurUpImage({
     onClick,
     priority = false,
     onLoadComplete,
+    images,
+    currentIndex,
 }: BlurUpImageProps) {
     // Use base64 thumbnail for instant placeholder (like Unsplash) - no network request needed
     const base64Placeholder = image.base64Thumbnail || null;
@@ -113,17 +117,32 @@ export function BlurUpImage({
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    // Preload on hover for better UX
+    // Preload adjacent images on hover for faster modal navigation
     const handleMouseEnter = useCallback(() => {
-        if (!loaded && isInView) {
-            // Use regularUrl for hover preload (grid images)
-            const full = image.regularUrl || image.imageUrl || image.thumbnailUrl || image.smallUrl;
-            if (full && full !== fullSrc) {
-                // Skip decode for hover preload (grid images)
-                preloadImage(full, true).catch(() => { });
+        if (!images || currentIndex === undefined) return;
+        
+        // Preload previous and next images (for modal navigation)
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+        const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+        
+        const prevImage = images[prevIndex];
+        const nextImage = images[nextIndex];
+        
+        // Preload regularUrl for adjacent images (what modal will use)
+        if (prevImage) {
+            const prevUrl = prevImage.regularUrl || prevImage.imageUrl || prevImage.smallUrl;
+            if (prevUrl) {
+                preloadImage(prevUrl, true).catch(() => {});
             }
         }
-    }, [loaded, isInView, image, fullSrc]);
+        
+        if (nextImage) {
+            const nextUrl = nextImage.regularUrl || nextImage.imageUrl || nextImage.smallUrl;
+            if (nextUrl) {
+                preloadImage(nextUrl, true).catch(() => {});
+            }
+        }
+    }, [images, currentIndex]);
 
     // Handle mouse move to track position
     const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
