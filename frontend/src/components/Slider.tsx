@@ -51,13 +51,11 @@ function Slider() {
     }
     return sliderConfig.transition.defaultType;
   });
-  const [showTransitionMenu, setShowTransitionMenu] = useState(false);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [imageLoadStates, setImageLoadStates] = useState<Map<string, 'loading' | 'loaded' | 'error'>>(new Map());
   // Ref to track cached images synchronously (prevents flash on refresh)
   const cachedImagesRef = useRef<Set<string>>(new Set());
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
-  const transitionMenuRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<number | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
   const progressStartTimeRef = useRef<number | null>(null);
@@ -364,18 +362,6 @@ function Slider() {
     );
   };
 
-  // Get thumbnail URL for blur-up effect
-  const getThumbnailForBlur = (image: Image | null): string | null => {
-    if (!image) return null;
-    return (
-      image.thumbnailAvifUrl ||
-      image.thumbnailUrl ||
-      image.smallAvifUrl ||
-      image.smallUrl ||
-      null
-    );
-  };
-
   // Progressive image loading handler
   const handleImageLoad = useCallback((imageId: string, imageUrl: string) => {
     // Mark as loaded in both state and ref for synchronous access
@@ -387,23 +373,6 @@ function Slider() {
       return next;
     });
   }, []);
-
-  // Close transition menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (transitionMenuRef.current && !transitionMenuRef.current.contains(event.target as Node)) {
-        setShowTransitionMenu(false);
-      }
-    };
-
-    if (showTransitionMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showTransitionMenu]);
 
   // CRITICAL: Check cache synchronously when images are set (on refresh)
   // This must run before the progressive loading effect to prevent flash
@@ -507,12 +476,12 @@ function Slider() {
   }, [currentSlide, images, loadedImages, handleImageLoad]);
 
   // Get current and next image for bottom carousel
-  const getBottomCarouselImages = (): Image[] => {
+  const getBottomCarouselImages = useCallback((): Image[] => {
     if (images.length === 0) return [];
     const current = images[currentSlide];
     const next = images[(currentSlide + 1) % images.length];
-    return [current, next].filter((img): img is Image => img !== undefined) as Image[];
-  };
+    return [current, next].filter(Boolean) as Image[];
+  }, [images, currentSlide]);
 
 
   // Get thumbnail URL for bottom carousel
