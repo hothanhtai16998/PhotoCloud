@@ -7,7 +7,6 @@ import { extractIdFromSlug, generateImageSlug } from '@/lib/utils';
 import type { Image } from '@/types/image';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useUserStore } from '@/stores/useUserStore';
-import { useScrollLock } from '@/hooks/useScrollLock';
 import { imageFetchService } from '@/services/imageFetchService';
 import { imageStatsService } from '@/services/imageStatsService';
 import { favoriteService } from '@/services/favoriteService';
@@ -39,12 +38,9 @@ import ImagePageSidebar from '@/components/ImagePageSidebar';
 
 // Import modals
 import EditImageModal from '@/components/EditImageModal';
-import CollectionModal from '@/components/CollectionModal';
 
 // Module-level cache to persist API stats across component unmounts
 const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
-
-type ExtendedImage = Image & { categoryName?: string; category?: string };
 
 function ImagePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -57,11 +53,8 @@ function ImagePage() {
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [imageTypes, setImageTypes] = useState<Map<string, 'portrait' | 'landscape'>>(new Map());
 
   // Refs
-  const processedImages = useRef<Set<string>>(new Set());
-  const currentImageIds = useRef<Set<string>>(new Set());
   const modalRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef(0);
@@ -113,98 +106,41 @@ function ImagePage() {
     return images.findIndex((img) => img._id === image._id);
   }, [image, images]);
 
-  // Track if this is the initial mount (to detect refresh)
-  const isInitialMountRef = useRef(true);
-  const hasNavigatedRef = useRef(false);
-
-  // Detect if this is a refresh vs navigation
-  // On refresh, location.state should be null, but we also check navigation performance API
+  // Clear inline modal flag on refresh
   useEffect(() => {
-    if (isInitialMountRef.current) {
-      isInitialMountRef.current = false;
-
-      // Check if this is a refresh by looking at navigation type
-      const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      const isRefresh = navEntry?.type === 'reload';
-
-      // Also check if location.state is null (React Router always null on refresh)
-      const isStateNull = location.state == null;
-
-      // If it's a refresh OR state is null, clear flags and ensure regular page
-      if (isRefresh || isStateNull) {
-        if (typeof window !== 'undefined') {
-          sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-          // If state exists but we're on refresh, clear it from history
-          if (location.state != null) {
-            // Clear state from browser history to prevent it from being read
-            window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
-          }
-        }
-        // On refresh, don't mark as navigated - stay as regular page
-        hasNavigatedRef.current = false;
-      } else {
-        // This is a navigation (not refresh), mark it
-        hasNavigatedRef.current = true;
+    if (typeof window === 'undefined') return undefined;
+    
+    // Check if this is a refresh
+    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const isRefresh = navEntry?.type === 'reload';
+    
+    // On refresh, clear flags and ensure regular page
+    if (isRefresh) {
+      sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
+      // Clear state from browser history to prevent it from being read
+      if (location.state != null) {
+        window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
       }
-    } else {
-      // Subsequent renders are navigations (slug changed = navigation)
-      hasNavigatedRef.current = true;
     }
-  }, [location.state, slug]);
+    
+    return undefined;
+  }, []); // Run once on mount
 
   // Modal-style logic: show modal-style when location.state indicates modal navigation
   // - location.state is null on refresh/direct access → regular page
   // - location.state exists with inlineModal/background/fromGrid → modal-style
-  // - When navigating from ImagePage to ImagePage, we always create state with inlineModal: true
   const showModalStyle = useMemo(() => {
     // Mobile: always regular page
-    if (isMobile) return false;
+    if (isMobile || !slug) return false;
 
-    if (!slug) return false;
-
-    // CRITICAL: On refresh, location.state is ALWAYS null/undefined in React Router
-    // If state is null/undefined, this is a refresh/direct access → show regular page
-    if (location.state === null || location.state === undefined) {
-      console.log('[ImagePage] showModalStyle: state is null/undefined (refresh/direct access) → regular page');
+    // On refresh, location.state is null/undefined in React Router → regular page
+    if (!location.state || typeof location.state !== 'object' || Object.keys(location.state).length === 0) {
       return false;
     }
-
-    // Check if we have location.state with modal navigation indicators
-    // location.state exists only when navigating (not on refresh)
-    const hasState = typeof location.state === 'object' && location.state !== null && Object.keys(location.state).length > 0;
-
-    if (!hasState) {
-      // Empty state object = regular page
-      console.log('[ImagePage] showModalStyle: empty state object → regular page');
-      return false;
-    }
-
-    // Check for modal navigation indicators
-    const hasBackgroundState = !!location.state?.background;
-    const hasInlineModalState = !!location.state?.inlineModal;
-    const hasFromGridState = !!location.state?.fromGrid;
-    const hasFromImagePageState = !!location.state?.fromImagePage;
-
-    // Debug logging (remove after testing)
-    console.log('[ImagePage] showModalStyle check:', {
-      hasState,
-      hasBackgroundState,
-      hasInlineModalState,
-      hasFromGridState,
-      hasFromImagePageState,
-      locationState: location.state,
-      isStateNull: location.state === null,
-      isStateUndefined: location.state === undefined,
-      stateType: typeof location.state,
-      hasNavigated: hasNavigatedRef.current
-    });
 
     // Show modal-style if state indicates we came from grid/modal/ImagePage
-    // We check state flags directly - if they exist, show modal-style
-    // (hasNavigatedRef is just for tracking, but state presence is the real indicator)
-    const result = hasBackgroundState || hasInlineModalState || hasFromGridState || hasFromImagePageState;
-    console.log('[ImagePage] showModalStyle result:', result);
-    return result;
+    return !!(location.state?.background || location.state?.inlineModal || 
+              location.state?.fromGrid || location.state?.fromImagePage);
   }, [slug, isMobile, location.state]);
 
   // Scroll state for container styling
@@ -381,7 +317,6 @@ function ImagePage() {
           if (foundImage) {
             setImage(foundImage);
             setImages(passedImages);
-            currentImageIds.current = new Set(passedImages.map(img => img._id));
             setLoading(false);
             return;
           }
@@ -399,7 +334,6 @@ function ImagePage() {
         if (foundImage) {
           setImage(foundImage);
           setImages(allImages);
-          currentImageIds.current = new Set(allImages.map(img => img._id));
         } else {
           setError('Image not found');
         }
@@ -415,22 +349,6 @@ function ImagePage() {
     fetchImage();
   }, [imageId, location.state]);
 
-  // Fetch full image details when image changes (to get dailyViews/dailyDownloads)
-  useEffect(() => {
-    if (!image?._id) return;
-
-    const fetchFullDetails = async () => {
-      try {
-        const response = await imageService.getImages({ limit: 1 });
-        // This is a simplified version - in real implementation, you'd fetch by ID
-        // For now, we'll use the image we already have
-      } catch (error) {
-        console.error('Failed to fetch image details:', error);
-      }
-    };
-
-    fetchFullDetails();
-  }, [image?._id]);
 
   // Update stats when image changes
   useLayoutEffect(() => {
@@ -563,7 +481,6 @@ function ImagePage() {
       }
     }
 
-    const thumbnail = image.thumbnailUrl || image.smallUrl || image.imageUrl || '';
     const regular = image.regularUrl;
     const original = image.imageUrl;
 
@@ -706,7 +623,7 @@ function ImagePage() {
       isLoadingRef.current = true;
       setShowProgressBar(true);
 
-      if (regular && regular !== thumbnail) {
+      if (regular) {
         try {
           if (loadedImages.has(regular)) {
             // Already cached - no progress needed
@@ -755,7 +672,7 @@ function ImagePage() {
         }
       }
 
-      if (original && original !== thumbnail && original !== regular) {
+      if (original && original !== regular) {
         try {
           // Reset progress for original (starts from 0 or continue from regular)
           if (!loadedAny) {
@@ -802,7 +719,7 @@ function ImagePage() {
         }
       } else if (!loadedAny && (regular || original) && previousImgRef.current?._id === currentImageId) {
         const target = original || regular;
-        if (target === thumbnail) {
+        if (target) {
           setFrontSrc(target);
           setFrontLoaded(true);
           frontImageLoadedRef.current = true;
@@ -819,35 +736,24 @@ function ImagePage() {
     
     // Calculate initial height from image dimensions
     if (image.width && image.height) {
-      // Use requestAnimationFrame to ensure container is rendered
       requestAnimationFrame(() => {
-        if (imageContainerRef.current) {
-          const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-          if (containerWidth > 0) {
-            const aspectRatio = image.width / image.height;
-            const calculatedHeight = containerWidth / aspectRatio;
-            const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-            const initialHeight = Math.max(300, maxHeight);
-            
-            // Only set if we don't have a saved height or if it's significantly different
-            if (!containerHeightRef.current || Math.abs(containerHeightRef.current - initialHeight) > 50) {
-              containerHeightRef.current = initialHeight;
-            }
-          } else {
-            // Container not measured yet, use a reasonable default based on aspect ratio
-            const aspectRatio = image.width / image.height;
-            const estimatedWidth = 1400; // Typical container width
-            const estimatedHeight = estimatedWidth / aspectRatio;
-            const maxHeight = Math.min(estimatedHeight, window.innerHeight - 180);
-            containerHeightRef.current = Math.max(300, maxHeight);
-          }
+        if (!imageContainerRef.current) return;
+        
+        const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
+        const estimatedWidth = containerWidth > 0 ? containerWidth : 1400; // Default to 1400px if not measured yet
+        const aspectRatio = image.width / image.height;
+        const calculatedHeight = estimatedWidth / aspectRatio;
+        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
+        const initialHeight = Math.max(300, maxHeight);
+        
+        // Only update if significantly different to avoid unnecessary updates
+        if (!containerHeightRef.current || Math.abs(containerHeightRef.current - initialHeight) > 50) {
+          containerHeightRef.current = initialHeight;
         }
       });
-    } else {
+    } else if (!containerHeightRef.current) {
       // No dimensions, use default
-      if (!containerHeightRef.current) {
-        containerHeightRef.current = 400;
-      }
+      containerHeightRef.current = 400;
     }
   }, [image?._id, image?.width, image?.height]);
 
@@ -1078,15 +984,6 @@ function ImagePage() {
       images
     };
 
-    // Debug logging (remove after testing)
-    console.log('[ImagePage] handleImageSelect:', {
-      newSlug,
-      currentState,
-      navigationState,
-      currentLocationState: location.state,
-      backgroundPathname: background.pathname
-    });
-
     // Always use replace: true to avoid history buildup when navigating between images
     // The state will be properly set and detected by showModalStyle
     navigate(`/photos/${newSlug}`, {
@@ -1222,6 +1119,7 @@ function ImagePage() {
         document.body.classList.remove('image-modal-open');
       };
     }
+    return undefined;
   }, [showModalStyle]);
 
   // Keyboard navigation
@@ -1241,12 +1139,18 @@ function ImagePage() {
       if (e.key === 'ArrowRight') {
         e.preventDefault();
         if (currentImageIndex < images.length - 1) {
-          handleImageSelect(images[currentImageIndex + 1]);
+          const nextImage = images[currentImageIndex + 1];
+          if (nextImage) {
+            handleImageSelect(nextImage);
+          }
         }
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         if (currentImageIndex > 0) {
-          handleImageSelect(images[currentImageIndex - 1]);
+          const prevImage = images[currentImageIndex - 1];
+          if (prevImage) {
+            handleImageSelect(prevImage);
+          }
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
@@ -2014,7 +1918,10 @@ function ImagePage() {
           onClick={(e) => {
             e.stopPropagation();
             if (currentImageIndex > 0) {
-              handleImageSelect(images[currentImageIndex - 1]);
+              const prevImage = images[currentImageIndex - 1];
+              if (prevImage) {
+                handleImageSelect(prevImage);
+              }
             }
           }}
           disabled={currentImageIndex === 0}
@@ -2034,7 +1941,10 @@ function ImagePage() {
           onClick={(e) => {
             e.stopPropagation();
             if (currentImageIndex < images.length - 1) {
-              handleImageSelect(images[currentImageIndex + 1]);
+              const nextImage = images[currentImageIndex + 1];
+              if (nextImage) {
+                handleImageSelect(nextImage);
+              }
             }
           }}
           disabled={currentImageIndex === images.length - 1}
