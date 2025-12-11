@@ -957,30 +957,40 @@ function ImagePage() {
 
   // Handlers
   const handleClose = useCallback(() => {
+    // Clear session storage flag first
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
+    }
+
     // Check if we have a background location (where we came from)
-    const background = location.state?.background as { pathname?: string } | undefined;
+    const background = location.state?.background as { pathname?: string; search?: string; hash?: string } | undefined;
 
     // If we have a background location, navigate there
     // This handles: homepage → ImagePage (close) → homepage
     // And: ImagePage1 → ImagePage2 (close) → ImagePage1
     if (background?.pathname) {
-      // Navigate to background location
-      // The HomePage's useEffect will handle scroll restoration on mount
-      navigate(background.pathname, { state: background });
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
+      // Don't navigate if we're already on that path (shouldn't happen, but prevent issues)
+      if (background.pathname === location.pathname) {
+        // Already on the background page, just go back in history
+        navigate(-1);
+        return;
       }
+
+      // Navigate to background location without causing a reload
+      // Use replace: false to allow back button to work properly
+      // Don't pass the full background state to avoid circular references
+      navigate(background.pathname, { 
+        replace: false,
+        state: undefined // Clear state to prevent modal-style on the background page
+      });
       return;
     }
 
     // No background location - go back in history
     // This handles edge cases where background is not set
     // The HomePage's useEffect will handle scroll restoration on mount
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-    }
     navigate(-1);
-  }, [navigate, location.state]);
+  }, [navigate, location.state, location.pathname]);
 
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent) => {
