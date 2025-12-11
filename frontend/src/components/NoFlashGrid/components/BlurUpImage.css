@@ -20,10 +20,6 @@
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
-.blur-up-image-container:hover .blur-up-image {
-  transform: scale(1.05); /* Slight enlarge on hover like Unsplash */
-}
-
 /* Image wrapper for mobile layout */
 .blur-up-image-image-wrapper {
   position: relative;
@@ -41,8 +37,7 @@
   object-position: center;
   display: block;
   /* Disable transition during initial load to prevent flashing */
-  transition: opacity 0s, transform 0.3s ease;
-  transform: scale(1);
+  transition: opacity 0s;
 }
 
 /* Mobile Layout - Author at top */

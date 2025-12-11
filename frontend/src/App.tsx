@@ -124,10 +124,12 @@ function App() {
     typeof window !== 'undefined' &&
     sessionStorage.getItem(INLINE_MODAL_FLAG_KEY) === 'true';
   const inlineModalActive = Boolean(state?.inlineModal && inlineModalFlag);
-  const inlineBackground = inlineModalActive ? state?.background : undefined;
-  const overlayBackground = !state?.inlineModal ? state?.background : undefined;
-  const backgroundLocation = inlineBackground ?? overlayBackground;
-  const shouldRenderModalRoutes = Boolean(overlayBackground);
+  
+  // Simple: use background directly if it exists, otherwise use current location
+  const backgroundLocation = state?.background;
+  
+  // Render modal routes when we have a background (preserves scene behind modal)
+  const shouldRenderModalRoutes = Boolean(backgroundLocation);
 
   return (
     <ActualLocationContext.Provider value={location}>
