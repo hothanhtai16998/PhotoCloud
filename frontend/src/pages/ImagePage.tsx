@@ -15,7 +15,7 @@ import { shareService } from '@/utils/shareService';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { toast } from 'sonner';
-import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2 } from 'lucide-react';
+import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
 import { ImageModalInfo } from '@/components/image/ImageModalInfo';
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
@@ -38,6 +38,7 @@ import ImagePageSidebar from '@/components/ImagePageSidebar';
 
 // Import modals
 import EditImageModal from '@/components/EditImageModal';
+import CollectionModal from '@/components/CollectionModal';
 
 // Module-level cache to persist API stats across component unmounts
 const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
@@ -287,6 +288,9 @@ function ImagePage() {
 
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false);
+
+  // Collection modal state
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
 
   // Author tooltip state
   const [showAuthorTooltip, setShowAuthorTooltip] = useState(false);
@@ -1230,6 +1234,19 @@ function ImagePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showDownloadMenu]);
 
+  // Close collection modal when clicking outside
+  useEffect(() => {
+    if (!showCollectionModal) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-collection-menu]')) {
+        setShowCollectionModal(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCollectionModal]);
+
   // Handle related image click - MUST be defined before early returns
   const handleRelatedImageClick = useCallback((relatedImage: Image) => {
     handleImageSelect(relatedImage);
@@ -1492,6 +1509,31 @@ function ImagePage() {
               <span>{t('image.save')}</span>
               <kbd className="image-modal-kbd">F</kbd>
             </button>
+          )}
+
+          {/* Add to Collection button with dropdown */}
+          {user && (
+            <div className="image-modal-collection-menu-wrapper" data-collection-menu>
+              <button
+                onClick={() => setShowCollectionModal(!showCollectionModal)}
+                className="image-modal-favorite-button"
+                aria-label={t('image.addToCollection')}
+                title={t('image.addToCollection')}
+              >
+                <FolderPlus size={16} />
+                <span>{t('image.collection')}</span>
+              </button>
+              {showCollectionModal && image && (
+                <CollectionModal
+                  isOpen={showCollectionModal}
+                  onClose={() => setShowCollectionModal(false)}
+                  imageId={image._id}
+                  onCollectionUpdate={() => {
+                    // Optionally refresh data or show success message
+                  }}
+                />
+              )}
+            </div>
           )}
 
           {/* Download button with dropdown */}
@@ -2028,7 +2070,7 @@ function ImagePage() {
           }}
         />
       )}
-      {/* Collection Modal - TODO: Add collection functionality */}
+
     </>
   );
 }

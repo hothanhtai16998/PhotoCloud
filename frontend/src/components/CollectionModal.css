@@ -1,4 +1,4 @@
-/* Collection Modal Overlay */
+/* Collection Modal - Overlay (only for centered modal mode) */
 .collection-modal-overlay {
   position: fixed;
   top: 0;
@@ -7,7 +7,7 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
-  z-index: 2000;
+  z-index: 10001;
   cursor: pointer;
   animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -21,8 +21,30 @@
   }
 }
 
-/* Collection Modal */
+/* Collection Modal - Base styles */
 .collection-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Dropdown mode - positioned below button (like Unsplash) */
+.collection-modal-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 360px;
+  max-height: 480px;
+  animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Centered modal mode (for edit mode) */
+.collection-modal-centered {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -30,14 +52,18 @@
   width: 90%;
   max-width: min(540px, 96%);
   max-height: 85vh;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  z-index: 2001;
-  display: flex;
-  flex-direction: column;
   animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow: hidden;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes modalSlideIn {
@@ -60,6 +86,11 @@
   border-bottom: 1px solid #f0f0f0;
   flex-shrink: 0;
   background: #fff;
+}
+
+/* Hide header in dropdown mode */
+.collection-modal-dropdown .collection-modal-header {
+  display: none;
 }
 
 .collection-modal-header h2 {
@@ -99,9 +130,89 @@
 .collection-modal-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 28px 28px;
+  padding: 0;
   scrollbar-width: thin;
   scrollbar-color: #e0e0e0 transparent;
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+}
+
+/* Search Bar - Unsplash style */
+.collection-modal-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.collection-modal-search-icon {
+  position: absolute;
+  left: 32px;
+  color: #999;
+  pointer-events: none;
+}
+
+.collection-modal-search-input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  background: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.collection-modal-search-input:focus {
+  outline: none;
+  border-color: #111;
+  background: #fff;
+}
+
+.collection-modal-search-clear {
+  position: absolute;
+  right: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.collection-modal-search-clear:hover {
+  color: #111;
+  background: #f0f0f0;
+}
+
+/* Section */
+.collection-modal-section {
+  padding: 16px 20px 0;
+}
+
+.collection-modal-section-title {
+  margin: 0 0 12px 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #767676;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Collection List */
+.collection-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
 }
 
 .collection-modal-content::-webkit-scrollbar {
@@ -388,48 +499,22 @@
   opacity: 0.8;
 }
 
-/* Collection List Item */
+/* Collection List Item - Simplified Unsplash style */
 .collection-modal-item {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   text-align: left;
   position: relative;
-  overflow: hidden;
+  width: 100%;
 }
 
-.collection-modal-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #111, #333);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.collection-modal-item:hover {
-  border-color: #d0d0d0;
-  background: #fafafa;
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.collection-modal-item:hover::before {
-  transform: scaleX(1);
-}
-
-.collection-modal-item.selected {
-  border-color: #111;
-  background: linear-gradient(to right, #fafafa 0%, #fff 100%);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.collection-modal-item.selected::before {
-  transform: scaleX(1);
-}
 
 .collection-modal-item-info {
   display: flex;
@@ -440,31 +525,25 @@
 }
 
 .collection-modal-item-cover {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
-.collection-modal-item:hover .collection-modal-item-cover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
 
 .collection-modal-item-placeholder {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  background: #f5f5f5;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #999;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .collection-modal-item-details {
@@ -472,46 +551,73 @@
   min-width: 0;
 }
 
+.collection-modal-item-details {
+  flex: 1;
+  min-width: 0;
+  margin-left: 12px;
+}
+
 .collection-modal-item-details h3 {
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #111;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
-}
-
-.collection-modal-item-description {
-  margin: 0 0 6px 0;
-  font-size: 0.8125rem;
-  color: #767676;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4;
 }
 
 .collection-modal-item-count {
   margin: 0;
-  font-size: 0.75rem;
-  color: #999;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  color: #767676;
+  font-weight: 400;
 }
 
 .collection-modal-item-check {
-  color: #111;
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  background: #111;
-  color: #fff;
-  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  color: #111;
+  margin-left: 8px;
+}
+
+.collection-modal-item.selected {
+  background: #f5f5f5;
+}
+
+.collection-modal-item:hover {
+  background: #fafafa;
+}
+
+/* Create New Collection Button at Bottom - Unsplash style */
+.collection-modal-create-bottom {
+  padding: 16px 20px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.collection-modal-create-new-btn {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  color: #111;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collection-modal-create-new-btn:hover {
+  background: #fafafa;
+  border-color: #d0d0d0;
 }
 
 @keyframes checkPop {

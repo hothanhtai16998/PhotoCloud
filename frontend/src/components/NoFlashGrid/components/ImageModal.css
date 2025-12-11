@@ -270,6 +270,11 @@
   position: relative;
 }
 
+/* Collection Menu Wrapper - Same pattern as download menu */
+.image-modal-collection-menu-wrapper {
+  position: relative;
+}
+
 /* Download Menu */
 .image-modal-download-menu {
   position: absolute;

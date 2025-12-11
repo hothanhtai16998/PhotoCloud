@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, Plus, Folder, Check, FileText, Sparkles } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { X, Plus, Folder, Check, FileText, Sparkles, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { collectionTemplateService, type CollectionTemplate } from '@/services/collectionTemplateService';
@@ -46,6 +46,8 @@ export default function CollectionModal({
 	const [templates, setTemplates] = useState<CollectionTemplate[]>([]);
 	const [selectedTemplate, setSelectedTemplate] = useState<CollectionTemplate | null>(null);
 	const [showTemplates, setShowTemplates] = useState(false);
+	const [searchQuery, setSearchQuery] = useState('');
+	const [recentCollectionIds, setRecentCollectionIds] = useState<string[]>([]);
 
 	// Initialize edit form when collectionToEdit changes
 	useEffect(() => {
@@ -160,6 +162,45 @@ export default function CollectionModal({
 		}
 	}, [selectedTemplate, showCreateForm]);
 
+	// Load recent collections from localStorage
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			const recent = localStorage.getItem('recentCollections');
+			if (recent) {
+				try {
+					setRecentCollectionIds(JSON.parse(recent));
+				} catch {
+					// Ignore parse errors
+				}
+			}
+		}
+	}, []);
+
+	// Filter collections by search query
+	const filteredCollections = useMemo(() => {
+		if (!searchQuery.trim()) return collections;
+		const query = searchQuery.toLowerCase();
+		return collections.filter(
+			(collection) =>
+				collection.name.toLowerCase().includes(query) ||
+				collection.description?.toLowerCase().includes(query)
+		);
+	}, [collections, searchQuery]);
+
+	// Get recent collections
+	const recentCollections = useMemo(() => {
+		return recentCollectionIds
+			.map((id) => collections.find((c) => c._id === id))
+			.filter((c): c is Collection => c !== undefined)
+			.slice(0, 5); // Limit to 5 most recent
+	}, [collections, recentCollectionIds]);
+
+	// Get other collections (not in recent)
+	const otherCollections = useMemo(() => {
+		const recentIds = new Set(recentCollectionIds);
+		return filteredCollections.filter((c) => !recentIds.has(c._id));
+	}, [filteredCollections, recentCollectionIds]);
+
 	const handleToggleCollection = useCallback(
 		async (collectionId: string, isInCollection: boolean) => {
 			if (!imageId) {
@@ -183,6 +224,15 @@ export default function CollectionModal({
 						return next;
 					});
 					toast.success(t('collections.imageAdded'));
+					
+					// Add to recent collections
+					setRecentCollectionIds((prev) => {
+						const updated = [collectionId, ...prev.filter((id) => id !== collectionId)].slice(0, 10);
+						if (typeof window !== 'undefined') {
+							localStorage.setItem('recentCollections', JSON.stringify(updated));
+						}
+						return updated;
+					});
 				}
 				onCollectionUpdate?.();
 			} catch (error: unknown) {
@@ -308,22 +358,29 @@ export default function CollectionModal({
 
 	if (!isOpen) return null;
 
+	// If used as dropdown (when imageId is provided and not editing), render without overlay
+	const isDropdown = !!imageId && !collectionToEdit;
+
 	return (
 		<>
-			<div className="collection-modal-overlay" onClick={onClose} />
-			<div className="collection-modal" onClick={(e) => e.stopPropagation()}>
-				<div className="collection-modal-header">
-					<h2>{isEditMode ? t('collections.editCollection') : t('collections.saveToCollection')}</h2>
-					<Button 
-						variant="ghost" 
-						size="icon" 
-						className="collection-modal-close" 
-						onClick={onClose} 
-						aria-label={t('common.close')}
-					>
-						<X size={20} />
-					</Button>
-				</div>
+			{!isDropdown && (
+				<div className="collection-modal-overlay" onClick={onClose} />
+			)}
+			<div className={`collection-modal ${isDropdown ? 'collection-modal-dropdown' : 'collection-modal-centered'}`} onClick={(e) => e.stopPropagation()}>
+				{!isDropdown && (
+					<div className="collection-modal-header">
+						<h2>{isEditMode ? t('collections.editCollection') : t('collections.saveToCollection')}</h2>
+						<Button 
+							variant="ghost" 
+							size="icon" 
+							className="collection-modal-close" 
+							onClick={onClose} 
+							aria-label={t('common.close')}
+						>
+							<X size={20} />
+						</Button>
+					</div>
+				)}
 
 				<div className="collection-modal-content">
 					{isEditMode ? (
@@ -426,76 +483,148 @@ export default function CollectionModal({
 						<>
 							{!showCreateForm ? (
 								<>
-									<div className="collection-modal-create-options">
-										<Button
-											variant="outline"
-											className="collection-modal-create-btn"
-											onClick={() => {
-												setShowCreateForm(true);
-												setShowTemplates(false);
-												setSelectedTemplate(null);
-											}}
-										>
-											<Plus size={18} />
-											{t('collections.createNew')}
-										</Button>
-										{templates.length > 0 && (
+									{/* Search Bar - Unsplash style */}
+									<div className="collection-modal-search">
+										<Search size={18} className="collection-modal-search-icon" />
+										<input
+											type="text"
+											className="collection-modal-search-input"
+											placeholder="Find a collection"
+											value={searchQuery}
+											onChange={(e) => setSearchQuery(e.target.value)}
+											autoFocus
+										/>
+										{searchQuery && (
 											<button
-												className="collection-modal-template-btn"
-												onClick={() => setShowTemplates(!showTemplates)}
+												type="button"
+												className="collection-modal-search-clear"
+												onClick={() => setSearchQuery('')}
+												aria-label={t('common.clear')}
 											>
-												<Sparkles size={18} />
-												{t('collections.createFromTemplate')} ({templates.length})
+												<X size={16} />
 											</button>
 										)}
 									</div>
 
-									{showTemplates && (
-										<div className="collection-modal-templates">
-											<h4>{t('collections.selectTemplate')}</h4>
-											<div className="collection-modal-templates-list">
-												{templates.map((template) => (
-													<button
-														key={template._id}
-														className={`collection-modal-template-item ${
-															selectedTemplate?._id === template._id ? 'selected' : ''
-														}`}
-														onClick={() => {
-															setSelectedTemplate(template);
-															setShowCreateForm(true);
-															setShowTemplates(false);
-														}}
-													>
-														<div className="collection-modal-template-icon">
-															<FileText size={24} />
-														</div>
-														<div className="collection-modal-template-info">
-															<h5>{template.templateName}</h5>
-															{template.description && (
-																<p>{template.description}</p>
-															)}
-															{template.defaultTags.length > 0 && (
-																<div className="collection-modal-template-tags">
-																	{template.defaultTags.slice(0, 3).map((tag, idx) => (
-																		<span key={idx} className="collection-modal-template-tag">
-																			{tag}
-																		</span>
-																	))}
-																	{template.defaultTags.length > 3 && (
-																		<span className="collection-modal-template-tag-more">
-																			+{template.defaultTags.length - 3}
-																		</span>
-																	)}
+									{/* Recent Collections Section */}
+									{recentCollections.length > 0 && !searchQuery && (
+										<div className="collection-modal-section">
+											<h4 className="collection-modal-section-title">Recent</h4>
+											<div className="collection-modal-list">
+												{recentCollections.map((collection) => {
+													const isInCollection = collectionsContainingImage.has(
+														collection._id
+													);
+													return (
+														<button
+															key={collection._id}
+															className={`collection-modal-item ${
+																isInCollection ? 'selected' : ''
+															}`}
+															onClick={() =>
+																handleToggleCollection(
+																	collection._id,
+																	isInCollection
+																)
+															}
+														>
+															<div className="collection-modal-item-info">
+																{collection.coverImage &&
+																typeof collection.coverImage === 'object' ? (
+																	<img
+																		src={
+																			collection.coverImage.thumbnailUrl ||
+																			collection.coverImage.smallUrl ||
+																			collection.coverImage.imageUrl
+																		}
+																		alt={collection.name}
+																		className="collection-modal-item-cover"
+																	/>
+																) : (
+																	<div className="collection-modal-item-placeholder">
+																		<Folder size={20} />
+																	</div>
+																)}
+																<div className="collection-modal-item-details">
+																	<h3>{collection.name}</h3>
+																	<p className="collection-modal-item-count">
+																		{collection.imageCount || 0} {collection.imageCount === 1 ? 'image' : 'images'}
+																	</p>
 																</div>
+															</div>
+															{isInCollection && (
+																<Check
+																	size={18}
+																	className="collection-modal-item-check"
+																/>
 															)}
-														</div>
-													</button>
-												))}
+														</button>
+													);
+												})}
 											</div>
 										</div>
 									)}
 
-									{collections.length === 0 ? (
+									{/* All Collections */}
+									{(otherCollections.length > 0 || (searchQuery && filteredCollections.length > 0)) ? (
+										<div className="collection-modal-section">
+											{!searchQuery && recentCollections.length > 0 && (
+												<h4 className="collection-modal-section-title">All collections</h4>
+											)}
+											<div className="collection-modal-list">
+												{(searchQuery ? filteredCollections : otherCollections).map((collection) => {
+													const isInCollection = collectionsContainingImage.has(
+														collection._id
+													);
+													return (
+														<button
+															key={collection._id}
+															className={`collection-modal-item ${
+																isInCollection ? 'selected' : ''
+															}`}
+															onClick={() =>
+																handleToggleCollection(
+																	collection._id,
+																	isInCollection
+																)
+															}
+														>
+															<div className="collection-modal-item-info">
+																{collection.coverImage &&
+																typeof collection.coverImage === 'object' ? (
+																	<img
+																		src={
+																			collection.coverImage.thumbnailUrl ||
+																			collection.coverImage.smallUrl ||
+																			collection.coverImage.imageUrl
+																		}
+																		alt={collection.name}
+																		className="collection-modal-item-cover"
+																	/>
+																) : (
+																	<div className="collection-modal-item-placeholder">
+																		<Folder size={20} />
+																	</div>
+																)}
+																<div className="collection-modal-item-details">
+																	<h3>{collection.name}</h3>
+																	<p className="collection-modal-item-count">
+																		{collection.imageCount || 0} {collection.imageCount === 1 ? 'image' : 'images'}
+																	</p>
+																</div>
+															</div>
+															{isInCollection && (
+																<Check
+																	size={18}
+																	className="collection-modal-item-check"
+																/>
+															)}
+														</button>
+													);
+												})}
+											</div>
+										</div>
+									) : collections.length === 0 ? (
 										<div className="collection-modal-empty">
 											<Folder size={48} />
 											<p>{t('collections.empty')}</p>
@@ -503,65 +632,27 @@ export default function CollectionModal({
 												{t('collections.emptyHint')}
 											</p>
 										</div>
-									) : (
-										<div className="collection-modal-list">
-											{collections.map((collection) => {
-												const isInCollection = collectionsContainingImage.has(
-													collection._id
-												);
-												return (
-													<button
-														key={collection._id}
-														className={`collection-modal-item ${
-															isInCollection ? 'selected' : ''
-														}`}
-														onClick={() =>
-															handleToggleCollection(
-																collection._id,
-																isInCollection
-															)
-														}
-													>
-														<div className="collection-modal-item-info">
-															{collection.coverImage &&
-															typeof collection.coverImage === 'object' ? (
-																<img
-																	src={
-																		collection.coverImage.thumbnailUrl ||
-																		collection.coverImage.smallUrl ||
-																		collection.coverImage.imageUrl
-																	}
-																	alt={collection.name}
-																	className="collection-modal-item-cover"
-																/>
-															) : (
-																<div className="collection-modal-item-placeholder">
-																	<Folder size={24} />
-																</div>
-															)}
-															<div className="collection-modal-item-details">
-																<h3>{collection.name}</h3>
-																{collection.description && (
-																	<p className="collection-modal-item-description">
-																		{collection.description}
-																	</p>
-																)}
-																<p className="collection-modal-item-count">
-																	{t('collections.imageCount', { count: collection.imageCount || 0 })}
-																</p>
-															</div>
-														</div>
-														{isInCollection && (
-															<Check
-																size={20}
-																className="collection-modal-item-check"
-															/>
-														)}
-													</button>
-												);
-											})}
+									) : searchQuery ? (
+										<div className="collection-modal-empty">
+											<p>{t('collections.noCollectionsFound')}</p>
 										</div>
-									)}
+									) : null}
+
+									{/* Create New Collection Button - at bottom like Unsplash */}
+									<div className="collection-modal-create-bottom">
+										<button
+											type="button"
+											className="collection-modal-create-new-btn"
+											onClick={() => {
+												setShowCreateForm(true);
+												setShowTemplates(false);
+												setSelectedTemplate(null);
+											}}
+										>
+											<Plus size={18} />
+											<span>{t('collections.createNew')}</span>
+										</button>
+									</div>
 								</>
 							) : (
 								<div className="collection-modal-create-form">
