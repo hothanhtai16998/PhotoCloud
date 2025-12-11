@@ -1,11 +1,9 @@
-import { useState, useEffect, useCallback, useRef, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import type { Image } from '@/types/image';
 import { generateImageSlug, extractIdFromSlug } from '@/lib/utils';
 import { appConfig } from '@/config/appConfig';
 import { isMobileViewport } from '@/utils/responsive';
-import { ActualLocationContext } from '@/contexts/ActualLocationContext';
-import { INLINE_MODAL_FLAG_KEY } from '@/constants/modalKeys';
 
 const GRID_SCROLL_POSITION_KEY = 'imageGridScrollPosition';
 
@@ -15,11 +13,9 @@ interface UseImageGridModalProps {
 
 export function useImageGridModal({ images }: UseImageGridModalProps) {
     const navigate = useNavigate();
-    const backgroundLocation = useLocation();
-    const actualLocation = useContext(ActualLocationContext);
-    const actualPathname = actualLocation?.pathname;
-    const actualLocationState = actualLocation?.state as { inlineModal?: boolean } | undefined;
-    const isInlineModalRoute = Boolean(actualLocationState?.inlineModal);
+    const location = useLocation();
+    const [searchParams] = useSearchParams();
+    const isModal = searchParams.get('modal') === 'true';
 
     const [selectedImage, setSelectedImage] = useState<Image | null>(null);
     const [collectionImage, setCollectionImage] = useState<Image | null>(null);
@@ -43,79 +39,55 @@ export function useImageGridModal({ images }: UseImageGridModalProps) {
         }
     }, []);
 
-    useEffect(() => {
-        const handleBeforeUnload = () => {
-            sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, []);
 
     const handleImageClick = useCallback((image: Image) => {
         const newSlug = generateImageSlug(image.imageTitle || '', image._id);
 
         if (isMobileViewport()) {
-            // Mobile: open full ImagePage but remember it's from grid (for back behavior)
-            if (typeof window !== 'undefined') {
-                sessionStorage.setItem(appConfig.storage.imagePageFromGridKey, 'true');
-            }
-            navigate(`/photos/${newSlug}`, { state: { fromGrid: true } });
+            // Mobile: open full ImagePage
+            navigate(`/photos/${newSlug}`, { state: { images } });
             return;
         }
 
+        // Desktop: open with modal query param
         saveScrollPosition();
         setSelectedImage(image);
-        if (typeof window !== 'undefined') {
-            sessionStorage.setItem(INLINE_MODAL_FLAG_KEY, 'true');
-        }
-        navigate(`/photos/${newSlug}`, {
-            state: {
-                background: backgroundLocation,
-                inlineModal: true,
-            },
+        navigate(`/photos/${newSlug}?modal=true`, {
+            state: { images }
         });
-    }, [navigate, saveScrollPosition, backgroundLocation]);
+    }, [navigate, saveScrollPosition, images]);
 
     const handleCloseModal = useCallback(() => {
         setSelectedImage(null);
         restoreScrollPosition();
-        if (typeof window !== 'undefined') {
-            sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-        }
         navigate(-1);
     }, [navigate, restoreScrollPosition]);
 
     const handleModalImageSelect = useCallback((image: Image) => {
         setSelectedImage(image);
         const newSlug = generateImageSlug(image.imageTitle || '', image._id);
-        navigate(`/photos/${newSlug}`, {
+        navigate(`/photos/${newSlug}?modal=true`, {
             replace: true,
-            state: {
-                background: backgroundLocation,
-                inlineModal: true,
-            },
+            state: { images }
         });
-    }, [navigate, backgroundLocation]);
+    }, [navigate, images]);
 
     // Sync selected image with URL
     useEffect(() => {
-        if (!isInlineModalRoute) {
+        if (!isModal) {
             if (lastInlineSlugRef.current) {
                 lastInlineSlugRef.current = null;
                 setSelectedImage(null);
                 restoreScrollPosition();
-                if (typeof window !== 'undefined') {
-                    sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-                }
             }
             return;
         }
 
-        if (!actualPathname?.startsWith('/photos/')) {
+        if (!location.pathname?.startsWith('/photos/')) {
             return;
         }
 
-        const slugFromPath = actualPathname.slice('/photos/'.length);
+        const slugFromPath = location.pathname.slice('/photos/'.length);
         if (!slugFromPath || slugFromPath === lastInlineSlugRef.current) {
             return;
         }
@@ -130,7 +102,7 @@ export function useImageGridModal({ images }: UseImageGridModalProps) {
             setSelectedImage(imageFromUrl);
             lastInlineSlugRef.current = slugFromPath;
         }
-    }, [actualPathname, images, isInlineModalRoute, restoreScrollPosition]);
+    }, [location.pathname, images, isModal, restoreScrollPosition]);
 
     // Collection handlers
     const handleAddToCollection = useCallback((image: Image, e: React.MouseEvent) => {

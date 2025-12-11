@@ -554,15 +554,9 @@ function ProfilePage() {
     const handleImageClick = useCallback((image: Image) => {
         // MOBILE ONLY: Navigate to ImagePage instead of opening modal
         if (isMobile) {
-            // Set flag to indicate we're opening from grid
-            sessionStorage.setItem(appConfig.storage.imagePageFromGridKey, 'true');
-            // Pass images via state for navigation
             const slug = generateImageSlug(image.imageTitle || '', image._id);
             navigate(`/photos/${slug}`, {
-                state: {
-                    images: displayImages,
-                    fromGrid: true
-                }
+                state: { images: displayImages }
             });
             return;
         }

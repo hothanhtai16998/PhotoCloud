@@ -205,15 +205,16 @@ function HomePage() {
         }
         
         const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
-        const targetPath = `/photos/${slug}`;
         
-        // Mobile: full page navigation | Desktop: modal-style with background
+        // Mobile: full page | Desktop: modal with ?modal=true
+        const targetPath = isMobile 
+            ? `/photos/${slug}`
+            : `/photos/${slug}?modal=true`;
+        
         navigate(targetPath, {
-            state: isMobile 
-                ? { images, fromGrid: true }
-                : { images, fromGrid: true, background: { pathname: actualLocation?.pathname || '/' } }
+            state: { images }
         });
-    }, [navigate, images, actualLocation, isMobile]);
+    }, [navigate, images, isMobile]);
 
     return (
         <>
