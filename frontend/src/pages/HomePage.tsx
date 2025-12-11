@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useContext, useCallback } from "react";
+import { useEffect, lazy, Suspense, useContext, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import './HomePage.css';
@@ -20,6 +20,8 @@ function HomePage() {
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
     const navigate = useNavigate();
+    const prevCategoryRef = useRef<string | null>(null);
+    const isInitialMountRef = useRef(true);
 
     // Check if modal is open (image param exists)
     const isModalOpen = actualLocation?.pathname?.startsWith('/photos/') || false;
@@ -121,6 +123,64 @@ function HomePage() {
             _refresh: false // Use cache for instant display
         });
     }, [category, fetchImages, getCategoryParam]);
+
+    // Scroll to NoFlashGrid when category changes (except on initial mount or when restoring scroll)
+    useEffect(() => {
+        // Wait for category to resolve (not null)
+        if (category === null) {
+            return;
+        }
+
+        // Skip if we're restoring scroll position
+        const isRestoringScroll = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
+        if (isRestoringScroll) {
+            prevCategoryRef.current = category;
+            return;
+        }
+
+        // Skip on initial mount
+        if (isInitialMountRef.current) {
+            isInitialMountRef.current = false;
+            prevCategoryRef.current = category;
+            return;
+        }
+
+        // Only scroll if category actually changed
+        if (prevCategoryRef.current !== category) {
+            prevCategoryRef.current = category;
+
+            // Helper function to scroll to grid (accounting for header)
+            const scrollToGrid = () => {
+                const gridContainer = document.getElementById('image-grid-container');
+                if (!gridContainer) return;
+
+                // Calculate header height dynamically
+                const header = document.querySelector('.unsplash-header');
+                const headerHeight = header ? header.getBoundingClientRect().height : 100; // Fallback to 100px for desktop
+
+                // Get the grid container's position
+                const gridRect = gridContainer.getBoundingClientRect();
+                const scrollY = window.scrollY + gridRect.top - headerHeight;
+
+                // Scroll to grid with smooth behavior
+                window.scrollTo({
+                    top: Math.max(0, scrollY), // Ensure we don't scroll to negative position
+                    behavior: 'smooth'
+                });
+            };
+
+            // Scroll to grid after a short delay to ensure DOM is updated
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    scrollToGrid();
+                    // Try again after a short delay in case content is still loading
+                    setTimeout(() => {
+                        scrollToGrid();
+                    }, 200);
+                });
+            }, 100);
+        }
+    }, [category]);
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {

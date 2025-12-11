@@ -139,6 +139,27 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     }
   }, [])
 
+  // Helper function to scroll to NoFlashGrid (accounting for header)
+  const scrollToGrid = useCallback(() => {
+    // Find the image grid container
+    const gridContainer = document.getElementById('image-grid-container');
+    if (!gridContainer) return;
+
+    // Calculate header height dynamically
+    const header = document.querySelector('.unsplash-header');
+    const headerHeight = header ? header.getBoundingClientRect().height : 100; // Fallback to 100px for desktop
+
+    // Get the grid container's position
+    const gridRect = gridContainer.getBoundingClientRect();
+    const scrollY = window.scrollY + gridRect.top - headerHeight;
+
+    // Scroll to grid with smooth behavior
+    window.scrollTo({
+      top: Math.max(0, scrollY), // Ensure we don't scroll to negative position
+      behavior: 'smooth'
+    });
+  }, []);
+
   const handleCategoryClick = (categoryNameVi: string) => {
     const isTestPage = location.pathname.includes('UnsplashGridTestPage');
     
@@ -146,6 +167,12 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     if (isTestPage) {
       const newCategory = categoryNameVi ? categoryNameVi : undefined;
       setSearchParams({ category: newCategory || 'all' });
+      // Scroll to grid after state update
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          scrollToGrid();
+        });
+      }, 100);
       return;
     }
 
@@ -158,6 +185,18 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
       const slug = categoryNameToSlug(categoryNameVi);
       navigate(`/t/${slug}`);
     }
+
+    // Scroll to grid after navigation
+    // Use multiple attempts to ensure DOM is updated
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        scrollToGrid();
+        // Try again after a short delay in case content is still loading
+        setTimeout(() => {
+          scrollToGrid();
+        }, 200);
+      });
+    }, 100);
   }
 
   // Show on homepage, category pages (/t/:slug), and test page
