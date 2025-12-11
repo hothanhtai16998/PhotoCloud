@@ -9,6 +9,7 @@ import { loadImageDimensions } from './utils/imageDimensions';
 import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
 import { ImageModal } from './components/ImageModal';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -24,6 +25,7 @@ export interface NoFlashGridProps {
 export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick }: NoFlashGridProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const gridRef = useRef<HTMLDivElement | null>(null);
+    const isMobile = useIsMobile();
     const [columnCount, setColumnCount] = useState(() => {
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
         return getColumnCount(window.innerWidth);
@@ -187,7 +189,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         if (filteredImages.length === 0 || containerWidth === 0) return [];
 
         // Check if we're on mobile (1 column)
-        const isMobile = columnCount === 1;
+        const isMobileLayout = columnCount === 1;
         // Mobile UI bars take up space:
         // - Author bar: 12px top + 42px avatar + 12px bottom + text line-height = ~66px
         // - Actions bar: 12px top + 40px buttons + 12px bottom = ~64px
@@ -217,10 +219,10 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 dimensions
             );
 
-            // On mobile only (columnCount === 1), add extra rowSpan to compensate for mobile UI bars
+            // On mobile only, add extra rowSpan to compensate for mobile UI bars
             // Desktop (3 columns) and tablet (2 columns) are NOT affected - they use original rowSpan
             // This ensures the image itself gets the intended height on mobile
-            const finalRowSpan = isMobile
+            const finalRowSpan = isMobileLayout
                 ? layout.rowSpan + mobileUIBarsRowSpan
                 : layout.rowSpan;
 
@@ -358,40 +360,51 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                     image={image}
                                     images={filteredImages}
                                     currentIndex={idx}
-                                    onClick={async () => {
-                                        // If onImageClick is provided, use it (for navigation)
-                                        if (onImageClick) {
+                                    onClick={isMobile && onImageClick
+                                        ? () => {
+                                            // Mobile: immediate navigation, preload in background
+                                            onImageClick(image, idx);
+                                            const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                            if (full) {
+                                                preloadImage(full, false).catch(() => {});
+                                            }
+                                        }
+                                        : async () => {
+                                            // DESKTOP: Use async with preload
+                                            // If onImageClick is provided, use it (for navigation)
+                                            if (onImageClick) {
+                                                // DESKTOP: Preload before navigation for smoother experience
+                                                const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                                if (full) {
+                                                    try {
+                                                        // Preload image before navigation
+                                                        await preloadImage(full, false);
+                                                    } catch {
+                                                        // Continue even if preload fails
+                                                    }
+                                                }
+                                                onImageClick(image, idx);
+                                                return;
+                                            }
+
+                                            // Otherwise, use modal (default behavior)
+                                            // Unsplash technique: Preload image COMPLETELY before opening modal
                                             const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
                                             if (full) {
                                                 try {
-                                                    // Preload image before navigation
+                                                    // Wait for image to be fully loaded and decoded before opening modal
+                                                    // Keep decode to ensure smooth modal opening
                                                     await preloadImage(full, false);
+                                                    // Image is ready - open modal smoothly
+                                                    setSelectedIndex(idx);
                                                 } catch {
-                                                    // Continue even if preload fails
+                                                    // On error, still open modal (will show placeholder)
+                                                    setSelectedIndex(idx);
                                                 }
-                                            }
-                                            onImageClick(image, idx);
-                                            return;
-                                        }
-
-                                        // Otherwise, use modal (default behavior)
-                                        // Unsplash technique: Preload image COMPLETELY before opening modal
-                                        const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                        if (full) {
-                                            try {
-                                                // Wait for image to be fully loaded and decoded before opening modal
-                                                // Keep decode to ensure smooth modal opening
-                                                await preloadImage(full, false);
-                                                // Image is ready - open modal smoothly
-                                                setSelectedIndex(idx);
-                                            } catch {
-                                                // On error, still open modal (will show placeholder)
+                                            } else {
                                                 setSelectedIndex(idx);
                                             }
-                                        } else {
-                                            setSelectedIndex(idx);
-                                        }
-                                    }}
+                                        }}
                                     priority={isPriority}
                                 />
                             </div>

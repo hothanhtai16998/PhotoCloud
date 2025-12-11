@@ -197,6 +197,8 @@ export function BlurUpImage({
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
     const navigate = useNavigate();
     const isMobile = useIsMobile();
+    const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+    const touchHandledRef = useRef(false);
 
     // Handle favorite/save button
     const handleSaveClick = useCallback(async (e: React.MouseEvent) => {
@@ -286,6 +288,63 @@ export function BlurUpImage({
         }
     }, [uploadedBy, username, navigate]);
 
+    // Handle touch events on mobile to avoid 300ms click delay
+    const handleTouchStart = useCallback((e: React.TouchEvent) => {
+        if (!isMobile || !onClick) return;
+        touchHandledRef.current = false; // Reset flag
+        const touch = e.touches[0];
+        if (touch) {
+            touchStartRef.current = {
+                x: touch.clientX,
+                y: touch.clientY,
+                time: Date.now()
+            };
+        }
+    }, [isMobile, onClick]);
+
+    const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+        if (!isMobile || !onClick || !touchStartRef.current) return;
+        
+        const touch = e.changedTouches[0];
+        if (!touch) {
+            touchStartRef.current = null;
+            return;
+        }
+
+        const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+        const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+        const deltaTime = Date.now() - touchStartRef.current.time;
+
+        // Only trigger if it's a tap (not a swipe) - allow 10px movement and 300ms
+        if (deltaX > 10 || deltaY > 10 || deltaTime > 300) {
+            touchStartRef.current = null;
+            return;
+        }
+
+        const target = e.target as HTMLElement;
+        // Don't trigger if touching buttons or author info
+        if (target.closest('.blur-up-image-mobile-action-btn') || 
+            target.closest('.blur-up-image-mobile-author')) {
+            touchStartRef.current = null;
+            return;
+        }
+
+        // Mark as handled and trigger navigation
+        touchHandledRef.current = true;
+        touchStartRef.current = null;
+        
+        // Trigger navigation
+        onClick();
+        
+        // Prevent default click and double-tap zoom
+        e.preventDefault();
+        e.stopPropagation();
+        
+        setTimeout(() => {
+            touchHandledRef.current = false;
+        }, 300);
+    }, [isMobile, onClick]);
+
     return (
         <div
             ref={containerRef}
@@ -325,20 +384,40 @@ export function BlurUpImage({
                 </div>
             )}
 
-            {/* Image Container */}
-            <div className="blur-up-image-image-wrapper">
+            {/* Image Container - clickable wrapper on mobile */}
+            <div 
+                className="blur-up-image-image-wrapper"
+                onTouchStart={isMobile ? handleTouchStart : undefined}
+                onTouchEnd={isMobile ? handleTouchEnd : undefined}
+                onClick={isMobile && onClick ? (e) => {
+                    // On mobile, if touch already handled it, ignore click event
+                    if (touchHandledRef.current) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    // Fallback for non-touch devices or if touch didn't handle it
+                    const target = e.target as HTMLElement;
+                    // Don't trigger if clicking on buttons or author info
+                    if (target.closest('.blur-up-image-mobile-action-btn') || 
+                        target.closest('.blur-up-image-mobile-author')) {
+                        return;
+                    }
+                    onClick();
+                } : undefined}
+                style={isMobile ? { cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' } : undefined}
+            >
                 {/* Placeholder Image (Low Quality) */}
                 {placeholderInitial && (
                     <img
                         src={placeholderInitial}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
-                        onClick={isMobile ? onClick : undefined}
                         style={{
                             opacity: loaded ? 0 : 1,
                             /* Disable transition during initial load to prevent flashing */
                             transition: loaded ? 'opacity 0.15s ease-out' : 'opacity 0s',
-                            cursor: isMobile ? 'pointer' : undefined
+                            pointerEvents: 'none' // Let wrapper handle clicks
                         }}
                     />
                 )}
@@ -357,8 +436,7 @@ export function BlurUpImage({
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
                         loading="lazy"
-                        onClick={isMobile ? onClick : undefined}
-                        style={{ cursor: isMobile ? 'pointer' : undefined }}
+                        style={{ pointerEvents: 'none' }} // Let wrapper handle clicks
                         onLoad={() => {
                             setLoaded(true);
                             onLoadComplete?.();

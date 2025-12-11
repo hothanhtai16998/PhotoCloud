@@ -49,6 +49,9 @@ function ImagePage() {
   const location = useLocation();
   const { user } = useUserStore();
 
+  // Ref to capture initial location.state (prevents re-fetching when React Router clears it)
+  const initialLocationStateRef = useRef(location.state);
+
   // Core state
   const [image, setImage] = useState<Image | null>(null);
   const [images, setImages] = useState<Image[]>([]);
@@ -325,7 +328,7 @@ function ImagePage() {
         setError(null);
 
         // Try to use passed images first (faster)
-        const passedImages = location.state?.images as Image[] | undefined;
+        const passedImages = initialLocationStateRef.current?.images as Image[] | undefined;
         if (passedImages && passedImages.length > 0) {
           const foundImage = passedImages.find(img => {
             const imgShortId = img._id.slice(-12);

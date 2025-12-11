@@ -1,5 +1,6 @@
 import { useEffect, lazy, Suspense, useContext, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { flushSync } from "react-dom";
 import Header from "../components/Header";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";
@@ -11,6 +12,7 @@ import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { useImageGridCategory } from "./ImageGrid/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
 import type { Image } from "@/types/image";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 // Lazy load Slider - conditionally rendered
 const Slider = lazy(() => import("@/components/Slider"));
@@ -22,6 +24,7 @@ function HomePage() {
     const navigate = useNavigate();
     const prevCategoryRef = useRef<string | null>(null);
     const isInitialMountRef = useRef(true);
+    const isMobile = useIsMobile();
 
     // Check if modal is open (image param exists)
     const isModalOpen = actualLocation?.pathname?.startsWith('/photos/') || false;
@@ -191,7 +194,7 @@ function HomePage() {
         });
     }, [fetchImages, category, getCategoryParam]);
 
-    // Handle image click - navigate to ImagePage with modal-style
+    // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
         // Save scroll position before navigating
         if (typeof window !== 'undefined') {
@@ -202,14 +205,15 @@ function HomePage() {
         }
         
         const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
-        navigate(`/photos/${slug}`, {
-            state: {
-                images,
-                fromGrid: true,
-                background: { pathname: actualLocation?.pathname || '/' }
-            }
+        const targetPath = `/photos/${slug}`;
+        
+        // Mobile: full page navigation | Desktop: modal-style with background
+        navigate(targetPath, {
+            state: isMobile 
+                ? { images, fromGrid: true }
+                : { images, fromGrid: true, background: { pathname: actualLocation?.pathname || '/' } }
         });
-    }, [navigate, images, actualLocation]);
+    }, [navigate, images, actualLocation, isMobile]);
 
     return (
         <>
