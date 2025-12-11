@@ -30,6 +30,11 @@
   border-radius: 12px 12px 0 0;
 }
 
+/* Disable margin transition when image is changing to prevent layout shift */
+.image-modal-container.image-changing {
+  transition: margin-top 0s !important;
+}
+
 .image-modal-container.scrolled {
   margin-top: 0;
   /* Remove top corner radius when stuck to viewport */
@@ -79,6 +84,11 @@
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
+}
+
+/* Disable transition completely when image is changing - topbar should appear instantly */
+.image-modal-top-info.no-transition {
+  transition: none !important;
 }
 
 /* Author Area */

@@ -58,6 +58,7 @@ function ImagePage() {
   const modalRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef(0);
+  const isImageChangingRef = useRef(false);
   const relatedSectionRef = useRef<HTMLDivElement>(null);
   const topInfoRef = useRef<HTMLDivElement>(null);
   const authorAreaRef = useRef<HTMLDivElement>(null);
@@ -147,6 +148,19 @@ function ImagePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [shouldAnimate, setShouldAnimate] = useState(false);
   const [isAtRelatedSection, setIsAtRelatedSection] = useState(false);
+  const [isImageChanging, setIsImageChanging] = useState(false);
+  
+  // Helper function to check if we're at the related section
+  const checkRelatedSection = useCallback(() => {
+    if (relatedSectionRef.current && scrollRef.current) {
+      const relatedSectionRect = relatedSectionRef.current.getBoundingClientRect();
+      const scrollAreaRect = scrollRef.current.getBoundingClientRect();
+      const topBarHeight = 60;
+      const reachedRelated = relatedSectionRect.top <= scrollAreaRect.top + topBarHeight;
+      return reachedRelated;
+    }
+    return false;
+  }, []);
 
   // Helper to check if image is in browser cache synchronously
   const checkBrowserCache = useCallback((url: string): boolean => {
@@ -459,6 +473,17 @@ function ImagePage() {
     // CRITICAL: Delay scroll reset to prevent interfering with image transition
     // This ensures old image stays visible until new one is ready
     if (imageChanged) {
+      // Set flag to prevent scroll handler from interfering
+      isImageChangingRef.current = true;
+      setIsImageChanging(true);
+      
+      // Immediately reset states to prevent layout shifts
+      // Reset isScrolled immediately to prevent margin jump (no animation)
+      setIsScrolled(false);
+      setShouldAnimate(false);
+      // Reset isAtRelatedSection immediately so top bar shows instantly
+      setIsAtRelatedSection(false);
+      
       scrollPosRef.current = 0;
       // Delay scroll reset to avoid triggering re-renders during image loading
       requestAnimationFrame(() => {
@@ -466,9 +491,16 @@ function ImagePage() {
           if (scrollRef.current) {
             scrollRef.current.scrollTop = 0;
           }
+          // Double-check state after scroll reset to ensure it's correct
           setIsScrolled(false);
-          setShouldAnimate(false);
           setIsAtRelatedSection(false);
+          
+          // Clear flags after a short delay to re-enable transitions for scroll-based changes
+          // The topbar should already be visible instantly (no transition)
+          setTimeout(() => {
+            isImageChangingRef.current = false;
+            setIsImageChanging(false);
+          }, 100); // Short delay to ensure state is settled
         });
       });
 
@@ -1235,6 +1267,11 @@ function ImagePage() {
       ref={scrollRef}
       className="image-modal-scroll-area"
       onScroll={(e) => {
+        // Skip scroll handling during image change to prevent race conditions
+        if (isImageChangingRef.current) {
+          return;
+        }
+        
         const top = (e.currentTarget as HTMLDivElement).scrollTop;
         const prevTop = scrollPosRef.current;
         const wasScrolled = prevTop > 0;
@@ -1244,14 +1281,17 @@ function ImagePage() {
         const nowScrolled = top > 0;
 
         // Check if we've reached the related section
-        if (relatedSectionRef.current && scrollRef.current) {
-          const relatedSectionRect = relatedSectionRef.current.getBoundingClientRect();
-          const scrollAreaRect = scrollRef.current.getBoundingClientRect();
-          const topBarHeight = 60;
-          const reachedRelated = relatedSectionRect.top <= scrollAreaRect.top + topBarHeight;
-
+        // CRITICAL: Only check if scrolled down (top > 0)
+        // If at top, top bar should always be visible
+        if (top > 0) {
+          const reachedRelated = checkRelatedSection();
           if (reachedRelated !== isAtRelatedSection) {
             setIsAtRelatedSection(reachedRelated);
+          }
+        } else {
+          // At top of scroll - top bar should be visible
+          if (isAtRelatedSection) {
+            setIsAtRelatedSection(false);
           }
         }
 
@@ -1269,7 +1309,11 @@ function ImagePage() {
       }}
     >
       {/* Top info - Sticky: starts with space, sticks to viewport top when scrolling */}
-      <div ref={topInfoRef} className={`image-modal-top-info ${isAtRelatedSection ? 'slide-up' : ''}`}>
+      <div 
+        ref={topInfoRef} 
+        className={`image-modal-top-info ${isAtRelatedSection ? 'slide-up' : ''} ${isImageChanging ? 'no-transition' : ''}`}
+        style={isImageChanging ? { transition: 'none' } : undefined}
+      >
         <div
           ref={authorAreaRef}
           className="image-modal-author-area"
@@ -1877,7 +1921,7 @@ function ImagePage() {
         >
           <div
             ref={modalRef}
-            className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''}`}
+            className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
           >
             {modalContent}
           </div>
@@ -1888,7 +1932,7 @@ function ImagePage() {
           <ImagePageSidebar />
           <div
             ref={modalRef}
-            className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''}`}
+            className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
           >
             {modalContent}
           </div>

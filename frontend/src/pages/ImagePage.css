@@ -154,6 +154,11 @@
   z-index: 1499 !important; /* Lower than header z-index (1500) to ensure header stays on top */
 }
 
+/* Disable transition completely when image is changing - topbar should appear instantly */
+.image-modal-top-info.no-transition {
+  transition: none !important;
+}
+
 /* Ensure scroll area starts properly in regular page mode */
 .image-page .image-modal-scroll-area {
   /* Scroll area starts at top of container, which is already below header */
