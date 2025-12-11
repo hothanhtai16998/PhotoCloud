@@ -100,6 +100,14 @@ function HomePage() {
         });
     }, []); // Run once on mount
 
+    // Helper to normalize category parameter
+    const getCategoryParam = useCallback((categoryValue: string | null) => {
+        if (categoryValue === null || categoryValue === 'all' || !categoryValue) {
+            return undefined;
+        }
+        return categoryValue;
+    }, []);
+
     // Fetch images when category changes
     useEffect(() => {
         // Wait for category to resolve (not null)
@@ -107,26 +115,24 @@ function HomePage() {
             return;
         }
 
-        const categoryParam = category === 'all' ? undefined : category;
         fetchImages({ 
             page: 1, 
-            category: categoryParam,
+            category: getCategoryParam(category),
             _refresh: false // Use cache for instant display
         });
-    }, [category, fetchImages]);
+    }, [category, fetchImages, getCategoryParam]);
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
-        const categoryParam = category === 'all' || !category ? undefined : category;
         await fetchImages({ 
             page: 1, 
-            category: categoryParam,
+            category: getCategoryParam(category),
             _refresh: true // Only refresh when explicitly loading data
         });
-    }, [fetchImages, category]);
+    }, [fetchImages, category, getCategoryParam]);
 
     // Handle image click - navigate to ImagePage with modal-style
-    const handleImageClick = useCallback((image: Image, index: number) => {
+    const handleImageClick = useCallback((image: Image, _index: number) => {
         // Save scroll position before navigating
         if (typeof window !== 'undefined') {
             const scrollKey = 'imageGridScrollPosition';

@@ -26,6 +26,56 @@ import './Header.css'
 // Lazy load UploadModal to improve initial page load
 const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default: module.default })))
 
+// Reusable user menu items component
+function UserMenuItems({ user, onSignOut }: { user: any; onSignOut: () => void }) {
+  return (
+    <>
+      <DropdownMenuItem asChild>
+        <Link to="/favorites" className="user-menu-item">
+          <Heart size={16} />
+          {t('header.favorites')}
+        </Link>
+      </DropdownMenuItem>
+      {user?.isAdmin && (
+        <DropdownMenuItem asChild>
+          <Link to="/admin" className="user-menu-item">
+            <Shield size={16} />
+            Admin
+          </Link>
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem asChild>
+        <Link to="/about" className="user-menu-item">
+          <Info size={16} />
+          {t('header.about')}
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <Link to="/profile" className="user-menu-item">
+          <User size={16} />
+          {t('header.account')}
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <ThemeToggle asMenuItem={true} />
+      <DropdownMenuSeparator />
+      <DropdownMenuItem asChild>
+        <LanguageSwitcher variant="menu-item" />
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={onSignOut}
+        className="user-menu-item"
+        variant="destructive"
+      >
+        <LogOut size={16} />
+        {t('auth.signOut')}
+      </DropdownMenuItem>
+    </>
+  );
+}
+
 export const Header = memo(function Header() {
   const { accessToken, signOut } = useAuthStore()
   const { user } = useUserStore()
@@ -99,48 +149,7 @@ export const Header = memo(function Header() {
                     side="bottom"
                     className="user-menu-content"
                   >
-                    <DropdownMenuItem asChild>
-                      <Link to="/favorites" className="user-menu-item">
-                        <Heart size={16} />
-                        {t('header.favorites')}
-                      </Link>
-                    </DropdownMenuItem>
-                    {user?.isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="user-menu-item">
-                          <Shield size={16} />
-                          Admin
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/about" className="user-menu-item">
-                        <Info size={16} />
-                        {t('header.about')}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="user-menu-item">
-                        <User size={16} />
-                        {t('header.account')}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <ThemeToggle asMenuItem={true} />
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <LanguageSwitcher variant="menu-item" />
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleSignOut}
-                      className="user-menu-item"
-                      variant="destructive"
-                    >
-                      <LogOut size={16} />
-                      {t('auth.signOut')}
-                    </DropdownMenuItem>
+                    <UserMenuItems user={user} onSignOut={handleSignOut} />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
@@ -190,48 +199,7 @@ export const Header = memo(function Header() {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="user-menu-content">
-                    <DropdownMenuItem asChild>
-                      <Link to="/favorites" className="user-menu-item">
-                        <Heart size={16} />
-                        {t('header.favorites')}
-                      </Link>
-                    </DropdownMenuItem>
-                    {user?.isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="user-menu-item">
-                          <Shield size={16} />
-                          Admin
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link to="/about" className="user-menu-item">
-                        <Info size={16} />
-                        {t('header.about')}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="user-menu-item">
-                        <User size={16} />
-                        {t('header.account')}
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <ThemeToggle asMenuItem={true} />
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <LanguageSwitcher variant="menu-item" />
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleSignOut}
-                      className="user-menu-item"
-                      variant="destructive"
-                    >
-                      <LogOut size={16} />
-                      {t('auth.signOut')}
-                    </DropdownMenuItem>
+                    <UserMenuItems user={user} onSignOut={handleSignOut} />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>

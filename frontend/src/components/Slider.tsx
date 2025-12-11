@@ -560,36 +560,6 @@ function Slider() {
     touchStartY.current = null;
   };
 
-  // Preload next 2-3 images
-  useEffect(() => {
-    if (images.length === 0) return;
-
-    const preloadImages = () => {
-      for (let i = 1; i <= 3; i++) {
-        const nextIndex = (currentSlide + i) % images.length;
-        const image = images[nextIndex];
-        if (!image) continue;
-
-        const imageUrl =
-          image.imageAvifUrl ||
-          image.imageUrl ||
-          image.regularAvifUrl ||
-          image.regularUrl ||
-          image.smallUrl ||
-          image.thumbnailUrl ||
-          null;
-
-        if (imageUrl) {
-          const img = new window.Image();
-          img.src = imageUrl;
-        }
-      }
-    };
-
-    preloadImages();
-
-    // No cleanup needed for image preloading
-  }, [currentSlide, images]);
 
   // Cleanup all timers on unmount
   useEffect(() => {

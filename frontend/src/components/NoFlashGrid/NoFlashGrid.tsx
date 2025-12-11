@@ -73,9 +73,8 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         };
     }, [loadData, onLoadData]);
 
-    const filteredImages = useMemo<ExtendedImage[]>(() => {
-        return images;
-    }, [images]);
+    // Use images directly - no filtering needed currently
+    const filteredImages = images;
 
     // Preload thumbnails for first batch of images when images change
     useEffect(() => {
