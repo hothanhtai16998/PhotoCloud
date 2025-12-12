@@ -13,16 +13,21 @@ const getBaseURL = () => {
   if (import.meta.env.MODE === 'development') {
     return 'http://localhost:3000/api';
   }
-  // In production, try to detect if we're on Cloudflare Pages
-  // Cloudflare Pages _redirects only works for GET, so POST/PUT/DELETE will fail
-  // Default to direct backend URL if available, otherwise fall back to /api
-  // Note: Set VITE_API_URL environment variable in Cloudflare Pages for production
+  // In production, detect if we're on Cloudflare Pages
+  // HTTP 530 errors occur when Cloudflare Pages can't reach the backend via _redirects
+  // So we MUST use direct backend URL on Cloudflare Pages
   const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
   if (hostname.includes('.pages.dev') || hostname.includes('uploadanh.cloud')) {
-    // On Cloudflare Pages, we need direct backend URL
-    // This should be set via VITE_API_URL environment variable
-    console.warn('VITE_API_URL not set. POST requests may fail on Cloudflare Pages. Set VITE_API_URL=https://api.uploadanh.cloud/api');
+    // On Cloudflare Pages, use direct backend URL to avoid 530 errors
+    // Fallback to known backend URL if VITE_API_URL not set
+    const fallbackBackendUrl = 'https://api.uploadanh.cloud/api';
+    console.warn(
+      'VITE_API_URL not set. Using fallback direct backend URL to avoid 530 errors.\n' +
+      'Set VITE_API_URL=https://api.uploadanh.cloud/api in Cloudflare Pages environment variables for better control.'
+    );
+    return fallbackBackendUrl;
   }
+  // For other platforms (Vercel, etc.), try /api proxy first
   return '/api';
 };
 
@@ -165,6 +170,19 @@ api.interceptors.response.use(
             return Promise.reject(error);
           }
         }
+      }
+    }
+
+    // Handle 530 - Cloudflare error: origin server unreachable
+    // This happens when Cloudflare Pages can't reach the backend via _redirects
+    if (error.response?.status === 530 || error.code === 'ERR_BAD_RESPONSE') {
+      const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+      if (hostname.includes('.pages.dev') && !import.meta.env.VITE_API_URL) {
+        console.error(
+          'HTTP 530 Error: Cloudflare Pages cannot reach backend.\n' +
+          'Solution: Set VITE_API_URL=https://api.uploadanh.cloud/api in Cloudflare Pages environment variables.\n' +
+          'This will make the frontend connect directly to the backend instead of using _redirects proxy.'
+        );
       }
     }
 

@@ -57,9 +57,16 @@ export function getErrorMessage(
           return 'Too many requests. Please try again later.';
         case 500:
           return 'Server error. Please try again later.';
+        case 530:
+          return 'Cannot connect to server. The backend may be down or unreachable.';
         default:
           return error.message || defaultMessage;
       }
+    }
+
+    // Handle ERR_BAD_RESPONSE (often 530 errors from Cloudflare)
+    if (error.code === 'ERR_BAD_RESPONSE' || error.response?.status === 530) {
+      return 'Cannot connect to server. Please check if the backend is running.';
     }
 
     return error.message || defaultMessage;
