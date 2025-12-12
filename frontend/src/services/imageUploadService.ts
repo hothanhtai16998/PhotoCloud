@@ -7,6 +7,67 @@ import type {
   FinalizeImageResponse,
 } from '@/types/image';
 
+/**
+ * Upload file using XMLHttpRequest for better performance and progress tracking
+ * This is more efficient than axios for large file uploads
+ */
+function uploadFileWithXHR(
+  file: File,
+  uploadUrl: string,
+  contentType: string,
+  onProgress?: (progress: number) => void
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    // Use requestAnimationFrame to throttle progress updates and prevent UI blocking
+    let lastProgressUpdate = 0;
+    const PROGRESS_THROTTLE_MS = 50; // Update progress max once per 50ms
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && onProgress) {
+        const now = Date.now();
+        if (now - lastProgressUpdate >= PROGRESS_THROTTLE_MS) {
+          const percentCompleted = Math.round((e.loaded / e.total) * 100);
+          // Use requestAnimationFrame to ensure UI updates don't block
+          requestAnimationFrame(() => {
+            onProgress(percentCompleted);
+          });
+          lastProgressUpdate = now;
+        }
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress?.(100);
+        resolve();
+      } else {
+        reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Upload failed: Network error'));
+    });
+
+    xhr.addEventListener('abort', () => {
+      reject(new Error('Upload aborted'));
+    });
+
+    // Set timeout (3 minutes for large files)
+    xhr.timeout = 180000;
+    xhr.addEventListener('timeout', () => {
+      reject(new Error('Upload timeout'));
+    });
+
+    xhr.open('PUT', uploadUrl);
+    xhr.setRequestHeader('Content-Type', contentType);
+    // Don't set withCredentials for presigned URLs (causes CORS issues)
+    xhr.send(file);
+  });
+}
+
 export const imageUploadService = {
   // Delete pre-uploaded file (before finalization)
   deletePreUploadedFile: async (uploadKey: string): Promise<void> => {
@@ -36,24 +97,15 @@ export const imageUploadService = {
 
     const preUploadData: PreUploadResponse = metadataRes.data;
 
-    // PUT to presigned URL must not include cookies/credentials
-    await axios.put(preUploadData.uploadUrl, imageFile, {
-      headers: {
-        'Content-Type': imageFile.type || 'application/octet-stream',
-      },
-      timeout: 180000,
-      withCredentials: false, // important for S3 presigned PUT
-      onUploadProgress: (progressEvent) => {
-        if (onUploadProgress && progressEvent.total) {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onUploadProgress(percentCompleted);
-        }
-      },
-    });
+    // Use XMLHttpRequest for better performance and non-blocking progress updates
+    // This is more efficient than axios for large file uploads
+    await uploadFileWithXHR(
+      imageFile,
+      preUploadData.uploadUrl,
+      imageFile.type || 'application/octet-stream',
+      onUploadProgress
+    );
 
-    onUploadProgress?.(100);
     return preUploadData;
   },
 

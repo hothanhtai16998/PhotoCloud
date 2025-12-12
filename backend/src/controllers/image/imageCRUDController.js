@@ -126,7 +126,8 @@ export const getImageById = asyncHandler(async (req, res) => {
 export const downloadImage = asyncHandler(async (req, res) => {
     const imageId = req.params.imageId;
     const userId = req.user?._id;
-    const size = req.query.size || 'medium';
+    // Default to 'original' for best resolution downloads (not 'medium' which uses regularUrl)
+    const size = req.query.size || 'original';
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(imageId)) {

@@ -11,6 +11,7 @@ import { BlurUpImage } from './components/BlurUpImage';
 import { ImageModal } from './components/ImageModal';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useInfiniteScroll } from '@/components/image/hooks/useInfiniteScroll';
+import { getBestImageUrl } from '@/utils/avifSupport';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -409,17 +410,25 @@ export function NoFlashGrid({
                                         ? () => {
                                             // Mobile: immediate navigation, preload in background
                                             onImageClick(image, idx);
-                                            const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                            if (full) {
-                                                preloadImage(full, false).catch(() => {});
-                                            }
+                                            // Preload AVIF if supported to match modal behavior
+                                            (async () => {
+                                                const bestRegular = await getBestImageUrl(image, 'regular');
+                                                const bestOriginal = await getBestImageUrl(image, 'original');
+                                                const full = bestRegular || bestOriginal || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                                if (full) {
+                                                    preloadImage(full, false).catch(() => {});
+                                                }
+                                            })();
                                         }
                                         : async () => {
                                             // DESKTOP: Use async with preload
                                             // If onImageClick is provided, use it (for navigation)
                                             if (onImageClick) {
                                                 // DESKTOP: Preload before navigation for smoother experience
-                                                const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                                // Use AVIF if supported to match modal behavior
+                                                const bestRegular = await getBestImageUrl(image, 'regular');
+                                                const bestOriginal = await getBestImageUrl(image, 'original');
+                                                const full = bestRegular || bestOriginal || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
                                                 if (full) {
                                                     try {
                                                         // Preload image before navigation
@@ -434,7 +443,10 @@ export function NoFlashGrid({
 
                                             // Otherwise, use modal (default behavior)
                                             // Unsplash technique: Preload image COMPLETELY before opening modal
-                                            const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                            // Use AVIF if supported to prevent format mismatch flash
+                                            const bestRegular = await getBestImageUrl(image, 'regular');
+                                            const bestOriginal = await getBestImageUrl(image, 'original');
+                                            const full = bestRegular || bestOriginal || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
                                             if (full) {
                                                 try {
                                                     // Wait for image to be fully loaded and decoded before opening modal

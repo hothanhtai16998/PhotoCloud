@@ -36,15 +36,16 @@ function triggerDownload(blobUrl: string, fileName: string): void {
 /**
  * Download an image by ID
  * Uses backend proxy to avoid CORS issues
+ * Defaults to 'original' size for best resolution downloads
  */
 export async function downloadImage(image: Image, size?: DownloadSize): Promise<void> {
     if (!image._id) {
         throw new Error('Lỗi khi lấy ID của ảnh');
     }
 
-    const url = size 
-        ? `/images/${image._id}/download?size=${size}` 
-        : `/images/${image._id}/download`;
+    // Default to 'original' for best resolution (imageUrl) instead of 'medium' (regularUrl)
+    const downloadSize = size || 'original';
+    const url = `/images/${image._id}/download?size=${downloadSize}`;
 
     const response = await api.get(url, {
         responseType: 'blob',

@@ -10,9 +10,17 @@ import AuthInitializer from './components/auth/AuthInitializer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 // Import verification utility (makes it available globally in dev mode)
 import './utils/verifyAppearanceSettings';
+// Detect AVIF support early to prevent format switching flash
+import { detectAvifSupport } from './utils/avifSupport';
 
 // Enable Immer MapSet plugin for Map and Set support in Zustand stores
 enableMapSet();
+
+// Detect AVIF support early (before any images load) to prevent format switching flash
+// This caches the result in window.avifSupport for synchronous access
+detectAvifSupport().catch(() => {
+	// Silently fail - will fallback to WebP
+});
 
 // Register Service Worker for image caching and offline support
 if ('serviceWorker' in navigator) {

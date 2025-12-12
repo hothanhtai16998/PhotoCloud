@@ -76,46 +76,47 @@ function UserMenuItems({ user, onSignOut }: { user: any; onSignOut: () => void }
   );
 }
 
-// Reusable user menu dropdown component to avoid duplication
+// Reusable user menu dropdown component
 function UserMenuDropdown({ 
   user, 
   onSignOut, 
   onOpenChange,
-  triggerClassName,
-  avatarSize,
-  iconSize,
-  align = "end",
-  side = "bottom"
+  variant = "desktop"
 }: { 
   user: any; 
   onSignOut: () => void;
   onOpenChange?: (open: boolean) => void;
-  triggerClassName: string;
-  avatarSize: number;
-  iconSize: number;
-  align?: "start" | "end";
-  side?: "top" | "bottom";
+  variant?: "mobile" | "desktop";
 }) {
+  const isMobile = variant === "mobile";
+  
   return (
     <DropdownMenu 
       modal={false}
       onOpenChange={onOpenChange}
     >
       <DropdownMenuTrigger asChild>
-        <button className={triggerClassName} aria-label={t('header.userMenu')}>
+        <button 
+          className={isMobile ? "mobile-header-icon" : "header-link user-menu-trigger"} 
+          aria-label={t('header.userMenu')}
+        >
           {user ? (
             <Avatar
               user={user}
-              size={avatarSize}
-              className={triggerClassName.includes('mobile') ? 'mobile-header-avatar' : 'header-user-avatar'}
-              fallbackClassName={triggerClassName.includes('mobile') ? 'mobile-header-avatar-placeholder' : 'header-user-avatar-placeholder'}
+              size={32}
+              className={isMobile ? "mobile-header-avatar" : "header-user-avatar"}
+              fallbackClassName={isMobile ? "mobile-header-avatar-placeholder" : "header-user-avatar-placeholder"}
             />
           ) : (
-            <User size={iconSize} />
+            <User size={isMobile ? 20 : 18} />
           )}
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} side={side} className="user-menu-content">
+      <DropdownMenuContent 
+        align={isMobile ? "start" : "end"} 
+        side="bottom" 
+        className="user-menu-content"
+      >
         <UserMenuItems user={user} onSignOut={onSignOut} />
       </DropdownMenuContent>
     </DropdownMenu>
@@ -147,6 +148,12 @@ export const Header = memo(function Header() {
   const handleSignOut = async () => {
     await signOut()
     navigate("/")
+  }
+
+  const handleUserMenuOpen = (open: boolean) => {
+    if (open && notificationBellRef.current) {
+      notificationBellRef.current.close();
+    }
   }
 
   return (
@@ -181,17 +188,8 @@ export const Header = memo(function Header() {
                 <UserMenuDropdown
                   user={user}
                   onSignOut={handleSignOut}
-                  onOpenChange={(open) => {
-                    // Close notification bell when avatar menu opens
-                    if (open && notificationBellRef.current) {
-                      notificationBellRef.current.close();
-                    }
-                  }}
-                  triggerClassName="mobile-header-icon"
-                  avatarSize={32}
-                  iconSize={20}
-                  align="start"
-                  side="bottom"
+                  variant="mobile"
+                  onOpenChange={handleUserMenuOpen}
                 />
               </>
             ) : (
@@ -227,17 +225,8 @@ export const Header = memo(function Header() {
                 <UserMenuDropdown
                   user={user}
                   onSignOut={handleSignOut}
-                  onOpenChange={(open) => {
-                    // Close notification bell when avatar menu opens
-                    if (open && notificationBellRef.current) {
-                      notificationBellRef.current.close();
-                    }
-                  }}
-                  triggerClassName="header-link user-menu-trigger"
-                  avatarSize={32}
-                  iconSize={18}
-                  align="end"
-                  side="bottom"
+                  variant="desktop"
+                  onOpenChange={handleUserMenuOpen}
                 />
               </>
             ) : (

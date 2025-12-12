@@ -522,6 +522,12 @@
   transition: none;
 }
 
+.image-modal-front-image.hidden {
+  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+}
+
 /* Bottom Info */
 .image-modal-bottom-info {
   background: #ffffff;
