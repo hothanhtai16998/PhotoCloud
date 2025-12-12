@@ -5,6 +5,7 @@ import { appConfig } from '@/config/appConfig';
 // Support environment variable for API URL, fallback to /api (for proxy) or localhost in dev
 const getBaseURL = () => {
   // If VITE_API_URL is set, use it (for direct backend connection)
+  // This is required for Cloudflare Pages since _redirects only works for GET requests
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
@@ -12,7 +13,16 @@ const getBaseURL = () => {
   if (import.meta.env.MODE === 'development') {
     return 'http://localhost:3000/api';
   }
-  // In production, use /api (expects proxy configuration)
+  // In production, try to detect if we're on Cloudflare Pages
+  // Cloudflare Pages _redirects only works for GET, so POST/PUT/DELETE will fail
+  // Default to direct backend URL if available, otherwise fall back to /api
+  // Note: Set VITE_API_URL environment variable in Cloudflare Pages for production
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (hostname.includes('.pages.dev') || hostname.includes('uploadanh.cloud')) {
+    // On Cloudflare Pages, we need direct backend URL
+    // This should be set via VITE_API_URL environment variable
+    console.warn('VITE_API_URL not set. POST requests may fail on Cloudflare Pages. Set VITE_API_URL=https://api.uploadanh.cloud/api');
+  }
   return '/api';
 };
 

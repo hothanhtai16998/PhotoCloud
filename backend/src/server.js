@@ -64,9 +64,11 @@ if (env.NODE_ENV === 'production') {
                     // R2 storage URL
                     env.R2_PUBLIC_URL || `https://pub-${env.R2_ACCOUNT_ID}.r2.dev`,
                     "https://nominatim.openstreetmap.org",
-                    "https://uploadanh.cloud"
+                    "https://uploadanh.cloud",
+                    "https://fonts.googleapis.com",
+                    "https://fonts.gstatic.com"
                 ],
-                fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+                fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
                 objectSrc: ["'none'"],
                 mediaSrc: ["'self'"],
                 frameSrc: ["'none'"],

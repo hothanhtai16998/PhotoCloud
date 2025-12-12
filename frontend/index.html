@@ -16,6 +16,8 @@
       content="photos, images, photography, free images, stock photos, photo sharing"
     />
     <meta name="theme-color" content="#ffffff" />
+    <!-- Content Security Policy for fonts -->
+    <meta http-equiv="Content-Security-Policy" content="font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;">
     <title>Upload</title>
     <!-- Performance: Preconnect to external domains -->
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
@@ -24,27 +26,47 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Performance: Load critical fonts with font-display swap (non-blocking) -->
+    <!-- Using crossorigin to avoid CORS issues -->
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700&family=Proxima+Nova:wght@400;500;600&display=swap"
+      as="style"
+      crossorigin="anonymous"
+    />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700&family=Proxima+Nova:wght@400;500;600&display=swap"
       media="print"
       onload="this.media='all'"
+      crossorigin="anonymous"
     />
     <noscript>
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700&family=Proxima+Nova:wght@400;500;600&display=swap"
+        crossorigin="anonymous"
       />
     </noscript>
     <!-- Defer Roboto font - less critical -->
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"
+      as="style"
+      crossorigin="anonymous"
+    />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"
       media="print"
       onload="this.media='all'"
+      crossorigin="anonymous"
     />
     <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <link 
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" 
+        rel="stylesheet"
+        crossorigin="anonymous"
+      >
     </noscript>
     <style>
       /* CRITICAL: Hide scrollbar IMMEDIATELY on page load to prevent flash */
