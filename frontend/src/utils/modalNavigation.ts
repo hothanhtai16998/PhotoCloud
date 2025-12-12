@@ -5,7 +5,6 @@
 
 import type { Location } from 'react-router-dom';
 import { INLINE_MODAL_FLAG_KEY } from '@/constants/modalKeys';
-import { debugModalDetection } from './modalDetectionDebug';
 
 const GRID_SCROLL_POSITION_KEY = 'imageGridScrollPosition';
 
@@ -43,11 +42,6 @@ export function isPageRefresh(): boolean {
     cachedRefreshCheck = isRefresh;
     refreshCheckInitialized = true;
     
-    // Only log in development and only once
-    if (process.env.NODE_ENV === 'development' && isRefresh) {
-      console.log('[isPageRefresh] Page was reloaded on initial load. Modal state will be cleared.');
-    }
-    
     return isRefresh;
   } catch {
     // Fallback: not a refresh
@@ -71,18 +65,8 @@ export function clearModalStateOnRefresh(): void {
   const isRefresh = isPageRefresh();
   
   if (isRefresh) {
-    const flagBefore = sessionStorage.getItem(INLINE_MODAL_FLAG_KEY);
     sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
     sessionStorage.removeItem(GRID_SCROLL_POSITION_KEY);
-    const flagAfter = sessionStorage.getItem(INLINE_MODAL_FLAG_KEY);
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[clearModalStateOnRefresh] Cleared modal state on refresh', {
-        flagBefore,
-        flagAfter,
-        cleared: flagBefore !== flagAfter,
-      });
-    }
   }
 }
 
@@ -156,12 +140,6 @@ export function validateModalState(locationState: unknown): {
   // SIMPLIFIED: Don't check isPageRefresh() here - it's cached and causes issues
   // We rely solely on the flag being cleared by App.tsx on refresh
   // If flag is missing, modal is invalid (whether due to refresh or other reasons)
-  
-  // Debug modal detection (only in development, with debouncing)
-  // Pass false for isRefresh since we're not checking it here
-  if (process.env.NODE_ENV === 'development') {
-    debugModalDetection(locationState, 'validateModalState', false);
-  }
   
   // Check if location state has modal indicators
   if (!locationState || typeof locationState !== 'object') {

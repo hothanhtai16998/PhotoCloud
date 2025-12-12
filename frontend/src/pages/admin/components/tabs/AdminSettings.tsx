@@ -227,7 +227,6 @@ export function AdminSettings() {
         try {
             // Don't block UI - load in background
             // setLoading(true);
-            console.log('[AdminSettings] Starting to load settings in background...');
 
             // Use admin endpoint to get full settings (requires auth)
             // Add timeout to prevent hanging
@@ -240,8 +239,6 @@ export function AdminSettings() {
                 adminService.getSettings(),
                 timeoutPromise
             ]) as { settings: Record<string, unknown> };
-            const endTime = Date.now();
-            console.log(`[AdminSettings] Settings loaded in ${endTime - startTime}ms`, data);
             if (data.settings) {
                 const settingsData = data.settings as {
                     siteName?: string;

@@ -21,10 +21,6 @@ export const imageUploadService = {
     imageFile: File,
     onUploadProgress?: (progress: number) => void
   ): Promise<PreUploadResponse> => {
-    // Log file info for debugging
-    const fileSizeMB = (imageFile.size / (1024 * 1024)).toFixed(2);
-    console.log(`[UPLOAD] Starting upload: ${imageFile.name}, size: ${fileSizeMB}MB (${imageFile.size} bytes), type: ${imageFile.type}`);
-    
     // NOTE: backend route is /api/images/preupload (no dash) so call '/images/preupload'
     const metadataRes = await api.post(
       '/images/pre-upload',
@@ -39,7 +35,6 @@ export const imageUploadService = {
     );
 
     const preUploadData: PreUploadResponse = metadataRes.data;
-    console.log(`[UPLOAD] Got presigned URL, uploading ${fileSizeMB}MB to storage...`);
 
     // PUT to presigned URL must not include cookies/credentials
     await axios.put(preUploadData.uploadUrl, imageFile, {
@@ -55,16 +50,9 @@ export const imageUploadService = {
           );
           onUploadProgress(percentCompleted);
         }
-        // Log upload progress
-        if (progressEvent.total) {
-          const uploadedMB = (progressEvent.loaded / (1024 * 1024)).toFixed(2);
-          const totalMB = (progressEvent.total / (1024 * 1024)).toFixed(2);
-          console.log(`[UPLOAD] Progress: ${uploadedMB}MB / ${totalMB}MB (${Math.round((progressEvent.loaded / progressEvent.total) * 100)}%)`);
-        }
       },
     });
 
-    console.log(`[UPLOAD] Upload to storage complete!`);
     onUploadProgress?.(100);
     return preUploadData;
   },

@@ -1036,7 +1036,6 @@ function ImagePage() {
     // CRITICAL: Set modal active flag when navigating to another image
     // This ensures validation passes when the new ImagePage loads
     setModalActive();
-    console.log('[ImagePage] handleImageSelect - Set modal active flag');
 
     // Always use replace: true to avoid history buildup when navigating between images
     // The state will be properly set and detected by showModalStyle
@@ -1271,11 +1270,7 @@ function ImagePage() {
   }, [handleImageSelect]);
 
   // CRITICAL: Hook must be called BEFORE early returns (Rules of Hooks)
-  // Only log render decision when it changes (in development)
   const prevShowModalStyleRef = useRef(showModalStyle);
-  if (process.env.NODE_ENV === 'development' && prevShowModalStyleRef.current !== showModalStyle) {
-    console.log('[ImagePage] showModalStyle changed:', showModalStyle, 'pathname:', locationWithState.pathname);
-  }
   prevShowModalStyleRef.current = showModalStyle;
 
   // Loading state - check AFTER all hooks are called

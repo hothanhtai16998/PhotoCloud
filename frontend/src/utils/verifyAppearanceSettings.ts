@@ -20,22 +20,6 @@ export function verifyAppearanceSettings() {
         cardStyle: root.getAttribute('data-card-style'),
     };
     
-    console.log('=== Appearance Settings Verification ===');
-    console.log('CSS Variables:');
-    console.log('  --primary:', checks.primaryColor || '(not set)');
-    console.log('  --secondary:', checks.secondaryColor || '(not set)');
-    console.log('  --accent:', checks.accentColor || '(not set)');
-    console.log('  --radius:', checks.borderRadius || '(not set)');
-    console.log('\nFont Settings:');
-    console.log('  font-family:', checks.fontFamily || '(not set)');
-    console.log('  font-size:', checks.fontSize || '(not set)');
-    console.log('\nOther Settings:');
-    console.log('  Custom CSS injected:', checks.customCSS);
-    console.log('  Animations disabled:', checks.animationsDisabled);
-    console.log('  Button style:', checks.buttonStyle || '(not set)');
-    console.log('  Card style:', checks.cardStyle || '(not set)');
-    console.log('========================================');
-    
     return checks;
 }
 

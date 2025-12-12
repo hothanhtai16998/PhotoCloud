@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import type { Image } from '@/types/image';
 import { extractIdFromSlug } from '@/lib/utils';
 import { ActualLocationContext } from '@/contexts/ActualLocationContext';
-import { useImageModalNavigation } from '@/hooks/useImageModalNavigation';
+import { useImageModalNavigation } from '@/hooks/userImageModalNavigation';
 
 interface UseImageGridModalProps {
     images: Image[];

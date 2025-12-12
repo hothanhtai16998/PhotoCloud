@@ -64,16 +64,6 @@ export function applyAppearanceSettings(settings: {
     homepageLayout?: string;
 }) {
     const root = document.documentElement;
-    
-    // Debug logging (only in development)
-    if (import.meta.env.DEV) {
-        console.log('[Appearance Settings] Applying settings:', {
-            themePrimaryColor: settings.themePrimaryColor,
-            borderRadius: settings.borderRadius,
-            animationsEnabled: settings.animationsEnabled,
-            customCSS: settings.customCSS ? `${settings.customCSS.substring(0, 50)}...` : undefined,
-        });
-    }
 
     // Apply theme colors (convert hex to HSL)
     if (settings.themePrimaryColor) {
@@ -85,12 +75,6 @@ export function applyAppearanceSettings(settings: {
             // Also update homepage color variables if they exist
             // Note: These are separate from --primary but some components use them
             // We keep them in sync for consistency
-            if (import.meta.env.DEV) {
-                console.log('[Appearance Settings] Applied primary color:', settings.themePrimaryColor, '->', hsl);
-                // Verify it was set
-                const computed = getComputedStyle(root).getPropertyValue('--primary').trim();
-                console.log('[Appearance Settings] Verified --primary CSS variable:', computed);
-            }
         } catch (error) {
             console.error('[Appearance Settings] Failed to apply primary color:', error);
         }
@@ -121,9 +105,6 @@ export function applyAppearanceSettings(settings: {
             root.style.setProperty('--success', hsl);
             // Also update --online for status indicators (keep them in sync)
             root.style.setProperty('--online', hsl);
-            if (import.meta.env.DEV) {
-                console.log('[Appearance Settings] Applied success color:', settings.themeSuccessColor, '->', hsl);
-            }
         } catch (error) {
             console.error('[Appearance Settings] Failed to apply success color:', error);
         }
@@ -133,9 +114,6 @@ export function applyAppearanceSettings(settings: {
         try {
             const hsl = hexToHsl(settings.themeWarningColor);
             root.style.setProperty('--warning', hsl);
-            if (import.meta.env.DEV) {
-                console.log('[Appearance Settings] Applied warning color:', settings.themeWarningColor, '->', hsl);
-            }
         } catch (error) {
             console.error('[Appearance Settings] Failed to apply warning color:', error);
         }
@@ -145,9 +123,6 @@ export function applyAppearanceSettings(settings: {
         try {
             const hsl = hexToHsl(settings.themeErrorColor);
             root.style.setProperty('--destructive', hsl);
-            if (import.meta.env.DEV) {
-                console.log('[Appearance Settings] Applied error color:', settings.themeErrorColor, '->', hsl);
-            }
         } catch (error) {
             console.error('[Appearance Settings] Failed to apply error color:', error);
         }
@@ -157,9 +132,6 @@ export function applyAppearanceSettings(settings: {
         try {
             const hsl = hexToHsl(settings.themeInfoColor);
             root.style.setProperty('--info', hsl);
-            if (import.meta.env.DEV) {
-                console.log('[Appearance Settings] Applied info color:', settings.themeInfoColor, '->', hsl);
-            }
         } catch (error) {
             console.error('[Appearance Settings] Failed to apply info color:', error);
         }
@@ -168,9 +140,6 @@ export function applyAppearanceSettings(settings: {
     // Apply border radius
     if (settings.borderRadius) {
         root.style.setProperty('--radius', settings.borderRadius);
-        if (import.meta.env.DEV) {
-            console.log('[Appearance Settings] Applied border radius:', settings.borderRadius);
-        }
     }
 
     // Apply animations
@@ -245,11 +214,6 @@ export function applyAppearanceSettings(settings: {
         root.setAttribute('data-card-style', settings.cardStyle);
     }
     
-    // Final verification log
-    if (import.meta.env.DEV) {
-        console.log('[Appearance Settings] Settings applied successfully');
-        console.log('[Appearance Settings] To verify, run: verifyAppearanceSettings()');
-    }
 }
 
 /**

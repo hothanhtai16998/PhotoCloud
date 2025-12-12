@@ -73,9 +73,6 @@ function App() {
     if (location.state != null) {
       clearHistoryState();
     }
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[App] Cleared modal state on refresh - flag should now be false');
-    }
   }
 
   // Update meta description when site description changes
@@ -186,23 +183,6 @@ function App() {
   // - So modalValidation.isValid will be false if flag is missing
   // - This way, navigation works even if initial load was a refresh
   const shouldRenderModalRoutes = Boolean(modalValidation.isValid && hasValidBackground);
-  
-  // Log modal validation details in development
-  if (process.env.NODE_ENV === 'development') {
-    const prevValueRef = useRef(shouldRenderModalRoutes);
-    if (prevValueRef.current !== shouldRenderModalRoutes || true) { // Always log for now
-      console.log('[App] shouldRenderModalRoutes:', shouldRenderModalRoutes, {
-        isRefresh,
-        isValid: modalValidation.isValid,
-        hasValidBackground,
-        pathname: location.pathname,
-        hasBackground: Boolean(modalValidation.background),
-        backgroundPathname: modalValidation.background?.pathname,
-        locationState: location.state,
-      });
-    }
-    prevValueRef.current = shouldRenderModalRoutes;
-  }
 
   return (
     <ActualLocationContext.Provider value={location}>

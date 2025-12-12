@@ -397,12 +397,10 @@ export function ImageModal({
         // Only increment if we haven't incremented for this image ID before
         if (!incrementedViewIds.current.has(imageId)) {
             incrementedViewIds.current.add(imageId);
-            console.log('[ImageModal] Calling incrementView for image:', imageId);
 
             // Call API to increment and get updated stats
             imageStatsService.incrementView(imageId)
                 .then((response) => {
-                    console.log('[ImageModal] incrementView response:', response);
                     // Update state with API response (this is the correct value)
                     setViews(response.views);
                     // Track that this stat was updated via API in module-level cache
@@ -720,11 +718,9 @@ export function ImageModal({
                     } else {
                         // Preload regular with progress tracking
                         currentLoadingUrlRef.current = regular;
-                        console.log('[ImageModal] Starting progress tracking for:', regular);
                         const src = await preloadImageWithProgress(
                             regular,
                             (progress) => {
-                                console.log('[ImageModal] Progress update:', progress, '%');
                                 if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
                                     setImageProgress(progress);
                                 }

@@ -1,5 +1,3 @@
-// import type { User } from '@/types/user';
-
 /**
  * Get display name for a user, with fallback to username
  */
@@ -42,16 +40,6 @@ export const MODAL_IMAGE = {
 } as const;
 
 /**
- * Image width descriptors for srcset
- */
-export const IMAGE_WIDTH = {
-  THUMBNAIL: '200w',
-  SMALL: '800w',
-  REGULAR: '1080w',
-  ORIGINAL: '1920w',
-} as const;
-
-/**
  * Get image className based on load state and orientation
  */
 export const getImageClassName = (
@@ -60,34 +48,6 @@ export const getImageClassName = (
 ): string => {
   const loadState = isLoaded ? 'loaded' : 'loading';
   return `modal-image ${loadState} ${imageType}`;
-};
-
-/**
- * Generate srcSet string for responsive images
- */
-export const generateModalSrcSet = (
-  thumbnail: string | null | undefined,
-  small: string | null | undefined,
-  regular: string | null | undefined,
-  original: string | null | undefined
-): string | undefined => {
-  const parts: string[] = [];
-
-  if (thumbnail) parts.push(`${thumbnail} ${IMAGE_WIDTH.THUMBNAIL}`);
-  if (small && small !== thumbnail) parts.push(`${small} ${IMAGE_WIDTH.SMALL}`);
-  if (regular && regular !== small && regular !== thumbnail) {
-    parts.push(`${regular} ${IMAGE_WIDTH.REGULAR}`);
-  }
-  if (
-    original &&
-    original !== regular &&
-    original !== small &&
-    original !== thumbnail
-  ) {
-    parts.push(`${original} ${IMAGE_WIDTH.ORIGINAL}`);
-  }
-
-  return parts.length > 0 ? parts.join(', ') : undefined;
 };
 
 /**

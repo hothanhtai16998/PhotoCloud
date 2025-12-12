@@ -29,19 +29,16 @@ export async function compressImage(
 ): Promise<File> {
 	// Skip compression if preserveQuality is true
 	if (options.preserveQuality) {
-		console.log(`[COMPRESSION] Preserving original quality: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
 		return file;
 	}
 	// Skip compression for GIFs - they should be uploaded as-is
 	// Large GIFs (>2MB) will be converted to video on the backend
 	if (file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif')) {
-		console.log(`[COMPRESSION] Skipping compression for GIF: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
 		return file;
 	}
 
 	// Skip compression for videos - they should be uploaded as-is
 	if (file.type.startsWith('video/')) {
-		console.log(`[COMPRESSION] Skipping compression for video: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
 		return file;
 	}
 

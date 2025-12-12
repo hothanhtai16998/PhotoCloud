@@ -25,33 +25,17 @@ function formatMessage(message: string, prefix?: string): string {
 }
 
 /**
- * Debug level logging - only shown in development
- * Use for detailed debugging information
+ * Debug level logging - removed (no-op)
  */
-function debug(message: string, options?: LogOptions): void {
-  if (isDev) {
-    const formatted = formatMessage(message, options?.prefix);
-    if (options?.data !== undefined) {
-      console.log(formatted, options.data);
-    } else {
-      console.log(formatted);
-    }
-  }
+function debug(_message: string, _options?: LogOptions): void {
+  // Debug logging removed
 }
 
 /**
- * Info level logging - only shown in development
- * Use for general information messages
+ * Info level logging - removed (no-op)
  */
-function info(message: string, options?: LogOptions): void {
-  if (isDev) {
-    const formatted = formatMessage(message, options?.prefix);
-    if (options?.data !== undefined) {
-      console.info(formatted, options.data);
-    } else {
-      console.info(formatted);
-    }
-  }
+function info(_message: string, _options?: LogOptions): void {
+  // Info logging removed
 }
 
 /**
@@ -83,39 +67,23 @@ function error(message: string, options?: LogOptions): void {
 }
 
 /**
- * Group related logs together (only in development)
+ * Group related logs together - removed (no-op)
  */
-function group(label: string, fn: () => void): void {
-  if (isDev) {
-    console.group(label);
-    fn();
-    console.groupEnd();
-  }
+function group(_label: string, fn: () => void): void {
+  fn();
 }
 
 /**
- * Log execution time of a function (only in development)
+ * Log execution time of a function - removed (no-op)
  */
-function time<T>(label: string, fn: () => T): T {
-  if (isDev) {
-    console.time(label);
-    const result = fn();
-    console.timeEnd(label);
-    return result;
-  }
+function time<T>(_label: string, fn: () => T): T {
   return fn();
 }
 
 /**
- * Async version of time()
+ * Async version of time() - removed (no-op)
  */
-async function timeAsync<T>(label: string, fn: () => Promise<T>): Promise<T> {
-  if (isDev) {
-    console.time(label);
-    const result = await fn();
-    console.timeEnd(label);
-    return result;
-  }
+async function timeAsync<T>(_label: string, fn: () => Promise<T>): Promise<T> {
   return fn();
 }
 

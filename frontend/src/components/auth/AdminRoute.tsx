@@ -36,10 +36,6 @@ export default function AdminRoute() {
 
     // Check if user has admin access (either isAdmin, isSuperAdmin, or has permissions)
     // At this point, user is guaranteed to exist (checked above)
-    if (!user) {
-        return <Navigate to="/signin" replace />;
-    }
-    
     const hasAdminAccess = user.isAdmin === true ||
         user.isSuperAdmin === true ||
         (user.permissions && Object.keys(user.permissions).length > 0);

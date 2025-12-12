@@ -69,29 +69,6 @@ export const ImageModalContent = ({
 
   // Compute values once
   const imageType = (imageTypes.get(image._id) ?? 'landscape') as 'portrait' | 'landscape';
-  // const imageStyles = useMemo(() => getModalImageStyles(modalPlaceholderSrc), [modalPlaceholderSrc]);
-  // const imageClassName = getImageClassName(isModalImageLoaded, imageType);
-
-  // Generate srcSets (commented out - unused)
-  // const avifSrcSet = useMemo(
-  //   () => generateModalSrcSet(
-  //     image.thumbnailAvifUrl,
-  //     image.smallAvifUrl,
-  //     image.regularAvifUrl,
-  //     image.imageAvifUrl
-  //   ),
-  //   [image.thumbnailAvifUrl, image.smallAvifUrl, image.regularAvifUrl, image.imageAvifUrl]
-  // );
-
-  // const webpSrcSet = useMemo(
-  //   () => generateModalSrcSet(
-  //     image.thumbnailUrl,
-  //     image.smallUrl,
-  //     image.regularUrl,
-  //     image.imageUrl
-  //   ),
-  //   [image.thumbnailUrl, image.smallUrl, image.regularUrl, image.imageUrl]
-  // );
 
   const {
     zoom,

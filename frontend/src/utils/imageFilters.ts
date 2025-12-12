@@ -2,15 +2,6 @@ import type { Image } from '@/types/image';
 import type { SearchFilters } from '@/components/SearchFilters';
 
 /**
- * Filter images by orientation (portrait/landscape/square)
- */
-export const filterByOrientation = (_images: Image[]): Image[] => {
-  // This function is kept for API compatibility but actual filtering
-  // is done in applyImageFilters using imageTypes map
-  return _images;
-};
-
-/**
  * Filter images by date range
  */
 export const filterByDateRange = (images: Image[], dateFrom: string, dateTo: string): Image[] => {

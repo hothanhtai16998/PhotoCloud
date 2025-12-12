@@ -15,8 +15,6 @@ import {
   setModalActive,
   clearModalActive,
   prepareModalNavigationState,
-  clearModalStateOnRefresh,
-  isPageRefresh,
 } from '@/utils/modalNavigation';
 
 interface UseImageModalNavigationProps {

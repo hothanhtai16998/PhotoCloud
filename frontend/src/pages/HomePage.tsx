@@ -225,15 +225,10 @@ function HomePage() {
         };
         const modalState = prepareModalNavigationState(backgroundLocation);
         
-        console.log('[HomePage] Background location:', backgroundLocation);
-        console.log('[HomePage] Modal state:', modalState);
-        
         // 4. Navigate with modal state
         navigate(targetPath, {
             state: { ...modalState, images, fromGrid: true }
         });
-        
-        console.log('[HomePage] After navigate - flag:', sessionStorage.getItem('imageGrid_inlineModalActive'));
     }, [navigate, images, actualLocation, isMobile]);
 
     return (
