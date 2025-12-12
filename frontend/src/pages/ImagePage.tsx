@@ -17,6 +17,7 @@ import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { toast } from 'sonner';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ImageModalInfo } from '@/components/image/ImageModalInfo';
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
@@ -1129,13 +1130,17 @@ function ImagePage() {
   prevShowModalStyleRef.current = showModalStyle;
 
   // Loading state - check AFTER all hooks are called
+  // Use skeleton instead of spinner to avoid duplicate loading states
   if (loading) {
     return (
       <>
         <Header />
         <div className="image-page-loading">
-          <div className="loading-spinner" />
-          <p>{t('imagePage.loading')}</p>
+          <div className="flex flex-col items-center gap-4">
+            <Skeleton className="h-64 w-full max-w-4xl" />
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-4 w-48" />
+          </div>
         </div>
       </>
     );

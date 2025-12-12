@@ -159,6 +159,11 @@
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  /* GPU acceleration for smooth animation */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
 }
 
 .upload-text {

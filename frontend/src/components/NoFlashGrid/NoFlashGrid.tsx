@@ -321,8 +321,28 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     return (
         <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
             {/* Only show loading state if we have no images - keep grid visible during category change */}
+            {/* Use skeleton grid instead of text to avoid duplicate loading states */}
             {isLoading && filteredImages.length === 0 ? (
-                <div className="loading-state">Loading...</div>
+                <div 
+                    className="skeleton-grid" 
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
+                        gap: `${GRID_CONFIG.gap}px`,
+                        gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
+                    }}
+                >
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <div 
+                            key={i} 
+                            className="skeleton-image-card" 
+                            style={{
+                                aspectRatio: '3/4',
+                                borderRadius: '8px',
+                            }} 
+                        />
+                    ))}
+                </div>
             ) : (
                 <div
                     ref={gridRef}

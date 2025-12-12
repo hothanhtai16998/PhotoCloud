@@ -209,6 +209,9 @@
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
   border-radius: calc(var(--radius) - 2px);
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
 }
 
 @keyframes skeleton-shimmer {

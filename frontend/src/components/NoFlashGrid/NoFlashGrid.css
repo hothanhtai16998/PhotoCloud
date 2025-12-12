@@ -31,11 +31,36 @@
 
 /* BlurUpImage styles are in BlurUpImage.css */
 
-/* Loading State */
+/* Loading State - Replaced with skeleton grid */
+/* Keep for backward compatibility but prefer skeleton-grid */
 .loading-state {
   padding: 40px;
   text-align: center;
   color: #666;
+}
+
+/* Skeleton Grid for Loading State */
+.skeleton-grid {
+  width: 100%;
+  padding: 20px;
+}
+
+.skeleton-image-card {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Responsive: Mobile Layout */

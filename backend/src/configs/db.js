@@ -14,9 +14,6 @@ export const CONNECT_DB = async () => {
             serverSelectionTimeoutMS: 5000, // How long to try selecting a server
             socketTimeoutMS: 45000, // How long to wait for socket operations
             connectTimeoutMS: 10000, // How long to wait for initial connection
-            // Additional performance optimizations
-            bufferMaxEntries: 0, // Disable mongoose buffering (fail fast)
-            bufferCommands: false, // Disable mongoose buffering
         };
 
         await mongoose.connect(env.MONGODB_URI, options);

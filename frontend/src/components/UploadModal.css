@@ -81,6 +81,11 @@
   border-top-color: #111;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  /* GPU acceleration for smooth animation */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
 }
 
 /* Spinner for status banner */
@@ -91,6 +96,11 @@
   border-top-color: #1e40af;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  /* GPU acceleration for smooth animation */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
   flex-shrink: 0;
 }
 
@@ -375,6 +385,11 @@
   border-top-color: #fff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  /* GPU acceleration for smooth animation */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout style paint;
 }
 
 .image-upload-overlay .upload-text {

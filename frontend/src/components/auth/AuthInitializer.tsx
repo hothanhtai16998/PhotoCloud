@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useEffect, useRef } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 	const { initializeApp, isInitializing } = useAuthStore();
@@ -13,13 +14,14 @@ const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 		}
 	}, [initializeApp]);
 
-	// While initializing, show a loading state
+	// While initializing, show skeleton (matches App.tsx PageLoader style)
+	// Don't show spinner here - let Suspense/PageLoader handle it to avoid duplicate loading states
 	if (isInitializing) {
 		return (
 			<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
-				<div className="text-center">
-					<div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-					<p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
+				<div className="flex flex-col items-center gap-4">
+					<Skeleton className="h-12 w-12 rounded-full" />
+					<Skeleton className="h-4 w-32" />
 				</div>
 			</div>
 		);
