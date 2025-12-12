@@ -658,6 +658,7 @@ export const vi = {
     pinsLeft: 'ghim còn lại',
     selectThisImage: 'Chọn ảnh này',
     selectImagesToPin: 'Chọn ảnh để ghim từ ảnh của bạn.',
+    noAvailableImages: 'Không có ảnh nào để ghim.',
     clearAll: 'Xóa tất cả',
     pinsSaved: 'Đã lưu ghim thành công',
     saveFailed: 'Lưu ghim thất bại',

@@ -40,8 +40,7 @@
   display: flex;
   gap: 40px;
   margin-bottom: 48px;
-  padding-bottom: 32px;
-  border-bottom: 1px solid hsl(var(--border));
+  /* padding-bottom: 32px; */
 }
 
 .profile-avatar-container {
@@ -102,19 +101,24 @@
 
 .edit-profile-btn,
 .edit-pins-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
   padding: 8px 16px;
   font-size: 0.9375rem;
   font-weight: 500;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid hsl(var(--primary) / 0.3);
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+}
+
+.edit-pins-btn > * {
+  display: inline-flex;
+  align-items: center;
 }
 
 .edit-profile-btn:hover,
@@ -124,27 +128,11 @@
   border-color: hsl(var(--foreground));
 }
 
-.edit-pins-btn {
-  border-color: hsl(var(--primary) / 0.3);
-}
-
 .edit-pins-btn:hover {
   background: hsl(var(--primary) / 0.1);
   border-color: hsl(var(--primary));
 }
 
-.pins-count-badge {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 20px;
-  text-align: center;
-  line-height: 1.2;
-  margin-left: 2px;
-}
 
 .follow-btn {
   display: flex;
@@ -354,6 +342,25 @@
 }
 
 /* Content Area */
+/* Pin icon for pinned images in Photos tab */
+.profile-content .grid-item-wrapper[data-pinned="true"] .blur-up-image-container::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  background-image: url('@/assets/pin.svg');
+  background-size: 32px 32px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
 .profile-content {
   min-height: 400px;
 }

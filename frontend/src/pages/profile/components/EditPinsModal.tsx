@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, Pin } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { Image } from '@/types/image';
@@ -28,15 +28,46 @@ export function EditPinsModal({
     const [availableImages, setAvailableImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
+    const [originalPinnedImages, setOriginalPinnedImages] = useState<Image[]>(currentPinnedImages);
 
     useEffect(() => {
         if (isOpen) {
-            setPinnedImages(currentPinnedImages);
-            setHasChanges(false);
+            // Fetch fresh pinned images from server to avoid stale data
+            const loadPinnedImages = async () => {
+                try {
+                    // Pass userId explicitly to avoid authentication issues
+                    const freshPinned = await pinnedImagesService.getPinnedImages(userId);
+                    setPinnedImages(freshPinned);
+                    setOriginalPinnedImages(freshPinned);
+                } catch (error) {
+                    console.error('Failed to load pinned images:', error);
+                    // Fallback to currentPinnedImages if fetch fails
+                    setPinnedImages(currentPinnedImages);
+                    setOriginalPinnedImages(currentPinnedImages);
+                }
+            };
+            loadPinnedImages();
             loadAvailableImages();
         }
-    }, [isOpen, currentPinnedImages]);
+    }, [isOpen, currentPinnedImages, userId]);
+
+    // Compute hasChanges by comparing current state with original state
+    const hasChanges = useMemo(() => {
+        if (pinnedImages.length !== originalPinnedImages.length) {
+            return true;
+        }
+        const currentIds = new Set(pinnedImages.map(img => img._id));
+        const originalIds = new Set(originalPinnedImages.map(img => img._id));
+        if (currentIds.size !== originalIds.size) {
+            return true;
+        }
+        for (const id of currentIds) {
+            if (!originalIds.has(id)) {
+                return true;
+            }
+        }
+        return false;
+    }, [pinnedImages, originalPinnedImages]);
 
     const loadAvailableImages = async () => {
         try {
@@ -65,47 +96,72 @@ export function EditPinsModal({
             }
             setPinnedImages(prev => [...prev, image]);
         }
-        setHasChanges(true);
     }, [pinnedImages]);
 
     const handleClearAll = () => {
         setPinnedImages([]);
-        setHasChanges(true);
     };
 
     const handleSave = async () => {
         try {
             setSaving(true);
             
+            // Validate: pinned images should not exceed 6
+            if (pinnedImages.length > 6) {
+                toast.error(t('profile.maxPinnedImages') || 'Maximum of 6 pinned images allowed');
+                setSaving(false);
+                return;
+            }
+            
             // Get current pinned image IDs
             const currentPinnedIds = new Set(currentPinnedImages.map(img => img._id));
             const newPinnedIds = new Set(pinnedImages.map(img => img._id));
             
-            // Unpin removed images
+            // Step 1: Unpin removed images FIRST (to free up slots)
             for (const image of currentPinnedImages) {
                 if (!newPinnedIds.has(image._id)) {
                     await pinnedImagesService.unpinImage(image._id);
                 }
             }
             
-            // Pin new images
+            // Step 2: Pin new images (after unpinning, we should have space)
             for (const image of pinnedImages) {
                 if (!currentPinnedIds.has(image._id)) {
-                    await pinnedImagesService.pinImage(image._id);
+                    try {
+                        await pinnedImagesService.pinImage(image._id);
+                    } catch (error: any) {
+                        // If max limit reached, it means we couldn't unpin enough or there's a race condition
+                        if (error?.response?.status === 400) {
+                            const errorMessage = error.response?.data?.message || '';
+                            if (errorMessage.includes('Maximum of 6')) {
+                                toast.error(t('profile.maxPinnedImages') || 'Maximum of 6 pinned images allowed');
+                                setSaving(false);
+                                return; // Stop the save operation
+                            } else if (errorMessage.includes('already pinned')) {
+                                // Image is already pinned, continue
+                                console.warn(`Image ${image._id} is already pinned`);
+                            } else {
+                                console.warn(`Failed to pin image ${image._id}:`, errorMessage);
+                            }
+                            // Continue with other images
+                            continue;
+                        }
+                        throw error; // Re-throw other errors
+                    }
                 }
             }
             
-            // Reorder if needed
+            // Step 3: Reorder pinned images to match the desired order
             if (pinnedImages.length > 0) {
                 const imageIds = pinnedImages.map(img => img._id);
                 await pinnedImagesService.reorderPinnedImages(imageIds);
             }
             
-            // Get updated list
-            const updated = await pinnedImagesService.getPinnedImages();
+            // Step 4: Get updated list from server
+            const updated = await pinnedImagesService.getPinnedImages(userId);
             setPinnedImages(updated);
+            setOriginalPinnedImages(updated);
             onPinnedImagesUpdate(updated);
-            setHasChanges(false);
             toast.success(t('profile.pinsSaved') || 'Pinned images saved successfully');
             onClose();
         } catch (error) {
@@ -179,7 +235,7 @@ export function EditPinsModal({
                         <Button 
                             variant="default" 
                             onClick={handleSave} 
-                            disabled={saving || !hasChanges}
+                            disabled={saving || !hasChanges || (pinnedImages.length === 0 && originalPinnedImages.length === 0)}
                         >
                             {saving ? (t('common.saving') || 'Saving...') : (t('common.save') || 'Save')}
                         </Button>

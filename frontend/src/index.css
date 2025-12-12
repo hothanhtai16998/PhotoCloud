@@ -38,6 +38,43 @@
 		opacity: 0.6;
 	}
 
+	/* Button styling - reduce border radius for all buttons */
+	button[data-slot="button"],
+	button[data-slot="button"].rounded-md,
+	button[data-slot="button"][class*="rounded"] {
+		border-radius: 4px !important;
+	}
+
+	/* Save button styling - black background, white text (variant="default") - excluding admin */
+	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]) {
+		background-color: #000000 !important;
+		color: #ffffff !important;
+	}
+
+	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):hover {
+		background-color: #1a1a1a !important;
+		color: #ffffff !important;
+	}
+
+	/* Cancel button styling - light gray hover (variant="outline") - excluding admin */
+	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover {
+		background-color: #f5f5f5 !important;
+	}
+
+	/* Override for admin pages - restore original styles */
+	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]) {
+		background-color: hsl(var(--primary)) !important;
+		color: hsl(var(--primary-foreground)) !important;
+	}
+
+	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):hover {
+		background-color: hsl(var(--primary) / 0.9) !important;
+	}
+
+	.admin-page button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover {
+		background-color: hsl(var(--accent)) !important;
+	}
+
 	:root {
 		/* Z-index scale system */
 		--z-base: 1;

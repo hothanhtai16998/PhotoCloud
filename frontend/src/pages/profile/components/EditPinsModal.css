@@ -32,11 +32,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 32px;
-  border-bottom: 1px solid hsl(var(--border));
   background: hsl(var(--background));
-  position: relative;
-  z-index: 10;
   flex-shrink: 0;
+  order: 1;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
 }
 
 .edit-pins-modal-header h2 {
@@ -79,15 +81,15 @@
 .edit-pins-modal-content {
   flex: 1;
   overflow-y: auto;
-  padding: 32px;
-  padding-top: 40px;
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   min-height: 0;
+  order: 2;
+  margin: 0;
   position: relative;
-  z-index: 1;
 }
 
 .edit-pins-grid {
@@ -193,6 +195,14 @@
 .edit-pins-noflash-grid {
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.edit-pins-noflash-grid .no-flash-grid-container {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
 }
 
 /* Hide old hover effects (author info, download buttons, etc.) in Pin modal */
@@ -238,21 +248,34 @@
   transform: scale(1);
 }
 
-/* Add blue overlay effect on hover for images in Pin modal */
-.edit-pins-noflash-grid .blur-up-image-container:hover::after {
+/* Add blue overlay effect on hover for unpinned images in Pin modal */
+.edit-pins-noflash-grid .grid-item-wrapper[data-pinned="false"] .blur-up-image-container:hover::after,
+.edit-pins-noflash-grid .grid-item-wrapper:not([data-pinned="true"]) .blur-up-image-container:hover::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(59, 130, 246, 0.3); /* Blue overlay with 30% opacity */
+  background: rgba(59, 130, 246, 0.3); /* Blue overlay with 30% opacity for unpinned images on hover */
   pointer-events: none;
   z-index: 5;
   border-radius: 8px;
   transition: opacity 0.3s ease;
 }
 
+/* Persistent blue overlay for pinned images (always visible) */
+.edit-pins-noflash-grid .grid-item-wrapper[data-pinned="true"] .blur-up-image-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(59, 130, 246, 0.7); /* Blue overlay with 70% opacity for pinned images */
+  pointer-events: none;
+  z-index: 5;
+  border-radius: 8px;
+  opacity: 1;
+}
+
 /* More intense blue overlay for pinned images on hover */
 .edit-pins-noflash-grid .grid-item-wrapper[data-pinned="true"] .blur-up-image-container:hover::after {
-  background: rgba(59, 130, 246, 0.6); /* More intense blue overlay with 60% opacity for pinned images */
+  background: rgba(59, 130, 246, 0.7); /* More intense blue overlay with 70% opacity on hover */
 }
 
 /* Pin icon overlay for pinned images - centered */
@@ -286,6 +309,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  order: 3;
+  background: hsl(var(--background));
 }
 
 .edit-pins-clear-all {

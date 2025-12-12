@@ -665,6 +665,7 @@ export const en = {
     pinsLeft: 'pins left',
     selectThisImage: 'Select this image',
     selectImagesToPin: 'Select images to pin from your photos.',
+    noAvailableImages: 'No available images to pin.',
     clearAll: 'Clear all',
     pinsSaved: 'Pinned images saved successfully',
     saveFailed: 'Failed to save pinned images',

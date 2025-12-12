@@ -211,7 +211,7 @@ function ProfilePage() {
     // Calculate display images based on active tab
     const displayImages = useMemo(() => {
         if (activeTab === TABS.PHOTOS) {
-            return images.filter(img => {
+            const filtered = images.filter(img => {
                 const categoryName = typeof img.imageCategory === 'string'
                     ? img.imageCategory
                     : img.imageCategory?.name;
@@ -223,9 +223,25 @@ function ProfilePage() {
                 return !categoryName.toLowerCase().includes('illustration') &&
                     !categoryName.toLowerCase().includes('svg');
             });
+            
+            // Sort: pinned images first, then unpinned
+            // Mark images as pinned for styling
+            const pinnedImageIds = new Set((displayUser?.pinnedImages || []).map(img => img._id));
+            return filtered
+                .map(img => ({
+                    ...img,
+                    isPinned: pinnedImageIds.has(img._id)
+                }))
+                .sort((a, b) => {
+                    const aIsPinned = pinnedImageIds.has(a._id);
+                    const bIsPinned = pinnedImageIds.has(b._id);
+                    if (aIsPinned && !bIsPinned) return -1;
+                    if (!aIsPinned && bIsPinned) return 1;
+                    return 0;
+                });
         }
         return [];
-    }, [activeTab, images]);
+    }, [activeTab, images, displayUser?.pinnedImages]);
 
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
