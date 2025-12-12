@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useMemo, useLayoutEffect, useRef, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
@@ -6,19 +6,14 @@ import { Skeleton } from "./components/ui/skeleton";
 import { PageViewTracker } from "./components/PageViewTracker";
 import { ContactButton } from './components/ContactButton';
 import { ActualLocationContext } from "./contexts/ActualLocationContext";
-import { INLINE_MODAL_FLAG_KEY } from "./constants/modalKeys";
 import { useSiteSettings } from "./hooks/useSiteSettings";
-
-declare global {
-  interface Window {
-    __inlineModalFlagReset?: boolean;
-  }
-}
-
-if (typeof window !== 'undefined' && !window.__inlineModalFlagReset) {
-  window.__inlineModalFlagReset = true;
-  sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
-}
+import {
+  isPageRefresh,
+  clearModalStateOnRefresh,
+  validateModalState,
+  clearHistoryState,
+  isModalActive,
+} from "./utils/modalNavigation";
 
 
 // Lazy load pages for code splitting
@@ -54,6 +49,34 @@ function App() {
   const location = useLocation();
   // Load site settings to update document title and meta tags
   const { settings } = useSiteSettings();
+
+  // Check if this is a refresh - do this synchronously before render logic
+  // Cache the result so we only check once per actual page load
+  const isRefresh = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return isPageRefresh();
+  }, []);
+
+  // Clear modal state on refresh - MUST be done synchronously BEFORE validation
+  // On refresh, ALWAYS clear modal state, even if location.state has modal flags
+  // (location.state persists in browser history on refresh, but we should still clear)
+  const hasClearedOnRefreshRef = useRef(false);
+  
+  // Clear flag synchronously during render (before useMemo runs)
+  // This is safe because clearModalStateOnRefresh() only modifies sessionStorage
+  if (isRefresh && !hasClearedOnRefreshRef.current) {
+    clearModalStateOnRefresh();
+    hasClearedOnRefreshRef.current = true;
+    // Clear any persisted state from browser history to ensure clean state
+    // NOTE: This clears window.history.state, but React Router's location.state
+    // may not update immediately, so we force validation to return invalid on refresh
+    if (location.state != null) {
+      clearHistoryState();
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[App] Cleared modal state on refresh - flag should now be false');
+    }
+  }
 
   // Update meta description when site description changes
   useEffect(() => {
@@ -108,28 +131,78 @@ function App() {
     return undefined;
   }, [settings.maintenanceMode, location.pathname]);
 
-  // When navigating to a photo from the grid, keep the previous
-  // location as background so the grid stays mounted under the modal.
+  // Validate modal state using unified utility
+  // CRITICAL: Check if flag is missing but location.state has modal data (refresh scenario)
+  // On refresh, flag is cleared but location.state persists from browser history
+  // If location.state has modal data but flag is missing → refresh scenario → invalid
+  const modalValidation = useMemo(() => {
+    const state = location.state as { inlineModal?: boolean; background?: unknown } | undefined;
+    const hasModalStateInLocation = state?.inlineModal === true && Boolean(state?.background);
+    const hasFlag = isModalActive();
+    
+    // If location.state has modal data but flag is missing → refresh scenario → invalid
+    // This detects refresh even if isPageRefresh() is cached incorrectly
+    if (hasModalStateInLocation && !hasFlag) {
+      return { isValid: false, isModal: false };
+    }
+    
+    // Normal validation
+    return validateModalState(location.state);
+  }, [location.state]);
+
+  // Clean up invalid modal state (state exists but flag doesn't, or vice versa)
+  useLayoutEffect(() => {
+    if (isRefresh) return; // Already handled above
+
   const state = location.state as { background?: Location; inlineModal?: boolean } | undefined;
-  if (typeof window !== 'undefined' && state?.inlineModal) {
-    const inlineModalFlag = sessionStorage.getItem(INLINE_MODAL_FLAG_KEY) === 'true';
-    if (!inlineModalFlag) {
+    
+    // If state has inlineModal but validation failed, clean it up
+    if (state?.inlineModal && !modalValidation.isValid) {
       const cleanedState = { ...state };
       delete cleanedState.inlineModal;
       delete cleanedState.background;
-      window.history.replaceState(cleanedState, document.title, window.location.pathname + window.location.search + window.location.hash);
+      clearHistoryState();
     }
+  }, [isRefresh, location.state, modalValidation.isValid]);
+
+  // Use validated background location
+  // DON'T use isRefresh here - it's cached and can be wrong during navigation
+  // Instead, rely on modalValidation.isValid which checks the flag (cleared on refresh)
+  const backgroundLocation = modalValidation.background;
+  
+  // Validate backgroundLocation is a proper Location object
+  const hasValidBackground = Boolean(
+    backgroundLocation && 
+    typeof backgroundLocation === 'object' &&
+    'pathname' in backgroundLocation &&
+    backgroundLocation.pathname
+  );
+  
+  // Render modal routes only when:
+  // 1. Modal state is valid (flag + location.state check)
+  // 2. We have a valid background location with pathname
+  // NOTE: We don't check isRefresh here because:
+  // - On refresh, the flag is cleared by clearModalStateOnRefresh() above
+  // - So modalValidation.isValid will be false if flag is missing
+  // - This way, navigation works even if initial load was a refresh
+  const shouldRenderModalRoutes = Boolean(modalValidation.isValid && hasValidBackground);
+  
+  // Log modal validation details in development
+  if (process.env.NODE_ENV === 'development') {
+    const prevValueRef = useRef(shouldRenderModalRoutes);
+    if (prevValueRef.current !== shouldRenderModalRoutes || true) { // Always log for now
+      console.log('[App] shouldRenderModalRoutes:', shouldRenderModalRoutes, {
+        isRefresh,
+        isValid: modalValidation.isValid,
+        hasValidBackground,
+        pathname: location.pathname,
+        hasBackground: Boolean(modalValidation.background),
+        backgroundPathname: modalValidation.background?.pathname,
+        locationState: location.state,
+      });
+    }
+    prevValueRef.current = shouldRenderModalRoutes;
   }
-  const inlineModalFlag =
-    typeof window !== 'undefined' &&
-    sessionStorage.getItem(INLINE_MODAL_FLAG_KEY) === 'true';
-  const inlineModalActive = Boolean(state?.inlineModal && inlineModalFlag);
-  
-  // Simple: use background directly if it exists, otherwise use current location
-  const backgroundLocation = state?.background;
-  
-  // Render modal routes when we have a background (preserves scene behind modal)
-  const shouldRenderModalRoutes = Boolean(backgroundLocation);
 
   return (
     <ActualLocationContext.Provider value={location}>

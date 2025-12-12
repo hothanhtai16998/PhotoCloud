@@ -1,21 +1,18 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import type { Image } from '@/types/image';
-import { generateImageSlug, extractIdFromSlug } from '@/lib/utils';
-import { appConfig } from '@/config/appConfig';
-import { isMobileViewport } from '@/utils/responsive';
-
-const GRID_SCROLL_POSITION_KEY = 'imageGridScrollPosition';
+import { extractIdFromSlug } from '@/lib/utils';
+import { ActualLocationContext } from '@/contexts/ActualLocationContext';
+import { useImageModalNavigation } from '@/hooks/useImageModalNavigation';
 
 interface UseImageGridModalProps {
     images: Image[];
 }
 
 export function useImageGridModal({ images }: UseImageGridModalProps) {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [searchParams] = useSearchParams();
-    const isModal = searchParams.get('modal') === 'true';
+    const actualLocation = useContext(ActualLocationContext);
+    const actualPathname = actualLocation?.pathname;
+    const actualLocationState = actualLocation?.state as { inlineModal?: boolean } | undefined;
+    const isInlineModalRoute = Boolean(actualLocationState?.inlineModal);
 
     const [selectedImage, setSelectedImage] = useState<Image | null>(null);
     const [collectionImage, setCollectionImage] = useState<Image | null>(null);
@@ -23,71 +20,53 @@ export function useImageGridModal({ images }: UseImageGridModalProps) {
 
     const lastInlineSlugRef = useRef<string | null>(null);
 
-    const saveScrollPosition = useCallback(() => {
-        if (typeof window === 'undefined') return;
-        if (!sessionStorage.getItem(GRID_SCROLL_POSITION_KEY)) {
-            sessionStorage.setItem(GRID_SCROLL_POSITION_KEY, window.scrollY.toString());
-        }
-    }, []);
+    // Use unified navigation hook
+    const {
+        handleImageClick: baseHandleImageClick,
+        handleCloseModal: baseHandleCloseModal,
+        handleModalImageSelect: baseHandleModalImageSelect,
+    } = useImageModalNavigation({
+        images,
+        onImageSelect: setSelectedImage,
+    });
 
-    const restoreScrollPosition = useCallback(() => {
-        if (typeof window === 'undefined') return;
-        const savedScroll = sessionStorage.getItem(GRID_SCROLL_POSITION_KEY);
-        if (savedScroll) {
-            window.scrollTo(0, parseInt(savedScroll, 10));
-            sessionStorage.removeItem(GRID_SCROLL_POSITION_KEY);
-        }
-    }, []);
-
-
-    const handleImageClick = useCallback((image: Image) => {
-        const newSlug = generateImageSlug(image.imageTitle || '', image._id);
-
-        if (isMobileViewport()) {
-            // Mobile: open full ImagePage
-            navigate(`/photos/${newSlug}`, { state: { images } });
-            return;
-        }
-
-        // Desktop: open with modal query param
-        saveScrollPosition();
-        setSelectedImage(image);
-        navigate(`/photos/${newSlug}?modal=true`, {
-            state: { images }
-        });
-    }, [navigate, saveScrollPosition, images]);
+    // Wrap handlers to also update local state
+    const handleImageClick = useCallback(
+        (image: Image) => {
+            setSelectedImage(image);
+            baseHandleImageClick(image);
+        },
+        [baseHandleImageClick]
+    );
 
     const handleCloseModal = useCallback(() => {
         setSelectedImage(null);
-        restoreScrollPosition();
-        navigate(-1);
-    }, [navigate, restoreScrollPosition]);
+        baseHandleCloseModal();
+    }, [baseHandleCloseModal]);
 
-    const handleModalImageSelect = useCallback((image: Image) => {
-        setSelectedImage(image);
-        const newSlug = generateImageSlug(image.imageTitle || '', image._id);
-        navigate(`/photos/${newSlug}?modal=true`, {
-            replace: true,
-            state: { images }
-        });
-    }, [navigate, images]);
+    const handleModalImageSelect = useCallback(
+        (image: Image) => {
+            setSelectedImage(image);
+            baseHandleModalImageSelect(image);
+        },
+        [baseHandleModalImageSelect]
+    );
 
     // Sync selected image with URL
     useEffect(() => {
-        if (!isModal) {
+        if (!isInlineModalRoute) {
             if (lastInlineSlugRef.current) {
                 lastInlineSlugRef.current = null;
                 setSelectedImage(null);
-                restoreScrollPosition();
             }
             return;
         }
 
-        if (!location.pathname?.startsWith('/photos/')) {
+        if (!actualPathname?.startsWith('/photos/')) {
             return;
         }
 
-        const slugFromPath = location.pathname.slice('/photos/'.length);
+        const slugFromPath = actualPathname.slice('/photos/'.length);
         if (!slugFromPath || slugFromPath === lastInlineSlugRef.current) {
             return;
         }
@@ -102,7 +81,7 @@ export function useImageGridModal({ images }: UseImageGridModalProps) {
             setSelectedImage(imageFromUrl);
             lastInlineSlugRef.current = slugFromPath;
         }
-    }, [location.pathname, images, isModal, restoreScrollPosition]);
+    }, [actualPathname, images, isInlineModalRoute]);
 
     // Collection handlers
     const handleAddToCollection = useCallback((image: Image, e: React.MouseEvent) => {

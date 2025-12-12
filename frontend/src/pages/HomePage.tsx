@@ -13,6 +13,7 @@ import { useImageGridCategory } from "./ImageGrid/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
 import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModalActive } from "@/utils/modalNavigation";
 
 // Lazy load Slider - conditionally rendered
 const Slider = lazy(() => import("@/components/Slider"));
@@ -51,12 +52,11 @@ function HomePage() {
         
         if (!savedScroll) return;
         
-        // Check if this is a page refresh (not a navigation)
-        const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        const isRefresh = navEntry?.type === 'reload';
+        // Check if this is a page refresh using unified utility
+        const refresh = isPageRefresh();
         
         // On refresh, don't restore scroll - page should start at top
-        if (isRefresh) {
+        if (refresh) {
             sessionStorage.removeItem(scrollKey);
             sessionStorage.removeItem('scrollRestoreInProgress');
             return;
@@ -196,25 +196,45 @@ function HomePage() {
 
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
-        // Save scroll position before navigating
-        if (typeof window !== 'undefined') {
-            const scrollKey = 'imageGridScrollPosition';
-            if (!sessionStorage.getItem(scrollKey)) {
-                sessionStorage.setItem(scrollKey, window.scrollY.toString());
-            }
+        const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+        const targetPath = `/photos/${slug}`;
+        
+        // Mobile: full page navigation
+        if (isMobile) {
+            navigate(targetPath, {
+                state: { images, fromGrid: true }
+            });
+            return;
         }
         
-        const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+        // Desktop: modal-style with background
+        // 1. Save scroll position using unified utility
+        saveScrollPosition();
         
-        // Mobile: full page | Desktop: modal with ?modal=true
-        const targetPath = isMobile 
-            ? `/photos/${slug}`
-            : `/photos/${slug}?modal=true`;
+        // 2. Set modal active flag (required for validation)
+        setModalActive();
         
+        // 3. Prepare modal navigation state
+        // CRITICAL: backgroundLocation must be a proper Location object
+        const backgroundLocation = {
+            pathname: actualLocation?.pathname || '/',
+            search: actualLocation?.search || '',
+            hash: actualLocation?.hash || '',
+            state: null,
+            key: actualLocation?.key || 'default', // Use 'default' instead of empty string
+        };
+        const modalState = prepareModalNavigationState(backgroundLocation);
+        
+        console.log('[HomePage] Background location:', backgroundLocation);
+        console.log('[HomePage] Modal state:', modalState);
+        
+        // 4. Navigate with modal state
         navigate(targetPath, {
-            state: { images }
+            state: { ...modalState, images, fromGrid: true }
         });
-    }, [navigate, images, isMobile]);
+        
+        console.log('[HomePage] After navigate - flag:', sessionStorage.getItem('imageGrid_inlineModalActive'));
+    }, [navigate, images, actualLocation, isMobile]);
 
     return (
         <>

@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect } from 'react';
-import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect, useContext } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ActualLocationContext } from '@/contexts/ActualLocationContext';
 import Header from '@/components/Header';
 import { imageService } from '@/services/imageService';
 import api from '@/lib/axios';
@@ -23,6 +24,7 @@ import { calculateImageLayout, getColumnCount } from '@/components/NoFlashGrid/u
 import { loadImageDimensions } from '@/components/NoFlashGrid/utils/imageDimensions';
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
+import { isPageRefresh, validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
@@ -42,16 +44,21 @@ import CollectionModal from '@/components/CollectionModal';
 // Module-level cache to persist API stats across component unmounts
 const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
 
-// Track if we've already checked for refresh in this page load
-// This ensures we only remove ?modal=true on actual refresh, not on navigation
-let hasCheckedRefresh = false;
-
 function ImagePage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useUserStore();
+  
+  // IMPORTANT: Use ActualLocationContext to get the REAL location (not background location)
+  // When rendered as modal route, location from useLocation() is the background location
+  // We need the actual location with modal state
+  const actualLocation = useContext(ActualLocationContext);
+  const locationWithState = actualLocation || location;
+
+  // Ref to capture initial location.state (prevents re-fetching when React Router clears it)
+  // Use locationWithState (actual location) to capture the real state
+  const initialLocationStateRef = useRef(locationWithState.state);
 
   // Core state
   const [image, setImage] = useState<Image | null>(null);
@@ -112,40 +119,33 @@ function ImagePage() {
     return images.findIndex((img) => img._id === image._id);
   }, [image, images]);
 
-  // Simple modal check: URL query param is the source of truth
-  const isModal = useMemo(() => {
+  // Check if this is a refresh using unified utility
+  const isRefresh = useMemo(() => {
+    return isPageRefresh();
+  }, []);
+
+  // Validate modal state using unified utility
+  // Use locationWithState (actual location) not background location
+  const modalValidation = useMemo(() => {
+    return validateModalState(locationWithState.state);
+  }, [locationWithState.state]);
+
+  // Modal-style logic: show modal-style when validated modal state exists
+  // - On mobile → always regular page
+  // - Valid modal state → modal-style
+  // NOTE: Don't check isRefresh here - it's cached from initial load and causes issues
+  // Instead, rely on modalValidation.isModal which correctly handles refresh scenarios
+  // by checking if the flag exists (flag is cleared on refresh by App.tsx)
+  const showModalStyle = useMemo(() => {
     // Mobile: always regular page
-    if (isMobile || !slug) return false;
-    return searchParams.get('modal') === 'true';
-  }, [slug, isMobile, searchParams]);
-
-  // On refresh, remove ?modal=true to show full page (grid is gone on refresh)
-  // Only check once per actual page load, not on every navigation
-  useEffect(() => {
-    if (typeof window === 'undefined' || hasCheckedRefresh || isMobile || !slug) return;
-    
-    // Check if this is an actual page refresh (not client-side navigation)
-    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    const isRefresh = navEntry?.type === 'reload';
-    
-    // Mark as checked immediately to prevent running on subsequent navigations
-    hasCheckedRefresh = true;
-    
-    // Only on actual refresh, read URL directly and remove ?modal=true to show full page
-    if (isRefresh) {
-      // Read from URL directly to avoid React Router timing issues
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('modal') === 'true') {
-        // Remove modal param to show full page
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.delete('modal');
-          return newParams;
-        }, { replace: true });
-      }
+    if (isMobile || !slug) {
+      return false;
     }
-  }, []); // Empty deps - only run once on mount, read URL directly
 
+    // Use validated modal state
+    // modalValidation.isModal will be false on refresh because flag is cleared
+    return modalValidation.isModal;
+  }, [slug, isMobile, modalValidation.isModal]);
 
   // Scroll state for container styling
   const [isScrolled, setIsScrolled] = useState(false);
@@ -327,7 +327,7 @@ function ImagePage() {
         setError(null);
 
         // Try to use passed images first (faster)
-        const passedImages = location.state?.images as Image[] | undefined;
+        const passedImages = initialLocationStateRef.current?.images as Image[] | undefined;
         if (passedImages && passedImages.length > 0) {
           const foundImage = passedImages.find(img => {
             const imgShortId = img._id.slice(-12);
@@ -367,7 +367,7 @@ function ImagePage() {
     };
 
     fetchImage();
-  }, [imageId, location.state?.images]);
+  }, [imageId, location.state]);
 
 
   // Update stats when image changes
@@ -963,9 +963,40 @@ function ImagePage() {
 
   // Handlers
   const handleClose = useCallback(() => {
-    // Simple: just go back in history
+    // Use unified utilities for cleanup
+    clearModalActive();
+    restoreScrollPosition();
+
+    // Check if we have a background location (where we came from)
+    // Use locationWithState to get the actual state with background
+    const background = locationWithState.state?.background as { pathname?: string; search?: string; hash?: string } | undefined;
+
+    // If we have a background location, navigate there
+    // This handles: homepage → ImagePage (close) → homepage
+    // And: ImagePage1 → ImagePage2 (close) → ImagePage1
+    if (background?.pathname) {
+      // Don't navigate if we're already on that path (shouldn't happen, but prevent issues)
+      if (background.pathname === location.pathname) {
+        // Already on the background page, just go back in history
+        navigate(-1);
+        return;
+      }
+
+      // Navigate to background location without causing a reload
+      // Use replace: false to allow back button to work properly
+      // Don't pass the full background state to avoid circular references
+      navigate(background.pathname, { 
+        replace: false,
+        state: undefined // Clear state to prevent modal-style on the background page
+      });
+      return;
+    }
+
+    // No background location - go back in history
+    // This handles edge cases where background is not set
+    // The HomePage's useEffect will handle scroll restoration on mount
     navigate(-1);
-  }, [navigate]);
+  }, [navigate, location.state, location.pathname]);
 
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent) => {
@@ -978,12 +1009,42 @@ function ImagePage() {
 
   const handleImageSelect = useCallback((selectedImage: Image) => {
     const newSlug = generateImageSlug(selectedImage.imageTitle || "", selectedImage._id);
-    // Navigate with modal query param and mark that we're coming from modal
-    navigate(`/photos/${newSlug}?modal=true`, {
+    // Always create modal state when navigating to another image
+    // This ensures the new ImagePage opens as modal-style, even if current page is regular
+    // Use locationWithState to get the actual state
+    const currentState = locationWithState.state || {};
+
+    // Determine background location:
+    // 1. If we have a background from grid/homepage, preserve it (for proper back navigation)
+    // 2. If we're on a regular ImagePage (no background), use current location as background
+    //    This way: ImagePage1 (regular) → ImagePage2 (modal) → close → ImagePage1 (regular)
+    const background = locationWithState.state?.background || {
+      pathname: locationWithState.pathname,
+      search: locationWithState.search,
+      hash: locationWithState.hash,
+      state: locationWithState.state,
+      key: locationWithState.key
+    };
+
+    const navigationState = {
+      ...currentState,
+      background, // Preserve original background or use current location
+      inlineModal: true, // Always set inlineModal to true for modal-style
+      images
+    };
+
+    // CRITICAL: Set modal active flag when navigating to another image
+    // This ensures validation passes when the new ImagePage loads
+    setModalActive();
+    console.log('[ImagePage] handleImageSelect - Set modal active flag');
+
+    // Always use replace: true to avoid history buildup when navigating between images
+    // The state will be properly set and detected by showModalStyle
+    navigate(`/photos/${newSlug}`, {
       replace: true,
-      state: { images, fromModal: true }
+      state: navigationState
     });
-  }, [navigate, images]);
+  }, [navigate, images, locationWithState]);
 
   const handleDownload = useCallback(async (size: 'small' | 'medium' | 'large' | 'original') => {
     if (!image?._id) return;
@@ -1101,9 +1162,9 @@ function ImagePage() {
     }
   }, [navigate, image, handleClose]);
 
-  // Lock body scroll when modal is shown
+  // Lock body scroll when modal-style is shown
   useEffect(() => {
-    if (isModal) {
+    if (showModalStyle) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       document.body.classList.add('image-modal-open');
@@ -1113,7 +1174,7 @@ function ImagePage() {
       };
     }
     return undefined;
-  }, [isModal]);
+  }, [showModalStyle]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -1208,6 +1269,14 @@ function ImagePage() {
       });
     });
   }, [handleImageSelect]);
+
+  // CRITICAL: Hook must be called BEFORE early returns (Rules of Hooks)
+  // Only log render decision when it changes (in development)
+  const prevShowModalStyleRef = useRef(showModalStyle);
+  if (process.env.NODE_ENV === 'development' && prevShowModalStyleRef.current !== showModalStyle) {
+    console.log('[ImagePage] showModalStyle changed:', showModalStyle, 'pathname:', locationWithState.pathname);
+  }
+  prevShowModalStyleRef.current = showModalStyle;
 
   // Loading state - check AFTER all hooks are called
   if (loading) {
@@ -1911,9 +1980,9 @@ function ImagePage() {
     <>
       {/* Progress bar at top of viewport */}
       <ImageProgressBar progress={imageProgress} visible={showProgressBar || isLoadingRef.current} />
-      {!isModal && <Header />}
-      {isModal ? (
-        // Modal: Overlay with container inside
+      {!showModalStyle && <Header />}
+      {showModalStyle ? (
+        // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)
         <div
           onClick={handleOverlayClick}
           className="image-modal-overlay"
@@ -1938,8 +2007,8 @@ function ImagePage() {
         </div>
       )}
 
-      {/* Close button - only in modal */}
-      {isModal && (
+      {/* Close button - only in modal-style */}
+      {showModalStyle && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -1955,8 +2024,8 @@ function ImagePage() {
         </button>
       )}
 
-      {/* Left navigation button - only in modal */}
-      {isModal && (
+      {/* Left navigation button - only in modal-style */}
+      {showModalStyle && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -1978,8 +2047,8 @@ function ImagePage() {
         </button>
       )}
 
-      {/* Right navigation button - only in modal */}
-      {isModal && (
+      {/* Right navigation button - only in modal-style */}
+      {showModalStyle && (
         <button
           onClick={(e) => {
             e.stopPropagation();
