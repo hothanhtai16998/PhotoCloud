@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/Avatar";
 // import { ProfileCompletion } from "./ProfileCompletion";
-import { Star, MapPin, Globe, Instagram, Twitter, Users, UserPlus, UserMinus } from "lucide-react";
+import { Star, MapPin, Globe, Instagram, Twitter, Users, UserPlus, UserMinus, Pin } from "lucide-react";
 import type { PublicUser } from "@/services/userService";
 import type { UserStats } from "@/services/userStatsService";
 import { PinnedImages } from "./PinnedImages";
@@ -61,9 +61,13 @@ export function ProfileHeader({
                                 size="sm"
                                 onClick={onEditPins}
                                 className="edit-pins-btn"
+                                title={displayUser.pinnedImages?.length ? `${displayUser.pinnedImages.length} ${t('profile.pinnedImages') || 'pinned images'}` : t('profile.editPins')}
                             >
-                                <Star size={16} />
-                                {t('profile.editPins')}
+                                <Pin size={16} fill={displayUser.pinnedImages?.length ? 'currentColor' : 'none'} />
+                                <span>{t('profile.editPins')}</span>
+                                {displayUser.pinnedImages && displayUser.pinnedImages.length > 0 && (
+                                    <span className="pins-count-badge">{displayUser.pinnedImages.length}</span>
+                                )}
                             </Button>
                         </div>
                     ) : (

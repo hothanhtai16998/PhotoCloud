@@ -21,7 +21,7 @@
 }
 
 .blur-up-image-container:hover .blur-up-image {
-  transform: scale(1.05); /* Slight enlarge on hover like Unsplash */
+  transform: scale(1); /* Remove zoom effect on hover */
 }
 
 /* Image wrapper for mobile layout */

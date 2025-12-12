@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { X, GripVertical, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import type { Image } from '@/types/image';
 import { pinnedImagesService } from '@/services/pinnedImagesService';
 import { imageService } from '@/services/imageService';
-import ProgressiveImage from '@/components/ProgressiveImage';
+import { NoFlashGrid } from '@/components/NoFlashGrid';
 import { t } from '@/i18n';
 import './EditPinsModal.css';
 
@@ -29,11 +28,12 @@ export function EditPinsModal({
     const [availableImages, setAvailableImages] = useState<Image[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [hasChanges, setHasChanges] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setPinnedImages(currentPinnedImages);
+            setHasChanges(false);
             loadAvailableImages();
         }
     }, [isOpen, currentPinnedImages]);
@@ -51,89 +51,89 @@ export function EditPinsModal({
         }
     };
 
-    const handlePinImage = async (image: Image) => {
-        if (pinnedImages.length >= 6) {
-            toast.error(t('profile.maxPinnedImages') || 'Maximum of 6 pinned images allowed');
-            return;
+    const handleTogglePin = useCallback((image: Image) => {
+        const isPinned = pinnedImages.some(img => img._id === image._id);
+        
+        if (isPinned) {
+            // Unpin
+            setPinnedImages(prev => prev.filter(img => img._id !== image._id));
+        } else {
+            // Pin
+            if (pinnedImages.length >= 6) {
+                toast.error(t('profile.maxPinnedImages') || 'Maximum of 6 pinned images allowed');
+                return;
+            }
+            setPinnedImages(prev => [...prev, image]);
         }
+        setHasChanges(true);
+    }, [pinnedImages]);
 
-        if (pinnedImages.some(img => img._id === image._id)) {
-            toast.error(t('profile.imageAlreadyPinned') || 'Image is already pinned');
-            return;
-        }
+    const handleClearAll = () => {
+        setPinnedImages([]);
+        setHasChanges(true);
+    };
 
+    const handleSave = async () => {
         try {
             setSaving(true);
-            const updated = await pinnedImagesService.pinImage(image._id);
+            
+            // Get current pinned image IDs
+            const currentPinnedIds = new Set(currentPinnedImages.map(img => img._id));
+            const newPinnedIds = new Set(pinnedImages.map(img => img._id));
+            
+            // Unpin removed images
+            for (const image of currentPinnedImages) {
+                if (!newPinnedIds.has(image._id)) {
+                    await pinnedImagesService.unpinImage(image._id);
+                }
+            }
+            
+            // Pin new images
+            for (const image of pinnedImages) {
+                if (!currentPinnedIds.has(image._id)) {
+                    await pinnedImagesService.pinImage(image._id);
+                }
+            }
+            
+            // Reorder if needed
+            if (pinnedImages.length > 0) {
+                const imageIds = pinnedImages.map(img => img._id);
+                await pinnedImagesService.reorderPinnedImages(imageIds);
+            }
+            
+            // Get updated list
+            const updated = await pinnedImagesService.getPinnedImages();
             setPinnedImages(updated);
             onPinnedImagesUpdate(updated);
-            toast.success(t('profile.imagePinned') || 'Image pinned successfully');
+            setHasChanges(false);
+            toast.success(t('profile.pinsSaved') || 'Pinned images saved successfully');
+            onClose();
         } catch (error) {
-            console.error('Failed to pin image:', error);
-            toast.error(t('profile.pinImageFailed') || 'Failed to pin image');
+            console.error('Failed to save pinned images:', error);
+            toast.error(t('profile.saveFailed') || 'Failed to save pinned images');
         } finally {
             setSaving(false);
         }
     };
 
-    const handleUnpinImage = async (imageId: string) => {
-        try {
-            setSaving(true);
-            const updated = await pinnedImagesService.unpinImage(imageId);
-            setPinnedImages(updated);
-            onPinnedImagesUpdate(updated);
-            toast.success(t('profile.imageUnpinned') || 'Image unpinned successfully');
-        } catch (error) {
-            console.error('Failed to unpin image:', error);
-            toast.error(t('profile.unpinImageFailed') || 'Failed to unpin image');
-        } finally {
-            setSaving(false);
+    // Mark images as pinned for styling
+    const allImages = availableImages.map(img => ({
+        ...img,
+        isPinned: pinnedImages.some(pinned => pinned._id === img._id)
+    }));
+    const pinsLeft = 6 - pinnedImages.length;
+
+    // Handle image click in NoFlashGrid - toggle pin status
+    const handleImageClick = useCallback((image: Image, _index: number) => {
+        handleTogglePin(image);
+    }, [handleTogglePin]);
+
+    // Load data callback for NoFlashGrid
+    const loadData = useCallback(async () => {
+        if (availableImages.length === 0 && !loading) {
+            await loadAvailableImages();
         }
-    };
-
-    const handleDragStart = (index: number) => {
-        setDraggedIndex(index);
-    };
-
-    const handleDragOver = (e: React.DragEvent, index: number) => {
-        e.preventDefault();
-        if (draggedIndex === null || draggedIndex === index) return;
-
-        const newPinnedImages = [...pinnedImages];
-        const draggedItem = newPinnedImages[draggedIndex];
-        if (!draggedItem) return;
-        newPinnedImages.splice(draggedIndex, 1);
-        newPinnedImages.splice(index, 0, draggedItem);
-        setPinnedImages(newPinnedImages);
-        setDraggedIndex(index);
-    };
-
-    const handleDragEnd = async () => {
-        if (draggedIndex === null) return;
-
-        try {
-            setSaving(true);
-            const imageIds = pinnedImages.map(img => img._id);
-            const updated = await pinnedImagesService.reorderPinnedImages(imageIds);
-            setPinnedImages(updated);
-            onPinnedImagesUpdate(updated);
-            toast.success(t('profile.pinsReordered') || 'Pinned images reordered');
-        } catch (error) {
-            console.error('Failed to reorder pinned images:', error);
-            toast.error(t('profile.reorderFailed') || 'Failed to reorder pinned images');
-            // Reload to get correct order
-            const current = await pinnedImagesService.getPinnedImages();
-            setPinnedImages(current);
-            onPinnedImagesUpdate(current);
-        } finally {
-            setSaving(false);
-            setDraggedIndex(null);
-        }
-    };
-
-    const unpinnedImages = availableImages.filter(
-        img => !pinnedImages.some(pinned => pinned._id === img._id)
-    );
+    }, [availableImages.length, loading, userId]);
 
     if (!isOpen) return null;
 
@@ -141,95 +141,49 @@ export function EditPinsModal({
         <div className="edit-pins-modal-overlay" onClick={onClose}>
             <div className="edit-pins-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="edit-pins-modal-header">
-                    <h2>{t('profile.editPins') || 'Edit Pinned Images'}</h2>
-                    <button className="edit-pins-modal-close" onClick={onClose}>
-                        <X size={20} />
-                    </button>
+                    <h2>{t('profile.editPins') || 'Edit pins'}</h2>
+                    <div className="edit-pins-modal-header-right">
+                        <span className="edit-pins-count">{pinsLeft} {t('profile.pinsLeft') || 'pins left'}</span>
+                        <button className="edit-pins-modal-close" onClick={onClose}>
+                            <X size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="edit-pins-modal-content">
-                    {/* Current Pinned Images */}
-                    <div className="edit-pins-section">
-                        <h3>{t('profile.pinnedImages') || 'Pinned Images'} ({pinnedImages.length}/6)</h3>
-                        {pinnedImages.length === 0 ? (
-                            <p className="edit-pins-empty">{t('profile.noPinnedImages') || 'No pinned images. Select images below to pin them.'}</p>
-                        ) : (
-                            <div className="edit-pins-grid">
-                                {pinnedImages.map((image, index) => (
-                                    <div
-                                        key={image._id}
-                                        className="edit-pins-item"
-                                        draggable
-                                        onDragStart={() => handleDragStart(index)}
-                                        onDragOver={(e) => handleDragOver(e, index)}
-                                        onDragEnd={handleDragEnd}
-                                    >
-                                        <div className="edit-pins-item-drag">
-                                            <GripVertical size={16} />
-                                        </div>
-                                        <ProgressiveImage
-                                            src={image.imageUrl}
-                                            thumbnailUrl={image.thumbnailUrl}
-                                            smallUrl={image.smallUrl}
-                                            regularUrl={image.regularUrl}
-                                            alt={image.imageTitle || 'Pinned image'}
-                                            className="edit-pins-item-image"
-                                        />
-                                        <button
-                                            className="edit-pins-item-remove"
-                                            onClick={() => handleUnpinImage(image._id)}
-                                            disabled={saving}
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                        <div className="edit-pins-item-number">{index + 1}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Available Images to Pin */}
-                    <div className="edit-pins-section">
-                        <h3>{t('profile.availableImages') || 'Available Images'}</h3>
-                        {loading ? (
-                            <div className="edit-pins-grid">
-                                {Array.from({ length: 12 }).map((_, i) => (
-                                    <Skeleton key={i} className="edit-pins-item-skeleton" />
-                                ))}
-                            </div>
-                        ) : unpinnedImages.length === 0 ? (
-                            <p className="edit-pins-empty">{t('profile.noAvailableImages') || 'No available images to pin.'}</p>
-                        ) : (
-                            <div className="edit-pins-grid">
-                                {unpinnedImages.map((image) => (
-                                    <div
-                                        key={image._id}
-                                        className="edit-pins-item edit-pins-item-available"
-                                        onClick={() => handlePinImage(image)}
-                                    >
-                                        <ProgressiveImage
-                                            src={image.imageUrl}
-                                            thumbnailUrl={image.thumbnailUrl}
-                                            smallUrl={image.smallUrl}
-                                            regularUrl={image.regularUrl}
-                                            alt={image.imageTitle || 'Image'}
-                                            className="edit-pins-item-image"
-                                        />
-                                        <div className="edit-pins-item-add">
-                                            <span>+</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {allImages.length === 0 && !loading ? (
+                        <p className="edit-pins-empty">{t('profile.noAvailableImages') || 'No available images to pin.'}</p>
+                    ) : (
+                        <NoFlashGrid
+                            images={allImages}
+                            loading={loading}
+                            onLoadData={loadData}
+                            onImageClick={handleImageClick}
+                            className="edit-pins-noflash-grid"
+                        />
+                    )}
                 </div>
 
                 <div className="edit-pins-modal-footer">
-                    <Button variant="outline" onClick={onClose} disabled={saving}>
-                        {t('common.close') || 'Close'}
-                    </Button>
+                    <button 
+                        className="edit-pins-clear-all" 
+                        onClick={handleClearAll}
+                        disabled={pinnedImages.length === 0 || saving}
+                    >
+                        {t('profile.clearAll') || 'Clear all'}
+                    </button>
+                    <div className="edit-pins-modal-footer-right">
+                        <Button variant="outline" onClick={onClose} disabled={saving}>
+                            {t('common.cancel') || 'Cancel'}
+                        </Button>
+                        <Button 
+                            variant="default" 
+                            onClick={handleSave} 
+                            disabled={saving || !hasChanges}
+                        >
+                            {saving ? (t('common.saving') || 'Saving...') : (t('common.save') || 'Save')}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

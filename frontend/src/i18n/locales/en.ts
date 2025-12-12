@@ -9,6 +9,7 @@ export const en = {
     success: 'Success',
     cancel: 'Cancel',
     save: 'Save',
+    saving: 'Saving...',
     delete: 'Delete',
     edit: 'Edit',
     close: 'Close',
@@ -659,6 +660,14 @@ export const en = {
     loadFollowersFailed: 'Could not load followers list',
     // Profile Header
     editPins: 'Edit pins',
+    pinnedImages: 'Pinned images',
+    pinnedImagesCount: '{{count}} Pinned',
+    pinsLeft: 'pins left',
+    selectThisImage: 'Select this image',
+    selectImagesToPin: 'Select images to pin from your photos.',
+    clearAll: 'Clear all',
+    pinsSaved: 'Pinned images saved successfully',
+    saveFailed: 'Failed to save pinned images',
     defaultBio:
       'Download free high-quality beautiful photos curated by {name}.',
     website: 'Website',

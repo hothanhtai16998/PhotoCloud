@@ -345,6 +345,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                             <div
                                 key={`${image._id || idx}-${column}-${rowStart}`}
                                 className="grid-item-wrapper"
+                                data-pinned={(image as any).isPinned ? 'true' : 'false'}
                                 style={{
                                     // Explicit column and row start, use span for row end
                                     // This lets CSS Grid handle gaps automatically

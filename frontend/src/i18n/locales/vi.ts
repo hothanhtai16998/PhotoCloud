@@ -9,6 +9,7 @@ export const vi = {
     success: 'Thành công',
     cancel: 'Huỷ',
     save: 'Lưu',
+    saving: 'Đang lưu...',
     delete: 'Xóa',
     edit: 'Chỉnh sửa',
     close: 'Đóng',
@@ -652,6 +653,14 @@ export const vi = {
     loadFollowersFailed: 'Không thể tải danh sách người theo dõi',
     // Profile Header
     editPins: 'Ghim',
+    pinnedImages: 'Ghim',
+    pinnedImagesCount: '{{count}} Ghim',
+    pinsLeft: 'ghim còn lại',
+    selectThisImage: 'Chọn ảnh này',
+    selectImagesToPin: 'Chọn ảnh để ghim từ ảnh của bạn.',
+    clearAll: 'Xóa tất cả',
+    pinsSaved: 'Đã lưu ghim thành công',
+    saveFailed: 'Lưu ghim thất bại',
     defaultBio:
       'Tải xuống miễn phí những bức ảnh chất lượng cao đẹp mắt được tuyển chọn bởi {name}.',
     website: 'Trang web',

@@ -114,6 +114,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 }
 
 .edit-profile-btn:hover,
@@ -121,6 +122,28 @@
 .follow-btn:hover {
   background: hsl(var(--muted));
   border-color: hsl(var(--foreground));
+}
+
+.edit-pins-btn {
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.edit-pins-btn:hover {
+  background: hsl(var(--primary) / 0.1);
+  border-color: hsl(var(--primary));
+}
+
+.pins-count-badge {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1.2;
+  margin-left: 2px;
 }
 
 .follow-btn {

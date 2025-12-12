@@ -3,6 +3,8 @@ import type { Image } from '@/types/image';
 import ProgressiveImage from '@/components/ProgressiveImage';
 import { generateImageSlug } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { Pin } from 'lucide-react';
+import { t } from '@/i18n';
 import './PinnedImages.css';
 
 interface PinnedImagesProps {
@@ -34,6 +36,12 @@ export function PinnedImages({ images }: PinnedImagesProps) {
 
     return (
         <div className="pinned-images-container">
+            <div className="pinned-images-header">
+                <div className="pinned-images-title">
+                    <Pin size={18} className="pinned-icon" />
+                    <span>{images.length} {t('profile.pinnedImages') || 'Ghim'}</span>
+                </div>
+            </div>
             <div className="pinned-images-grid">
                 {images.slice(0, 6).map((image, index) => (
                     <div
@@ -51,6 +59,9 @@ export function PinnedImages({ images }: PinnedImagesProps) {
                             className="pinned-image"
                         />
                         <div className="pinned-image-overlay">
+                            <div className="pinned-image-badge">
+                                <Pin size={12} fill="currentColor" />
+                            </div>
                             <span className="pinned-image-number">{index + 1}</span>
                         </div>
                     </div>
