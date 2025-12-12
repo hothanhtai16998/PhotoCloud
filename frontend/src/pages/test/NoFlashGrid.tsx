@@ -4,12 +4,12 @@ import type { Image } from '@/types/image';
 import './NoFlashGrid.css';
 
 // Import extracted modules
-import { GRID_CONFIG } from '../components/NoFlashGrid/constants/gridConfig';
-import { preloadImage, preloadImages, loadedImages } from '../components/NoFlashGrid/utils/imagePreloader';
-import { loadImageDimensions } from '../components/NoFlashGrid/utils/imageDimensions';
-import { calculateImageLayout, getColumnCount } from '../components/NoFlashGrid/utils/gridLayout';
-import { BlurUpImage } from '../components/NoFlashGrid/components/BlurUpImage';
-import { ImageModal } from '../components/NoFlashGrid/components/ImageModal';
+import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
+import { preloadImage, preloadImages, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
+import { loadImageDimensions } from '@/components/NoFlashGrid/utils/imageDimensions';
+import { calculateImageLayout, getColumnCount } from '@/components/NoFlashGrid/utils/gridLayout';
+import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
+import { ImageModal } from '@/components/NoFlashGrid/components/ImageModal';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -358,13 +358,13 @@ export default function NoFlashGridPage() {
                         // Priority loading for first 12 images (above the fold)
                         const isPriority = idx < 12;
 
-                        // Calculate aspect ratio for debug display
-                        const dimensions = imageDimensions.get(image._id) || null;
-                        const finalWidth = dimensions?.width || image.width || 0;
-                        const finalHeight = dimensions?.height || image.height || 0;
-                        const aspectRatio = finalWidth && finalHeight ? (finalWidth / finalHeight).toFixed(2) : 'N/A';
-                        // Actual height includes gaps: rowSpan rows + (rowSpan - 1) gaps
-                        const actualHeight = rowSpan * GRID_CONFIG.baseRowHeight + (rowSpan - 1) * GRID_CONFIG.gap;
+                        // Calculate aspect ratio for debug display (unused but kept for future debug)
+                        // const dimensions = imageDimensions.get(image._id) || null;
+                        // const finalWidth = dimensions?.width || image.width || 0;
+                        // const finalHeight = dimensions?.height || image.height || 0;
+                        // const aspectRatio = finalWidth && finalHeight ? (finalWidth / finalHeight).toFixed(2) : 'N/A';
+                        // Actual height includes gaps: rowSpan rows + (rowSpan - 1) gaps (unused but kept for future debug)
+                        // const actualHeight = rowSpan * GRID_CONFIG.baseRowHeight + (rowSpan - 1) * GRID_CONFIG.gap;
 
                         return (
                             <div
@@ -415,8 +415,8 @@ export default function NoFlashGridPage() {
                     images={filteredImages}
                     index={selectedIndex}
                     onClose={() => setSelectedIndex(null)}
-                    onNavigate={(next) => setSelectedIndex(next)}
-                    onSelectIndex={(idx) => setSelectedIndex(idx)}
+                    onNavigate={(next: number) => setSelectedIndex(next)}
+                    onSelectIndex={(idx: number) => setSelectedIndex(idx)}
                 />
             )}
         </div>

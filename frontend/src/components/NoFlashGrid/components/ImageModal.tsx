@@ -53,7 +53,11 @@ export function ImageModal({
     onSelectIndex,
 }: ImageModalProps) {
     // Create a state for the current image so we can update it when stats change
-    const [currentImage, setCurrentImage] = useState<ExtendedImage>(images[index]);
+    const initialImage = images[index] || images[0];
+    if (!initialImage) {
+        throw new Error('ImageModal: No images provided');
+    }
+    const [currentImage, setCurrentImage] = useState<ExtendedImage>(initialImage);
 
     // Fetch full image details when modal opens or image changes (to get dailyViews/dailyDownloads)
     useEffect(() => {
@@ -146,8 +150,11 @@ export function ImageModal({
     const scrollPosRef = useRef(0);
     const previousImgRef = useRef<ExtendedImage | null>(img);
     const frontImageLoadedRef = useRef<boolean>(false); // Track if front image is loaded for current image
+    const currentLoadingUrlRef = useRef<string | null>(null); // Track current image URL being loaded for progress
     const [isScrolled, setIsScrolled] = useState(false);
     const [shouldAnimate, setShouldAnimate] = useState(false);
+    const [showProgressBar, setShowProgressBar] = useState(false);
+    const [imageProgress, setImageProgress] = useState(0);
     const { user } = useUserStore();
     const isFavorited = useBatchedFavoriteCheck(img?._id);
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
@@ -1153,7 +1160,7 @@ export function ImageModal({
                                 {/* Author tooltip/popup */}
                                 {showAuthorTooltip && authorAreaRef.current && topInfoRef.current && modalRef.current && (() => {
                                     const authorRect = authorAreaRef.current!.getBoundingClientRect();
-                                    const topInfoRect = topInfoRef.current!.getBoundingClientRect();
+                                    topInfoRef.current!.getBoundingClientRect(); // Used for layout calculation
                                     const modalRect = modalRef.current!.getBoundingClientRect();
                                     // Align tooltip left edge with the left edge of modal container (where the red line is)
                                     return (

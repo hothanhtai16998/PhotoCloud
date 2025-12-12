@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Image } from "@/types/image";
 import ProgressiveImage from "@/components/ProgressiveImage";
-import api from "@/lib/axios";
 import axios from "axios";
 import { generateImageSlug, extractIdFromSlug } from "@/lib/utils";
 import { Folder, Eye } from "lucide-react";

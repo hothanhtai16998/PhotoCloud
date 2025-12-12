@@ -23,12 +23,29 @@
     <!-- Performance: Preconnect to Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Performance: Load critical fonts with font-display swap (no inline handlers for CSP compliance) -->
+    <!-- Performance: Load critical fonts with font-display swap (non-blocking) -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700&family=Proxima+Nova:wght@400;500;600&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Urbanist:wght@700&family=Proxima+Nova:wght@400;500;600&display=swap"
+      />
+    </noscript>
+    <!-- Defer Roboto font - less critical -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+    </noscript>
     <style>
       /* CRITICAL: Hide scrollbar IMMEDIATELY on page load to prevent flash */
       /* Must be in <head> and load BEFORE any other CSS */

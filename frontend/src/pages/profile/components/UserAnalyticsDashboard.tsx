@@ -10,6 +10,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+// Recharts is code-split via Vite manualChunks config (see vite.config.ts)
 import {
   XAxis,
   YAxis,

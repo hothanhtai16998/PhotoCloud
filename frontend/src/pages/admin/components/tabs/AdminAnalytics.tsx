@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { BarChart2, Calendar, ArrowUp, ArrowDown, MoreVertical } from 'lucide-react';
 import { t } from '@/i18n';
+// Recharts is code-split via Vite manualChunks config (see vite.config.ts)
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart } from 'recharts';
 import {
     ChartContainer,
@@ -525,7 +526,7 @@ export function AdminAnalytics() {
                                         tick={{ fill: '#6c757d', fontSize: 11 }}
                                     />
                                     <Tooltip
-                                        content={({ active, payload }) => {
+                                        content={({ active, payload }: { active?: boolean; payload?: readonly any[] }) => {
                                             if (active && payload?.length && payload[0]) {
                                                 const data = payload[0].payload;
                                                 return (

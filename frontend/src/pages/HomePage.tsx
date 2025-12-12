@@ -1,6 +1,5 @@
 import { useEffect, lazy, Suspense, useContext, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { flushSync } from "react-dom";
 import Header from "../components/Header";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";

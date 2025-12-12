@@ -234,7 +234,7 @@ export function AdminSettings() {
                 setTimeout(() => reject(new Error('Request timeout')), 10000); // 10 second timeout
             });
 
-            const startTime = Date.now();
+            // Performance tracking removed - not needed
             const data = await Promise.race([
                 adminService.getSettings(),
                 timeoutPromise

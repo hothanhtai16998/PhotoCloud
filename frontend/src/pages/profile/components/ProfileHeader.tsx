@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/Avatar";
 // import { ProfileCompletion } from "./ProfileCompletion";
-import { Star, MapPin, Globe, Instagram, Twitter, Users, UserPlus, UserMinus, Pin } from "lucide-react";
+import { MapPin, Globe, Instagram, Twitter, Users, UserPlus, UserMinus, Pin } from "lucide-react";
 import type { PublicUser } from "@/services/userService";
 import type { UserStats } from "@/services/userStatsService";
 import { t } from "@/i18n";

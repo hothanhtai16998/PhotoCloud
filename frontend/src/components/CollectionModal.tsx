@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, Plus, Folder, Check, FileText, Sparkles, Search } from 'lucide-react';
+import { X, Plus, Folder, Check, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { collectionTemplateService, type CollectionTemplate } from '@/services/collectionTemplateService';
@@ -43,9 +43,9 @@ export default function CollectionModal({
 	const [collectionsContainingImage, setCollectionsContainingImage] = useState<Set<string>>(
 		new Set()
 	);
-	const [templates, setTemplates] = useState<CollectionTemplate[]>([]);
+	const [_templates, setTemplates] = useState<CollectionTemplate[]>([]);
 	const [selectedTemplate, setSelectedTemplate] = useState<CollectionTemplate | null>(null);
-	const [showTemplates, setShowTemplates] = useState(false);
+	const [_showTemplates, setShowTemplates] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [recentCollectionIds, setRecentCollectionIds] = useState<string[]>([]);
 

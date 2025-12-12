@@ -26,12 +26,11 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Fix recharts internal module resolution
+    dedupe: ['recharts'],
   },
   build: {
     cssCodeSplit: true,
-    // Optimize chunk size limits (in KB)
-    // Warn if any chunk exceeds 500KB (helps identify optimization opportunities)
-    chunkSizeWarningLimit: 500,
     // Ensure proper module resolution and prevent React loading issues
     modulePreload: {
       polyfill: true,
@@ -49,19 +48,56 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]';
         },
-        // CRITICAL FIX: Explicitly prevent React from being chunked
-        // This ensures React stays in the entry chunk and is always available
+        // Optimized chunk splitting strategy
         manualChunks: (id) => {
           // NEVER chunk React or ReactDOM - they must stay in entry chunk
           if (
             id.includes('react') && 
             (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/'))
           ) {
-            // Return undefined to keep in entry chunk
-            return undefined;
+            return undefined; // Keep in entry chunk
           }
-          // For everything else, let Vite handle chunking naturally
-          // This prevents the vendor chunk from including React
+
+          // Note: recharts is NOT manually chunked due to internal dependency resolution issues
+          // It will still be code-split naturally since it's only used in lazy-loaded admin/profile pages
+
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons'; // Separate icon library
+          }
+
+          // Separate UI library chunks
+          if (id.includes('node_modules/@radix-ui')) {
+            return 'vendor-radix';
+          }
+
+          if (id.includes('node_modules/zustand') || id.includes('node_modules/immer')) {
+            return 'vendor-state';
+          }
+
+          // Router and routing-related
+          if (id.includes('node_modules/react-router')) {
+            return 'vendor-router';
+          }
+
+          // Axios and HTTP clients
+          if (id.includes('node_modules/axios')) {
+            return 'vendor-http';
+          }
+
+          // Form libraries
+          if (id.includes('node_modules/react-hook-form') || id.includes('node_modules/@hookform')) {
+            return 'vendor-forms';
+          }
+
+          // Image processing libraries
+          if (id.includes('node_modules/browser-image-compression') || id.includes('node_modules/blurhash')) {
+            return 'vendor-images';
+          }
+
+          // Everything else goes into a common vendor chunk
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
         // Prevent circular dependency issues
         format: 'es',
@@ -88,6 +124,10 @@ export default defineConfig({
     minify: 'esbuild',
     // Optimize source maps for production
     sourcemap: false, // Disable source maps in production for smaller bundle
+    // Target modern browsers for smaller bundles
+    target: 'es2020',
+    // Reduce chunk size warnings - we'll handle optimization
+    chunkSizeWarningLimit: 600,
     // Common chunk splitting strategy
     commonjsOptions: {
       include: [/node_modules/],
@@ -104,7 +144,7 @@ export default defineConfig({
       'axios',
       'zustand',
       'immer',
-      'recharts',
+      // recharts excluded due to build issues - will be handled as regular dependency
     ],
     // Don't force re-optimization - let Vite handle it naturally
     force: false,

@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useMemo } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -26,8 +26,8 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const navigate = useNavigate();
     const { settings } = useSiteSettings();
 
-    // Track image orientations for masonry layout
-    const [imageOrientations, setImageOrientations] = useState<Map<number, boolean>>(new Map());
+    // Track image orientations for masonry layout (future feature)
+    const [_imageOrientations, setImageOrientations] = useState<Map<number, boolean>>(new Map());
 
     // Preserve quality toggle with localStorage persistence
     const [preserveQuality, setPreserveQuality] = useState<boolean>(() => {

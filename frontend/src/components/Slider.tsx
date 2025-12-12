@@ -41,7 +41,7 @@ function Slider() {
   const [loading, setLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [autoPlayProgress, setAutoPlayProgress] = useState(0);
-  const [transitionType, setTransitionType] = useState<TransitionType>(() => {
+  const [transitionType, _setTransitionType] = useState<TransitionType>(() => {
     // Load from localStorage or use default
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(TRANSITION_STORAGE_KEY);
@@ -363,7 +363,7 @@ function Slider() {
   };
 
   // Progressive image loading handler
-  const handleImageLoad = useCallback((imageId: string, imageUrl: string) => {
+  const handleImageLoad = useCallback((imageId: string, _imageUrl: string) => {
     // Mark as loaded in both state and ref for synchronous access
     cachedImagesRef.current.add(imageId);
     setLoadedImages(prev => new Set(prev).add(imageId));

@@ -221,7 +221,7 @@ export const ImageModalContent = ({
           onDoubleClick={handleDoubleClick}
           draggable={false}
           onLoad={() => setIsModalImageLoaded(true)}
-          onError={(e) => {
+          onError={() => {
             // Try to fallback to a different URL if available
             const currentSrc = displayedSrc || image.imageUrl || image.regularUrl || image.smallUrl || '';
             const fallback = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';

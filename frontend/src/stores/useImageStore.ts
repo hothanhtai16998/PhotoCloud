@@ -3,7 +3,8 @@ import { immer } from 'zustand/middleware/immer';
 import { toast } from 'sonner';
 import { imageService } from '@/services/imageService';
 import type { ImageState, UploadImageData } from '@/types/store';
-import type { FetchImagesParams } from '@/types/image';
+import type { FetchImagesParams, Image } from '@/types/image';
+import type { Pagination } from '@/types/common';
 import {
   getErrorMessage,
   getUploadErrorMessage,

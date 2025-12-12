@@ -21,7 +21,7 @@ import { ImageModalInfo } from '@/components/image/ImageModalInfo';
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
-import { isPageRefresh, validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
+import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
@@ -114,10 +114,10 @@ function ImagePage() {
     return images.findIndex((img) => img._id === image._id);
   }, [image, images]);
 
-  // Check if this is a refresh using unified utility
-  const isRefresh = useMemo(() => {
-    return isPageRefresh();
-  }, []);
+  // Check if this is a refresh using unified utility (unused but kept for future use)
+  // const isRefresh = useMemo(() => {
+  //   return isPageRefresh();
+  // }, []);
 
   // Validate modal state using unified utility
   // Use locationWithState (actual location) not background location

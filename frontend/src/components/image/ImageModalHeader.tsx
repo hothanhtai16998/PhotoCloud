@@ -24,7 +24,7 @@ interface ImageModalHeaderProps {
 
 export const ImageModalHeader = ({
   image,
-  user,
+  user: _user,
   isMobile,
   renderAsPage,
   isFavorited,
@@ -33,8 +33,8 @@ export const ImageModalHeader = ({
   handleViewProfile,
   handleOpenCollection,
   onClose,
-  modalContentRef,
-  onImageSelect,
+  modalContentRef: _modalContentRef,
+  onImageSelect: _onImageSelect,
   isHeaderHidden = false,
 }: ImageModalHeaderProps) => {
   const displayName = getDisplayName(image.uploadedBy);
