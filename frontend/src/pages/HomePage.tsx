@@ -17,7 +17,7 @@ import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModa
 const Slider = lazy(() => import("@/components/Slider"));
 
 function HomePage() {
-    const { currentSearch, images, loading, fetchImages } = useImageStore();
+    const { currentSearch, images, loading, pagination, fetchImages } = useImageStore();
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
     const navigate = useNavigate();
@@ -192,6 +192,20 @@ function HomePage() {
         });
     }, [fetchImages, category, getCategoryParam]);
 
+    // Calculate if there are more images to load
+    const hasMore = pagination ? pagination.page < pagination.pages : false;
+
+    // Load more images callback for infinite scroll
+    const handleLoadMore = useCallback(async () => {
+        if (!pagination || loading) return;
+        const nextPage = pagination.page + 1;
+        await fetchImages({ 
+            page: nextPage, 
+            category: getCategoryParam(category),
+            _refresh: false // Append to existing images
+        });
+    }, [fetchImages, category, getCategoryParam, pagination, loading]);
+
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
         const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
@@ -258,6 +272,8 @@ function HomePage() {
                     loading={loading}
                     onLoadData={loadData}
                     onImageClick={handleImageClick}
+                    hasMore={hasMore}
+                    onLoadMore={handleLoadMore}
                 />
             </main>
         </>

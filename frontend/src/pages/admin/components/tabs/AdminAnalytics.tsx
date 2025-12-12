@@ -11,6 +11,7 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart';
+import { ErrorBoundarySection } from '@/components/ErrorBoundarySection';
 import type { AnalyticsData } from '@/types/admin';
 
 interface RealtimeData {
@@ -315,43 +316,51 @@ export function AdminAnalytics() {
                         </div>
                     </div>
                     <div className="falcon-card-body">
-                        <div className="insights-chart-container">
-                            <ChartContainer config={chartConfig} className="h-full w-full">
-                                <AreaChart data={formattedChartData.data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#e0e7ff" stopOpacity={0.8} />
-                                            <stop offset="100%" stopColor="#fbfdfc" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <Area
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="#667eea"
-                                        strokeWidth={2}
-                                        fill="url(#fillValue)"
-                                        dot={{ r: 2.5, fill: '#111' }}
-                                        activeDot={{ r: 4, fill: '#111', stroke: '#111', strokeWidth: 1 }}
-                                    />
-                                    <XAxis
-                                        dataKey="dateLabel"
-                                        tick={{ fill: '#767676', fontSize: 11 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        interval="preserveStartEnd"
-                                        height={20}
-                                    />
-                                    <YAxis
-                                        hide
-                                        domain={formattedChartData.domain}
-                                    />
-                                    <CartesianGrid vertical={false} horizontal={false} />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent indicator="dot" />}
-                                    />
-                                </AreaChart>
-                            </ChartContainer>
+                        <div className="insights-chart-container" style={{ minHeight: '400px', minWidth: '100%' }}>
+                            <ErrorBoundarySection sectionName="Analytics Chart">
+                                {formattedChartData.data && formattedChartData.data.length > 0 ? (
+                                    <ChartContainer config={chartConfig} className="h-full w-full" style={{ minHeight: '400px' }}>
+                                        <AreaChart data={formattedChartData.data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#e0e7ff" stopOpacity={0.8} />
+                                                    <stop offset="100%" stopColor="#fbfdfc" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <Area
+                                                type="monotone"
+                                                dataKey="value"
+                                                stroke="#667eea"
+                                                strokeWidth={2}
+                                                fill="url(#fillValue)"
+                                                dot={{ r: 2.5, fill: '#111' }}
+                                                activeDot={{ r: 4, fill: '#111', stroke: '#111', strokeWidth: 1 }}
+                                            />
+                                            <XAxis
+                                                dataKey="dateLabel"
+                                                tick={{ fill: '#767676', fontSize: 11 }}
+                                                axisLine={false}
+                                                tickLine={false}
+                                                interval="preserveStartEnd"
+                                                height={20}
+                                            />
+                                            <YAxis
+                                                hide
+                                                domain={formattedChartData.domain}
+                                            />
+                                            <CartesianGrid vertical={false} horizontal={false} />
+                                            <ChartTooltip
+                                                cursor={false}
+                                                content={<ChartTooltipContent indicator="dot" />}
+                                            />
+                                        </AreaChart>
+                                    </ChartContainer>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                                        {t('admin.noDataAvailable') || 'Không có dữ liệu'}
+                                    </div>
+                                )}
+                            </ErrorBoundarySection>
                         </div>
                     </div>
                 </div>
@@ -503,62 +512,70 @@ export function AdminAnalytics() {
                             </button>
                         </div>
                         <div className="falcon-card-body">
-                            <ResponsiveContainer width="100%" height={300}>
-                                <LineChart
-                                    data={(displayAnalytics.categories || []).map(cat => ({
-                                        name: cat.name || 'Không xác định',
-                                        count: cat.count,
-                                        _id: cat._id
-                                    }))}
-                                    margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" strokeOpacity={0.5} />
-                                    <XAxis 
-                                        dataKey="name" 
-                                        stroke="#6c757d"
-                                        tick={{ fill: '#6c757d', fontSize: 11 }}
-                                        angle={-45}
-                                        textAnchor="end"
-                                        height={80}
-                                    />
-                                    <YAxis 
-                                        stroke="#6c757d"
-                                        tick={{ fill: '#6c757d', fontSize: 11 }}
-                                    />
-                                    <Tooltip
-                                        content={({ active, payload }: { active?: boolean; payload?: readonly any[] }) => {
-                                            if (active && payload?.length && payload[0]) {
-                                                const data = payload[0].payload;
-                                                return (
-                                                    <div style={{
-                                                        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                                                        border: '1px solid #e9ecef',
-                                                        borderRadius: '8px',
-                                                        padding: '10px',
-                                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                                                    }}>
-                                                        <div style={{ fontWeight: 600, marginBottom: '6px', color: '#212529' }}>
-                                                            {data.name}
-                                                        </div>
-                                                        <div style={{ color: '#667eea', fontWeight: 700, fontSize: '16px' }}>
-                                                            {data.count.toLocaleString()} ảnh
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }
-                                            return null;
-                                        }}
-                                    />
-                                    <Line 
-                                        type="monotone" 
-                                        dataKey="count" 
-                                        stroke="#667eea" 
-                                        strokeWidth={3}
-                                        dot={{ fill: '#667eea', r: 5, strokeWidth: 2, stroke: '#fff' }}
-                                        activeDot={{ r: 7, fill: '#667eea', stroke: '#fff', strokeWidth: 2 }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            <ErrorBoundarySection sectionName="Category Distribution Chart">
+                                {(displayAnalytics.categories && displayAnalytics.categories.length > 0) ? (
+                                    <ResponsiveContainer width="100%" height={300}>
+                                        <LineChart
+                                            data={displayAnalytics.categories.map(cat => ({
+                                                name: cat.name || 'Không xác định',
+                                                count: cat.count,
+                                                _id: cat._id
+                                            }))}
+                                            margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" strokeOpacity={0.5} />
+                                            <XAxis 
+                                                dataKey="name" 
+                                                stroke="#6c757d"
+                                                tick={{ fill: '#6c757d', fontSize: 11 }}
+                                                angle={-45}
+                                                textAnchor="end"
+                                                height={80}
+                                            />
+                                            <YAxis 
+                                                stroke="#6c757d"
+                                                tick={{ fill: '#6c757d', fontSize: 11 }}
+                                            />
+                                            <Tooltip
+                                                content={({ active, payload }: { active?: boolean; payload?: readonly any[] }) => {
+                                                    if (active && payload?.length && payload[0]) {
+                                                        const data = payload[0].payload;
+                                                        return (
+                                                            <div style={{
+                                                                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                                                                border: '1px solid #e9ecef',
+                                                                borderRadius: '8px',
+                                                                padding: '10px',
+                                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                                                            }}>
+                                                                <div style={{ fontWeight: 600, marginBottom: '6px', color: '#212529' }}>
+                                                                    {data.name}
+                                                                </div>
+                                                                <div style={{ color: '#667eea', fontWeight: 700, fontSize: '16px' }}>
+                                                                    {data.count.toLocaleString()} ảnh
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    }
+                                                    return null;
+                                                }}
+                                            />
+                                            <Line 
+                                                type="monotone" 
+                                                dataKey="count" 
+                                                stroke="#667eea" 
+                                                strokeWidth={3}
+                                                dot={{ fill: '#667eea', r: 5, strokeWidth: 2, stroke: '#fff' }}
+                                                activeDot={{ r: 7, fill: '#667eea', stroke: '#fff', strokeWidth: 2 }}
+                                            />
+                                        </LineChart>
+                                    </ResponsiveContainer>
+                                ) : (
+                                    <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                                        {t('admin.noDataAvailable') || 'Không có dữ liệu'}
+                                    </div>
+                                )}
+                            </ErrorBoundarySection>
                         </div>
                     </div>
 

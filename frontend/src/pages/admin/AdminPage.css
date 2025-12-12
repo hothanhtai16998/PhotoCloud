@@ -4490,6 +4490,9 @@
 
 .insights-chart-container {
   height: 400px;
+  min-height: 400px;
+  min-width: 100%;
+  width: 100%;
   position: relative;
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
 import { preloadImage } from '../utils/imagePreloader';
+import { getBestImageUrl } from '@/utils/avifSupport';
 import { Heart, Download, Bookmark } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
@@ -80,18 +81,21 @@ export function BlurUpImage({
     useEffect(() => {
         if (!isInView || loadingRef.current) return;
 
+        // Get best image URL (AVIF if supported, otherwise WebP/JPEG)
         // Use regularUrl for grid view (1080px, optimized for display)
         // This is similar to Unsplash's approach: grid uses "regular" size, not original
-        // Only fallback to imageUrl if regularUrl doesn't exist (for old images)
-        const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+        const loadImage = async () => {
+            try {
+                // Get best format (AVIF if supported, fallback to regularUrl)
+                const bestUrl = await getBestImageUrl(image, 'regular');
+                const full = bestUrl || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
 
-        // If already using full image, no need to reload
-        if (fullSrc === full) return;
+                // If already using full image, no need to reload
+                if (fullSrc === full) return;
 
-        loadingRef.current = true;
-        // Skip decode for grid images to load faster (like admin page)
-        preloadImage(full, true)
-            .then((src) => {
+                loadingRef.current = true;
+                // Skip decode for grid images to load faster (like admin page)
+                const src = await preloadImage(full, true);
                 setFullSrc(src);
                 // Check if image is already cached by creating a test image
                 const testImg = new Image();
@@ -103,13 +107,14 @@ export function BlurUpImage({
                     // Image not cached - will load normally
                 };
                 testImg.src = src;
-            })
-            .catch(() => {
+            } catch {
                 // Keep placeholder on error
-            })
-            .finally(() => {
+            } finally {
                 loadingRef.current = false;
-            });
+            }
+        };
+
+        loadImage();
     }, [isInView, image, fullSrc]);
 
     // Tooltip state
@@ -413,6 +418,7 @@ export function BlurUpImage({
                         src={placeholderInitial}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
+                        decoding="async"
                         style={{
                             opacity: loaded ? 0 : 1,
                             /* Disable transition during initial load to prevent flashing */
@@ -435,7 +441,9 @@ export function BlurUpImage({
                         src={fullSrc}
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
-                        loading="lazy"
+                        loading={priority ? 'eager' : 'lazy'}
+                        fetchPriority={priority ? 'high' : 'auto'}
+                        decoding="async"
                         style={{ pointerEvents: 'none' }} // Let wrapper handle clicks
                         onLoad={() => {
                             setLoaded(true);

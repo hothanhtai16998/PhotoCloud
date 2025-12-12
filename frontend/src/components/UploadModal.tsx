@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -275,11 +276,15 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     if (!isOpen || !accessToken) return null;
 
-
+    // Helper to render modal content via portal
+    const renderModal = (content: React.ReactNode) => {
+        if (typeof document === 'undefined') return null;
+        return createPortal(content, document.body);
+    };
 
     // Progress Screen (finalize phase)
     if (showProgress) {
-        return (
+        return renderModal(
             <UploadProgress
                 uploadingIndex={uploadingIndex}
                 totalUploads={totalUploads}
@@ -290,7 +295,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     // Success Screen
     if (showSuccess) {
-        return (
+        return renderModal(
             <div className="upload-modal-overlay" onClick={handleCloseAfterSuccess}>
                 <div className="upload-success-screen" onClick={(e) => e.stopPropagation()}>
                     <div className="confetti-container" id="confetti-container"></div>
@@ -315,7 +320,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     // Upload Screen (when no images selected)
     if (selectedFiles.length === 0) {
-        return (
+        return renderModal(
             <div className="upload-modal-overlay" onClick={handleCancel}>
                 <div
                     className={`upload-modal ${dragActive ? 'drag-active' : ''}`}
@@ -461,7 +466,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
     }
 
     // Form View (when image is selected)
-    return (
+    return renderModal(
         <div className="upload-modal-overlay" onClick={handleCancel}>
             <div
                 className={`upload-modal ${dragActive ? 'drag-active' : ''}`}

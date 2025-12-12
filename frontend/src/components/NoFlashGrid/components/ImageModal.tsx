@@ -26,6 +26,7 @@ import { BlurUpImage } from './BlurUpImage';
 import { GRID_CONFIG } from '../constants/gridConfig';
 import { calculateImageLayout, getColumnCount } from '../utils/gridLayout';
 import { loadImageDimensions } from '../utils/imageDimensions';
+import { getBestImageUrl } from '@/utils/avifSupport';
 import '@/components/image/modal-info.css';
 import '@/components/image/modal-footer.css';
 import './ImageModal.css';
@@ -695,8 +696,8 @@ export function ImageModal({
 
         // Load full image in background (front layer)
         // Progressive loading strategy:
-        // 1. Load regularUrl first (faster, good quality)
-        // 2. Then upgrade to imageUrl (best quality)
+        // 1. Load regularUrl (AVIF if supported) first (faster, good quality)
+        // 2. Then upgrade to imageUrl (AVIF if supported) (best quality)
         const loadFrontImage = async () => {
             let loadedAny = false;
 
@@ -710,34 +711,40 @@ export function ImageModal({
             setImageProgress(0);
             setShowProgressBar(true);
 
-            // Step 1: Load Regular URL (if available and different from thumbnail)
-            if (regular && regular !== thumbnail) {
+            // Get AVIF URLs if supported
+            const bestRegular = await getBestImageUrl(img, 'regular');
+            const bestOriginal = await getBestImageUrl(img, 'original');
+            const regularToLoad = bestRegular || regular;
+            const originalToLoad = bestOriginal || original;
+
+            // Step 1: Load Regular URL (AVIF if supported) (if available and different from thumbnail)
+            if (regularToLoad && regularToLoad !== thumbnail) {
                 try {
-                    if (loadedImages.has(regular)) {
+                    if (loadedImages.has(regularToLoad)) {
                         // Already cached - no progress needed
                         setShowProgressBar(false);
                         if (previousImgRef.current?._id === currentImageId) {
-                            setFrontSrc(regular);
+                            setFrontSrc(regularToLoad);
                             setFrontLoaded(true);
                             frontImageLoadedRef.current = true;
                             loadedAny = true;
                         }
                     } else {
-                        // Preload regular with progress tracking
-                        currentLoadingUrlRef.current = regular;
+                        // Preload regular (AVIF) with progress tracking
+                        currentLoadingUrlRef.current = regularToLoad;
                         const src = await preloadImageWithProgress(
-                            regular,
+                            regularToLoad,
                             (progress) => {
-                                if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
+                                if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regularToLoad) {
                                     setImageProgress(progress);
                                 }
                             },
                             false
                         );
-                        if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
+                        if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regularToLoad) {
                             setFrontSrc(src);
                             // If we don't have an original to upgrade to, mark as loaded
-                            if (!original || original === regular) {
+                            if (!originalToLoad || originalToLoad === regularToLoad) {
                                 setFrontLoaded(true);
                                 setShowProgressBar(false);
                             }
@@ -753,20 +760,20 @@ export function ImageModal({
                 }
             }
 
-            // Step 2: Load Original URL (if available and different from regular)
-            if (original && original !== thumbnail && original !== regular) {
+            // Step 2: Load Original URL (AVIF if supported) (if available and different from regular)
+            if (originalToLoad && originalToLoad !== thumbnail && originalToLoad !== regularToLoad) {
                 try {
                     // Reset progress for original (starts from 0 or continue from regular)
                     if (!loadedAny) {
                         setImageProgress(0);
                     }
                     
-                    // Preload original with progress tracking (this might take longer)
-                    currentLoadingUrlRef.current = original;
+                    // Preload original (AVIF) with progress tracking (this might take longer)
+                    currentLoadingUrlRef.current = originalToLoad;
                     const src = await preloadImageWithProgress(
-                        original,
+                        originalToLoad,
                         (progress) => {
-                            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
+                            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === originalToLoad) {
                                 setImageProgress(progress);
                             }
                         },

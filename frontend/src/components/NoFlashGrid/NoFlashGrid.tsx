@@ -10,6 +10,7 @@ import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
 import { ImageModal } from './components/ImageModal';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useInfiniteScroll } from '@/components/image/hooks/useInfiniteScroll';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -20,9 +21,22 @@ export interface NoFlashGridProps {
     onLoadData?: () => Promise<void>;
     className?: string;
     onImageClick?: (image: ExtendedImage, index: number) => void; // Optional: if provided, use this instead of modal
+    // Infinite scroll props
+    hasMore?: boolean; // Whether there are more images to load
+    onLoadMore?: () => void | Promise<void>; // Callback to load more images
+    isLoadingMore?: boolean; // Whether more images are currently loading
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick }: NoFlashGridProps) {
+export function NoFlashGrid({ 
+    images, 
+    loading: externalLoading, 
+    onLoadData, 
+    className = '', 
+    onImageClick,
+    hasMore = false,
+    onLoadMore,
+    isLoadingMore = false,
+}: NoFlashGridProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
@@ -79,6 +93,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     const filteredImages = images;
 
     // Preload thumbnails for first batch of images when images change
+    // Note: We use WebP thumbnails here (not AVIF) since they're small and load fast
     useEffect(() => {
         if (images.length === 0) return;
         const thumbnails = images.slice(0, 20)
@@ -318,6 +333,15 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
     const isLoading = externalLoading ?? false;
 
+    // Infinite scroll: detect when user scrolls near bottom
+    const { loadMoreRef } = useInfiniteScroll({
+        hasMore: hasMore && !isLoading,
+        isLoading: isLoading || isLoadingMore,
+        onLoadMore: onLoadMore || (async () => {}),
+        rootMargin: '600px', // Start loading 600px before reaching bottom
+        threshold: 0.1,
+    });
+
     return (
         <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
             {/* Only show loading state if we have no images - keep grid visible during category change */}
@@ -431,6 +455,33 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                             </div>
                         );
                     })}
+                </div>
+            )}
+
+            {/* Infinite scroll sentinel - triggers loadMore when scrolled into view */}
+            {hasMore && onLoadMore && (
+                <div 
+                    ref={loadMoreRef}
+                    style={{
+                        gridColumn: `1 / -1`, // Span all columns
+                        height: '1px',
+                        marginTop: '40px',
+                    }}
+                    aria-hidden="true"
+                />
+            )}
+
+            {/* Loading more indicator */}
+            {isLoadingMore && (
+                <div 
+                    style={{
+                        gridColumn: `1 / -1`, // Span all columns
+                        padding: '40px',
+                        textAlign: 'center',
+                        color: '#666',
+                    }}
+                >
+                    Loading more images...
                 </div>
             )}
 

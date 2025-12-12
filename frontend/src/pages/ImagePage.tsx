@@ -23,6 +23,7 @@ import { preloadImage, preloadImageWithProgress, loadedImages } from '@/componen
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
 import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
+import { getBestImageUrl } from '@/utils/avifSupport';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
@@ -635,27 +636,33 @@ function ImagePage() {
       isLoadingRef.current = true;
       setShowProgressBar(true);
 
-      if (regular) {
+      // Get AVIF URLs if supported
+      const bestRegular = await getBestImageUrl(image, 'regular');
+      const bestOriginal = await getBestImageUrl(image, 'original');
+      const regularToLoad = bestRegular || regular;
+      const originalToLoad = bestOriginal || original;
+
+      if (regularToLoad) {
         try {
-          if (loadedImages.has(regular)) {
+          if (loadedImages.has(regularToLoad)) {
             // Already cached - no progress needed
             isLoadingRef.current = false;
             setShowProgressBar(false);
             if (previousImgRef.current?._id === currentImageId) {
-              setFrontSrc(regular);
+              setFrontSrc(regularToLoad);
               setFrontLoaded(true);
               frontImageLoadedRef.current = true;
               loadedAny = true;
             }
           } else {
-            // Preload regular with progress tracking
-            currentLoadingUrlRef.current = regular;
+            // Preload regular (AVIF) with progress tracking
+            currentLoadingUrlRef.current = regularToLoad;
             // Ensure progress bar is visible before starting
             setShowProgressBar(true);
             const src = await preloadImageWithProgress(
-              regular,
+              regularToLoad,
               (progress) => {
-                if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
+                if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regularToLoad) {
                   setImageProgress(progress);
                   // Keep progress bar visible while loading - use ref to ensure it stays visible
                   if (isLoadingRef.current) {
@@ -665,9 +672,9 @@ function ImagePage() {
               },
               false
             );
-            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regular) {
+            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === regularToLoad) {
               setFrontSrc(src);
-              if (!original || original === regular) {
+              if (!originalToLoad || originalToLoad === regularToLoad) {
                 setFrontLoaded(true);
                 isLoadingRef.current = false;
                 setShowProgressBar(false);
@@ -684,21 +691,21 @@ function ImagePage() {
         }
       }
 
-      if (original && original !== regular) {
+      if (originalToLoad && originalToLoad !== regularToLoad) {
         try {
           // Reset progress for original (starts from 0 or continue from regular)
           if (!loadedAny) {
             setImageProgress(0);
           }
 
-          // Preload original with progress tracking
-          currentLoadingUrlRef.current = original;
+          // Preload original (AVIF) with progress tracking
+          currentLoadingUrlRef.current = originalToLoad;
           // Ensure progress bar is visible before starting
           setShowProgressBar(true);
           const src = await preloadImageWithProgress(
-            original,
+            originalToLoad,
             (progress) => {
-              if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
+              if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === originalToLoad) {
                 setImageProgress(progress);
                 // Keep progress bar visible while loading - use ref to ensure it stays visible
                 if (isLoadingRef.current) {
@@ -708,7 +715,7 @@ function ImagePage() {
             },
             false
           );
-          if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === original) {
+          if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === originalToLoad) {
             setFrontSrc(src);
             setFrontLoaded(true);
             isLoadingRef.current = false;

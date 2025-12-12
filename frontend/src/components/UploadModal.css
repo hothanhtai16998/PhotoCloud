@@ -6,7 +6,7 @@
   right: 0;
   bottom: 0;
   background: rgba(98, 98, 98, 0.5);
-  z-index: 2000; /* Above progress bar (3), header (1500), category nav (1499), and image modal (2000-2001) */
+  z-index: 99999; /* Above everything including slider, ImageModal (9999), EditImageModal (10002), and CollectionModal (10001) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +28,7 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(12px);
-  z-index: 2001; /* Above upload modal overlay (2000) and progress bar (3) */
+  z-index: 100000; /* Above upload modal overlay (99999) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -156,6 +156,7 @@
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;
+  margin: auto; /* Ensure proper centering */
 }
 
 .upload-modal.drag-active {

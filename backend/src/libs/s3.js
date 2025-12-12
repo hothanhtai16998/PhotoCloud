@@ -252,6 +252,7 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 			.toBuffer();
 		const base64Thumbnail = `data:image/png;base64,${tinyPngBuffer.toString('base64')}`;
 		
+		// Generate WebP versions (for compatibility)
 		const [thumbnailBuffer, smallBuffer, regularBuffer, webpFullBuffer, originalBuffer] = await Promise.all([
 			sharp(buffer).resize(200, 200, { fit: 'cover' }).webp().toBuffer(),
 			sharp(buffer).resize(500, 500, { fit: 'cover' }).webp().toBuffer(),
@@ -260,17 +261,29 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 			Promise.resolve(buffer), // Keep original buffer for true original file
 		]);
 
-		// Upload all sizes in parallel to R2
-		const [thumb, small, regular, webpFull, original] = await Promise.all([
+		// Generate AVIF versions (better compression, modern browsers)
+		const [thumbnailAvifBuffer, smallAvifBuffer, regularAvifBuffer, fullAvifBuffer] = await Promise.all([
+			sharp(buffer).resize(200, 200, { fit: 'cover' }).avif({ quality: 80 }).toBuffer(),
+			sharp(buffer).resize(500, 500, { fit: 'cover' }).avif({ quality: 80 }).toBuffer(),
+			sharp(buffer).resize(1000, 1000, { fit: 'inside' }).avif({ quality: 85 }).toBuffer(),
+			sharp(buffer).avif({ quality: 85 }).toBuffer(), // AVIF version for display
+		]);
+
+		// Upload all sizes in parallel to R2 (WebP and AVIF)
+		const [thumb, small, regular, webpFull, original, thumbAvif, smallAvif, regularAvif, fullAvif] = await Promise.all([
 			uploadToR2(thumbnailBuffer, `${bucket}/${filename}-thumbnail.webp`, 'image/webp'),
 			uploadToR2(smallBuffer, `${bucket}/${filename}-small.webp`, 'image/webp'),
 			uploadToR2(regularBuffer, `${bucket}/${filename}-regular.webp`, 'image/webp'),
 			uploadToR2(webpFullBuffer, `${bucket}/${filename}.webp`, 'image/webp'), // WebP for display
 			uploadToR2(originalBuffer, `${bucket}/${filename}-original.${originalExtension}`, originalContentType), // True original
+			uploadToR2(thumbnailAvifBuffer, `${bucket}/${filename}-thumbnail.avif`, 'image/avif'),
+			uploadToR2(smallAvifBuffer, `${bucket}/${filename}-small.avif`, 'image/avif'),
+			uploadToR2(regularAvifBuffer, `${bucket}/${filename}-regular.avif`, 'image/avif'),
+			uploadToR2(fullAvifBuffer, `${bucket}/${filename}.avif`, 'image/avif'), // AVIF for display
 		]);
 		
 		// Log file sizes for debugging
-		logger.info(`[UPLOAD] File sizes - Original: ${(originalBuffer.length / 1024 / 1024).toFixed(2)}MB, WebP: ${(webpFullBuffer.length / 1024 / 1024).toFixed(2)}MB`);
+		logger.info(`[UPLOAD] File sizes - Original: ${(originalBuffer.length / 1024 / 1024).toFixed(2)}MB, WebP: ${(webpFullBuffer.length / 1024 / 1024).toFixed(2)}MB, AVIF: ${(fullAvifBuffer.length / 1024 / 1024).toFixed(2)}MB`);
 		logger.info(`[UPLOAD] Original URL: ${original}, Extension: ${originalExtension}`);
 
 		return {
@@ -279,10 +292,10 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 			smallUrl: small,
 			regularUrl: regular,
 			imageUrl: original, // True original file (JPG/PNG)
-			imageAvifUrl: webpFull, // WebP version for display
-			thumbnailAvifUrl: thumb,
-			smallAvifUrl: small,
-			regularAvifUrl: regular,
+			imageAvifUrl: fullAvif, // AVIF version for display
+			thumbnailAvifUrl: thumbAvif,
+			smallAvifUrl: smallAvif,
+			regularAvifUrl: regularAvif,
 			base64Thumbnail, // Tiny base64 BMP for instant blur-up (like Unsplash)
 		};
 	} catch (err) {
