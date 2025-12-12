@@ -139,7 +139,7 @@ function FavoritesPage() {
     // Loading skeleton
     const FavoritesSkeleton = () => (
         <div className="favorites-grid" aria-label={t('a11y.loadingFavorites')} aria-live="polite">
-            {Array.from({ length: uiConfig.skeleton.imageGridCount }).map((_, index) => (
+            {Array.from({ length: uiConfig.skeleton.gridSkeletonCount }).map((_, index) => (
                 <div
                     key={`skeleton-${index}`}
                     className={`favorites-item ${index % 3 === 0 ? 'portrait' : 'landscape'}`}

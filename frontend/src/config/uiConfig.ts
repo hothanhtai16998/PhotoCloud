@@ -8,7 +8,7 @@ export const uiConfig = {
     // Skeleton loading placeholders
     skeleton: {
         // Number of skeleton items for image grids
-        imageGridCount: 12,
+        gridSkeletonCount: 12,
         
         // Number of skeleton items for collection grids
         collectionGridCount: 6,

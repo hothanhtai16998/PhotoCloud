@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useLayoutEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useLayoutEffect, useRef } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
@@ -23,7 +23,6 @@ const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
 const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
-const UploadPage = lazy(() => import("./pages/UploadPage"));
 const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const FavoriteCollectionsPage = lazy(() => import("./pages/FavoriteCollectionsPage"));
@@ -208,7 +207,6 @@ function App() {
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/profile/user/:userId" element={<ProfilePage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/upload" element={<UploadPage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
             <Route path="/collections" element={<CollectionsPage />} />

@@ -377,7 +377,7 @@
   }
 }
 
-/* Image Grid - Use masonry grid style like ImageGrid */
+/* Image Grid - Use masonry grid style */
 .profile-image-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

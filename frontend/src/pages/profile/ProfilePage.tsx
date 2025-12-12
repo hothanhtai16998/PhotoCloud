@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense, useContext } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useUserStore } from "@/stores/useUserStore";
 import { useProfileStore } from "@/stores/useProfileStore";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Image } from "@/types/image";
 import ProgressiveImage from "@/components/ProgressiveImage";
-import MasonryGrid from "@/components/MasonryGrid";
 import api from "@/lib/axios";
 import axios from "axios";
 import { generateImageSlug, extractIdFromSlug } from "@/lib/utils";
@@ -18,6 +17,8 @@ const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDash
 const UserList = lazy(() => import("./components/UserList").then(module => ({ default: module.UserList })));
 // Lazy load ImageModal - conditionally rendered
 const ImageModal = lazy(() => import("@/components/ImageModal"));
+// Lazy load UploadModal - conditionally rendered
+const UploadModal = lazy(() => import("@/components/UploadModal").then(module => ({ default: module.default })));
 import { userStatsService } from "@/services/userStatsService";
 import { ProfileHeader } from "./components/ProfileHeader";
 import { ProfileTabs } from "./components/ProfileTabs";
@@ -29,6 +30,9 @@ import { appConfig } from "@/config/appConfig";
 import { timingConfig } from "@/config/timingConfig";
 import { uiConfig } from "@/config/uiConfig";
 import { t } from "@/i18n";
+import { NoFlashGrid } from "@/components/NoFlashGrid";
+import { saveScrollPosition, prepareModalNavigationState, setModalActive } from "@/utils/modalNavigation";
+import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import "./ProfilePage.css";
 
 type TabType = 'photos' | 'following' | 'followers' | 'collections' | 'stats';
@@ -50,6 +54,7 @@ function ProfilePage() {
     const navigate = useNavigate();
     const params = useParams<{ username?: string; userId?: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const actualLocation = useContext(ActualLocationContext);
 
     // Profile store
     const {
@@ -82,19 +87,11 @@ function ProfilePage() {
     // Detect if we're on mobile
     const isMobile = useIsMobile();
 
-    // Column count for masonry grid (responsive like ImageGrid)
-    const [columnCount, setColumnCount] = useState(() => {
-        if (typeof window === 'undefined') return 3;
-        const width = window.innerWidth;
-        if (width < appConfig.mobileBreakpoint) return 1; // Mobile: 1 column
-        if (width < appConfig.breakpoints.lg) return 2; // Tablet: 2 columns
-        return 3; // Desktop: 3 columns
-    });
-
     const [activeTab, setActiveTab] = useState<TabType>(TABS.PHOTOS);
     const [isSwitchingProfile, setIsSwitchingProfile] = useState(false);
     // Track which user ID the current stats belong to
     const [statsUserId, setStatsUserId] = useState<string | undefined>(undefined);
+    const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const processedImages = useRef<Set<string>>(new Set());
     const previousParams = useRef<string>('');
 
@@ -211,6 +208,62 @@ function ProfilePage() {
         }
     }, [displayUserId, fetchUserImages, updateStatsUserIdIfSame]);
 
+    // Calculate display images based on active tab
+    const displayImages = useMemo(() => {
+        if (activeTab === TABS.PHOTOS) {
+            return images.filter(img => {
+                const categoryName = typeof img.imageCategory === 'string'
+                    ? img.imageCategory
+                    : img.imageCategory?.name;
+                // Show images without categories (pending approval) or with valid categories
+                // Only filter out illustration and svg categories if category exists
+                if (!categoryName) {
+                    return true; // Show images without categories (pending approval)
+                }
+                return !categoryName.toLowerCase().includes('illustration') &&
+                    !categoryName.toLowerCase().includes('svg');
+            });
+        }
+        return [];
+    }, [activeTab, images]);
+
+    // Handle image click - navigate to ImagePage
+    const handleImageClick = useCallback((image: Image, _index: number) => {
+        const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+        const targetPath = `/photos/${slug}`;
+        
+        // Mobile: full page navigation
+        if (isMobile) {
+            navigate(targetPath, {
+                state: { images: displayImages, fromGrid: true }
+            });
+            return;
+        }
+        
+        // Desktop: modal-style with background
+        // 1. Save scroll position using unified utility
+        saveScrollPosition();
+        
+        // 2. Set modal active flag (required for validation)
+        setModalActive();
+        
+        // 3. Prepare modal navigation state
+        // CRITICAL: backgroundLocation must be a proper Location object
+        const backgroundLocation = {
+            pathname: actualLocation?.pathname || `/profile/${displayUser?.username || displayUserId}`,
+            search: actualLocation?.search || '',
+            hash: actualLocation?.hash || '',
+            state: null,
+            key: actualLocation?.key || 'default', // Use 'default' instead of empty string
+        };
+        const modalState = prepareModalNavigationState(backgroundLocation);
+        
+        // 4. Navigate with modal state
+        navigate(targetPath, {
+            state: { ...modalState, images: displayImages, fromGrid: true }
+        });
+    }, [navigate, displayImages, actualLocation, isMobile, displayUser, displayUserId]);
+
     // Wrapper to handle race condition checks and own profile check
     const fetchCollectionsWrapper = useCallback(async (signal?: AbortSignal) => {
         if (!displayUserId) {
@@ -311,6 +364,11 @@ function ProfilePage() {
 
     // Cancel requests when displayUserId changes
     const cancelSignal = useRequestCancellationOnChange([displayUserId]);
+
+    // Load data callback for NoFlashGrid
+    const loadData = useCallback(async () => {
+        await fetchUserImagesWrapper(false, cancelSignal);
+    }, [fetchUserImagesWrapper, cancelSignal]);
 
     useEffect(() => {
         // ProtectedRoute ensures currentUser exists, but we still need displayUserId
@@ -432,26 +490,6 @@ function ProfilePage() {
         }
     }, [displayUserId, displayUser, isOwnProfile, isFollowingLoading, followStats.isFollowing, fetchFollowStatsWrapper, cancelSignal]);
 
-
-    // Calculate display images based on active tab
-    const displayImages = useMemo(() => {
-        if (activeTab === TABS.PHOTOS) {
-            return images.filter(img => {
-                const categoryName = typeof img.imageCategory === 'string'
-                    ? img.imageCategory
-                    : img.imageCategory?.name;
-                // Show images without categories (pending approval) or with valid categories
-                // Only filter out illustration and svg categories if category exists
-                if (!categoryName) {
-                    return true; // Show images without categories (pending approval)
-                }
-                return !categoryName.toLowerCase().includes('illustration') &&
-                    !categoryName.toLowerCase().includes('svg');
-            });
-        }
-        return [];
-    }, [activeTab, images]);
-
     // Get selected image slug or ID from URL
     const imageParamFromUrl = searchParams.get('image');
 
@@ -532,116 +570,6 @@ function ProfilePage() {
         updateImage(updatedImage._id, updatedImage);
     }, [updateImage]);
 
-    // Update column count based on viewport size (like ImageGrid)
-    useEffect(() => {
-        const updateColumnCount = () => {
-            const width = window.innerWidth;
-            if (width < appConfig.mobileBreakpoint) {
-                setColumnCount(1); // Mobile: 1 column
-            } else if (width < appConfig.breakpoints.lg) {
-                setColumnCount(2); // Tablet: 2 columns
-            } else {
-                setColumnCount(3); // Desktop: 3 columns
-            }
-        };
-
-        updateColumnCount();
-        window.addEventListener('resize', updateColumnCount);
-        return () => window.removeEventListener('resize', updateColumnCount);
-    }, []);
-
-    // Handle image click (for MasonryGrid)
-    const handleImageClick = useCallback((image: Image) => {
-        // MOBILE ONLY: Navigate to ImagePage instead of opening modal
-        if (isMobile) {
-            const slug = generateImageSlug(image.imageTitle || '', image._id);
-            navigate(`/photos/${slug}`, {
-                state: { images: displayImages }
-            });
-            return;
-        }
-
-        // DESKTOP: Use modal (existing behavior)
-        // Update URL when image is selected with slug
-        const slug = generateImageSlug(image.imageTitle || '', image._id);
-        setSearchParams(prev => {
-            const newParams = new URLSearchParams(prev);
-            newParams.set('image', slug);
-            return newParams;
-        });
-    }, [isMobile, displayImages, navigate, setSearchParams]);
-
-    // Handle download (for MasonryGrid)
-    const handleDownload = useCallback(async (image: Image, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        try {
-            if (!image._id) {
-                throw new Error(t('profile.imageIdError'));
-            }
-
-            // Use backend endpoint to download image (proxies from S3)
-            const response = await api.get(`/images/${image._id}/download`, {
-                responseType: 'blob',
-                withCredentials: true,
-            });
-
-            // Create blob URL from response
-            const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/webp' });
-            const blobUrl = URL.createObjectURL(blob);
-
-            // Create download link
-            const link = document.createElement('a');
-            link.href = blobUrl;
-
-            // Get filename from Content-Disposition header or use default
-            const contentDisposition = response.headers['content-disposition'];
-            let fileName = 'photo.webp';
-            if (contentDisposition) {
-                const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/i);
-                if (fileNameMatch) {
-                    fileName = fileNameMatch[1];
-                }
-            } else {
-                // Fallback: generate filename from image title
-                const sanitizedTitle = (image.imageTitle || 'photo').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                const urlExtension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
-                fileName = `${sanitizedTitle}.${urlExtension}`;
-            }
-            link.download = fileName;
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up the blob URL after a short delay
-            setTimeout(() => {
-                URL.revokeObjectURL(blobUrl);
-            }, timingConfig.cleanup.blobUrlRevokeMs);
-
-            toast.success(t('profile.downloadSuccess'));
-        } catch (error) {
-            console.error(t('profile.downloadFailed'), error);
-            toast.error(t('profile.loadImagesFailed'));
-
-            // Fallback: try opening in new tab if download fails
-            try {
-                if (image.imageUrl) {
-                    window.open(image.imageUrl, '_blank');
-                }
-            } catch (fallbackError) {
-                console.error('Fallback download error:', fallbackError);
-            }
-        }
-    }, []);
-
-    // Handle add to collection (for MasonryGrid)
-    const handleAddToCollection = useCallback((_image: Image, e: React.MouseEvent) => {
-        e.stopPropagation();
-        // TODO: Implement collection modal for profile page
-        toast.info('Tính năng thêm vào bộ sưu tập sẽ sớm ra mắt!');
-    }, []);
 
     if (profileUserLoading) {
         return (
@@ -717,30 +645,33 @@ function ProfilePage() {
                     {/* Content Area */}
                     <div className="profile-content">
                         {activeTab === TABS.PHOTOS ? (
-                            loading ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4" aria-label={t('profile.loadingPhotos')} aria-live="polite">
-                                    {Array.from({ length: 12 }).map((_, i) => (
-                                        <Skeleton key={i} className="w-full h-64" />
-                                    ))}
+                            loading && displayImages.length === 0 ? (
+                                <div className="empty-state" role="status" aria-live="polite">
+                                    <p>{t('profile.loadingPhotos')}</p>
                                 </div>
                             ) : displayImages.length === 0 ? (
                                 <div className="empty-state" role="status" aria-live="polite">
                                     <p>{t('profile.noPhotos')}</p>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => navigate('/upload')}
-                                        className="mt-4"
-                                    >
-                                        {t('upload.addImage')}
-                                    </Button>
+                                    {isOwnProfile && (
+                                        <Button
+                                            variant="outline"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setUploadModalOpen(true);
+                                            }}
+                                            className="mt-4"
+                                        >
+                                            {t('upload.addImage')}
+                                        </Button>
+                                    )}
                                 </div>
                             ) : (
-                                <MasonryGrid
+                                <NoFlashGrid
                                     images={displayImages}
+                                    loading={loading}
+                                    onLoadData={loadData}
                                     onImageClick={handleImageClick}
-                                    columnCount={columnCount}
-                                    onDownload={handleDownload}
-                                    onAddToCollection={handleAddToCollection}
                                 />
                             )
                         ) : activeTab === TABS.FOLLOWING ? (
@@ -897,6 +828,18 @@ function ProfilePage() {
                     onPinnedImagesUpdate={handlePinnedImagesUpdate}
                     userId={displayUserId}
                 />
+            )}
+
+            {/* Upload Modal - Lazy loaded, only render when open */}
+            {uploadModalOpen && (
+                <Suspense fallback={null}>
+                    <UploadModal
+                        isOpen={uploadModalOpen}
+                        onClose={() => {
+                            setUploadModalOpen(false);
+                        }}
+                    />
+                </Suspense>
             )}
         </>
     );
