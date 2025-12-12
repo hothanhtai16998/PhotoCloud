@@ -1081,14 +1081,14 @@ function ImagePage() {
       link.href = blobUrl;
 
       const contentDisposition = response.headers['content-disposition'];
-      let fileName = 'photo.webp';
+      let fileName = `${t('image.photo')}.webp`;
       if (contentDisposition) {
         const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/i);
         if (fileNameMatch) {
           fileName = fileNameMatch[1];
         }
       } else {
-        const sanitizedTitle = (image.imageTitle || 'photo').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const sanitizedTitle = (image.imageTitle || t('image.photo')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const urlExtension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
         fileName = `${sanitizedTitle}.${urlExtension}`;
       }
@@ -1127,12 +1127,12 @@ function ImagePage() {
 
   const handleShare = useCallback(() => {
     if (!image?._id) return;
-    const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+    const slug = generateImageSlug(image.imageTitle || t('image.untitled'), image._id);
     const shareUrl = `${window.location.origin}/photos/${slug}`;
     if (navigator.share) {
       navigator.share({
-        title: image.imageTitle || 'Photo',
-        text: `Check out this photo: ${image.imageTitle || 'Untitled'}`,
+        title: image.imageTitle || t('image.photo'),
+        text: t('imagePage.shareText', { title: image.imageTitle || t('image.untitled') }),
         url: shareUrl,
       }).catch(() => { });
     } else {
@@ -1280,7 +1280,7 @@ function ImagePage() {
         <Header />
         <div className="image-page-loading">
           <div className="loading-spinner" />
-          <p>Đang tải ảnh...</p>
+          <p>{t('imagePage.loading')}</p>
         </div>
       </>
     );
@@ -1292,8 +1292,8 @@ function ImagePage() {
       <>
         <Header />
         <div className="image-page-error">
-          <p>{error || 'Không tìm thấy ảnh'}</p>
-          <button onClick={() => navigate('/')}>Quay lại trang chủ</button>
+          <p>{error || t('imagePage.notFound')}</p>
+          <button onClick={() => navigate('/')}>{t('imagePage.backToHome')}</button>
         </div>
       </>
     );
@@ -1481,7 +1481,7 @@ function ImagePage() {
                           {authorImg.thumbnailUrl || authorImg.smallUrl || authorImg.imageUrl ? (
                             <img
                               src={authorImg.thumbnailUrl || authorImg.smallUrl || authorImg.imageUrl}
-                              alt={authorImg.imageTitle || 'Photo'}
+                              alt={authorImg.imageTitle || t('image.photo')}
                               className="image-modal-author-image"
                             />
                           ) : (
@@ -1650,7 +1650,7 @@ function ImagePage() {
                 <img
                   key={imageKey}
                   src={backImageSrc}
-                  alt={image.imageTitle || 'photo'}
+                  alt={image.imageTitle || t('image.photo')}
                   className={`image-modal-back-image ${frontLoaded ? 'loaded' : ''}`}
                   style={{
                     // CRITICAL: Hide old image with CSS when new one is ready
@@ -1698,7 +1698,7 @@ function ImagePage() {
                   key={`front-${image._id}`}
                   ref={imgElementRef}
                   src={frontSrc}
-                  alt={image.imageTitle || 'photo'}
+                  alt={image.imageTitle || t('image.photo')}
                   className={`image-modal-front-image ${frontLoaded ? 'loaded' : ''}`}
                   draggable={false}
                   onLoad={(e) => {
@@ -1781,7 +1781,7 @@ function ImagePage() {
                 <img
                   key={`fallback-${image._id}`}
                   src={fallbackSrc}
-                  alt={image.imageTitle || 'photo'}
+                  alt={image.imageTitle || t('image.photo')}
                   className="image-modal-front-image"
                   draggable={false}
                   onLoad={() => { }}

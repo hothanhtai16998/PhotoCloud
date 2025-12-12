@@ -580,6 +580,18 @@ export const vi = {
     noRelatedImages: 'Không có ảnh liên quan',
     viewOnMaps: 'Xem trên Google Maps',
     searchTag: 'Tìm kiếm: {tag}',
+    photo: 'Ảnh',
+    photographer: 'Nhiếp ảnh gia',
+    downloadSuccess: 'Tải xuống thành công',
+    downloadFailed: 'Tải xuống thất bại',
+  },
+
+  // ImagePage
+  imagePage: {
+    loading: 'Đang tải ảnh...',
+    notFound: 'Không tìm thấy ảnh',
+    backToHome: 'Quay lại trang chủ',
+    shareText: 'Xem ảnh này: {title}',
     // Edit Image
     editImage: 'Sửa ảnh',
     description: 'Mô tả',

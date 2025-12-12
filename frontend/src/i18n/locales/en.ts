@@ -587,6 +587,18 @@ export const en = {
     noRelatedImages: 'No related images',
     viewOnMaps: 'View on Google Maps',
     searchTag: 'Search: {tag}',
+    photo: 'Photo',
+    photographer: 'Photographer',
+    downloadSuccess: 'Download successful',
+    downloadFailed: 'Download failed',
+  },
+
+  // ImagePage
+  imagePage: {
+    loading: 'Loading image...',
+    notFound: 'Image not found',
+    backToHome: 'Back to homepage',
+    shareText: 'Check out this photo: {title}',
     // Edit Image
     editImage: 'Edit Image',
     description: 'Description',
