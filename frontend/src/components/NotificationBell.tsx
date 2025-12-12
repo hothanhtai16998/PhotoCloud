@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Bell, X, Check, CheckCheck, Trash2, Users, Image as ImageIcon, Shield, Folder, RefreshCw, Heart, Download, Share2, Upload, CheckCircle, XCircle, Loader2, Star, AlertTriangle, Ban, User, Eye, Key, Mail, Smartphone, LogIn, Megaphone, Wrench, FileText, Sparkles, Flag, UserPlus, UserMinus } from 'lucide-react';
 import { notificationService, type Notification } from '@/services/notificationService';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -8,7 +8,11 @@ import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
 import './NotificationBell.css';
 
-export default function NotificationBell() {
+export interface NotificationBellRef {
+	close: () => void;
+}
+
+const NotificationBell = forwardRef<NotificationBellRef>((_props, ref) => {
 	const { accessToken } = useAuthStore();
 	const { user } = useUserStore();
 	const navigate = useNavigate();
@@ -22,6 +26,11 @@ export default function NotificationBell() {
 	const bellButtonRef = useRef<HTMLButtonElement>(null);
 	const pollingIntervalRef = useRef<number | null>(null);
 	const previousUnreadCountRef = useRef(0);
+
+	// Expose close method via ref
+	useImperativeHandle(ref, () => ({
+		close: () => setIsOpen(false),
+	}));
 
 	// Get notification message helper
 	const getNotificationMessage = useCallback((notification: Notification): string => {
@@ -281,11 +290,23 @@ export default function NotificationBell() {
 		};
 	}, [fetchNotifications]);
 
-	// Close dropdown when clicking outside
+	// Close dropdown when clicking outside or on avatar menu trigger
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
-			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
+			const target = event.target as HTMLElement;
+			if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+				// Also close if clicking on avatar menu trigger (user menu button)
+				const isAvatarTrigger = target.closest('.user-menu-trigger') || 
+					target.closest('.mobile-header-icon') ||
+					target.closest('[data-slot="dropdown-menu-trigger"]');
+				if (isAvatarTrigger) {
+					setIsOpen(false);
+					return;
+				}
+				// Don't close if clicking the bell button itself
+				if (bellButtonRef.current && !bellButtonRef.current.contains(target)) {
+					setIsOpen(false);
+				}
 			}
 		};
 
@@ -567,7 +588,11 @@ export default function NotificationBell() {
 			)}
 		</div>
 	);
-}
+});
+
+NotificationBell.displayName = 'NotificationBell';
+
+export default NotificationBell;
 
 function formatNotificationTime(dateString: string): string {
 	const date = new Date(dateString);

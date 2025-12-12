@@ -371,17 +371,32 @@
 
 	/* Prevent layout shifts when modal is open */
 	body.scroll-locked {
-		/* Lock viewport dimensions to prevent recalculation */
+		/* Lock scroll but keep content visible (don't use position: fixed which hides content) */
 		overflow: hidden !important;
-		position: fixed !important;
-		width: 100% !important;
+		/* Don't use position: fixed as it removes body from flow and hides content */
+		position: static !important;
 		/* Prevent any layout recalculations from affecting modals */
 		contain: layout style !important;
-		/* Lock viewport to prevent dropdown from causing recalculation */
-		height: 100vh !important;
-		top: 0 !important;
-		left: 0 !important;
-		right: 0 !important;
+	}
+
+	/* Class to apply scrollbar compensation instantly */
+	body.scroll-compensate,
+	html.scroll-compensate {
+		/* This class is applied BEFORE scroll-locked to prevent shift */
+	}
+
+	body.scroll-compensate {
+		padding-right: var(--scrollbar-width, 0px) !important;
+	}
+
+	html.scroll-compensate {
+		padding-right: var(--scrollbar-width, 0px) !important;
+		scrollbar-gutter: auto !important;
+	}
+
+	/* When body is scroll-locked, ensure html doesn't show scrollbar */
+	html:has(body.scroll-locked) {
+		overflow: hidden !important;
 	}
 
 	/* Lock modal positions when scroll is locked */

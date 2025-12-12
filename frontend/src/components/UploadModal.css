@@ -12,11 +12,25 @@
   justify-content: center;
   padding: 20px;
   overflow-y: auto;
+  overflow-x: hidden;
+  /* Ensure proper centering */
+  min-height: 100vh;
+  min-width: 100vw;
+  /* Hide scrollbar but keep scrolling functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
   /* Prevent layout shifts when dropdown opens */
   isolation: isolate;
   transform: translateZ(0);
   will-change: auto;
   backface-visibility: hidden;
+}
+
+/* Hide scrollbar on overlay for webkit browsers */
+.upload-modal-overlay::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* Pre-upload Overlay (Unsplash-style) */

@@ -28,7 +28,8 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
     const { settings } = useSiteSettings();
 
     // Track image orientations for masonry layout (future feature)
-    const [_imageOrientations, setImageOrientations] = useState<Map<number, boolean>>(new Map());
+    // Currently only set but not read - kept for future implementation
+    const [, setImageOrientations] = useState<Map<number, boolean>>(new Map());
 
     // Preserve quality toggle with localStorage persistence
     const [preserveQuality, setPreserveQuality] = useState<boolean>(() => {
@@ -36,12 +37,10 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
         return saved === 'true';
     });
 
-    const handlePreserveQualityChange = useCallback((checked: boolean) => {
+    const handlePreserveQualityChange = (checked: boolean) => {
         setPreserveQuality(checked);
         localStorage.setItem('uploadPreserveQuality', checked.toString());
-        // If images are already uploaded, they need to be re-uploaded with new setting
-        // For now, we'll just update the preference for future uploads
-    }, []);
+    };
 
     const {
         categories,
@@ -90,24 +89,18 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     // Auto-select first category for admin users when categories are loaded and images are selected
     useEffect(() => {
-        if (isAdmin && categories.length > 0 && imagesData.length > 0) {
-            const firstCategory = categories[0];
-            if (!firstCategory) return;
-            const firstCategoryId = firstCategory._id;
-            setImagesData(prev => {
-                const needsUpdate = prev.some(img => !img.category || img.category.trim() === '');
-                if (!needsUpdate) return prev; // No changes needed
+        if (!isAdmin || categories.length === 0 || imagesData.length === 0) return;
+        
+        const firstCategoryId = categories[0]?._id;
+        if (!firstCategoryId) return;
 
-                return prev.map(img => {
-                    // Only auto-select if category is empty
-                    if (!img.category || img.category.trim() === '') {
-                        return { ...img, category: firstCategoryId };
-                    }
-                    return img;
-                });
-            });
-        }
-    }, [isAdmin, categories.length, imagesData.length]);
+        setImagesData(prev => {
+            if (!prev.some(img => !img.category?.trim())) return prev;
+            return prev.map(img => 
+                !img.category?.trim() ? { ...img, category: firstCategoryId } : img
+            );
+        });
+    }, [isAdmin, categories, imagesData.length]);
 
     // Check if all images have required fields filled AND all are pre-uploaded
     // Title is no longer required, category is only required for admin users
@@ -141,49 +134,30 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
         navigate('/profile');
     };
 
-    // Cleanup pre-uploaded files that weren't finalized
-    const cleanupPreUploadedFiles = useCallback(async () => {
-        // Find all images that were pre-uploaded (regardless of success state)
-        // This function is only called when modal closes without finalization
-        const preUploadedImages = imagesData.filter(
-            img => img.preUploadData?.uploadKey
-        );
-
-        // Delete all pre-uploaded files in parallel
-        if (preUploadedImages.length > 0) {
-            const deletePromises = preUploadedImages.map(async (img) => {
-                if (img.preUploadData?.uploadKey) {
-                    try {
-                        await imageService.deletePreUploadedFile(img.preUploadData.uploadKey);
-                    } catch (error) {
-                        console.error('Failed to delete pre-uploaded file:', error);
-                        // Continue even if some deletions fail
-                    }
-                }
-            });
-            await Promise.all(deletePromises);
-        }
-    }, [imagesData]);
-
-    const handleCancel = useCallback(async () => {
-        if (showProgress || showSuccess) return; // Prevent closing during upload/success
-
+    const handleCancel = async () => {
+        if (showProgress || showSuccess) return;
+        
         // Cleanup pre-uploaded files before closing
-        await cleanupPreUploadedFiles();
+        const preUploadedImages = imagesData.filter(img => img.preUploadData?.uploadKey);
+        if (preUploadedImages.length > 0) {
+            await Promise.all(
+                preUploadedImages.map(img =>
+                    imageService.deletePreUploadedFile(img.preUploadData!.uploadKey).catch(console.error)
+                )
+            );
+        }
 
         resetState();
         resetUploadState();
         onClose();
-    }, [onClose, showProgress, showSuccess, resetUploadState, resetState, cleanupPreUploadedFiles]);
+    };
 
-    // Handle closing the modal after successful upload
-    const handleCloseAfterSuccess = useCallback(() => {
-        if (!showSuccess) return; // Only allow closing if upload was successful
+    const handleCloseAfterSuccess = () => {
+        if (!showSuccess) return;
         resetState();
         resetUploadState();
         onClose();
-        // No need to dispatch refresh here - it already happened when "Gửi 1 ảnh" was clicked
-    }, [onClose, showSuccess, resetUploadState, resetState]);
+    };
 
     // Handle ESC key
     useEffect(() => {
@@ -197,45 +171,35 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
         return () => document.removeEventListener('keydown', handleEsc);
     }, [isOpen, handleCancel]);
 
-    // Prevent body scroll when modal is open
+    // Prevent body scroll when modal is open (without hiding content)
     useEffect(() => {
-        if (isOpen) {
-            // Calculate scrollbar width to prevent layout shift
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            const originalPaddingRight = document.body.style.paddingRight;
+        if (!isOpen) return;
 
-            document.body.style.overflow = 'hidden';
-            // Add padding to compensate for scrollbar width to prevent layout shift
-            if (scrollbarWidth > 0) {
-                document.body.style.paddingRight = `${scrollbarWidth}px`;
-            }
+        // Store scroll position
+        const scrollY = window.scrollY;
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
 
-            return () => {
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = originalPaddingRight || '';
-            };
-        } else {
-            document.body.style.overflow = '';
-        }
         return () => {
+            document.documentElement.style.overflow = '';
             document.body.style.overflow = '';
+            window.scrollTo(0, scrollY);
         };
     }, [isOpen]);
 
     // Cleanup pre-uploaded files when modal closes (only if upload wasn't successful)
     useEffect(() => {
-        // When modal closes (isOpen becomes false), cleanup any pre-uploaded files
-        // Only cleanup if: modal is closed, there are images, upload wasn't successful, and not currently uploading
         if (!isOpen && imagesData.length > 0 && !showSuccess && !showProgress) {
-            const preUploadedImages = imagesData.filter(
-                img => img.preUploadData?.uploadKey
-            );
+            const preUploadedImages = imagesData.filter(img => img.preUploadData?.uploadKey);
             if (preUploadedImages.length > 0) {
-                // Fire and forget - don't block UI
-                cleanupPreUploadedFiles().catch(console.error);
+                Promise.all(
+                    preUploadedImages.map(img =>
+                        imageService.deletePreUploadedFile(img.preUploadData!.uploadKey).catch(console.error)
+                    )
+                );
             }
         }
-    }, [isOpen, imagesData, showSuccess, showProgress, cleanupPreUploadedFiles]);
+    }, [isOpen, imagesData, showSuccess, showProgress]);
 
     // Redirect to sign-in if not authenticated
     useEffect(() => {
@@ -276,26 +240,98 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     if (!isOpen || !accessToken) return null;
 
-    // Helper to render modal content via portal
-    const renderModal = (content: React.ReactNode) => {
-        if (typeof document === 'undefined') return null;
-        return createPortal(content, document.body);
+    // MIME type mapping for file input accept attribute
+    const MIME_TYPE_MAP: Record<string, string> = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'webp': 'image/webp',
+        'gif': 'image/gif',
+        'svg': 'image/svg+xml',
+        'bmp': 'image/bmp',
+        'ico': 'image/x-icon',
+        'mp4': 'video/mp4',
+        'webm': 'video/webm',
     };
+
+    // Reusable drag handlers for modal container
+    const modalDragHandlers = {
+        onDragEnter: handleDrag,
+        onDragLeave: handleDrag,
+        onDragOver: (e: React.DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDrag(e);
+        },
+        onDrop: (e: React.DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDrop(e);
+        },
+    };
+
+    // Reusable header section with quality toggle
+    const renderModalHeader = (showQualityToggle: boolean) => (
+        <div className="upload-modal-header">
+            <h2 className="upload-modal-title">{t('upload.title')}</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {showQualityToggle && selectedFiles.length > 0 && (
+                    <label
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            cursor: imagesData.some(img => img.preUploadData) ? 'not-allowed' : 'pointer',
+                            fontSize: 14,
+                            color: imagesData.some(img => img.preUploadData) ? '#999' : '#666',
+                            opacity: imagesData.some(img => img.preUploadData) ? 0.6 : 1,
+                        }}
+                        title={
+                            imagesData.some(img => img.preUploadData)
+                                ? t('upload.waitForUpload')
+                                : preserveQuality
+                                    ? t('upload.preserveQualityHint')
+                                    : t('upload.compressImagesHint')
+                        }
+                    >
+                        <input
+                            type="checkbox"
+                            checked={preserveQuality}
+                            onChange={(e) => handlePreserveQualityChange(e.target.checked)}
+                            disabled={imagesData.some(img => img.preUploadData)}
+                            style={{ cursor: imagesData.some(img => img.preUploadData) ? 'not-allowed' : 'pointer' }}
+                        />
+                        <span>{preserveQuality ? t('upload.preserveQuality') : t('upload.compressImages')}</span>
+                    </label>
+                )}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="upload-modal-close"
+                    onClick={handleCancel}
+                    aria-label="Close upload modal"
+                >
+                    <X size={20} />
+                </Button>
+            </div>
+        </div>
+    );
 
     // Progress Screen (finalize phase)
     if (showProgress) {
-        return renderModal(
+        return createPortal(
             <UploadProgress
                 uploadingIndex={uploadingIndex}
                 totalUploads={totalUploads}
                 uploadProgress={uploadProgress}
-            />
+            />,
+            document.body
         );
     }
 
     // Success Screen
     if (showSuccess) {
-        return renderModal(
+        return createPortal(
             <div className="upload-modal-overlay" onClick={handleCloseAfterSuccess}>
                 <div className="upload-success-screen" onClick={(e) => e.stopPropagation()}>
                     <div className="confetti-container" id="confetti-container"></div>
@@ -314,75 +350,21 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                         </Button>
                     </div>
                 </div>
-            </div>
+            </div>,
+            document.body
         );
     }
 
     // Upload Screen (when no images selected)
     if (selectedFiles.length === 0) {
-        return renderModal(
+        return createPortal(
             <div className="upload-modal-overlay" onClick={handleCancel}>
                 <div
                     className={`upload-modal ${dragActive ? 'drag-active' : ''}`}
                     onClick={(e) => e.stopPropagation()}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleDrag(e);
-                    }}
-                    onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleDrop(e);
-                    }}
+                    {...modalDragHandlers}
                 >
-                    {/* Header */}
-                    <div className="upload-modal-header">
-                        <h2 className="upload-modal-title">{t('upload.title')}</h2>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            {/* Quality Toggle - only show when images are selected */}
-                            {selectedFiles.length > 0 && (
-                                <label
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 8,
-                                        cursor: imagesData.some(img => img.preUploadData) ? 'not-allowed' : 'pointer',
-                                        fontSize: 14,
-                                        color: imagesData.some(img => img.preUploadData) ? '#999' : '#666',
-                                        opacity: imagesData.some(img => img.preUploadData) ? 0.6 : 1,
-                                    }}
-                                    title={
-                                        imagesData.some(img => img.preUploadData)
-                                            ? t('upload.waitForUpload')
-                                            : preserveQuality
-                                                ? t('upload.preserveQualityHint')
-                                                : t('upload.compressImagesHint')
-                                    }
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={preserveQuality}
-                                        onChange={(e) => handlePreserveQualityChange(e.target.checked)}
-                                        disabled={imagesData.some(img => img.preUploadData)}
-                                        style={{ cursor: imagesData.some(img => img.preUploadData) ? 'not-allowed' : 'pointer' }}
-                                    />
-                                    <span>{preserveQuality ? t('upload.preserveQuality') : t('upload.compressImages')}</span>
-                                </label>
-                            )}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="upload-modal-close"
-                                onClick={handleCancel}
-                                aria-label="Close upload modal"
-                            >
-                                <X size={20} />
-                            </Button>
-                        </div>
-                    </div>
+                    {renderModalHeader(false)}
 
                     {/* Upload Area */}
                     <div className="upload-modal-content">
@@ -424,22 +406,9 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                             </p>
                             <input
                                 type="file"
-                                accept={settings.allowedFileTypes.map(type => {
-                                    // Map file extensions to MIME types
-                                    const mimeMap: Record<string, string> = {
-                                        'jpg': 'image/jpeg',
-                                        'jpeg': 'image/jpeg',
-                                        'png': 'image/png',
-                                        'webp': 'image/webp',
-                                        'gif': 'image/gif',
-                                        'svg': 'image/svg+xml',
-                                        'bmp': 'image/bmp',
-                                        'ico': 'image/x-icon',
-                                        'mp4': 'video/mp4',
-                                        'webm': 'video/webm',
-                                    };
-                                    return mimeMap[type] || `image/${type}`;
-                                }).join(',')}
+                                accept={settings.allowedFileTypes.map(type => 
+                                    MIME_TYPE_MAP[type] || `image/${type}`
+                                ).join(',')}
                                 capture="environment"
                                 className="upload-file-input"
                                 multiple={true}
@@ -461,68 +430,20 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>,
+            document.body
         );
     }
 
     // Form View (when image is selected)
-    return renderModal(
+    return createPortal(
         <div className="upload-modal-overlay" onClick={handleCancel}>
             <div
                 className={`upload-modal ${dragActive ? 'drag-active' : ''}`}
                 onClick={(e) => e.stopPropagation()}
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDrag(e);
-                }}
-                onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDrop(e);
-                }}
+                {...modalDragHandlers}
             >
-                {/* Header */}
-                <div className="upload-modal-header">
-                    <h2 className="upload-modal-title">{t('upload.title')}</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {/* Quality Toggle - only show when images are selected */}
-                        {selectedFiles.length > 0 && (
-                            <label
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: 8,
-                                    cursor: imagesData.some(img => img.preUploadData) ? 'not-allowed' : 'pointer',
-                                    fontSize: 14,
-                                    color: imagesData.some(img => img.preUploadData) ? '#999' : '#666',
-                                    opacity: imagesData.some(img => img.preUploadData) ? 0.6 : 1,
-                                }}
-                                title={
-                                    imagesData.some(img => img.preUploadData)
-                                        ? t('upload.waitForUpload')
-                                        : preserveQuality
-                                            ? t('upload.preserveQualityHint')
-                                            : t('upload.compressImagesHint')
-                                }
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={preserveQuality}
-                                    onChange={(e) => handlePreserveQualityChange(e.target.checked)}
-                                    disabled={imagesData.some(img => img.preUploadData)}
-                                    style={{ cursor: imagesData.some(img => img.preUploadData) ? 'not-allowed' : 'pointer' }}
-                                />
-                                <span>{preserveQuality ? t('upload.preserveQuality') : t('upload.compressImages')}</span>
-                            </label>
-                        )}
-                        <button className="upload-modal-close" onClick={handleCancel}>
-                            <X size={20} />
-                        </button>
-                    </div>
-                </div>
+                {renderModalHeader(true)}
 
                 {/* Content - Scrollable container with all images and their forms */}
                 <div className="upload-modal-content upload-modal-content--scrollable">
@@ -580,7 +501,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                                         imageData={imgData}
                                         index={index}
                                         onOrientationChange={(isPortrait) => {
-                                            setImageOrientations((prev: Map<number, boolean>) => {
+                                            setImageOrientations((prev) => {
                                                 const newMap = new Map(prev);
                                                 newMap.set(index, isPortrait);
                                                 return newMap;
@@ -655,7 +576,8 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 

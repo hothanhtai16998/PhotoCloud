@@ -4,9 +4,9 @@ import { Shield, Heart, User, LogOut, Info } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
 import { useImageStore } from "@/stores/useImageStore"
-import { SearchBar, type SearchBarRef } from "./SearchBar"
+import { SearchBar } from "./SearchBar"
 import { Avatar } from "./Avatar"
-import NotificationBell from "./NotificationBell"
+import NotificationBell, { type NotificationBellRef } from "./NotificationBell"
 import { LanguageSwitcher } from "./LanguageSwitcher"
 import { ThemeToggle } from "./admin/ThemeToggle"
 import { Button } from "@/components/ui/button"
@@ -76,19 +76,64 @@ function UserMenuItems({ user, onSignOut }: { user: any; onSignOut: () => void }
   );
 }
 
+// Reusable user menu dropdown component to avoid duplication
+function UserMenuDropdown({ 
+  user, 
+  onSignOut, 
+  onOpenChange,
+  triggerClassName,
+  avatarSize,
+  iconSize,
+  align = "end",
+  side = "bottom"
+}: { 
+  user: any; 
+  onSignOut: () => void;
+  onOpenChange?: (open: boolean) => void;
+  triggerClassName: string;
+  avatarSize: number;
+  iconSize: number;
+  align?: "start" | "end";
+  side?: "top" | "bottom";
+}) {
+  return (
+    <DropdownMenu 
+      modal={false}
+      onOpenChange={onOpenChange}
+    >
+      <DropdownMenuTrigger asChild>
+        <button className={triggerClassName} aria-label={t('header.userMenu')}>
+          {user ? (
+            <Avatar
+              user={user}
+              size={avatarSize}
+              className={triggerClassName.includes('mobile') ? 'mobile-header-avatar' : 'header-user-avatar'}
+              fallbackClassName={triggerClassName.includes('mobile') ? 'mobile-header-avatar-placeholder' : 'header-user-avatar-placeholder'}
+            />
+          ) : (
+            <User size={iconSize} />
+          )}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align} side={side} className="user-menu-content">
+        <UserMenuItems user={user} onSignOut={onSignOut} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export const Header = memo(function Header() {
   const { accessToken, signOut } = useAuthStore()
   const { user } = useUserStore()
   const { fetchImages } = useImageStore()
   const navigate = useNavigate()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const searchBarRef = useRef<SearchBarRef>(null)
+  const notificationBellRef = useRef<NotificationBellRef>(null)
 
   useEffect(() => {
     // Update favicon with configured logo on initial load
     updateFaviconWithImage(LOGO_CONFIG.faviconLogo)
   }, [])
-
 
   const handleLogoClick = () => {
     if (window.location.pathname !== '/') {
@@ -130,32 +175,24 @@ export const Header = memo(function Header() {
               <>
                 {/* Notification Bell */}
                 <div className="mobile-header-icon-wrapper">
-                  <NotificationBell />
+                  <NotificationBell ref={notificationBellRef} />
                 </div>
                 {/* User Icon/Avatar - Dropdown Menu like Desktop */}
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="mobile-header-icon" aria-label={t('header.userMenu')}>
-                      {user ? (
-                        <Avatar
-                          user={user}
-                          size={32}
-                          className="mobile-header-avatar"
-                          fallbackClassName="mobile-header-avatar-placeholder"
-                        />
-                      ) : (
-                        <User size={20} />
-                      )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    align="start"
-                    side="bottom"
-                    className="user-menu-content"
-                  >
-                    <UserMenuItems user={user} onSignOut={handleSignOut} />
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <UserMenuDropdown
+                  user={user}
+                  onSignOut={handleSignOut}
+                  onOpenChange={(open) => {
+                    // Close notification bell when avatar menu opens
+                    if (open && notificationBellRef.current) {
+                      notificationBellRef.current.close();
+                    }
+                  }}
+                  triggerClassName="mobile-header-icon"
+                  avatarSize={32}
+                  iconSize={20}
+                  align="start"
+                  side="bottom"
+                />
               </>
             ) : (
               <>
@@ -169,7 +206,7 @@ export const Header = memo(function Header() {
           </div>
 
           {/* Search Bar */}
-          <SearchBar ref={searchBarRef} />
+          <SearchBar />
 
           {/* Right Actions - Desktop */}
           <div className="header-actions desktop-only">
@@ -186,26 +223,22 @@ export const Header = memo(function Header() {
                 >
                   {t('header.addImage')}
                 </Button>
-                <NotificationBell />
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <button className="header-link user-menu-trigger" aria-label={t('header.userMenu')}>
-                      {user ? (
-                        <Avatar
-                          user={user}
-                          size={32}
-                          className="header-user-avatar"
-                          fallbackClassName="header-user-avatar-placeholder"
-                        />
-                      ) : (
-                        <User size={18} />
-                      )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="user-menu-content">
-                    <UserMenuItems user={user} onSignOut={handleSignOut} />
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <NotificationBell ref={notificationBellRef} />
+                <UserMenuDropdown
+                  user={user}
+                  onSignOut={handleSignOut}
+                  onOpenChange={(open) => {
+                    // Close notification bell when avatar menu opens
+                    if (open && notificationBellRef.current) {
+                      notificationBellRef.current.close();
+                    }
+                  }}
+                  triggerClassName="header-link user-menu-trigger"
+                  avatarSize={32}
+                  iconSize={18}
+                  align="end"
+                  side="bottom"
+                />
               </>
             ) : (
               <>

@@ -9,12 +9,18 @@
   justify-content: center;
   width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
   background: transparent;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 50%;
   color: #767676;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  /* Prevent any movement */
+  will-change: background-color;
 }
 
 .notification-bell-btn:hover {
@@ -148,7 +154,7 @@
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  z-index: 2000;
+  z-index: 2003 !important; /* Higher than category navigation (1499) and user menu (2002) */
   display: flex;
   flex-direction: column;
   max-height: 600px;
@@ -351,7 +357,8 @@
 }
 
 .notification-item-action-btn:active {
-  transform: scale(0.95);
+  /* Remove scale transform to prevent movement */
+  opacity: 0.9;
 }
 
 @media (max-width: 768px) {
@@ -363,7 +370,8 @@
     position: fixed;
     top: calc(var(--header-height, 56px) + 8px);
     max-height: 60vh; /* Limit to 60% of viewport height */
-    z-index: 2000;
+    z-index: 2003 !important; /* Higher than category navigation (1499) and user menu (2002) */
+    isolation: isolate; /* Create new stacking context */
   }
   
   .notification-dropdown-header {
