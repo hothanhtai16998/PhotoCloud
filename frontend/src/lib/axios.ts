@@ -2,11 +2,22 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { appConfig } from '@/config/appConfig';
 
+// Support environment variable for API URL, fallback to /api (for proxy) or localhost in dev
+const getBaseURL = () => {
+  // If VITE_API_URL is set, use it (for direct backend connection)
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // In development, use localhost
+  if (import.meta.env.MODE === 'development') {
+    return 'http://localhost:3000/api';
+  }
+  // In production, use /api (expects proxy configuration)
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL:
-    import.meta.env.MODE === 'development'
-      ? 'http://localhost:3000/api'
-      : '/api',
+  baseURL: getBaseURL(),
   withCredentials: true,
   timeout: appConfig.apiTimeout,
 });

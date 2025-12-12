@@ -115,7 +115,11 @@ export const Header = memo(function Header() {
                 src={LOGO_CONFIG.mainLogo}
                 alt={LOGO_CONFIG.altText}
                 className="header-logo-image"
+                width="56"
+                height="40"
                 style={{ height: `${LOGO_CONFIG.headerHeight}px`, width: 'auto' }}
+                loading="eager"
+                fetchPriority="high"
               />
             </Link>
           </div>

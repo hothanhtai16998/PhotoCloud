@@ -237,9 +237,19 @@ function HomePage() {
                 {/* Hide Slider when user is searching to show ImageGrid immediately */}
                 {!currentSearch && (
                     <Suspense fallback={
-                        <div className="flex items-center justify-center py-8">
-                            <Skeleton className="h-64 w-full max-w-6xl" />
-                        </div>
+                        // CLS Prevention: Match exact slider height to prevent layout shift
+                        <div 
+                            style={{ 
+                                height: 'calc(100vh - 100px)', // Desktop: 100vh - header (100px)
+                                minHeight: 'calc(100vh - 100px)',
+                                width: '100%',
+                                marginTop: '100px',
+                                marginBottom: '30px',
+                                backgroundColor: '#222',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}
+                        />
                     }>
                         <Slider />
                     </Suspense>

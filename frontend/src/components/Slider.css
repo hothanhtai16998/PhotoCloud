@@ -351,6 +351,9 @@
   box-sizing: border-box;
   overflow: hidden;
   backdrop-filter: blur(4px);
+  /* CLS Prevention: Always reserve space - prevents layout shift */
+  min-height: 4px;
+  contain: layout size style;
 }
 
 .autoplay-progress-bar {

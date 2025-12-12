@@ -591,15 +591,20 @@ function Slider() {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Auto-play progress bar */}
-      {images.length > 0 && (
-        <div className="autoplay-progress" style={{ opacity: isHovered ? 0.5 : 1 }}>
-          <div
-            className="autoplay-progress-bar"
-            style={{ width: `${autoPlayProgress}%` }}
-          />
-        </div>
-      )}
+      {/* Auto-play progress bar - Always render to prevent layout shift (CLS fix) */}
+      <div 
+        className="autoplay-progress" 
+        style={{ 
+          opacity: images.length > 0 ? (isHovered ? 0.5 : 1) : 0,
+          visibility: images.length > 0 ? 'visible' : 'hidden'
+        }}
+        aria-hidden="true"
+      >
+        <div
+          className="autoplay-progress-bar"
+          style={{ width: `${autoPlayProgress}%` }}
+        />
+      </div>
 
       {/* Main Carousel */}
       <div className={`main-carousel-container transition-${transitionType} slide-direction-${slideDirection}`}>
@@ -621,6 +626,7 @@ function Slider() {
               style={{ backgroundColor: '#1a1a1a' }}
             >
               {/* Blurred background layer - use placeholder if available to prevent flash */}
+              {/* Note: Using background-image for LCP - ensure first slide image loads with high priority */}
               {(placeholderUrl || imageUrl) && (
                 <div
                   className="blur-background-layer"

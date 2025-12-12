@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects file
+# Replace YOUR_BACKEND_URL_HERE with your actual backend URL
+
+/api/*  https://api.uploadanh.cloud/api/:splat  200
+

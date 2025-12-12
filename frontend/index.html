@@ -76,6 +76,26 @@
         width: 0 !important;
         height: 0 !important;
       }
+      
+      /* CLS Prevention: Ensure root has stable initial dimensions */
+      #root {
+        min-height: 100vh;
+        width: 100%;
+        display: block;
+      }
+      
+      /* CLS Prevention: Font loading - use fallback fonts immediately to prevent layout shift */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      }
+      
+      /* Prevent layout shifts from font loading by using size-adjust */
+      /* This ensures text maintains size even when fonts load */
+      @supports (font-size-adjust: 1) {
+        body {
+          font-size-adjust: 0.5; /* Adjust for Roboto aspect ratio */
+        }
+      }
     </style>
   </head>
   <body>
