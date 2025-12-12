@@ -45,10 +45,11 @@ export const csrfToken = (req, res, next) => {
         // Set cookie (will be auto-sent on all future requests)
         res.cookie(CSRF_TOKEN_COOKIE, token, {
             httpOnly: false, // JavaScript must be able to read for double-submit
-            secure: isProduction, // HTTPS only in production
-            sameSite: isProduction ? 'strict' : 'lax', // Prevent cross-site cookie sending
+            secure: isProduction, // HTTPS only in production (required for sameSite: 'none')
+            sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-subdomain (uploadanh.cloud <-> api.uploadanh.cloud)
             maxAge: 24 * 60 * 60 * 1000, // 24 hours
             path: '/', // Available to entire app
+            domain: isProduction ? '.uploadanh.cloud' : undefined, // Allow cookie across subdomains in production
         });
 
         logger.info('CSRF token generated', { path: req.path });
@@ -162,10 +163,11 @@ export const getCsrfToken = (req, res) => {
 
     res.cookie(CSRF_TOKEN_COOKIE, newToken, {
         httpOnly: false,
-        secure: isProduction,
-        sameSite: isProduction ? 'strict' : 'lax',
+        secure: isProduction, // HTTPS only in production (required for sameSite: 'none')
+        sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-subdomain (uploadanh.cloud <-> api.uploadanh.cloud)
         maxAge: 24 * 60 * 60 * 1000,
         path: '/',
+        domain: isProduction ? '.uploadanh.cloud' : undefined, // Allow cookie across subdomains in production
     });
 
     res.status(200).json({

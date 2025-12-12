@@ -33,15 +33,12 @@
 		"compression": "^1.8.1",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
-		"csurf": "^1.11.0",
-		"dompurify": "^3.3.0",
 		"dotenv": "^17.2.3",
 		"exif-parser": "^0.1.12",
 		"express": "^4.21.2",
 		"express-rate-limit": "^8.2.1",
 		"express-validator": "^7.3.0",
 		"helmet": "^8.1.0",
-		"jsdom": "^27.2.0",
 		"jsonwebtoken": "^9.0.2",
 		"jszip": "^3.10.1",
 		"mongoose": "^8.19.3",
@@ -51,13 +48,10 @@
 	},
 	"devDependencies": {
 		"@jest/globals": "^30.2.0",
-		"@lhci/cli": "^0.15.1",
 		"cross-env": "^10.1.0",
 		"jest": "^30.2.0",
 		"nodemon": "^3.1.11",
 		"prettier": "^3.6.2",
-		"rollup-plugin-visualizer": "^6.0.5",
-		"supertest": "^7.1.4",
-		"web-vitals": "^5.1.0"
+		"supertest": "^7.1.4"
 	}
 }

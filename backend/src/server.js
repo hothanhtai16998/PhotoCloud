@@ -52,7 +52,15 @@ if (env.NODE_ENV === 'production') {
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                imgSrc: ["'self'", "data:", "https:", "blob:"],
+                imgSrc: [
+                    "'self'",
+                    "data:",
+                    "blob:",
+                    "https://cdn.uploadanh.cloud",
+                    "https://uploadanh.cloud",
+                    env.R2_PUBLIC_URL || `https://pub-${env.R2_ACCOUNT_ID}.r2.dev`,
+                    "https:"
+                ].filter(Boolean),
                 // Production: use nonce for inline scripts instead of unsafe-inline
                 scriptSrc: ["'self'", "data:"],
                 // Allow inline styles and event handlers (needed for some libraries)
@@ -68,6 +76,8 @@ if (env.NODE_ENV === 'production') {
                     env.FRONTEND_URL,
                     // R2 storage URL
                     env.R2_PUBLIC_URL || `https://pub-${env.R2_ACCOUNT_ID}.r2.dev`,
+                    // CDN domain for images
+                    "https://cdn.uploadanh.cloud",
                     "https://nominatim.openstreetmap.org",
                     "https://uploadanh.cloud",
                     "https://fonts.googleapis.com",
