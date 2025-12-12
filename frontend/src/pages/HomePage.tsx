@@ -4,7 +4,6 @@ import Header from "../components/Header";
 import './HomePage.css';
 import { useImageStore } from "@/stores/useImageStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
-import { Skeleton } from "@/components/ui/skeleton";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
