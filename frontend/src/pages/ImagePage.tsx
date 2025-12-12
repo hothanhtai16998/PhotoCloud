@@ -18,12 +18,9 @@ import { t, getLocale } from '@/i18n';
 import { toast } from 'sonner';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
 import { ImageModalInfo } from '@/components/image/ImageModalInfo';
-import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
-import { GRID_CONFIG } from '@/components/NoFlashGrid/constants/gridConfig';
-import { calculateImageLayout, getColumnCount } from '@/components/NoFlashGrid/utils/gridLayout';
-import { loadImageDimensions } from '@/components/NoFlashGrid/utils/imageDimensions';
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
+import { NoFlashGrid } from '@/components/NoFlashGrid';
 import { isPageRefresh, validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
@@ -71,10 +68,8 @@ function ImagePage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef(0);
   const isImageChangingRef = useRef(false);
-  const relatedSectionRef = useRef<HTMLDivElement>(null);
   const topInfoRef = useRef<HTMLDivElement>(null);
   const authorAreaRef = useRef<HTMLDivElement>(null);
-  const relatedGridRef = useRef<HTMLDivElement>(null);
   const imgElementRef = useRef<HTMLImageElement>(null);
   const previousImgRef = useRef<Image | null>(null);
   const frontImageLoadedRef = useRef<boolean>(false);
@@ -150,20 +145,8 @@ function ImagePage() {
   // Scroll state for container styling
   const [isScrolled, setIsScrolled] = useState(false);
   const [shouldAnimate, setShouldAnimate] = useState(false);
-  const [isAtRelatedSection, setIsAtRelatedSection] = useState(false);
   const [isImageChanging, setIsImageChanging] = useState(false);
   
-  // Helper function to check if we're at the related section
-  const checkRelatedSection = useCallback(() => {
-    if (relatedSectionRef.current && scrollRef.current) {
-      const relatedSectionRect = relatedSectionRef.current.getBoundingClientRect();
-      const scrollAreaRect = scrollRef.current.getBoundingClientRect();
-      const topBarHeight = 60;
-      const reachedRelated = relatedSectionRect.top <= scrollAreaRect.top + topBarHeight;
-      return reachedRelated;
-    }
-    return false;
-  }, []);
 
   // Helper to check if image is in browser cache synchronously
   const checkBrowserCache = useCallback((url: string): boolean => {
@@ -300,18 +283,12 @@ function ImagePage() {
   const [authorImages, setAuthorImages] = useState<Image[]>([]);
   const [loadingAuthorImages, setLoadingAuthorImages] = useState(false);
 
-  // Related images state
+  // Related images - filter out current image
   const relatedImages = useMemo(() => {
     if (!image || images.length === 0) return [];
-    return images.filter((img) => img._id !== image._id).slice(0, 8);
+    return images.filter((img) => img._id !== image._id).slice(0, 20);
   }, [image, images]);
 
-  const [relatedColumnCount, setRelatedColumnCount] = useState(() => {
-    if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
-    return getColumnCount(window.innerWidth);
-  });
-  const [relatedContainerWidth, setRelatedContainerWidth] = useState(1400);
-  const [relatedImageDimensions, setRelatedImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
 
   // Fetch image
   useEffect(() => {
@@ -452,7 +429,7 @@ function ImagePage() {
         previousBackSrcImageIdRef.current = previousImageId;
       }
       // CRITICAL: Save current container height to maintain it during transition
-      // This prevents bottom bar and related images from jumping
+      // This prevents bottom bar from jumping
       if (imageContainerRef.current) {
         const currentHeight = imageContainerRef.current.offsetHeight;
         if (currentHeight > 0) {
@@ -472,7 +449,6 @@ function ImagePage() {
         }
       }
       // Don't clear backSrc immediately - let it stay until new one is ready
-      // This prevents flash when clicking related images
     }
 
     // Reset scroll to top when image changes
@@ -487,8 +463,6 @@ function ImagePage() {
       // Reset isScrolled immediately to prevent margin jump (no animation)
       setIsScrolled(false);
       setShouldAnimate(false);
-      // Reset isAtRelatedSection immediately so top bar shows instantly
-      setIsAtRelatedSection(false);
       
       scrollPosRef.current = 0;
       // Delay scroll reset to avoid triggering re-renders during image loading
@@ -499,7 +473,6 @@ function ImagePage() {
           }
           // Double-check state after scroll reset to ensure it's correct
           setIsScrolled(false);
-          setIsAtRelatedSection(false);
           
           // Clear flags after a short delay to re-enable transitions for scroll-based changes
           // The topbar should already be visible instantly (no transition)
@@ -796,126 +769,9 @@ function ImagePage() {
   }, [image?._id, image?.width, image?.height]);
 
   // Load dimensions for related images
-  useEffect(() => {
-    const loadDimensions = async () => {
-      if (relatedImages.length === 0) return;
-
-      const dimensionsMap = new Map<string, { width: number; height: number }>();
-      const imagesToLoad: Array<{ image: Image; url: string }> = [];
-
-      relatedImages.forEach((img) => {
-        if (relatedImageDimensions.has(img._id)) {
-          dimensionsMap.set(img._id, relatedImageDimensions.get(img._id)!);
-          return;
-        }
-
-        if (img.width && img.height) {
-          dimensionsMap.set(img._id, { width: img.width, height: img.height });
-          return;
-        }
-
-        const imageUrl = img.regularUrl || img.imageUrl || img.smallUrl || img.thumbnailUrl;
-        if (imageUrl) {
-          imagesToLoad.push({ image: img, url: imageUrl });
-        }
-      });
-
-      if (dimensionsMap.size > 0) {
-        setRelatedImageDimensions(prev => {
-          const merged = new Map(prev);
-          dimensionsMap.forEach((value, key) => {
-            merged.set(key, value);
-          });
-          return merged;
-        });
-      }
-
-      if (imagesToLoad.length > 0) {
-        const promises = imagesToLoad.map(async ({ image, url }) => {
-          try {
-            const dims = await loadImageDimensions(url);
-            if (dims) {
-              return { id: image._id, dims };
-            }
-          } catch {
-            // Silently fail
-          }
-          return null;
-        });
-
-        const results = await Promise.all(promises);
-        const validResults = results.filter((r): r is { id: string; dims: { width: number; height: number } } => r !== null);
-
-        if (validResults.length > 0) {
-          setRelatedImageDimensions(prev => {
-            const merged = new Map(prev);
-            validResults.forEach(result => {
-              merged.set(result.id, result.dims);
-            });
-            return merged;
-          });
-        }
-      }
-    };
-
-    loadDimensions();
-  }, [relatedImages]);
-
-  // Calculate grid layout for related images
-  const relatedGridLayout = useMemo(() => {
-    if (relatedImages.length === 0 || relatedContainerWidth === 0) return [];
-
-    const gapTotal = GRID_CONFIG.gap * (relatedColumnCount - 1);
-    const columnWidth = (relatedContainerWidth - gapTotal) / relatedColumnCount;
-    const columnHeights = new Array(relatedColumnCount).fill(0);
-
-    return relatedImages.map((img) => {
-      const dimensions = relatedImageDimensions.get(img._id) || null;
-      const layout = calculateImageLayout(
-        img,
-        columnWidth,
-        GRID_CONFIG.baseRowHeight,
-        dimensions
-      );
-
-      let shortestColumnIndex = 0;
-      let shortestHeight = columnHeights[0];
-      for (let i = 1; i < relatedColumnCount; i++) {
-        if (columnHeights[i] < shortestHeight) {
-          shortestHeight = columnHeights[i];
-          shortestColumnIndex = i;
-        }
-      }
-
-      const column = shortestColumnIndex + 1;
-      const rowUnit = GRID_CONFIG.baseRowHeight + GRID_CONFIG.gap;
-      const rowStart = Math.max(1, Math.floor(shortestHeight / rowUnit) + 1);
-
-      columnHeights[shortestColumnIndex] = shortestHeight + layout.rowSpan * rowUnit;
-
-      return {
-        image: img,
-        column,
-        rowSpan: layout.rowSpan,
-        rowStart,
-        columnWidth,
-      };
-    });
-  }, [relatedImages, relatedColumnCount, relatedContainerWidth, relatedImageDimensions]);
-
-  // Update related grid column count and container width on resize
+  // Update image container height if dimensions are available
   useEffect(() => {
     const updateLayout = () => {
-      if (!relatedGridRef.current) return;
-      const container = relatedGridRef.current.parentElement;
-      if (container) {
-        const width = container.offsetWidth - 32;
-        setRelatedContainerWidth(Math.max(300, width));
-      }
-      const viewportWidth = window.innerWidth;
-      setRelatedColumnCount(getColumnCount(viewportWidth));
-      
-      // Also update image container height if dimensions are available
       if (image && imageContainerRef.current && image.width && image.height) {
         const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
         if (containerWidth > 0) {
@@ -1215,6 +1071,19 @@ function ImagePage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentImageIndex, images, handleImageSelect, handleClose]);
 
+  // Handle related image click
+  const handleRelatedImageClick = useCallback((relatedImage: Image, _index: number) => {
+    handleImageSelect(relatedImage);
+    // Scroll to top when clicking related image
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
+        }
+      });
+    });
+  }, [handleImageSelect]);
+
   // Trigger animation when tooltip appears
   useEffect(() => {
     if (showAuthorTooltip) {
@@ -1254,20 +1123,6 @@ function ImagePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showCollectionModal]);
 
-  // Handle related image click - MUST be defined before early returns
-  const handleRelatedImageClick = useCallback((relatedImage: Image) => {
-    handleImageSelect(relatedImage);
-    // CRITICAL: Delay scroll until after image transition completes
-    // This prevents scroll from triggering re-renders during image loading
-    // Use multiple requestAnimationFrame to ensure it happens after React processes navigation
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
-        }
-      });
-    });
-  }, [handleImageSelect]);
 
   // CRITICAL: Hook must be called BEFORE early returns (Rules of Hooks)
   const prevShowModalStyleRef = useRef(showModalStyle);
@@ -1318,21 +1173,6 @@ function ImagePage() {
         // Check if scrolled past the initial spacer (16px)
         const nowScrolled = top > 0;
 
-        // Check if we've reached the related section
-        // CRITICAL: Only check if scrolled down (top > 0)
-        // If at top, top bar should always be visible
-        if (top > 0) {
-          const reachedRelated = checkRelatedSection();
-          if (reachedRelated !== isAtRelatedSection) {
-            setIsAtRelatedSection(reachedRelated);
-          }
-        } else {
-          // At top of scroll - top bar should be visible
-          if (isAtRelatedSection) {
-            setIsAtRelatedSection(false);
-          }
-        }
-
         // Only update state if it actually changed
         if (nowScrolled !== wasScrolled) {
           setShouldAnimate(true);
@@ -1349,7 +1189,7 @@ function ImagePage() {
       {/* Top info - Sticky: starts with space, sticks to viewport top when scrolling */}
       <div 
         ref={topInfoRef} 
-        className={`image-modal-top-info ${isAtRelatedSection ? 'slide-up' : ''} ${isImageChanging ? 'no-transition' : ''}`}
+        className={`image-modal-top-info ${isImageChanging ? 'no-transition' : ''}`}
         style={isImageChanging ? { transition: 'none' } : undefined}
       >
         <div
@@ -1931,43 +1771,22 @@ function ImagePage() {
         </div>
       </div>
 
-      {/* Related images - outside bottom bar */}
-      <div ref={relatedSectionRef} className="image-modal-related-section">
-        <div className="image-modal-related-title">Related images</div>
-        <div
-          ref={relatedGridRef}
-          className="image-modal-related-grid"
-          style={{
-            gridTemplateColumns: `repeat(${relatedColumnCount}, 1fr)`,
-            gap: `${GRID_CONFIG.gap}px`,
-            gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
-          }}
-        >
-          {relatedGridLayout.map((layout, idx) => {
-            const { image: relatedImage, column, rowSpan, rowStart } = layout;
-            return (
-              <div
-                key={`${relatedImage._id || idx}-${column}-${rowStart}`}
-                className="image-modal-related-item-wrapper"
-                style={{
-                  gridColumn: column,
-                  gridRowStart: rowStart,
-                  gridRowEnd: `span ${rowSpan}`,
-                  height: 'auto',
-                }}
-              >
-                <BlurUpImage
-                  image={relatedImage}
-                  onClick={() => {
-                    handleRelatedImageClick(relatedImage);
-                  }}
-                  priority={idx < 4}
-                />
-              </div>
-            );
-          })}
+      {/* Related images section */}
+      {relatedImages.length > 0 && (
+        <div className="image-modal-related-section" style={{ padding: '32px 16px', background: '#fff' }}>
+          <div style={{ maxWidth: '1296px', margin: '0 auto', width: '100%' }}>
+            <h2 className="image-modal-related-title" style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px', color: '#111' }}>
+              {t('image.relatedImages')}
+            </h2>
+            <NoFlashGrid
+              images={relatedImages}
+              loading={false}
+              onImageClick={handleRelatedImageClick}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 
