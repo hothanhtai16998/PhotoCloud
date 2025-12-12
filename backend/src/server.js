@@ -61,13 +61,18 @@ if (env.NODE_ENV === 'production') {
                 scriptSrcAttr: ["'unsafe-inline'"],
                 connectSrc: [
                     "'self'",
+                    // Backend API URL (for frontend deployed separately)
+                    "https://api.uploadanh.cloud",
+                    // Frontend URL (for same-origin requests)
+                    env.CLIENT_URL,
+                    env.FRONTEND_URL,
                     // R2 storage URL
                     env.R2_PUBLIC_URL || `https://pub-${env.R2_ACCOUNT_ID}.r2.dev`,
                     "https://nominatim.openstreetmap.org",
                     "https://uploadanh.cloud",
                     "https://fonts.googleapis.com",
                     "https://fonts.gstatic.com"
-                ],
+                ].filter(Boolean), // Remove any undefined/null values
                 fontSrc: ["'self'", "data:", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
                 objectSrc: ["'none'"],
                 mediaSrc: ["'self'"],
