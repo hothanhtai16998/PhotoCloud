@@ -93,15 +93,19 @@ if (env.NODE_ENV === 'production') {
 // Compression middleware - reduces response size for better performance
 // Optimized compression settings for better performance
 app.use(compression({
-    level: 6, // Balance between compression ratio and CPU usage (1-9, default is -1)
-    threshold: 1024, // Only compress responses larger than 1KB
+    level: 6, // Optimal compression level (balance between speed and size)
+    threshold: 1024, // Only compress responses > 1KB (small responses don't benefit)
     filter: (req, res) => {
-        // Don't compress if client explicitly requests no compression
+        // Don't compress images, videos, or other binary files (they're already compressed)
+        if (req.path.match(/\.(jpg|jpeg|png|gif|webp|avif|svg|ico|mp4|webm|mov)$/i)) {
+            return false;
+        }
+        // Skip compression if client explicitly requests it
         if (req.headers['x-no-compression']) {
             return false;
         }
         // Use default compression filter for other requests
-        return true;
+        return compression.filter(req, res);
     }
 }));
 app.use(express.json({ limit: '20mb' }));
@@ -260,8 +264,10 @@ if (env.NODE_ENV === 'production') {
     // __dirname is backend/src, so go up two levels to root, then into frontend/dist
     const frontendDistPath = path.join(__dirname, '../../frontend/dist');
 
-    // Configure static file serving with proper MIME types for JavaScript modules
+    // Configure static file serving with proper MIME types and aggressive caching
     app.use(express.static(frontendDistPath, {
+        maxAge: '1y', // Cache static assets for 1 year
+        immutable: true, // Files with hash in name are immutable
         setHeaders: (res, filePath) => {
             // Set correct MIME type for JavaScript modules
             if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
@@ -270,6 +276,19 @@ if (env.NODE_ENV === 'production') {
             // Set correct MIME type for TypeScript files (if any)
             if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
                 res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+            }
+            
+            // Aggressive caching for hashed assets (they're immutable)
+            if (filePath.match(/[a-f0-9]{8,}\.(js|css|png|jpg|jpeg|gif|webp|svg|woff|woff2)$/i)) {
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            } else if (filePath.endsWith('.html')) {
+                // HTML files should not be cached (always get latest)
+                res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                res.setHeader('Pragma', 'no-cache');
+                res.setHeader('Expires', '0');
+            } else {
+                // Other static files (images, fonts, etc.)
+                res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
             }
         }
     }));

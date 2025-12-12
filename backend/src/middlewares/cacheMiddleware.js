@@ -13,11 +13,13 @@ const DEFAULT_TTL = 60 * 1000; // 1 minute default TTL
 
 // TTL configuration by endpoint pattern
 const TTL_CONFIG = {
-    '/api/images': 30 * 1000, // 30 seconds for image lists (frequently updated)
-    '/api/categories': 5 * 60 * 1000, // 5 minutes for categories (rarely change)
+    '/api/images': 60 * 1000, // 1 minute for image lists (increased from 30s for better performance)
+    '/api/categories': 10 * 60 * 1000, // 10 minutes for categories (increased from 5min - rarely change)
     '/api/users': 2 * 60 * 1000, // 2 minutes for user data
-    '/api/favorites': 10 * 1000, // 10 seconds for favorites (user-specific)
-    '/api/collections': 30 * 1000, // 30 seconds for collections
+    '/api/favorites': 15 * 1000, // 15 seconds for favorites (user-specific, increased from 10s)
+    '/api/collections': 60 * 1000, // 1 minute for collections (increased from 30s)
+    '/api/search': 30 * 1000, // 30 seconds for search results
+    '/api/images/locations': 5 * 60 * 1000, // 5 minutes for locations (rarely change)
     default: DEFAULT_TTL,
 };
 

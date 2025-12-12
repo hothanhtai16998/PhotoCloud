@@ -14,6 +14,10 @@ router.get('/suggestions',
         const query = req.query.q || '';
         return `/api/search/suggestions?q=${encodeURIComponent(query)}`;
     }),
+    (req, res, next) => {
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+        next();
+    },
     getSearchSuggestions
 );
 
@@ -21,6 +25,10 @@ router.get('/suggestions',
 // Cache for 15 minutes - popular searches change slowly
 router.get('/popular',
     cacheMiddleware(15 * 60 * 1000, () => '/api/search/popular'),
+    (req, res, next) => {
+        res.set('Cache-Control', 'public, max-age=900, s-maxage=900');
+        next();
+    },
     getPopularSearches
 );
 

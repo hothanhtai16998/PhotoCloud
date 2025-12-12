@@ -111,6 +111,8 @@ export const getAllImages = asyncHandler(async (req, res) => {
     try {
         [imagesRaw, total] = await Promise.all([
             Image.find(query)
+                // Select only needed fields to reduce response size
+                .select('_id imageTitle description imageUrl thumbnailUrl smallUrl regularUrl thumbnailAvifUrl smallAvifUrl regularAvifUrl imageAvifUrl base64Thumbnail width height isVideo videoUrl videoThumbnail videoDuration imageCategory uploadedBy location coordinates cameraModel cameraMake focalLength aperture shutterSpeed iso dominantColors tags views downloads dailyViews dailyDownloads moderationStatus createdAt updatedAt')
                 .populate('uploadedBy', 'username displayName avatarUrl')
                 .populate({
                     path: 'imageCategory',
@@ -135,6 +137,8 @@ export const getAllImages = asyncHandler(async (req, res) => {
         // But we still need to populate category to validate it
         [imagesRaw, total] = await Promise.all([
             Image.find(query)
+                // Select only needed fields to reduce response size
+                .select('_id imageTitle description imageUrl thumbnailUrl smallUrl regularUrl thumbnailAvifUrl smallAvifUrl regularAvifUrl imageAvifUrl base64Thumbnail width height isVideo videoUrl videoThumbnail videoDuration imageCategory uploadedBy location coordinates cameraModel cameraMake focalLength aperture shutterSpeed iso dominantColors tags views downloads dailyViews dailyDownloads moderationStatus createdAt updatedAt')
                 .populate('uploadedBy', 'username displayName avatarUrl')
                 .populate({
                     path: 'imageCategory',

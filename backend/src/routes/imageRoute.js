@@ -31,18 +31,30 @@ import { cacheMiddleware } from '../middlewares/cacheMiddleware.js';
 const router = express.Router();
 
 // Public route - get all images (with optional search/category filters)
-// Cache for 30 seconds - images change frequently but short cache helps with repeated requests
+// Cache for 60 seconds - increased for better performance
 router.get('/',
-    cacheMiddleware(30 * 1000, (req) => {
+    cacheMiddleware(60 * 1000, (req) => {
         // Include query params in cache key for proper cache separation
         return `/api/images?${new URLSearchParams(req.query).toString()}`;
     }),
     validateGetImages,
+    (req, res, next) => {
+        // Set HTTP cache headers for browser caching
+        res.set('Cache-Control', 'public, max-age=60, s-maxage=60');
+        next();
+    },
     getAllImages
 );
 
 // Public routes - get locations for suggestions/filtering
-router.get('/locations', getLocations);
+router.get('/locations',
+    cacheMiddleware(5 * 60 * 1000), // Cache for 5 minutes
+    (req, res, next) => {
+        res.set('Cache-Control', 'public, max-age=300, s-maxage=300');
+        next();
+    },
+    getLocations
+);
 
 // Public routes - increment stats (with optional auth to track user activity)
 router.patch('/:imageId/view', optionalAuth, incrementView);

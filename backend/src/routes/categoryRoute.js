@@ -14,8 +14,16 @@ import { cacheMiddleware } from '../middlewares/cacheMiddleware.js';
 const router = express.Router();
 
 // Public route - get active categories
-// Cache for 5 minutes - categories don't change frequently
-router.get('/', cacheMiddleware(5 * 60 * 1000), getAllCategories);
+// Cache for 10 minutes - categories don't change frequently
+router.get('/',
+    cacheMiddleware(10 * 60 * 1000),
+    (req, res, next) => {
+        // Set HTTP cache headers for browser caching
+        res.set('Cache-Control', 'public, max-age=600, s-maxage=600');
+        next();
+    },
+    getAllCategories
+);
 
 // Admin routes - require authentication and admin access
 router.use(protectedRoute);

@@ -65,6 +65,9 @@
   border-radius: 12px;
   position: relative;
   overflow: hidden;
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
 }
 
 .skeleton-loader {
@@ -74,6 +77,9 @@
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   border-radius: 12px;
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
 }
 
 @keyframes skeleton-loading {
@@ -302,6 +308,9 @@
   animation: skeleton-loading 1.5s ease-in-out infinite;
   z-index: 1;
   pointer-events: none;
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
 }
 
 /* Enhanced skeleton with blur-up effect */
@@ -322,6 +331,9 @@
   transform: scale(1.1);
   animation: skeleton-loading 1.5s ease-in-out infinite;
   opacity: 0.6;
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
 }
 
 .skeleton-content {
@@ -332,6 +344,9 @@
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   z-index: 1;
+  /* Optimize animation performance */
+  will-change: background-position;
+  contain: layout style paint;
 }
 
 /* ============================================
