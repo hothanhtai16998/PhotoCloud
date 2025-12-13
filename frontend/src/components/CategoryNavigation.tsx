@@ -5,6 +5,7 @@ import { categoryService, type Category } from "@/services/categoryService"
 import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlug';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { t, getLocale } from '@/i18n';
+import { uiConfig } from '@/config/uiConfig';
 import { getTranslatedCategoryName } from '@/utils/categoryTranslations';
 import './CategoryNavigation.css'
 
@@ -147,7 +148,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
 
     // Calculate header height dynamically
     const header = document.querySelector('.unsplash-header');
-    const headerHeight = header ? header.getBoundingClientRect().height : 100; // Fallback to 100px for desktop
+    const headerHeight = header ? header.getBoundingClientRect().height : uiConfig.layout.headerHeightFallbackPx;
 
     // Get the grid container's position
     const gridRect = gridContainer.getBoundingClientRect();

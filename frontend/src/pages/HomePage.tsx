@@ -9,6 +9,7 @@ import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { useImageGridCategory } from "@/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
+import { uiConfig } from "@/config/uiConfig";
 import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModalActive } from "@/utils/modalNavigation";
@@ -157,7 +158,7 @@ function HomePage() {
 
                 // Calculate header height dynamically
                 const header = document.querySelector('.unsplash-header');
-                const headerHeight = header ? header.getBoundingClientRect().height : 100; // Fallback to 100px for desktop
+                const headerHeight = header ? header.getBoundingClientRect().height : uiConfig.layout.headerHeightFallbackPx;
 
                 // Get the grid container's position
                 const gridRect = gridContainer.getBoundingClientRect();
@@ -253,10 +254,10 @@ function HomePage() {
                         // CLS Prevention: Match exact slider height to prevent layout shift
                         <div 
                             style={{ 
-                                height: 'calc(100vh - 100px)', // Desktop: 100vh - header (100px)
-                                minHeight: 'calc(100vh - 100px)',
+                                height: `calc(100vh - ${uiConfig.layout.headerHeightFallbackPx}px)`,
+                                minHeight: `calc(100vh - ${uiConfig.layout.headerHeightFallbackPx}px)`,
                                 width: '100%',
-                                marginTop: '100px',
+                                marginTop: `${uiConfig.layout.headerHeightFallbackPx}px`,
                                 marginBottom: '30px',
                                 backgroundColor: '#222',
                                 position: 'relative',

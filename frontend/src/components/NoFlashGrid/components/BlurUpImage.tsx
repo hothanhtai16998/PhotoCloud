@@ -12,6 +12,7 @@ import { t } from '@/i18n';
 import { useUserStore } from '@/stores/useUserStore';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { uiConfig } from '@/config/uiConfig';
 import type { DownloadSize } from './DownloadSizeSelector';
 import './BlurUpImage.css';
 
@@ -65,7 +66,7 @@ export function BlurUpImage({
                 });
             },
             {
-                rootMargin: '500px', // Start loading 500px before entering viewport (more aggressive)
+                rootMargin: `${uiConfig.layout.imagePreloadMarginPx}px`,
                 threshold: 0.01,
             }
         );

@@ -30,5 +30,20 @@ export const uiConfig = {
     analytics: {
         dayOptions: [7, 30, 90, 180, 365] as const,
     },
+    
+    // Layout constants
+    layout: {
+        // Header height fallback (desktop) - used when dynamic calculation fails
+        headerHeightFallbackPx: 100,
+        
+        // Image preload viewport margin (how far before viewport to start loading)
+        imagePreloadMarginPx: 500,
+        
+        // Common modal/modal max widths
+        modalMaxWidthPx: 500,
+        
+        // Common avatar/thumbnail sizes
+        avatarSizePx: 100,
+    },
 } as const;
 

@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Facebook, Twitter, Instagram } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { t } from '@/i18n';
+import { timingConfig } from '@/config/timingConfig';
 import "./ContactButton.css";
 
 interface AuthorInfo {
@@ -37,8 +38,8 @@ export const ContactButton = () => {
 
         const interval = setInterval(() => {
             setIsShaking(true);
-            setTimeout(() => setIsShaking(false), 3000);
-        }, 13000);
+            setTimeout(() => setIsShaking(false), timingConfig.animation.contactButtonShakeDurationMs);
+        }, timingConfig.animation.contactButtonShakeIntervalMs);
 
         return () => clearInterval(interval);
     }, [isAuthPage]);

@@ -37,6 +37,12 @@ export const appConfig = {
         
         // Profile view tracking (sessionStorage) - format: `profile_view_${userId}_${viewerId}`
         profileViewKeyPrefix: 'profile_view_',
+        
+        // Admin status check (sessionStorage/localStorage)
+        adminKey: 'isAdmin',
+        
+        // Upload quality preference (localStorage)
+        uploadPreserveQualityKey: 'uploadPreserveQuality',
     },
 } as const;
 

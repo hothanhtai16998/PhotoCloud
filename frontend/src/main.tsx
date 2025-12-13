@@ -8,10 +8,11 @@ import { BrowserRouter } from 'react-router';
 import { Toaster } from 'sonner';
 import AuthInitializer from './components/auth/AuthInitializer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
+import { detectAvifSupport } from './utils/avifSupport';
+import { registerServiceWorker } from './utils/registerServiceWorker';
+
 // Import verification utility (makes it available globally in dev mode)
 import './utils/verifyAppearanceSettings';
-// Detect AVIF support early to prevent format switching flash
-import { detectAvifSupport } from './utils/avifSupport';
 
 // Enable Immer MapSet plugin for Map and Set support in Zustand stores
 enableMapSet();
@@ -23,39 +24,7 @@ detectAvifSupport().catch(() => {
 });
 
 // Register Service Worker for image caching and offline support
-if ('serviceWorker' in navigator) {
-	window.addEventListener('load', () => {
-		navigator.serviceWorker
-			.register('/sw.js')
-			.then((registration) => {
-				// Check for updates periodically
-				setInterval(() => {
-					registration.update();
-				}, 60 * 60 * 1000); // Check every hour
-
-				// Handle service worker updates
-				registration.addEventListener('updatefound', () => {
-					const newWorker = registration.installing;
-					if (newWorker) {
-						newWorker.addEventListener('statechange', () => {
-							if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-								// New service worker available, prompt user to refresh
-							}
-						});
-					}
-				});
-			})
-			.catch((error) => {
-				console.error('[SW] Service Worker registration failed:', error);
-			});
-
-		// Handle service worker controller changes
-		navigator.serviceWorker.addEventListener('controllerchange', () => {
-			// Optionally reload the page to use the new service worker
-			// window.location.reload();
-		});
-	});
-}
+registerServiceWorker();
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>

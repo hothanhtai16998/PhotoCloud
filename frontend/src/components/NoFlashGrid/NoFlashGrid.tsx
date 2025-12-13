@@ -12,6 +12,7 @@ import { ImageModal } from './components/ImageModal';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useInfiniteScroll } from './hooks/useInfiniteScroll';
 import { getBestImageUrl } from '@/utils/avifSupport';
+import { timingConfig } from '@/config/timingConfig';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -64,7 +65,7 @@ export function NoFlashGrid({
         if (!onLoadData) return;
         
         let hiddenTime: number | null = null;
-        const MIN_HIDDEN_TIME = 30000; // Only refresh if hidden for 30+ seconds
+        const MIN_HIDDEN_TIME = timingConfig.visibility.minHiddenTimeMs;
 
         const handleVisibilityChange = () => {
             if (document.hidden) {

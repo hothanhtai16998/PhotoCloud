@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/useAuthStore';
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { appConfig } from '@/config/appConfig';
+import { apiConfig } from '@/config/apiConfig';
 
 // Support environment variable for API URL, fallback to /api (for proxy) or localhost in dev
 const getBaseURL = () => {
@@ -124,12 +125,12 @@ api.interceptors.response.use(
       if (originalRequest._retryCount < 3) {
         originalRequest._retryCount += 1;
 
-        try {
-          const refreshResponse = await api.post(
-            '/auth/refresh',
-            {},
-            { withCredentials: true }
-          );
+          try {
+            const refreshResponse = await api.post(
+              apiConfig.endpoints.auth.refresh,
+              {},
+              { withCredentials: true }
+            );
 
           const newAccessToken = refreshResponse.data.accessToken;
           useAuthStore.getState().setAccessToken(newAccessToken);
@@ -163,7 +164,7 @@ api.interceptors.response.use(
 
           try {
             // GET request refreshes CSRF token cookie
-            await api.get('/csrf-token');
+            await api.get(apiConfig.endpoints.csrfToken);
             // Retry original request with new CSRF token
             return api(originalRequest);
           } catch {

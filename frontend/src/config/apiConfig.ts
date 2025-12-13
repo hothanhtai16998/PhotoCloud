@@ -25,5 +25,46 @@ export const apiConfig = {
         // Default limit for location suggestions
         defaultLimit: 8,
     },
+    
+    // Service Worker configuration
+    serviceWorker: {
+        // Service worker script path
+        scriptPath: '/sw.js',
+    },
+    
+    // API endpoint paths
+    endpoints: {
+        // Authentication endpoints
+        auth: {
+            signin: '/auth/signin',
+            signup: '/auth/signup',
+            refresh: '/auth/refresh',
+            googleCallback: '/auth/google/callback',
+        },
+        
+        // CSRF token endpoint
+        csrfToken: '/csrf-token',
+        
+        // Image endpoints
+        images: {
+            base: '/images',
+            download: (id: string) => `/images/${id}/download`,
+        },
+        
+        // User endpoints
+        users: {
+            base: '/users',
+        },
+        
+        // Admin endpoints
+        admin: {
+            base: '/admin',
+        },
+        
+        // Collection endpoints
+        collections: {
+            base: '/collections',
+        },
+    },
 } as const;
 

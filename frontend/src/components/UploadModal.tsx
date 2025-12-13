@@ -13,6 +13,7 @@ import { UploadForm } from './upload/UploadForm';
 import { t } from '@/i18n';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { imageService } from '@/services/imageService';
+import { appConfig } from '@/config/appConfig';
 import './UploadModal.css';
 
 interface UploadModalProps {
@@ -33,13 +34,13 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     // Preserve quality toggle with localStorage persistence
     const [preserveQuality, setPreserveQuality] = useState<boolean>(() => {
-        const saved = localStorage.getItem('uploadPreserveQuality');
+        const saved = localStorage.getItem(appConfig.storage.uploadPreserveQualityKey);
         return saved === 'true';
     });
 
     const handlePreserveQualityChange = (checked: boolean) => {
         setPreserveQuality(checked);
-        localStorage.setItem('uploadPreserveQuality', checked.toString());
+        localStorage.setItem(appConfig.storage.uploadPreserveQualityKey, checked.toString());
     };
 
     const {

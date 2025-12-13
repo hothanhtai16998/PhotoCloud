@@ -64,4 +64,36 @@ export const timingConfig = {
     // Debounce delay for search input
     debounceMs: 300,
   },
+
+  // Service Worker settings
+  serviceWorker: {
+    // Interval for checking service worker updates (1 hour)
+    updateCheckIntervalMs: 60 * 60 * 1000,
+  },
+
+  // UI animation and interaction
+  animation: {
+    // Contact button shake interval (13 seconds)
+    contactButtonShakeIntervalMs: 13000,
+    
+    // Contact button shake duration (3 seconds)
+    contactButtonShakeDurationMs: 3000,
+    
+    // Common animation delays
+    shortDelayMs: 100,
+    mediumDelayMs: 200,
+    longDelayMs: 500,
+    
+    // Image preload/viewport margin (500px before entering viewport)
+    imagePreloadMarginPx: 500,
+    
+    // Blob URL cleanup delay
+    blobUrlCleanupDelayMs: 100,
+  },
+
+  // Visibility and refresh
+  visibility: {
+    // Minimum time hidden before refreshing on visibility change (30 seconds)
+    minHiddenTimeMs: 30000,
+  },
 } as const;
