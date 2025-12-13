@@ -15,7 +15,7 @@ import { Folder, Eye } from "lucide-react";
 const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDashboard").then(module => ({ default: module.UserAnalyticsDashboard })));
 const UserList = lazy(() => import("./components/UserList").then(module => ({ default: module.UserList })));
 // Lazy load ImageModal - conditionally rendered
-const ImageModal = lazy(() => import("@/components/ImageModalAdapter"));
+const ImageModal = lazy(() => import("@/components/NoFlashGrid/components/ImageModal").then(module => ({ default: module.ImageModal })));
 // Lazy load UploadModal - conditionally rendered
 const UploadModal = lazy(() => import("@/components/UploadModal").then(module => ({ default: module.default })));
 import { userStatsService } from "@/services/userStatsService";
@@ -555,6 +555,50 @@ function ProfilePage() {
         }
     }, [imageParamFromUrl, displayImages, isMobile]);
 
+    // Convert selectedImage to index for new ImageModal API
+    const currentIndex = useMemo(() => {
+        if (!selectedImage) return -1;
+        return displayImages.findIndex(img => img._id === selectedImage._id);
+    }, [selectedImage, displayImages]);
+
+    // Convert images to ExtendedImage format (add categoryName if needed)
+    const extendedImages = useMemo(() => {
+        return displayImages.map(img => ({
+            ...img,
+            categoryName: img.categoryName || (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name),
+        }));
+    }, [displayImages]);
+
+    // Handle navigation - update the selected image and URL
+    const handleNavigate = useCallback((nextIndex: number) => {
+        if (nextIndex >= 0 && nextIndex < displayImages.length) {
+            const updatedImage = displayImages[nextIndex];
+            handleImageUpdate(updatedImage);
+            // Update URL to reflect the selected image with slug
+            const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
+            setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('image', slug);
+                return newParams;
+            });
+        }
+    }, [displayImages, handleImageUpdate, setSearchParams]);
+
+    // Handle index selection
+    const handleSelectIndex = useCallback((idx: number) => {
+        if (idx >= 0 && idx < displayImages.length) {
+            const updatedImage = displayImages[idx];
+            handleImageUpdate(updatedImage);
+            // Update URL to reflect the selected image with slug
+            const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
+            setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('image', slug);
+                return newParams;
+            });
+        }
+    }, [displayImages, handleImageUpdate, setSearchParams]);
+
     // Get current image IDs for comparison
     const currentImageIds = useMemo(() => new Set(displayImages.map(img => img._id)), [displayImages]);
 
@@ -802,11 +846,11 @@ function ProfilePage() {
 
             {/* Image Modal - DESKTOP ONLY */}
             {/* On mobile, we navigate to ImagePage instead */}
-            {selectedImage && !isMobile && window.innerWidth > appConfig.mobileBreakpoint && (
+            {selectedImage && currentIndex >= 0 && !isMobile && window.innerWidth > appConfig.mobileBreakpoint && (
                 <Suspense fallback={null}>
                     <ImageModal
-                        image={selectedImage}
-                        images={displayImages}
+                        images={extendedImages}
+                        index={currentIndex}
                         onClose={() => {
                             // Remove image param from URL when closing
                             setSearchParams(prev => {
@@ -815,21 +859,8 @@ function ProfilePage() {
                                 return newParams;
                             });
                         }}
-                        onImageSelect={(updatedImage) => {
-                            handleImageUpdate(updatedImage);
-                            // Update URL to reflect the selected image with slug
-                            const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
-                            setSearchParams(prev => {
-                                const newParams = new URLSearchParams(prev);
-                                newParams.set('image', slug);
-                                return newParams;
-                            });
-                        }}
-                        onDownload={() => { /* Download handled by ImageModal internally */ }}
-                        imageTypes={imageTypes}
-                        onImageLoad={handleImageLoad}
-                        currentImageIds={currentImageIds}
-                        processedImages={processedImages}
+                        onNavigate={handleNavigate}
+                        onSelectIndex={handleSelectIndex}
                     />
                 </Suspense>
             )}

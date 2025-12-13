@@ -7,7 +7,7 @@ import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
-import { useImageGridCategory } from "./ImageGrid/hooks/useImageGridCategory";
+import { useImageGridCategory } from "@/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
 import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";

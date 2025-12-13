@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import { useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ import { appConfig } from '@/config/appConfig';
 import './CollectionDetailPage.css';
 
 // Lazy load ImageModal - conditionally rendered
-const ImageModal = lazy(() => import('@/components/ImageModalAdapter'));
+const ImageModal = lazy(() => import('@/components/NoFlashGrid/components/ImageModal').then(module => ({ default: module.ImageModal })));
 
 export default function CollectionDetailPage() {
 	const navigate = useNavigate();
@@ -231,6 +231,50 @@ export default function CollectionDetailPage() {
 		}
 	}, [collectionId, collection, images.length]);
 
+	// Convert selectedImage to index for new ImageModal API
+	const currentIndex = useMemo(() => {
+		if (!selectedImage) return -1;
+		return images.findIndex(img => img._id === selectedImage._id);
+	}, [selectedImage, images]);
+
+	// Convert images to ExtendedImage format (add categoryName if needed)
+	const extendedImages = useMemo(() => {
+		return images.map(img => ({
+			...img,
+			categoryName: img.categoryName || (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name),
+		}));
+	}, [images]);
+
+	// Handle navigation - update the selected image and URL
+	const handleNavigate = useCallback((nextIndex: number) => {
+		if (nextIndex >= 0 && nextIndex < images.length) {
+			const updatedImage = images[nextIndex];
+			handleImageUpdate(updatedImage);
+			// Update URL to reflect the selected image with slug
+			const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
+			setSearchParams(prev => {
+				const newParams = new URLSearchParams(prev);
+				newParams.set('image', slug);
+				return newParams;
+			});
+		}
+	}, [images, handleImageUpdate, setSearchParams]);
+
+	// Handle index selection
+	const handleSelectIndex = useCallback((idx: number) => {
+		if (idx >= 0 && idx < images.length) {
+			const updatedImage = images[idx];
+			handleImageUpdate(updatedImage);
+			// Update URL to reflect the selected image with slug
+			const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
+			setSearchParams(prev => {
+				const newParams = new URLSearchParams(prev);
+				newParams.set('image', slug);
+				return newParams;
+			});
+		}
+	}, [images, handleImageUpdate, setSearchParams]);
+
 	if (loading) {
 		return (
 			<>
@@ -341,11 +385,11 @@ export default function CollectionDetailPage() {
 			</div>
 
 			{/* Image Modal - shown as overlay when image param exists */}
-			{selectedImage && (
+			{selectedImage && currentIndex >= 0 && (
 				<Suspense fallback={null}>
 				<ImageModal
-					image={selectedImage}
-					images={images}
+					images={extendedImages}
+					index={currentIndex}
 					onClose={() => {
 						// Remove image param from URL when closing
 						setSearchParams(prev => {
@@ -354,22 +398,8 @@ export default function CollectionDetailPage() {
 							return newParams;
 						});
 					}}
-					onImageSelect={(updatedImage) => {
-						handleImageUpdate(updatedImage);
-						// Update URL to reflect the selected image with slug
-						const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
-						setSearchParams(prev => {
-							const newParams = new URLSearchParams(prev);
-							newParams.set('image', slug);
-							return newParams;
-						});
-					}}
-					onDownload={handleDownload}
-					imageTypes={imageTypes}
-					onImageLoad={handleImageLoad}
-					currentImageIds={currentImageIds}
-					processedImages={processedImages}
-					renderAsPage={false} // Always render as modal when opened from collection
+					onNavigate={handleNavigate}
+					onSelectIndex={handleSelectIndex}
 				/>
 				</Suspense>
 			)}

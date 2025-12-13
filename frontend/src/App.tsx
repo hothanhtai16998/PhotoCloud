@@ -30,7 +30,6 @@ const ImagePage = lazy(() => import("./pages/ImagePage"));
 const CollectionsPage = lazy(() => import("./pages/CollectionsPage"));
 const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDetailPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
-const NoFlashGridPage = lazy(() => import("./pages/test/NoFlashGrid"));
 
 
 // Loading fallback component
@@ -197,7 +196,6 @@ function App() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/test/no-flash-grid" element={<NoFlashGridPage />} />
           {/* <Route path="/UnsplashGrid" element={<UnsplashGrid />} /> */}
 
 
