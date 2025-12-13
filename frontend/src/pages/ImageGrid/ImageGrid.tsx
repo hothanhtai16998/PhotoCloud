@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo } from 'react';
 import type { Image } from '@/types/image';
 import MasonryGrid from '@/components/MasonryGrid';
-import { useInfiniteScroll } from '@/components/image/hooks/useInfiniteScroll';
+import { useInfiniteScroll } from '@/components/NoFlashGrid/hooks/useInfiniteScroll';
 import { Skeleton } from '@/components/ui/skeleton';
 import { downloadImage, type DownloadSize } from '@/utils/downloadService';
 import { t } from '@/i18n';
@@ -13,7 +13,7 @@ import {
     useImageGridColumns,
 } from './hooks';
 
-const ImageModal = lazy(() => import('@/components/ImageModal'));
+const ImageModal = lazy(() => import('@/components/ImageModalAdapter'));
 const CollectionModal = lazy(() => import('@/components/CollectionModal'));
 
 const ImageGrid = () => {

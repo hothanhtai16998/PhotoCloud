@@ -18,7 +18,7 @@ import { t, getLocale } from '@/i18n';
 import { toast } from 'sonner';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ImageModalInfo } from '@/components/image/ImageModalInfo';
+import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
@@ -32,8 +32,8 @@ import dateIcon from '@/assets/date.svg';
 import './ImagePage.css';
 // Import NoFlashGrid ImageModal CSS for 100% same UI
 import '@/components/NoFlashGrid/components/ImageModal.css';
-import '@/components/image/modal-info.css';
-import '@/components/image/modal-footer.css';
+import '@/components/NoFlashGrid/components/modal-info.css';
+import '@/components/NoFlashGrid/components/modal-footer.css';
 import ImagePageSidebar from '@/components/ImagePageSidebar';
 
 // Import modals

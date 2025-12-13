@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { X, MapPin, Camera, HelpCircle } from 'lucide-react';
 import type { Image } from '@/types/image';
-import { ImageEditor } from './image/ImageEditor';
+import { ImageEditor } from '@/components/NoFlashGrid/components/ImageEditor';
 import { TagInput } from './ui/TagInput';
-import { EditImageTabs } from './image/EditImageTabs';
-import { useEditImageForm } from './image/hooks/useEditImageForm';
+import { EditImageTabs } from '@/components/NoFlashGrid/components/EditImageTabs';
+import { useEditImageForm } from '@/components/NoFlashGrid/components/hooks/useEditImageForm';
 import { Button } from '@/components/ui/button';
 import { t } from '@/i18n';
 import './EditImageModal.css';

@@ -10,7 +10,7 @@ import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
 import { ImageModal } from './components/ImageModal';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useInfiniteScroll } from '@/components/image/hooks/useInfiniteScroll';
+import { useInfiniteScroll } from './hooks/useInfiniteScroll';
 import { getBestImageUrl } from '@/utils/avifSupport';
 
 // Simple blur-up image with persistent back layer

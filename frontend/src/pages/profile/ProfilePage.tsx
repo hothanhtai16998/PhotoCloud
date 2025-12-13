@@ -15,7 +15,7 @@ import { Folder, Eye } from "lucide-react";
 const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDashboard").then(module => ({ default: module.UserAnalyticsDashboard })));
 const UserList = lazy(() => import("./components/UserList").then(module => ({ default: module.UserList })));
 // Lazy load ImageModal - conditionally rendered
-const ImageModal = lazy(() => import("@/components/ImageModal"));
+const ImageModal = lazy(() => import("@/components/ImageModalAdapter"));
 // Lazy load UploadModal - conditionally rendered
 const UploadModal = lazy(() => import("@/components/UploadModal").then(module => ({ default: module.default })));
 import { userStatsService } from "@/services/userStatsService";

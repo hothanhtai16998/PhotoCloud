@@ -4,7 +4,7 @@ import type { Image } from '@/types/image';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
-import type { DownloadSize } from '@/components/image/DownloadSizeSelector';
+import type { DownloadSize } from './DownloadSizeSelector';
 import { shareService } from '@/utils/shareService';
 import { generateImageSlug } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -21,14 +21,14 @@ import cameraIcon from '@/assets/camera.svg';
 import dateIcon from '@/assets/date.svg';
 import { preloadImage, loadedImages, preloadImageWithProgress, cancelImageLoad } from '../utils/imagePreloader';
 import { ImageProgressBar } from './ImageProgressBar';
-import { ImageModalInfo } from '@/components/image/ImageModalInfo';
+import { ImageModalInfo } from './ImageModalInfo';
 import { BlurUpImage } from './BlurUpImage';
 import { GRID_CONFIG } from '../constants/gridConfig';
 import { calculateImageLayout, getColumnCount } from '../utils/gridLayout';
 import { loadImageDimensions } from '../utils/imageDimensions';
 import { getBestImageUrl, getBestImageUrlSync } from '@/utils/avifSupport';
-import '@/components/image/modal-info.css';
-import '@/components/image/modal-footer.css';
+import './modal-info.css';
+import './modal-footer.css';
 import './ImageModal.css';
 
 // Module-level cache to persist API stats across component unmounts

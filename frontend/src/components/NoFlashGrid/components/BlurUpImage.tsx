@@ -12,7 +12,7 @@ import { t } from '@/i18n';
 import { useUserStore } from '@/stores/useUserStore';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import type { DownloadSize } from '@/components/image/DownloadSizeSelector';
+import type { DownloadSize } from './DownloadSizeSelector';
 import './BlurUpImage.css';
 
 type ExtendedImage = Image & { categoryName?: string; category?: string };

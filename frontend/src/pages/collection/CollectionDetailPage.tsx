@@ -20,7 +20,7 @@ import { appConfig } from '@/config/appConfig';
 import './CollectionDetailPage.css';
 
 // Lazy load ImageModal - conditionally rendered
-const ImageModal = lazy(() => import('@/components/ImageModal'));
+const ImageModal = lazy(() => import('@/components/ImageModalAdapter'));
 
 export default function CollectionDetailPage() {
 	const navigate = useNavigate();
