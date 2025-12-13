@@ -18,6 +18,22 @@ import './BlurUpImage.css';
 
 type ExtendedImage = Image & { categoryName?: string; category?: string };
 
+// Helper to get image URL with fallback priority
+function getImageUrl(image: ExtendedImage, preferRegular = false): string | null {
+    if (preferRegular) {
+        return image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || null;
+    }
+    return image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
+}
+
+// Helper to get user avatar or placeholder
+function getUserAvatarDisplay(userAvatar: string, username: string) {
+    if (userAvatar) {
+        return { type: 'image' as const, src: userAvatar };
+    }
+    return { type: 'placeholder' as const, letter: username[0]?.toUpperCase() || 'U' };
+}
+
 interface BlurUpImageProps {
     image: ExtendedImage;
     onClick?: () => void;
@@ -37,14 +53,13 @@ export function BlurUpImage({
 }: BlurUpImageProps) {
     // Use base64 thumbnail for instant placeholder (like Photo) - no network request needed
     const base64Placeholder = image.base64Thumbnail || null;
-    const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
+    const networkPlaceholder = getImageUrl(image);
     const placeholderInitial = base64Placeholder || networkPlaceholder;
     const [loaded, setLoaded] = useState(false);
     const [fullSrc, setFullSrc] = useState<string | null>(null);
     const [isInView, setIsInView] = useState(priority);
     const containerRef = useRef<HTMLDivElement | null>(null);
     const loadingRef = useRef(false);
-    const imgRef = useRef<HTMLImageElement | null>(null);
 
     // Intersection Observer for lazy loading
     useEffect(() => {
@@ -89,7 +104,7 @@ export function BlurUpImage({
             try {
                 // Get best format (AVIF if supported, fallback to regularUrl)
                 const bestUrl = await getBestImageUrl(image, 'regular');
-                const full = bestUrl || image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+                const full = bestUrl || getImageUrl(image, true) || '';
 
                 // If already using full image, no need to reload
                 if (fullSrc === full) return;
@@ -98,16 +113,6 @@ export function BlurUpImage({
                 // Skip decode for grid images to load faster (like admin page)
                 const src = await preloadImage(full, true);
                 setFullSrc(src);
-                // Check if image is already cached by creating a test image
-                const testImg = new Image();
-                testImg.onload = () => {
-                    // Image is cached - set loaded immediately to prevent flash
-                    setLoaded(true);
-                };
-                testImg.onerror = () => {
-                    // Image not cached - will load normally
-                };
-                testImg.src = src;
             } catch {
                 // Keep placeholder on error
             } finally {
@@ -135,19 +140,14 @@ export function BlurUpImage({
         const nextImage = images[nextIndex];
         
         // Preload regularUrl for adjacent images (what modal will use)
-        if (prevImage) {
-            const prevUrl = prevImage.regularUrl || prevImage.imageUrl || prevImage.smallUrl;
-            if (prevUrl) {
-                preloadImage(prevUrl, true).catch(() => {});
+        [prevImage, nextImage].forEach((adjImage) => {
+            if (adjImage) {
+                const url = getImageUrl(adjImage, true);
+                if (url) {
+                    preloadImage(url, true).catch(() => {});
+                }
             }
-        }
-        
-        if (nextImage) {
-            const nextUrl = nextImage.regularUrl || nextImage.imageUrl || nextImage.smallUrl;
-            if (nextUrl) {
-                preloadImage(nextUrl, true).catch(() => {});
-            }
-        }
+        });
     }, [images, currentIndex]);
 
     // Handle mouse move to track position
@@ -196,6 +196,7 @@ export function BlurUpImage({
     const uploadedBy = (image as any)?.uploadedBy;
     const username = uploadedBy?.username || '';
     const userAvatar = uploadedBy?.avatar || uploadedBy?.profilePicture || '';
+    const avatarDisplay = getUserAvatarDisplay(userAvatar, username);
 
     // Favorite state
     const { user } = useUserStore();
@@ -229,12 +230,8 @@ export function BlurUpImage({
     }, [user, image?._id, isTogglingFavorite]);
 
     // Handle bookmark button (using same favorite functionality for now)
-    const handleBookmarkClick = useCallback(async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        // For now, bookmark uses the same favorite functionality
-        // Can be changed to use collection service later if needed
-        await handleSaveClick(e);
-    }, [handleSaveClick]);
+    // Note: Can be changed to use collection service later if needed
+    const handleBookmarkClick = handleSaveClick;
 
     // Handle download button
     const handleDownloadClick = useCallback(async (e: React.MouseEvent) => {
@@ -363,9 +360,9 @@ export function BlurUpImage({
             {/* Mobile Layout: Author at top */}
             {username && (
                 <div className="blur-up-image-mobile-author">
-                    {userAvatar ? (
+                    {avatarDisplay.type === 'image' ? (
                         <img
-                            src={userAvatar}
+                            src={avatarDisplay.src}
                             alt={username}
                             className="blur-up-image-user-avatar"
                             onClick={handleAuthorClick}
@@ -377,7 +374,7 @@ export function BlurUpImage({
                             onClick={handleAuthorClick}
                             style={{ cursor: 'pointer' }}
                         >
-                            {username[0]?.toUpperCase() || 'U'}
+                            {avatarDisplay.letter}
                         </div>
                     )}
                     <span 
@@ -432,13 +429,6 @@ export function BlurUpImage({
                 {/* Full Image (High Quality) */}
                 {fullSrc && (
                     <img
-                        ref={(el) => {
-                            imgRef.current = el;
-                            // Check if image is already loaded (cached) to prevent flash
-                            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
-                                setLoaded(true);
-                            }
-                        }}
                         src={fullSrc}
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
@@ -487,15 +477,15 @@ export function BlurUpImage({
                             onClick={handleAuthorClick}
                             style={{ cursor: 'pointer' }}
                         >
-                            {userAvatar ? (
+                            {avatarDisplay.type === 'image' ? (
                                 <img
-                                    src={userAvatar}
+                                    src={avatarDisplay.src}
                                     alt={username}
                                     className="blur-up-image-user-avatar"
                                 />
                             ) : (
                                 <div className="blur-up-image-user-avatar-placeholder">
-                                    {username[0]?.toUpperCase() || 'U'}
+                                    {avatarDisplay.letter}
                                 </div>
                             )}
                             <span className="blur-up-image-username">{username}</span>

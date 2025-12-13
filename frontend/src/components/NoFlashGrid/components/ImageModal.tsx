@@ -37,6 +37,68 @@ const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
 
 type ExtendedImage = Image & { categoryName?: string; category?: string };
 
+// Helper function to update stats in cache and return update function
+function updateStatsCache(imageId: string, statType: 'views' | 'downloads', value: number) {
+    const stats = apiStatsCache.get(imageId) || {};
+    stats[statType] = value;
+    apiStatsCache.set(imageId, stats);
+    return stats;
+}
+
+// Helper function to update currentImage with stats and daily data
+function createStatsUpdate(
+    statType: 'views' | 'downloads',
+    value: number,
+    dailyData?: Record<string, number>
+): (prev: ExtendedImage) => ExtendedImage {
+    return (prev) => ({
+        ...prev,
+        [statType]: value,
+        ...(dailyData && {
+            [`daily${statType.charAt(0).toUpperCase() + statType.slice(1)}`]: {
+                ...(prev[`daily${statType.charAt(0).toUpperCase() + statType.slice(1)}` as keyof ExtendedImage] as Record<string, number> || {}),
+                ...dailyData
+            }
+        })
+    });
+}
+
+// Helper function to handle rate limit errors and update stats
+function handleRateLimitError(
+    error: any,
+    imageId: string,
+    statType: 'views' | 'downloads',
+    setStat: (value: number) => void,
+    setCurrentImage: React.Dispatch<React.SetStateAction<ExtendedImage>>,
+    toastDuration = 3000
+) {
+    if (error.response?.status === 429) {
+        const rateLimitData = error.response.data;
+        const statValue = rateLimitData[statType];
+        
+        if (statValue !== undefined) {
+            setStat(statValue);
+            updateStatsCache(imageId, statType, statValue);
+            
+            const dailyKey = `daily${statType.charAt(0).toUpperCase() + statType.slice(1)}` as 'dailyViews' | 'dailyDownloads';
+            const dailyData = rateLimitData[dailyKey];
+            
+            if (dailyData) {
+                setCurrentImage(createStatsUpdate(statType, statValue, dailyData));
+            } else {
+                setCurrentImage(prev => ({ ...prev, [statType]: statValue }));
+            }
+        }
+        
+        if (rateLimitData.message) {
+            toast.info(rateLimitData.message, { duration: toastDuration });
+        }
+        
+        return true; // Indicates rate limit was handled
+    }
+    return false; // Not a rate limit error
+}
+
 interface ImageModalProps {
     images: ExtendedImage[];
     index: number;
@@ -122,7 +184,7 @@ export function ImageModal({
     // Calculate initial state based on current image
     // Always use the same format throughout to prevent format switching flash
     const calculateInitialState = () => {
-        if (!img) return { src: null, isFullQuality: false };
+        if (!img) return { src: null, isBase64: false };
         // Use base64 thumbnail for instant display (no network delay)
         const base64Placeholder = img.base64Thumbnail || null;
         
@@ -138,7 +200,6 @@ export function ImageModal({
         // If no base64, use regularUrl (likely cached from grid, so instant + better quality)
         return {
             src: base64Placeholder || networkBackSrc,
-            isFullQuality: false,
             isBase64: !!base64Placeholder
         };
     };
@@ -150,7 +211,6 @@ export function ImageModal({
     const backSrcRef = useRef<string | null>(imageState.src); // Track current backSrc to prevent unnecessary updates
     const backImageLoadedRef = useRef<boolean>(false); // Track if back image is loaded to prevent clearing frontSrc too early
     const frontSrcImageIdRef = useRef<string | null>(null); // Track which image ID the frontSrc belongs to
-    // const isFullQuality = imageState.isFullQuality || frontSrc !== null; // True if front layer is ready
 
     // Initialize refs (simplified - no aspect ratio calculations needed)
     const imgElementRef = useRef<HTMLImageElement | null>(null);
@@ -323,7 +383,6 @@ export function ImageModal({
         format: 'long',
     });
     const [showDownloadMenu, setShowDownloadMenu] = useState(false);
-    const [, setShowShareMenu] = useState(false);
     const [showAuthorTooltip, setShowAuthorTooltip] = useState(false);
     const [tooltipAnimating, setTooltipAnimating] = useState(false);
     const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -331,7 +390,6 @@ export function ImageModal({
     const topInfoRef = useRef<HTMLDivElement | null>(null);
     const [authorImages, setAuthorImages] = useState<ExtendedImage[]>([]);
     const [loadingAuthorImages, setLoadingAuthorImages] = useState(false);
-    const [, setLocaleUpdate] = useState(0);
     const navigate = useNavigate();
     const authorName =
         (img as any)?.uploadedBy?.username ||
@@ -417,62 +475,13 @@ export function ImageModal({
             // Call API to increment and get updated stats
             imageStatsService.incrementView(imageId)
                 .then((response) => {
-                    // Update state with API response (this is the correct value)
                     setViews(response.views);
-                    // Track that this stat was updated via API in module-level cache
-                    const stats = apiStatsCache.get(imageId) || {};
-                    stats.views = response.views;
-                    apiStatsCache.set(imageId, stats);
-
-                    // Update the current image with new views and dailyViews
-                    setCurrentImage(prev => ({
-                        ...prev,
-                        views: response.views,
-                        dailyViews: {
-                            ...(prev.dailyViews || {}),
-                            ...(response.dailyViews || {})
-                        }
-                    }));
+                    updateStatsCache(imageId, 'views', response.views);
+                    setCurrentImage(createStatsUpdate('views', response.views, response.dailyViews));
                 })
                 .catch((error: any) => {
-                    // Handle rate limiting gracefully
-                    if (error.response?.status === 429) {
-                        const rateLimitData = error.response.data;
-                        if (rateLimitData.views !== undefined) {
-                            // Even if rate limited, we got the current view count
-                            setViews(rateLimitData.views);
-                            // Track that this stat was updated via API in module-level cache (even if rate limited)
-                            const stats = apiStatsCache.get(imageId) || {};
-                            stats.views = rateLimitData.views;
-                            apiStatsCache.set(imageId, stats);
-
-                            // Update the current image with new views if dailyViews provided
-                            if (rateLimitData.dailyViews) {
-                                setCurrentImage(prev => ({
-                                    ...prev,
-                                    views: rateLimitData.views,
-                                    dailyViews: {
-                                        ...(prev.dailyViews || {}),
-                                        ...(rateLimitData.dailyViews || {})
-                                    }
-                                }));
-                            } else {
-                                setCurrentImage(prev => ({
-                                    ...prev,
-                                    views: rateLimitData.views
-                                }));
-                            }
-                        }
-                        // Show user-friendly message if available
-                        if (rateLimitData.message) {
-                            toast.info(rateLimitData.message, {
-                                duration: 3000,
-                            });
-                        }
-                        // Don't remove from set on rate limit - we don't want to retry immediately
-                    } else {
+                    if (!handleRateLimitError(error, imageId, 'views', setViews, setCurrentImage)) {
                         console.error('Failed to increment view:', error);
-                        // Remove from set on other errors so it can be retried
                         incrementedViewIds.current.delete(imageId);
                     }
                 });
@@ -606,7 +615,6 @@ export function ImageModal({
 
         // Close menus when image changes
         setShowDownloadMenu(false);
-        setShowShareMenu(false);
         setShowAuthorTooltip(false);
         // Clear author tooltip timeout
         if (authorTooltipTimeoutRef.current) {
@@ -785,7 +793,7 @@ export function ImageModal({
                             loadedAny = true;
                         }
                     }
-                } catch (e) {
+                } catch (_e) {
                     // Ignore error, try original next
                     if (previousImgRef.current?._id === currentImageId) {
                         setShowProgressBar(false);
@@ -840,7 +848,7 @@ export function ImageModal({
                             loadedAny = true;
                         }
                     }
-                } catch (e) {
+                } catch (_e) {
                     // Ignore
                     if (previousImgRef.current?._id === currentImageId) {
                         setShowProgressBar(false);
@@ -905,9 +913,11 @@ export function ImageModal({
     }, [showAuthorTooltip]);
 
     // Listen for locale changes to re-render translations
+    // Note: i18n hook handles re-renders automatically, no need for manual state update
     useEffect(() => {
         const handleLocaleChange = () => {
-            setLocaleUpdate(prev => prev + 1);
+            // Force re-render by updating a dependency
+            // The component will re-render when locale changes via i18n context
         };
         window.addEventListener('localeChange', handleLocaleChange);
         return () => window.removeEventListener('localeChange', handleLocaleChange);
@@ -943,59 +953,13 @@ export function ImageModal({
             try {
                 const statsResponse = await imageStatsService.incrementDownload(img._id);
                 setDownloads(statsResponse.downloads);
-                // Track that this stat was updated via API in module-level cache
-                const stats = apiStatsCache.get(img._id) || {};
-                stats.downloads = statsResponse.downloads;
-                apiStatsCache.set(img._id, stats);
-
-                // Update the current image with new downloads and dailyDownloads
-                setCurrentImage(prev => ({
-                    ...prev,
-                    downloads: statsResponse.downloads,
-                    dailyDownloads: {
-                        ...(prev.dailyDownloads || {}),
-                        ...(statsResponse.dailyDownloads || {})
-                    }
-                }));
+                updateStatsCache(img._id, 'downloads', statsResponse.downloads);
+                setCurrentImage(createStatsUpdate('downloads', statsResponse.downloads, statsResponse.dailyDownloads));
             } catch (error: any) {
-                // Handle rate limiting gracefully
-                if (error.response?.status === 429) {
-                    const rateLimitData = error.response.data;
-                    if (rateLimitData.downloads !== undefined) {
-                        setDownloads(rateLimitData.downloads);
-                        // Track that this stat was updated via API in module-level cache (even if rate limited)
-                        const stats = apiStatsCache.get(img._id) || {};
-                        stats.downloads = rateLimitData.downloads;
-                        apiStatsCache.set(img._id, stats);
-
-                        // Update the current image with new downloads if dailyDownloads provided
-                        if (rateLimitData.dailyDownloads) {
-                            setCurrentImage(prev => ({
-                                ...prev,
-                                downloads: rateLimitData.downloads,
-                                dailyDownloads: {
-                                    ...(prev.dailyDownloads || {}),
-                                    ...(rateLimitData.dailyDownloads || {})
-                                }
-                            }));
-                        } else {
-                            setCurrentImage(prev => ({
-                                ...prev,
-                                downloads: rateLimitData.downloads
-                            }));
-                        }
-                    }
-                    // Show user-friendly message
-                    if (rateLimitData.message) {
-                        toast.info(rateLimitData.message, {
-                            duration: 4000,
-                        });
-                    }
-                    // Still allow download even if rate limited (don't block the user)
-                } else {
+                if (!handleRateLimitError(error, img._id, 'downloads', setDownloads, setCurrentImage, 4000)) {
                     console.error('Failed to increment download count:', error);
-                    // Continue with download even if increment fails
                 }
+                // Continue with download even if increment fails
             }
 
             // Download image with selected size
@@ -1073,7 +1037,6 @@ export function ImageModal({
                 }
             });
         }
-        setShowShareMenu(false);
     }, [img]);
 
     if (!img) return null;

@@ -62,7 +62,6 @@ function App() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
           <Route path="/about" element={<AboutPage />} />
-          {/* <Route path="/PhotoGrid" element={<PhotoGrid />} /> */}
 
 
           {/**protected routes */}

@@ -43,6 +43,59 @@ import CollectionModal from '@/components/CollectionModal';
 // Module-level cache to persist API stats across component unmounts
 const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
 
+// Helper function to update stats in cache
+function updateStatsCache(imageId: string, statType: 'views' | 'downloads', value: number) {
+    const stats = apiStatsCache.get(imageId) || {};
+    stats[statType] = value;
+    apiStatsCache.set(imageId, stats);
+    return stats;
+}
+
+// Helper function to handle rate limit errors and update stats
+function handleRateLimitError(
+    error: any,
+    imageId: string,
+    statType: 'views' | 'downloads',
+    setStat: (value: number) => void,
+    toastDuration = 3000
+) {
+    if (error.response?.status === 429) {
+        const rateLimitData = error.response.data;
+        const statValue = rateLimitData[statType];
+        
+        if (statValue !== undefined) {
+            setStat(statValue);
+            updateStatsCache(imageId, statType, statValue);
+        }
+        
+        if (rateLimitData.message) {
+            toast.info(rateLimitData.message, { duration: toastDuration });
+        }
+        
+        return true; // Indicates rate limit was handled
+    }
+    return false; // Not a rate limit error
+}
+
+// Helper to calculate container height from image dimensions
+function calculateContainerHeight(
+    image: Image | null,
+    containerElement: HTMLElement | null
+): number | null {
+    if (!image || !containerElement) return null;
+    
+    if (image.width && image.height) {
+        const containerWidth = containerElement.offsetWidth || containerElement.clientWidth;
+        const estimatedWidth = containerWidth > 0 ? containerWidth : 1400;
+        const aspectRatio = image.width / image.height;
+        const calculatedHeight = estimatedWidth / aspectRatio;
+        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
+        return Math.max(300, maxHeight);
+    }
+    
+    return null;
+}
+
 function ImagePage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -72,7 +125,6 @@ function ImagePage() {
   const isImageChangingRef = useRef(false);
   const topInfoRef = useRef<HTMLDivElement>(null);
   const authorAreaRef = useRef<HTMLDivElement>(null);
-  const imgElementRef = useRef<HTMLImageElement>(null);
   const previousImgRef = useRef<Image | null>(null);
   const frontImageLoadedRef = useRef<boolean>(false);
   const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -84,21 +136,7 @@ function ImagePage() {
   
   // Calculate initial container height based on image dimensions
   const calculateInitialHeight = useCallback((img: Image | null): number | null => {
-    if (!img || !imageContainerRef.current) return null;
-    
-    // If we have image dimensions, calculate expected height
-    if (img.width && img.height) {
-      const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-      if (containerWidth > 0) {
-        const aspectRatio = img.width / img.height;
-        const calculatedHeight = containerWidth / aspectRatio;
-        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-        return Math.max(300, maxHeight); // Minimum 300px to prevent collapse
-      }
-    }
-    
-    // Fallback: use saved height or reasonable default
-    return containerHeightRef.current || 400; // Default 400px if no dimensions
+    return calculateContainerHeight(img, imageContainerRef.current) || containerHeightRef.current || 400;
   }, []);
 
   // Detect mobile
@@ -116,10 +154,6 @@ function ImagePage() {
     return images.findIndex((img) => img._id === image._id);
   }, [image, images]);
 
-  // Check if this is a refresh using unified utility (unused but kept for future use)
-  // const isRefresh = useMemo(() => {
-  //   return isPageRefresh();
-  // }, []);
 
   // Validate modal state using unified utility
   // Use locationWithState (actual location) not background location
@@ -389,20 +423,10 @@ function ImagePage() {
       imageStatsService.incrementView(imageId)
         .then((response) => {
           setViews(response.views);
-          const stats = apiStatsCache.get(imageId) || {};
-          stats.views = response.views;
-          apiStatsCache.set(imageId, stats);
+          updateStatsCache(imageId, 'views', response.views);
         })
         .catch((error: any) => {
-          if (error.response?.status === 429) {
-            const rateLimitData = error.response.data;
-            if (rateLimitData.views !== undefined) {
-              setViews(rateLimitData.views);
-              const stats = apiStatsCache.get(imageId) || {};
-              stats.views = rateLimitData.views;
-              apiStatsCache.set(imageId, stats);
-            }
-          } else {
+          if (!handleRateLimitError(error, imageId, 'views', setViews)) {
             console.error('Failed to increment view:', error);
             incrementedViewIds.current.delete(imageId);
           }
@@ -683,7 +707,7 @@ function ImagePage() {
               loadedAny = true;
             }
           }
-        } catch (e) {
+        } catch (_e) {
           // Ignore error, try original next
           if (previousImgRef.current?._id === currentImageId) {
             setShowProgressBar(false);
@@ -723,7 +747,7 @@ function ImagePage() {
             frontImageLoadedRef.current = true;
             loadedAny = true;
           }
-        } catch (e) {
+        } catch (_e) {
           // Ignore
           if (previousImgRef.current?._id === currentImageId) {
             setShowProgressBar(false);
@@ -753,44 +777,26 @@ function ImagePage() {
   useEffect(() => {
     if (!image || !imageContainerRef.current) return;
     
-    // Calculate initial height from image dimensions
-    if (image.width && image.height) {
+    const initialHeight = calculateContainerHeight(image, imageContainerRef.current);
+    if (initialHeight) {
       requestAnimationFrame(() => {
         if (!imageContainerRef.current) return;
-        
-        const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-        const estimatedWidth = containerWidth > 0 ? containerWidth : 1400; // Default to 1400px if not measured yet
-        const aspectRatio = image.width / image.height;
-        const calculatedHeight = estimatedWidth / aspectRatio;
-        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-        const initialHeight = Math.max(300, maxHeight);
-        
         // Only update if significantly different to avoid unnecessary updates
         if (!containerHeightRef.current || Math.abs(containerHeightRef.current - initialHeight) > 50) {
           containerHeightRef.current = initialHeight;
         }
       });
     } else if (!containerHeightRef.current) {
-      // No dimensions, use default
       containerHeightRef.current = 400;
     }
   }, [image?._id, image?.width, image?.height]);
 
-  // Load dimensions for related images
-  // Update image container height if dimensions are available
+  // Update image container height on resize
   useEffect(() => {
     const updateLayout = () => {
-      if (image && imageContainerRef.current && image.width && image.height) {
-        const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-        if (containerWidth > 0) {
-          const aspectRatio = image.width / image.height;
-          const calculatedHeight = containerWidth / aspectRatio;
-          const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-          const newHeight = Math.max(300, maxHeight);
-          if (newHeight !== containerHeightRef.current) {
-            containerHeightRef.current = newHeight;
-          }
-        }
+      const newHeight = calculateContainerHeight(image, imageContainerRef.current);
+      if (newHeight && newHeight !== containerHeightRef.current) {
+        containerHeightRef.current = newHeight;
       }
     };
 
@@ -916,19 +922,9 @@ function ImagePage() {
       try {
         const statsResponse = await imageStatsService.incrementDownload(image._id);
         setDownloads(statsResponse.downloads);
-        const stats = apiStatsCache.get(image._id) || {};
-        stats.downloads = statsResponse.downloads;
-        apiStatsCache.set(image._id, stats);
+        updateStatsCache(image._id, 'downloads', statsResponse.downloads);
       } catch (error: any) {
-        if (error.response?.status === 429) {
-          const rateLimitData = error.response.data;
-          if (rateLimitData.downloads !== undefined) {
-            setDownloads(rateLimitData.downloads);
-            const stats = apiStatsCache.get(image._id) || {};
-            stats.downloads = rateLimitData.downloads;
-            apiStatsCache.set(image._id, stats);
-          }
-        } else {
+        if (!handleRateLimitError(error, image._id, 'downloads', setDownloads)) {
           console.error('Failed to increment download count:', error);
         }
       }
@@ -1131,10 +1127,6 @@ function ImagePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showCollectionModal]);
 
-
-  // CRITICAL: Hook must be called BEFORE early returns (Rules of Hooks)
-  const prevShowModalStyleRef = useRef(showModalStyle);
-  prevShowModalStyleRef.current = showModalStyle;
 
   // Loading state - check AFTER all hooks are called
   // Use skeleton instead of spinner to avoid duplicate loading states
@@ -1548,7 +1540,6 @@ function ImagePage() {
               return frontSrc ? (
                 <img
                   key={`front-${image._id}`}
-                  ref={imgElementRef}
                   src={frontSrc}
                   alt={image.imageTitle || t('image.photo')}
                   className={`image-modal-front-image ${frontLoaded ? 'loaded' : ''}`}

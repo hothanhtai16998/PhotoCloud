@@ -76,9 +76,7 @@ function ProfilePage() {
         images,
         loading,
         photosCount,
-        imageTypes,
         fetchUserImages,
-        setImageType,
         updateImage,
         clearImages,
     } = useUserImageStore();
@@ -91,7 +89,6 @@ function ProfilePage() {
     // Track which user ID the current stats belong to
     const [statsUserId, setStatsUserId] = useState<string | undefined>(undefined);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
-    const processedImages = useRef<Set<string>>(new Set());
     const previousParams = useRef<string>('');
 
     // Cancel user lookup when params change
@@ -173,7 +170,6 @@ function ProfilePage() {
             // Clear all profile-related state immediately when switching users
             clearProfile();
             clearImages();
-            processedImages.current.clear();
             
             // Reset active tab to photos when switching profiles (unless it's own profile and stats is valid)
             if (activeTab === TABS.STATS) {
@@ -197,11 +193,10 @@ function ProfilePage() {
     // Wrapper to handle race condition checks
     const fetchUserImagesWrapper = useCallback(async (refresh = false, signal?: AbortSignal) => {
         if (!displayUserId) return;
-        const currentUserId = displayUserId; // Capture at start of fetch
-
+        const capturedUserId = displayUserId;
         try {
             await fetchUserImages(displayUserId, refresh, signal);
-            updateStatsUserIdIfSame(currentUserId);
+            updateStatsUserIdIfSame(capturedUserId);
         } catch (_error) {
             // Error already handled in store
         }
@@ -281,29 +276,20 @@ function ProfilePage() {
 
     // Wrapper to handle race condition checks and own profile check
     const fetchCollectionsWrapper = useCallback(async (signal?: AbortSignal) => {
-        if (!displayUserId) {
+        if (!displayUserId || !isOwnProfile) {
             setIsSwitchingProfile(false);
             return;
         }
-        // For now, only fetch own collections. TODO: Add endpoint to fetch other users' collections
-        if (!isOwnProfile) {
-            setIsSwitchingProfile(false);
-            return;
-        }
-
-        const currentUserId = displayUserId; // Capture at start of fetch
-
+        const capturedUserId = displayUserId;
         try {
             await fetchCollections(displayUserId, signal);
-            updateStatsUserIdIfSame(currentUserId);
-            // Reset switching state after successful fetch
-            if (displayUserId === currentUserId) {
+            updateStatsUserIdIfSame(capturedUserId);
+            if (displayUserId === capturedUserId) {
                 setIsSwitchingProfile(false);
             }
         } catch (_error) {
             // Error already handled in store
-            // Reset switching state on error
-            if (displayUserId === currentUserId) {
+            if (displayUserId === capturedUserId) {
                 setIsSwitchingProfile(false);
             }
         }
@@ -315,19 +301,16 @@ function ProfilePage() {
             setIsSwitchingProfile(false);
             return;
         }
-        const currentUserId = displayUserId; // Capture at start of fetch
-
+        const capturedUserId = displayUserId;
         try {
             await fetchFollowStats(displayUserId, signal);
-            updateStatsUserIdIfSame(currentUserId);
-            // Reset switching state after successful fetch
-            if (displayUserId === currentUserId) {
+            updateStatsUserIdIfSame(capturedUserId);
+            if (displayUserId === capturedUserId) {
                 setIsSwitchingProfile(false);
             }
         } catch (_error) {
             // Error already handled in store
-            // Reset switching state on error
-            if (displayUserId === currentUserId) {
+            if (displayUserId === capturedUserId) {
                 setIsSwitchingProfile(false);
             }
         }
@@ -339,24 +322,16 @@ function ProfilePage() {
             setIsSwitchingProfile(false);
             return;
         }
-        const currentUserId = displayUserId; // Capture at start of fetch
-
+        const capturedUserId = displayUserId;
         try {
             await fetchUserStats(displayUserId, signal);
-            // Only update if we're still on the same user
-            if (displayUserId === currentUserId) {
+            if (displayUserId === capturedUserId) {
                 setStatsUserId(displayUserId);
                 setIsSwitchingProfile(false);
             }
         } catch (_error) {
             // Error already handled in store
-            // Always reset switching state on error to prevent stuck loading state
-            if (displayUserId === currentUserId) {
-                setIsSwitchingProfile(false);
-            } else {
-                // If user changed during fetch, also reset
-                setIsSwitchingProfile(false);
-            }
+            setIsSwitchingProfile(false);
         }
     }, [displayUserId, fetchUserStats, setStatsUserId, setIsSwitchingProfile]);
 
@@ -565,70 +540,39 @@ function ProfilePage() {
     const extendedImages = useMemo(() => {
         return displayImages.map(img => ({
             ...img,
-            categoryName: img.categoryName || (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name),
+            categoryName: typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name,
         }));
     }, [displayImages]);
-
-    // Handle navigation - update the selected image and URL
-    const handleNavigate = useCallback((nextIndex: number) => {
-        if (nextIndex >= 0 && nextIndex < displayImages.length) {
-            const updatedImage = displayImages[nextIndex];
-            handleImageUpdate(updatedImage);
-            // Update URL to reflect the selected image with slug
-            const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
-            setSearchParams(prev => {
-                const newParams = new URLSearchParams(prev);
-                newParams.set('image', slug);
-                return newParams;
-            });
-        }
-    }, [displayImages, handleImageUpdate, setSearchParams]);
-
-    // Handle index selection
-    const handleSelectIndex = useCallback((idx: number) => {
-        if (idx >= 0 && idx < displayImages.length) {
-            const updatedImage = displayImages[idx];
-            handleImageUpdate(updatedImage);
-            // Update URL to reflect the selected image with slug
-            const slug = generateImageSlug(updatedImage.imageTitle || 'Untitled', updatedImage._id);
-            setSearchParams(prev => {
-                const newParams = new URLSearchParams(prev);
-                newParams.set('image', slug);
-                return newParams;
-            });
-        }
-    }, [displayImages, handleImageUpdate, setSearchParams]);
-
-    // Get current image IDs for comparison
-    const currentImageIds = useMemo(() => new Set(displayImages.map(img => img._id)), [displayImages]);
-
-    // Determine image type when it loads
-    const handleImageLoad = useCallback((imageId: string, img: HTMLImageElement) => {
-        // Only process once per image and only if image still exists
-        if (!currentImageIds.has(imageId) || processedImages.current.has(imageId)) return;
-
-        // Double-check that image still exists in current set (race condition protection)
-        if (!currentImageIds.has(imageId)) return;
-
-        processedImages.current.add(imageId);
-        const isPortrait = img.naturalHeight > img.naturalWidth;
-        const imageType = isPortrait ? 'portrait' : 'landscape';
-        setImageType(imageId, imageType);
-    }, [currentImageIds, setImageType]);
-
-    // Cleanup processedImages when component unmounts or displayUserId changes
-    useEffect(() => {
-        return () => {
-            // Cleanup on unmount
-            processedImages.current.clear();
-        };
-    }, [displayUserId]);
 
     // Update image in the state when stats change
     const handleImageUpdate = useCallback((updatedImage: Image) => {
         updateImage(updatedImage._id, updatedImage);
     }, [updateImage]);
 
+    // Helper to update image selection and URL
+    const updateImageSelection = useCallback((index: number) => {
+        if (index >= 0 && index < displayImages.length) {
+            const selectedImage = displayImages[index];
+            if (!selectedImage) return; // Guard against undefined
+            handleImageUpdate(selectedImage);
+            const slug = generateImageSlug(selectedImage.imageTitle || 'Untitled', selectedImage._id);
+            setSearchParams(prev => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set('image', slug);
+                return newParams;
+            });
+        }
+    }, [displayImages, handleImageUpdate, setSearchParams]);
+
+    // Handle navigation - update the selected image and URL
+    const handleNavigate = useCallback((nextIndex: number) => {
+        updateImageSelection(nextIndex);
+    }, [updateImageSelection]);
+
+    // Handle index selection
+    const handleSelectIndex = useCallback((idx: number) => {
+        updateImageSelection(idx);
+    }, [updateImageSelection]);
 
     if (profileUserLoading) {
         return (

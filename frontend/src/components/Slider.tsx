@@ -7,7 +7,6 @@ import "./Slider.css";
 
 // Date-based randomization: same images per day
 function getDailyRandomImages(images: Image[], count: number): Image[] {
-  // Use date as seed for consistent daily selection
   const today = new Date();
   const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
 
@@ -15,7 +14,7 @@ function getDailyRandomImages(images: Image[], count: number): Image[] {
   let seed = 0;
   for (let i = 0; i < dateString.length; i++) {
     seed = ((seed << 5) - seed) + dateString.charCodeAt(i);
-    seed = seed & seed; // Convert to 32bit integer
+    seed = seed & 0xffffffff; // Convert to 32bit integer
   }
 
   // Shuffle array using seed
@@ -32,6 +31,49 @@ function getDailyRandomImages(images: Image[], count: number): Image[] {
   return shuffled.slice(0, count);
 }
 
+// Helper to get image URL with fallback priority
+function getImageUrl(image: Image | null, preferThumbnail = false): string | null {
+  if (!image) return null;
+  
+  if (preferThumbnail) {
+    return (
+      image.thumbnailAvifUrl ||
+      image.thumbnailUrl ||
+      image.smallAvifUrl ||
+      image.smallUrl ||
+      image.regularAvifUrl ||
+      image.regularUrl ||
+      image.imageUrl ||
+      null
+    );
+  }
+  
+  return (
+    image.imageAvifUrl ||
+    image.imageUrl ||
+    image.regularAvifUrl ||
+    image.regularUrl ||
+    image.smallUrl ||
+    image.thumbnailUrl ||
+    null
+  );
+}
+
+// Helper to clear timer refs
+function clearTimerRef(ref: React.MutableRefObject<number | null>) {
+  if (ref.current !== null) {
+    clearTimeout(ref.current);
+    ref.current = null;
+  }
+}
+
+function clearIntervalRef(ref: React.MutableRefObject<number | null>) {
+  if (ref.current !== null) {
+    clearInterval(ref.current);
+    ref.current = null;
+  }
+}
+
 const TRANSITION_STORAGE_KEY = 'slider-transition-type';
 
 function Slider() {
@@ -41,8 +83,7 @@ function Slider() {
   const [loading, setLoading] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [autoPlayProgress, setAutoPlayProgress] = useState(0);
-  const [transitionType, _setTransitionType] = useState<TransitionType>(() => {
-    // Load from localStorage or use default
+  const [transitionType] = useState<TransitionType>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(TRANSITION_STORAGE_KEY);
       if (saved && sliderConfig.transition.availableTypes.includes(saved as TransitionType)) {
@@ -51,11 +92,13 @@ function Slider() {
     }
     return sliderConfig.transition.defaultType;
   });
-  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
-  const [imageLoadStates, setImageLoadStates] = useState<Map<string, 'loading' | 'loaded' | 'error'>>(new Map());
-  // Ref to track cached images synchronously (prevents flash on refresh)
-  const cachedImagesRef = useRef<Set<string>>(new Set());
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  
+  // Consolidated image loading state (single source of truth)
+  const imageLoadStateRef = useRef<Map<string, 'loading' | 'loaded' | 'error'>>(new Map());
+  const [imageLoadStates, setImageLoadStates] = useState<Map<string, 'loading' | 'loaded' | 'error'>>(new Map());
+  
+  // Timer refs
   const autoPlayIntervalRef = useRef<number | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
   const progressStartTimeRef = useRef<number | null>(null);
@@ -68,69 +111,45 @@ function Slider() {
   const autoPlayTimeoutRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Optimized: Fetch only enough images for randomization (2-3x imageCount)
-  // This avoids fetching hundreds/thousands of images when we only need 10-15
+  // Fetch images on mount
   useEffect(() => {
     const fetchImages = async () => {
       setLoading(true);
-
-      // Create abort controller for cleanup
       abortControllerRef.current = new AbortController();
       const signal = abortControllerRef.current.signal;
 
       try {
         const { imageCount, apiLimit } = sliderConfig;
-
-        // Fetch only enough images for randomization (2-3x what we need)
-        // This ensures we have variety while minimizing network requests
-        const fetchCount = Math.max(imageCount * 3, 30); // At least 30 images, or 3x imageCount
+        const fetchCount = Math.max(imageCount * 3, 30);
         const pagesNeeded = Math.ceil(fetchCount / apiLimit);
-
         const allImages: Image[] = [];
 
-        // Fetch only the pages we need
         for (let page = 1; page <= pagesNeeded; page++) {
-          // Check if component was unmounted
-          if (signal.aborted) {
-            return;
-          }
+          if (signal.aborted) return;
 
           const response = await imageService.fetchImages({
             limit: apiLimit,
             page: page,
           });
 
-          if (response.images && response.images.length > 0) {
+          if (response.images?.length > 0) {
             allImages.push(...response.images);
-
-            // If we have enough images, stop fetching
-            if (allImages.length >= fetchCount) {
-              break;
-            }
-
-            // If this is the last page, stop
-            if (response.pagination && page >= response.pagination.pages) {
-              break;
-            }
+            if (allImages.length >= fetchCount) break;
+            if (response.pagination && page >= response.pagination.pages) break;
           } else {
             break;
           }
         }
 
-        // Check if component was unmounted before setting state
-        if (signal.aborted) {
-          return;
-        }
+        if (signal.aborted) return;
 
         if (allImages.length > 0) {
-          // Get random images for today from the fetched subset
           const dailyImages = getDailyRandomImages(allImages, imageCount);
           setImages(dailyImages);
         } else {
           setImages([]);
         }
       } catch (error) {
-        // Don't log error if it's an abort
         if (error instanceof Error && error.name !== 'AbortError') {
           console.error("Error fetching images:", error);
         }
@@ -146,7 +165,6 @@ function Slider() {
 
     fetchImages();
 
-    // Cleanup: abort fetch if component unmounts
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -157,16 +175,10 @@ function Slider() {
   const goToSlide = useCallback((index: number) => {
     if (isTransitioning || images.length === 0) return;
 
-    // Clear any existing transition timeout
-    if (transitionTimeoutRef.current !== null) {
-      clearTimeout(transitionTimeoutRef.current);
-      transitionTimeoutRef.current = null;
-    }
-
+    clearTimerRef(transitionTimeoutRef);
     setIsTransitioning(true);
     setCurrentSlide(index % images.length);
 
-    // Track timeout for cleanup
     transitionTimeoutRef.current = window.setTimeout(() => {
       setIsTransitioning(false);
       transitionTimeoutRef.current = null;
@@ -179,7 +191,6 @@ function Slider() {
     goToSlide((currentSlide + 1) % images.length);
   }, [currentSlide, goToSlide, images.length]);
 
-  // Keep ref updated with latest nextSlide
   useEffect(() => {
     nextSlideRef.current = nextSlide;
   }, [nextSlide]);
@@ -190,154 +201,95 @@ function Slider() {
     goToSlide((currentSlide - 1 + images.length) % images.length);
   }, [currentSlide, goToSlide, images.length]);
 
-  // Auto-play carousel (6.2 seconds interval) - pauses on hover, with progress bar
+  // Auto-play with progress bar
   useEffect(() => {
     if (images.length === 0) {
-      // Clear intervals if no images
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-        autoPlayIntervalRef.current = null;
-      }
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
+      clearIntervalRef(autoPlayIntervalRef);
+      clearIntervalRef(progressIntervalRef);
       return;
     }
 
-    // If hovering, pause (save current progress and stop intervals)
     if (isHovered) {
-      // Save current progress before pausing
+      // Save progress and pause
       if (progressStartTimeRef.current !== null) {
         const elapsed = Date.now() - progressStartTimeRef.current;
         const { intervalMs } = sliderConfig.autoPlay;
         pausedProgressRef.current = Math.min((elapsed / intervalMs) * 100, 100);
       }
-      // Pause intervals
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-        autoPlayIntervalRef.current = null;
-      }
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
+      clearIntervalRef(autoPlayIntervalRef);
+      clearIntervalRef(progressIntervalRef);
       return;
     }
 
-    // Resume/Start intervals when not hovering
-    // Clear any existing intervals first
-    if (autoPlayIntervalRef.current) {
-      clearInterval(autoPlayIntervalRef.current);
-      autoPlayIntervalRef.current = null;
-    }
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
+    // Resume/Start auto-play
+    clearIntervalRef(autoPlayIntervalRef);
+    clearIntervalRef(progressIntervalRef);
 
-    // Calculate start time based on paused progress (if resuming) or start fresh
     const startProgress = pausedProgressRef.current;
     const { intervalMs, progressUpdateIntervalMs } = sliderConfig.autoPlay;
     const startTime = Date.now() - (startProgress / 100) * intervalMs;
     progressStartTimeRef.current = startTime;
 
-    // Progress bar animation - synchronized with auto-play
-    // Update every 16ms for smoother animation (60fps)
+    // Progress bar animation
     progressIntervalRef.current = window.setInterval(() => {
-      // If progressStartTimeRef is null, don't update (but don't stop the interval)
-      if (progressStartTimeRef.current === null) {
-        // Keep the current progress value, don't update
-        return;
-      }
+      if (progressStartTimeRef.current === null) return;
       const elapsed = Date.now() - progressStartTimeRef.current;
       const progress = Math.min((elapsed / intervalMs) * 100, 100);
       setAutoPlayProgress(progress);
-    }, progressUpdateIntervalMs); // Update every 16ms (~60fps) for smooth animation
+    }, progressUpdateIntervalMs);
 
-    // Auto-play interval - change slide at configured interval
-    // Calculate delay based on remaining time if resuming from pause
-    const remainingTime = intervalMs - (startProgress / 100) * intervalMs;
-
+    // Auto-play interval
     const scheduleNextSlide = () => {
-      setAutoPlayProgress(100); // Ensure it reaches 100% before changing
-      isAutoPlayChangeRef.current = true; // Mark as auto-play change
+      setAutoPlayProgress(100);
+      isAutoPlayChangeRef.current = true;
       if (nextSlideRef.current) {
         nextSlideRef.current();
       }
-      // Start progress timer immediately (synchronously)
-      // The useEffect that resets progress will be skipped because isAutoPlayChangeRef is true
       setAutoPlayProgress(0);
       pausedProgressRef.current = 0;
-      // Update progressStartTimeRef immediately so the interval can use it
       progressStartTimeRef.current = Date.now();
-      // Reset the flag after ensuring the useEffect has checked it
-      // Use a longer timeout to ensure the useEffect runs first
-      // Clear any existing timeout first
-      if (autoPlayTimeoutRef.current !== null) {
-        clearTimeout(autoPlayTimeoutRef.current);
-      }
+      
+      clearTimerRef(autoPlayTimeoutRef);
       autoPlayTimeoutRef.current = window.setTimeout(() => {
         isAutoPlayChangeRef.current = false;
         autoPlayTimeoutRef.current = null;
       }, 10);
     };
 
+    const remainingTime = intervalMs - (startProgress / 100) * intervalMs;
+
     if (startProgress > 0) {
-      // Resume from pause - use setTimeout for the first slide change
-      // Clear any existing timeout first
-      if (autoPlayTimeoutRef.current !== null) {
-        clearTimeout(autoPlayTimeoutRef.current);
-      }
+      clearTimerRef(autoPlayTimeoutRef);
       autoPlayTimeoutRef.current = window.setTimeout(() => {
         scheduleNextSlide();
         autoPlayTimeoutRef.current = null;
-        // Then set up the regular interval
         autoPlayIntervalRef.current = window.setInterval(scheduleNextSlide, intervalMs);
       }, remainingTime);
     } else {
-      // Start fresh - use regular interval
       autoPlayIntervalRef.current = window.setInterval(scheduleNextSlide, intervalMs);
     }
 
     return () => {
-      // Cleanup all timers
-      if (autoPlayTimeoutRef.current !== null) {
-        clearTimeout(autoPlayTimeoutRef.current);
-        autoPlayTimeoutRef.current = null;
-      }
-      if (autoPlayIntervalRef.current) {
-        clearInterval(autoPlayIntervalRef.current);
-        autoPlayIntervalRef.current = null;
-      }
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-      // Reset refs
+      clearTimerRef(autoPlayTimeoutRef);
+      clearIntervalRef(autoPlayIntervalRef);
+      clearIntervalRef(progressIntervalRef);
       progressStartTimeRef.current = null;
       pausedProgressRef.current = 0;
     };
   }, [images.length, isHovered]);
 
-  // Reset progress when slide changes manually (not from auto-play)
+  // Reset progress on manual slide change
   useEffect(() => {
-    // Check if it's an auto-play change - if so, don't reset
-    // The flag is set synchronously in scheduleNextSlide, so we check it immediately
-    if (isAutoPlayChangeRef.current) {
-      // It's an auto-play change, scheduleNextSlide will handle the reset
-      return;
-    }
-    // Manual change - reset progress
+    if (isAutoPlayChangeRef.current) return;
     setAutoPlayProgress(0);
     pausedProgressRef.current = 0;
     progressStartTimeRef.current = null;
   }, [currentSlide]);
 
-
-  // Keyboard navigation - Arrow keys, Home, End
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      if (images.length === 0) return;
       if (e.key === "ArrowLeft") prevSlide();
       if (e.key === "ArrowRight") nextSlide();
       if (e.key === "Home") goToSlide(0);
@@ -347,26 +299,9 @@ function Slider() {
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [prevSlide, nextSlide, goToSlide, images.length]);
 
-
-  // Get best image URL - prioritize full resolution for slider
-  const getImageUrl = (image: Image | null): string | null => {
-    if (!image) return null;
-    return (
-      image.imageAvifUrl ||
-      image.imageUrl ||
-      image.regularAvifUrl ||
-      image.regularUrl ||
-      image.smallUrl ||
-      image.thumbnailUrl ||
-      null
-    );
-  };
-
-  // Progressive image loading handler
-  const handleImageLoad = useCallback((imageId: string, _imageUrl: string) => {
-    // Mark as loaded in both state and ref for synchronous access
-    cachedImagesRef.current.add(imageId);
-    setLoadedImages(prev => new Set(prev).add(imageId));
+  // Consolidated image loading handler
+  const handleImageLoad = useCallback((imageId: string) => {
+    imageLoadStateRef.current.set(imageId, 'loaded');
     setImageLoadStates(prev => {
       const next = new Map(prev);
       next.set(imageId, 'loaded');
@@ -374,51 +309,32 @@ function Slider() {
     });
   }, []);
 
-  // CRITICAL: Check cache synchronously when images are set (on refresh)
-  // This must run before the progressive loading effect to prevent flash
+  // Check cache synchronously on images change
   useLayoutEffect(() => {
     if (images.length === 0) return;
     
-    // Batch state updates to prevent multiple re-renders
-    const newLoadedImages = new Set<string>();
     const newLoadStates = new Map<string, 'loading' | 'loaded' | 'error'>();
     
-    // Check if images are cached and mark as loaded immediately
-    // This prevents flash on refresh
     images.forEach((image) => {
       const imageId = image._id;
-      if (loadedImages.has(imageId) || cachedImagesRef.current.has(imageId)) {
-        cachedImagesRef.current.add(imageId);
-        newLoadedImages.add(imageId);
+      if (imageLoadStateRef.current.get(imageId) === 'loaded') {
         newLoadStates.set(imageId, 'loaded');
-        return; // Already marked as loaded
+        return;
       }
       
       const imageUrl = getImageUrl(image);
       if (!imageUrl) return;
       
-      // Check browser cache synchronously
-      // Note: This only works reliably if the image was loaded in a previous render
-      // For first-time loads, we rely on the progressive loading effect
       const img = new window.Image();
       img.src = imageUrl;
       
-      // If complete is true immediately, image is cached
-      // Check naturalWidth/Height to ensure it's a valid loaded image
       if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
-        cachedImagesRef.current.add(imageId);
-        newLoadedImages.add(imageId);
+        imageLoadStateRef.current.set(imageId, 'loaded');
         newLoadStates.set(imageId, 'loaded');
       }
     });
     
-    // Batch update state once
-    if (newLoadedImages.size > 0) {
-      setLoadedImages(prev => {
-        const combined = new Set(prev);
-        newLoadedImages.forEach(id => combined.add(id));
-        return combined;
-      });
+    if (newLoadStates.size > 0) {
       setImageLoadStates(prev => {
         const next = new Map(prev);
         newLoadStates.forEach((state, id) => next.set(id, state));
@@ -427,13 +343,13 @@ function Slider() {
     }
   }, [images]);
 
-  // Preload images progressively
+  // Progressive image loading
   useEffect(() => {
     if (!sliderConfig.loading.enableProgressiveLoading || images.length === 0) return;
 
     const preloadImage = (image: Image, priority: 'high' | 'low' = 'low') => {
       const imageId = image._id;
-      if (loadedImages.has(imageId)) return;
+      if (imageLoadStateRef.current.get(imageId) === 'loaded') return;
 
       setImageLoadStates(prev => {
         const next = new Map(prev);
@@ -447,8 +363,9 @@ function Slider() {
       if (!imageUrl) return;
 
       const img = new window.Image();
-      img.onload = () => handleImageLoad(imageId, imageUrl);
+      img.onload = () => handleImageLoad(imageId);
       img.onerror = () => {
+        imageLoadStateRef.current.set(imageId, 'error');
         setImageLoadStates(prev => {
           const next = new Map(prev);
           next.set(imageId, 'error');
@@ -459,13 +376,11 @@ function Slider() {
       img.src = imageUrl;
     };
 
-    // Load current slide with high priority
     const currentImage = images[currentSlide];
     if (currentImage) {
       preloadImage(currentImage, 'high');
     }
 
-    // Preload next 2-3 images with low priority
     for (let i = 1; i <= 3; i++) {
       const nextIndex = (currentSlide + i) % images.length;
       const nextImage = images[nextIndex];
@@ -473,34 +388,14 @@ function Slider() {
         preloadImage(nextImage, 'low');
       }
     }
-  }, [currentSlide, images, loadedImages, handleImageLoad]);
+  }, [currentSlide, images, handleImageLoad]);
 
-  // Get current and next image for bottom carousel
-  const getBottomCarouselImages = useCallback((): Image[] => {
-    if (images.length === 0) return [];
-    const current = images[currentSlide];
-    const next = images[(currentSlide + 1) % images.length];
-    return [current, next].filter(Boolean) as Image[];
-  }, [images, currentSlide]);
+  // Get bottom carousel images (current + next)
+  const bottomCarouselImages = images.length > 0 
+    ? [images[currentSlide], images[(currentSlide + 1) % images.length]].filter(Boolean) as Image[]
+    : [];
 
-
-  // Get thumbnail URL for bottom carousel
-  const getThumbnailUrl = (image: Image | null): string | null => {
-    if (!image) return null;
-    return (
-      image.thumbnailAvifUrl ||
-      image.thumbnailUrl ||
-      image.smallAvifUrl ||
-      image.smallUrl ||
-      image.regularAvifUrl ||
-      image.regularUrl ||
-      image.imageUrl ||
-      null
-    );
-  };
-
-
-  // Touch gesture handlers for swipe
+  // Touch gesture handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!e.touches[0]) return;
     touchStartX.current = e.touches[0].clientX;
@@ -516,12 +411,11 @@ function Slider() {
     const diffX = touchStartX.current - touchEndX;
     const diffY = touchStartY.current - touchEndY;
 
-    // Only trigger if horizontal swipe is greater than vertical (to avoid conflicts with scrolling)
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
       if (diffX > 0) {
-        nextSlide(); // Swipe left = next
+        nextSlide();
       } else {
-        prevSlide(); // Swipe right = previous
+        prevSlide();
       }
     }
 
@@ -529,34 +423,15 @@ function Slider() {
     touchStartY.current = null;
   };
 
-
-  // Cleanup all timers on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Clear all intervals
-      if (autoPlayIntervalRef.current !== null) {
-        clearInterval(autoPlayIntervalRef.current);
-        autoPlayIntervalRef.current = null;
-      }
-      if (progressIntervalRef.current !== null) {
-        clearInterval(progressIntervalRef.current);
-        progressIntervalRef.current = null;
-      }
-
-      // Clear all timeouts
-      if (transitionTimeoutRef.current !== null) {
-        clearTimeout(transitionTimeoutRef.current);
-        transitionTimeoutRef.current = null;
-      }
-      if (autoPlayTimeoutRef.current !== null) {
-        clearTimeout(autoPlayTimeoutRef.current);
-        autoPlayTimeoutRef.current = null;
-      }
-
-      // Abort any pending fetch
+      clearIntervalRef(autoPlayIntervalRef);
+      clearIntervalRef(progressIntervalRef);
+      clearTimerRef(transitionTimeoutRef);
+      clearTimerRef(autoPlayTimeoutRef);
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
-        abortControllerRef.current = null;
       }
     };
   }, []);
@@ -566,7 +441,6 @@ function Slider() {
       <div className="tripzo-page">
         <div className="loading-state">
           <div className="skeleton-main-slide blur-up-skeleton">
-            {/* Blur-up effect for skeleton */}
             <div className="skeleton-blur-layer" />
             <div className="skeleton-content" />
           </div>
@@ -584,19 +458,18 @@ function Slider() {
     );
   }
 
-
   return (
     <div
       className="tripzo-page"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Auto-play progress bar - Always render to prevent layout shift (CLS fix) */}
+      {/* Auto-play progress bar */}
       <div 
         className="autoplay-progress" 
         style={{ 
-          opacity: images.length > 0 ? (isHovered ? 0.5 : 1) : 0,
-          visibility: images.length > 0 ? 'visible' : 'hidden'
+          opacity: isHovered ? 0.5 : 1,
+          visibility: 'visible'
         }}
         aria-hidden="true"
       >
@@ -610,13 +483,10 @@ function Slider() {
       <div className={`main-carousel-container transition-${transitionType} slide-direction-${slideDirection}`}>
         {images.map((image, index) => {
           const imageUrl = getImageUrl(image);
-          // Use smallUrl for placeholder instead of tiny thumbnail to avoid 20x20 issue
           const placeholderUrl = image.smallAvifUrl || image.smallUrl || image.thumbnailAvifUrl || image.thumbnailUrl || null;
           const isActive = index === currentSlide;
-          // CRITICAL: Check both state and ref for cached images (synchronous check)
-          const isLoaded = loadedImages.has(image._id) || cachedImagesRef.current.has(image._id);
-          const loadState = imageLoadStates.get(image._id) || 'loading';
-          // CRITICAL: Always show blur-up if placeholder exists (ignore config to prevent flash)
+          const loadState = imageLoadStateRef.current.get(image._id) || imageLoadStates.get(image._id) || 'loading';
+          const isLoaded = loadState === 'loaded';
           const showBlurUp = placeholderUrl && !isLoaded;
 
           return (
@@ -625,8 +495,6 @@ function Slider() {
               className={`main-slide ${isActive ? "active" : ""} transition-${transitionType}`}
               style={{ backgroundColor: '#1a1a1a' }}
             >
-              {/* Blurred background layer - use placeholder if available to prevent flash */}
-              {/* Note: Using background-image for LCP - ensure first slide image loads with high priority */}
               {(placeholderUrl || imageUrl) && (
                 <div
                   className="blur-background-layer"
@@ -634,14 +502,11 @@ function Slider() {
                     backgroundImage: `url("${placeholderUrl || imageUrl}")`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    // Always keep blur visible to fill empty space around contained image
                     opacity: 1,
                   }}
                 />
               )}
 
-
-              {/* Main image layer - separate from blurred background */}
               {imageUrl && (
                 <div
                   className={`main-image-layer ${isLoaded ? 'loaded' : 'loading'}`}
@@ -650,8 +515,6 @@ function Slider() {
                     backgroundSize: 'contain',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                    // CRITICAL: Keep main image completely hidden until loaded
-                    // This prevents flash on refresh and ensures smooth transition
                     opacity: isLoaded ? 1 : 0,
                     transition: isLoaded ? 'opacity 0.5s ease-in-out' : 'none',
                     zIndex: 2,
@@ -659,14 +522,12 @@ function Slider() {
                 />
               )}
 
-              {/* Loading skeleton overlay - only show if no blur-up and not loaded */}
               {loadState === 'loading' && !showBlurUp && (
                 <div className="slide-loading-skeleton" style={{ zIndex: 3 }} />
               )}
             </div>
           );
         })}
-
       </div>
 
       {/* Bottom Carousel */}
@@ -679,11 +540,11 @@ function Slider() {
           <ChevronLeft size={20} />
         </button>
         <div className="bottom-carousel">
-          {getBottomCarouselImages().map((image, index) => {
+          {bottomCarouselImages.map((image, index) => {
             if (!image) return null;
-            const thumbnailUrl = getThumbnailUrl(image);
+            const thumbnailUrl = getImageUrl(image, true);
             const slideIndex = index === 0 ? currentSlide : (currentSlide + 1) % images.length;
-            const isActive = index === 0; // First thumbnail is always the current slide
+            const isActive = index === 0;
 
             return (
               <div
