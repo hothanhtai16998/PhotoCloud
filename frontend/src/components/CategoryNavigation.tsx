@@ -96,7 +96,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     }
   }, [categoryObjects, checkScrollButtons])
 
-  // Scroll handlers - match Unsplash's smooth scrolling behavior
+  // Scroll handlers - match Photo's smooth scrolling behavior
   const scrollLeft = useCallback(() => {
     if (!categoryNavElementRef.current) return
     const nav = categoryNavElementRef.current
@@ -147,7 +147,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     if (!gridContainer) return;
 
     // Calculate header height dynamically
-    const header = document.querySelector('.unsplash-header');
+    const header = document.querySelector('.photo-header');
     const headerHeight = header ? header.getBoundingClientRect().height : uiConfig.layout.headerHeightFallbackPx;
 
     // Get the grid container's position
@@ -162,7 +162,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   }, []);
 
   const handleCategoryClick = (categoryNameVi: string) => {
-    const isTestPage = location.pathname.includes('UnsplashGridTestPage');
+    const isTestPage = location.pathname.includes('PhotoGridTestPage');
     
     // For test page, use query params (backward compatibility)
     if (isTestPage) {
@@ -203,7 +203,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   // Show on homepage, category pages (/t/:slug), and test page
   const isHomePage = location?.pathname === '/';
   const isCategoryPage = location?.pathname?.startsWith('/t/');
-  const isTestPage = location?.pathname?.includes('UnsplashGridTestPage');
+  const isTestPage = location?.pathname?.includes('PhotoGridTestPage');
   
   if (!isHomePage && !isCategoryPage && !isTestPage) {
     return null

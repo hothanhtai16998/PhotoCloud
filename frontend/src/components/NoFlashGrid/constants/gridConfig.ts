@@ -1,4 +1,4 @@
-// Unsplash-style grid configuration
+// Photo-style grid configuration
 export const GRID_CONFIG = {
   baseRowHeight: 5, // Very fine-grained control for precise height ranges (5px = 1 row)
   gap: 24, // Gap between grid items

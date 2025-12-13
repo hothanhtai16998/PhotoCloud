@@ -240,7 +240,7 @@ export const en = {
     legal: 'Legal',
     submitImage: 'Submit an image',
     logIn: 'Log in',
-    newToUnsplash: 'New to Unsplash?',
+    newToUnsplash: 'New to Photo?',
     signUpFree: 'Sign up for free',
   },
 

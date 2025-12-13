@@ -12,7 +12,7 @@
   z-index: 1;
 }
 
-/* Mobile: Search bar below header (like Unsplash) */
+/* Mobile: Search bar below header (like Photo) */
 @media (max-width: 768px) {
   .search-bar-container {
     position: fixed !important; /* Fixed below header */

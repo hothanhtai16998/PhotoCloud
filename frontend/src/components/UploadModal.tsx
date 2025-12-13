@@ -455,7 +455,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                         </h3>
                     </div>
 
-                    {/* Add More Images Card - Unsplash Style */}
+                    {/* Add More Images Card - Photo Style */}
                     {imagesData.length < 10 && (
                         <div
                             className="upload-add-more-card"

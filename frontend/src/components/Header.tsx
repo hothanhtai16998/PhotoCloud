@@ -157,7 +157,7 @@ export const Header = memo(function Header() {
   }
 
   return (
-    <header className="unsplash-header">
+    <header className="photo-header">
       <div className="header-top">
         <div className="header-container">
           {/* Logo */}

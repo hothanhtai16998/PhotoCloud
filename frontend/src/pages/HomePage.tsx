@@ -157,7 +157,7 @@ function HomePage() {
                 if (!gridContainer) return;
 
                 // Calculate header height dynamically
-                const header = document.querySelector('.unsplash-header');
+                const header = document.querySelector('.photo-header');
                 const headerHeight = header ? header.getBoundingClientRect().height : uiConfig.layout.headerHeightFallbackPx;
 
                 // Get the grid container's position

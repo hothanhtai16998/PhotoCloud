@@ -622,7 +622,7 @@ export function ImageModal({
         setShowProgressBar(false);
         setImageProgress(0);
 
-        // Unsplash technique: Use different image sizes
+        // Photo technique: Use different image sizes
         // Back layer (backSrc) = regularUrl (1080px, likely cached from grid, good quality)
         // Front layer (frontSrc) = regularUrl then upgrade to imageUrl (best quality)
         const thumbnail = img.regularUrl || img.imageUrl || img.smallUrl || img.thumbnailUrl || '';
@@ -1395,7 +1395,7 @@ export function ImageModal({
 
                         {/* Middle image with gutters */}
                         <div className="image-modal-middle-container">
-                            {/* Unsplash-style simple container - no complex calculations */}
+                            {/* Photo-style simple container - no complex calculations */}
                             <div className="image-modal-image-wrapper">
                                 <div
                                     className={`image-modal-image-container ${img.width && img.height ? 'has-aspect-ratio' : 'no-aspect-ratio'}`}

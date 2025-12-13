@@ -154,7 +154,7 @@ function vietnameseToASCII(str: string): string {
 
 /**
  * Convert image title to URL-friendly slug
- * Similar to Unsplash format: "office-space-with-flag-and-plants"
+ * Similar to Photo format: "office-space-with-flag-and-plants"
  * Handles Vietnamese characters properly
  */
 export function slugify(text: string): string {
@@ -173,12 +173,12 @@ export function slugify(text: string): string {
 }
 
 /**
- * Generate image slug with short ID (like Unsplash)
+ * Generate image slug with short ID (like Photo)
  * Format: "title-slug-{shortId}"
  */
 export function generateImageSlug(imageTitle: string, imageId: string): string {
   const slug = slugify(imageTitle);
-  // Use last 12 characters of ID as short identifier (like Unsplash)
+  // Use last 12 characters of ID as short identifier (like Photo)
   const shortId = imageId.slice(-12);
   return `${slug}-${shortId}`;
 }

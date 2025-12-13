@@ -138,7 +138,7 @@
   height: 116px;
 }
 
-/* Hide Y-axis and grid lines to match Unsplash */
+/* Hide Y-axis and grid lines to match Photo */
 /* Y-axis is already hidden with hide prop, so no need for CSS */
 /* Keep X-axis visible for dates */
 

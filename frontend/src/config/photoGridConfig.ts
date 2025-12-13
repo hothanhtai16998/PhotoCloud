@@ -1,9 +1,9 @@
 
 /**
- * Unsplash-style Grid Configuration
- * Matches Unsplash's exact grid behavior and styling
+ * Photo-style Grid Configuration
+ * Matches Photo's exact grid behavior and styling
  */
-export const UNSPLASH_GRID_CONFIG = {
+export const PHOTO_GRID_CONFIG = {
   // Grid Layout
   columns: {
     desktop: 3,
@@ -82,7 +82,7 @@ export const UNSPLASH_GRID_CONFIG = {
 
   // Accessibility
   accessibility: {
-    altTextFallback: 'Unsplash image',
+    altTextFallback: 'Photo image',
     ariaLabels: {
       downloadButton: 'Download image',
       likeButton: 'Like image',
@@ -91,9 +91,10 @@ export const UNSPLASH_GRID_CONFIG = {
   },
 } as const;
 
-export type UnsplashGridConfig = typeof UNSPLASH_GRID_CONFIG;
-export type ColumnConfig = typeof UNSPLASH_GRID_CONFIG.columns;
-export type LoadingConfig = typeof UNSPLASH_GRID_CONFIG.loading;
-export type AnimationConfig = typeof UNSPLASH_GRID_CONFIG.animations;
+export type PhotoGridConfig = typeof PHOTO_GRID_CONFIG;
+export type ColumnConfig = typeof PHOTO_GRID_CONFIG.columns;
+export type LoadingConfig = typeof PHOTO_GRID_CONFIG.loading;
+export type AnimationConfig = typeof PHOTO_GRID_CONFIG.animations;
 
-export default UNSPLASH_GRID_CONFIG;
+export default PHOTO_GRID_CONFIG;
+

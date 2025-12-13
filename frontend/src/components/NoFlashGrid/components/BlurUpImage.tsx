@@ -35,7 +35,7 @@ export function BlurUpImage({
     images,
     currentIndex,
 }: BlurUpImageProps) {
-    // Use base64 thumbnail for instant placeholder (like Unsplash) - no network request needed
+    // Use base64 thumbnail for instant placeholder (like Photo) - no network request needed
     const base64Placeholder = image.base64Thumbnail || null;
     const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
     const placeholderInitial = base64Placeholder || networkPlaceholder;
@@ -84,7 +84,7 @@ export function BlurUpImage({
 
         // Get best image URL (AVIF if supported, otherwise WebP/JPEG)
         // Use regularUrl for grid view (1080px, optimized for display)
-        // This is similar to Unsplash's approach: grid uses "regular" size, not original
+        // This is similar to Photo's approach: grid uses "regular" size, not original
         const loadImage = async () => {
             try {
                 // Get best format (AVIF if supported, fallback to regularUrl)

@@ -1,7 +1,7 @@
-/* Unsplash-style Header */
+/* Photo-style Header */
 /* Header height is now defined in index.css root variables */
 
-.unsplash-header {
+.photo-header {
   background: var(--color-bg-primary, #fff);
   position: fixed;
   top: 0;
@@ -745,7 +745,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 }
 
 @media (max-width: 480px) {
-  .unsplash-header {
+  .photo-header {
     border: 0;
   }
   .header-top {
@@ -849,7 +849,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 
 /* Desktop Only - Hide on mobile */
 @media (max-width: 768px) {
-  .unsplash-header {
+  .photo-header {
     border: 0;
   }
   .header-top {
@@ -973,7 +973,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   }
 }
 
-/* Mobile Menu Modal - Unsplash Style (No Overlay) */
+/* Mobile Menu Modal - Photo Style (No Overlay) */
 .mobile-menu-modal {
   position: fixed;
   top: 0;

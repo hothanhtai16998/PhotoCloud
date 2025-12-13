@@ -109,7 +109,7 @@ export const UserAnalyticsDashboard = () => {
       };
     });
     
-    // Calculate Y-axis domain - use absolute max scaling like Unsplash
+    // Calculate Y-axis domain - use absolute max scaling like Photo
     // Charts with different max values will have proportionally different heights
     const calculateDomain = (data: Array<{ value: number }>): [number, number] | ['auto', 'auto'] => {
       if (data.length === 0) return ['auto', 'auto'];

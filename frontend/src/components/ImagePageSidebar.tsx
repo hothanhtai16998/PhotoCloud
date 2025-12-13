@@ -2,7 +2,7 @@ import { Home, ImageIcon, Bookmark, Download, User, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 /**
- * Slim left sidebar for the ImagePage, inspired by Unsplash.
+ * Slim left sidebar for the ImagePage, inspired by Photo.
  * Shown only on desktop in full-page mode.
  */
 const ImagePageSidebar = () => {

@@ -374,7 +374,7 @@ export function NoFlashGrid({
                     ref={gridRef}
                     className="no-flash-grid"
                     style={{
-                        // Unsplash-style: Fixed columns with dynamic row spans
+                        // Photo-style: Fixed columns with dynamic row spans
                         gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
                         gap: `${GRID_CONFIG.gap}px`,
                         // Base row height for row span calculations - MUST be a string with units
@@ -443,7 +443,7 @@ export function NoFlashGrid({
                                             }
 
                                             // Otherwise, use modal (default behavior)
-                                            // Unsplash technique: Preload image COMPLETELY before opening modal
+                                            // Photo technique: Preload image COMPLETELY before opening modal
                                             // Use AVIF if supported to prevent format mismatch flash
                                             const bestRegular = await getBestImageUrl(image, 'regular');
                                             const bestOriginal = await getBestImageUrl(image, 'original');

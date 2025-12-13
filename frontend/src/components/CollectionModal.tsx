@@ -483,7 +483,7 @@ export default function CollectionModal({
 						<>
 							{!showCreateForm ? (
 								<>
-									{/* Search Bar - Unsplash style */}
+									{/* Search Bar - Photo style */}
 									<div className="collection-modal-search">
 										<Search size={18} className="collection-modal-search-icon" />
 										<input
@@ -638,7 +638,7 @@ export default function CollectionModal({
 										</div>
 									) : null}
 
-									{/* Create New Collection Button - at bottom like Unsplash */}
+									{/* Create New Collection Button - at bottom like Photo */}
 									<div className="collection-modal-create-bottom">
 										<button
 											type="button"
