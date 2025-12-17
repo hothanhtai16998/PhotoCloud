@@ -26,6 +26,15 @@ export const useCollectionsListStore = create(
 				const data = await collectionService.getUserCollections();
 				console.log('[CollectionsStore] Fetched collections:', data.length, data);
 				
+				// Debug: Check if sampleImages are present
+				data.forEach((collection) => {
+					if (collection.sampleImages) {
+						console.log(`[CollectionsStore] Collection "${collection.name}" has ${collection.sampleImages.length} sample images`);
+					} else {
+						console.log(`[CollectionsStore] Collection "${collection.name}" has NO sampleImages`);
+					}
+				});
+				
 				// Update collections first
 				set((state) => {
 					state.collections = data;

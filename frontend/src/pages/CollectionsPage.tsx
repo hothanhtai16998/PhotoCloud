@@ -7,6 +7,7 @@ import type { Image } from '@/types/image';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { useUserStore } from '@/stores/useUserStore';
 import { useCollectionsListStore } from '@/stores/useCollectionsListStore';
 import { useCollectionFavoriteStore } from '@/stores/useCollectionFavoriteStore';
 import { Folder, Plus, Trash2, Edit2, Eye, Copy, Lock, Unlock, Search, X, Filter, Heart, FileText } from 'lucide-react';
@@ -22,6 +23,7 @@ const CollectionModal = lazy(() => import('@/components/collection/CollectionMod
 
 export default function CollectionsPage() {
 	const { accessToken } = useAuthStore();
+	const { user } = useUserStore();
 	const navigate = useNavigate();
 
 	// Collections list store
@@ -387,6 +389,30 @@ export default function CollectionsPage() {
 								typeof collection.coverImage === 'object'
 									? collection.coverImage
 									: null;
+							
+							// Get sample images (2-3 images for thumbnails)
+							// Filter out coverImage to avoid duplicates
+							const allSampleImages = collection.sampleImages && Array.isArray(collection.sampleImages)
+								? collection.sampleImages.filter((img): img is Image => 
+									typeof img === 'object' && img !== null && '_id' in img
+								)
+								: [];
+							
+							// Exclude coverImage from thumbnails to avoid showing the same image twice
+							const coverImageId = coverImage?._id;
+							const sampleImages = coverImageId
+								? allSampleImages.filter(img => img._id !== coverImageId)
+								: allSampleImages;
+							
+							// Debug: Log sample images
+							if (collection._id && sampleImages.length > 0) {
+								console.log(`[CollectionCard] ${collection.name} has ${sampleImages.length} sample images (after filtering cover):`, sampleImages.map(img => img._id));
+							}
+							
+							// Get creator name
+							const creatorName = typeof collection.createdBy === 'object' 
+								? collection.createdBy.displayName || collection.createdBy.username
+								: user?.displayName || user?.username || 'You';
 
 							return (
 								<div
@@ -395,17 +421,36 @@ export default function CollectionsPage() {
 									onClick={() => handleCollectionClick(collection)}
 								>
 									<div className="collection-card-cover">
-										{coverImage ? (
-											<BlurUpImage
-												image={coverImage}
-												priority={false}
-												minimal={true}
-											/>
-										) : (
-											<div className="collection-card-placeholder">
-												<Folder size={48} />
+										<div className={`collection-card-images ${sampleImages.length < 2 ? 'no-thumbnails' : ''}`}>
+											{/* Main large image on the left */}
+											<div className="collection-card-main-image">
+												{coverImage ? (
+													<BlurUpImage
+														image={coverImage}
+														priority={false}
+														minimal={true}
+													/>
+												) : (
+													<div className="collection-card-placeholder">
+														<Folder size={48} />
+													</div>
+												)}
 											</div>
-										)}
+											{/* Smaller thumbnails on the right (stacked) - only show if we have 2+ sample images */}
+											{sampleImages.length >= 2 && (
+												<div className="collection-card-thumbnails">
+													{sampleImages.slice(0, 2).map((img, idx) => (
+														<div key={img._id || idx} className="collection-card-thumbnail">
+															<BlurUpImage
+																image={img}
+																priority={false}
+																minimal={true}
+															/>
+														</div>
+													))}
+												</div>
+											)}
+										</div>
 										<div className="collection-card-overlay">
 											<div className="collection-card-actions">
 												<button
@@ -477,35 +522,18 @@ export default function CollectionsPage() {
 										</div>
 									</div>
 									<div className="collection-card-info">
-										<h3>{collection.name}</h3>
-										{collection.description && (
-											<p className="collection-card-description">
-												{collection.description}
-											</p>
-										)}
-										{collection.tags && collection.tags.length > 0 && (
-											<div className="collection-card-tags">
-												{collection.tags.slice(0, 3).map((tag, index) => (
-													<span key={index} className="collection-card-tag">
-														{tag}
-													</span>
-												))}
-												{collection.tags.length > 3 && (
-													<span className="collection-card-tag-more">
-														+{collection.tags.length - 3}
-													</span>
+										<div className="collection-card-header">
+											<h3 className="collection-card-title">
+												{collection.name}
+												{!collection.isPublic && (
+													<Lock size={14} className="collection-card-lock-icon" />
 												)}
-											</div>
-										)}
+											</h3>
+										</div>
 										<div className="collection-card-meta">
-											<span className="collection-card-count">
-												{t('collections.imageCount', { count: collection.imageCount || 0 })}
+											<span className="collection-card-meta-text">
+												{collection.imageCount || 0} {collection.imageCount === 1 ? t('collections.image') : t('collections.images')} · {t('collections.curatedBy', { name: creatorName })}
 											</span>
-											{collection.views !== undefined && collection.views > 0 && (
-												<span className="collection-card-views">
-													{t('collections.viewCount', { count: collection.views })}
-												</span>
-											)}
 										</div>
 									</div>
 								</div>

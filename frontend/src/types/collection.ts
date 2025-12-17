@@ -17,6 +17,7 @@ export interface Collection {
 	imageCount?: number;
 	isPublic: boolean;
 	coverImage?: Image | string | null;
+	sampleImages?: Image[]; // 2-3 sample images for collection card thumbnails
 	views?: number;
 	tags?: string[];
 	collaborators?: CollectionCollaborator[];

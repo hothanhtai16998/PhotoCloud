@@ -586,12 +586,61 @@
   font-weight: 400;
 }
 
-.collection-modal-item-check {
+/* Collection item action icons container */
+.collection-modal-item-action {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: 8px;
+  position: relative;
+}
+
+/* Check icon - visible when image is in collection */
+.collection-modal-item-check {
   width: 20px;
   height: 20px;
-  color: #111;
-  margin-left: 8px;
+  color: #16a34a; /* Darker green for better visibility */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.collection-modal-item-check-visible {
+  opacity: 1;
+}
+
+/* Remove icon - shows on hover when image is in collection */
+.collection-modal-item-remove {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  color: #dc2626; /* Darker red for better visibility */
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.collection-modal-item-remove-hover {
+  /* Will be shown on hover via CSS */
+}
+
+/* Add icon - shows on hover when image is NOT in collection */
+.collection-modal-item-add {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  color: #000; /* Pure black for maximum contrast */
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.collection-modal-item-add-hover {
+  /* Will be shown on hover via CSS */
 }
 
 .collection-modal-item.selected {
@@ -600,6 +649,20 @@
 
 .collection-modal-item:hover {
   background: #fafafa;
+}
+
+/* Show add icon on hover when NOT in collection */
+.collection-modal-item:not(.selected):hover .collection-modal-item-add {
+  opacity: 1;
+}
+
+/* Hide check and show remove on hover when image IS in collection */
+.collection-modal-item.selected:hover .collection-modal-item-check {
+  opacity: 0;
+}
+
+.collection-modal-item.selected:hover .collection-modal-item-remove {
+  opacity: 1;
 }
 
 /* Create New Collection Button at Bottom - Unsplash style */

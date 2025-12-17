@@ -13,45 +13,145 @@ export const getUserCollections = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        // Get collections created by user OR where user is a collaborator
-        // Optimize: Only populate coverImage and count images instead of loading all images
-        const collections = await Collection.find({
-            $or: [
-                { createdBy: userId },
-                { 'collaborators.user': userId },
-            ],
-        })
-            .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
-            // Don't populate all images - just count them (much faster)
-            .populate({
-                path: 'collaborators.user',
-                select: 'username displayName avatarUrl',
-            })
-            .select('-images') // Exclude images array to reduce payload
-            .sort({ createdAt: -1 })
-            .lean();
-
-        // Get image counts for each collection separately (more efficient)
-        // Use $size operator to count images array without loading all images
-        const collectionIds = collections.map(c => c._id);
-        const imageCounts = collectionIds.length > 0
-            ? await Collection.aggregate([
-                { $match: { _id: { $in: collectionIds.map(id => new mongoose.Types.ObjectId(id)) } } },
-                { $project: { _id: 1, imageCount: { $size: { $ifNull: ['$images', []] } } } }
-            ])
-            : [];
-
-        const imageCountMap = new Map(imageCounts.map(item => [item._id.toString(), item.imageCount || 0]));
-
-        // Add image count to each collection from the aggregation result
-        const collectionsWithCount = collections.map(collection => ({
-            ...collection,
-            imageCount: imageCountMap.get(collection._id.toString()) || 0,
-        }));
+        // Use aggregation to get collections with sample images (2-3 per collection)
+        const collections = await Collection.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { createdBy: new mongoose.Types.ObjectId(userId) },
+                        { 'collaborators.user': new mongoose.Types.ObjectId(userId) },
+                    ],
+                },
+            },
+            {
+                $addFields: {
+                    // Get first 3 image IDs for sample images
+                    sampleImageIds: { $slice: [{ $ifNull: ['$images', []] }, 0, 3] },
+                },
+            },
+            {
+                $lookup: {
+                    from: 'images',
+                    localField: 'coverImage',
+                    foreignField: '_id',
+                    as: 'coverImageData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                thumbnailUrl: 1,
+                                smallUrl: 1,
+                                imageUrl: 1,
+                                imageTitle: 1,
+                                width: 1,
+                                height: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: 'images',
+                    localField: 'sampleImageIds',
+                    foreignField: '_id',
+                    as: 'sampleImagesData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                thumbnailUrl: 1,
+                                smallUrl: 1,
+                                imageUrl: 1,
+                                imageTitle: 1,
+                                width: 1,
+                                height: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'createdBy',
+                    foreignField: '_id',
+                    as: 'createdByData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                displayName: 1,
+                                avatarUrl: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'collaborators.user',
+                    foreignField: '_id',
+                    as: 'collaboratorsData',
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                displayName: 1,
+                                avatarUrl: 1,
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    description: 1,
+                    isPublic: 1,
+                    tags: 1,
+                    views: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    coverImage: { $arrayElemAt: ['$coverImageData', 0] },
+                    sampleImages: '$sampleImagesData', // First 3 images as samples
+                    imageCount: { $size: { $ifNull: ['$images', []] } },
+                    createdBy: { $arrayElemAt: ['$createdByData', 0] },
+                    collaborators: {
+                        $map: {
+                            input: '$collaborators',
+                            as: 'collab',
+                            in: {
+                                user: {
+                                    $arrayElemAt: [
+                                        {
+                                            $filter: {
+                                                input: '$collaboratorsData',
+                                                as: 'user',
+                                                cond: { $eq: ['$$user._id', '$$collab.user'] },
+                                            },
+                                        },
+                                        0,
+                                    ],
+                                },
+                                permission: '$$collab.permission',
+                                invitedBy: '$$collab.invitedBy',
+                                invitedAt: '$$collab.invitedAt',
+                            },
+                        },
+                    },
+                },
+            },
+            { $sort: { createdAt: -1 } },
+        ]);
 
         res.json({
             success: true,
-            collections: collectionsWithCount,
+            collections: collections,
         });
     } catch (error) {
         logger.error('Error fetching user collections:', error);

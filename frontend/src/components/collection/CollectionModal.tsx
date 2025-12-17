@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, Plus, Folder, Check, Search } from 'lucide-react';
+import { X, Plus, Folder, Check, Search, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { collectionTemplateService, type CollectionTemplate } from '@/services/collectionTemplateService';
@@ -627,12 +627,25 @@ export default function CollectionModal({
 																	</p>
 																</div>
 															</div>
-															{isInCollection && (
-																<Check
-																	size={18}
-																	className="collection-modal-item-check"
-																/>
-															)}
+															<div className="collection-modal-item-action">
+																{isInCollection ? (
+																	<>
+																		<Check
+																			size={18}
+																			className="collection-modal-item-check collection-modal-item-check-visible"
+																		/>
+																		<Minus
+																			size={18}
+																			className="collection-modal-item-remove collection-modal-item-remove-hover"
+																		/>
+																	</>
+																) : (
+																	<Plus
+																		size={18}
+																		className="collection-modal-item-add collection-modal-item-add-hover"
+																	/>
+																)}
+															</div>
 														</button>
 													);
 												})}
@@ -688,12 +701,25 @@ export default function CollectionModal({
 																	</p>
 																</div>
 															</div>
-															{isInCollection && (
-																<Check
-																	size={18}
-																	className="collection-modal-item-check"
-																/>
-															)}
+															<div className="collection-modal-item-action">
+																{isInCollection ? (
+																	<>
+																		<Check
+																			size={18}
+																			className="collection-modal-item-check collection-modal-item-check-visible"
+																		/>
+																		<Minus
+																			size={18}
+																			className="collection-modal-item-remove collection-modal-item-remove-hover"
+																		/>
+																	</>
+																) : (
+																	<Plus
+																		size={18}
+																		className="collection-modal-item-add collection-modal-item-add-hover"
+																	/>
+																)}
+															</div>
 														</button>
 													);
 												})}
