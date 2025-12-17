@@ -7,6 +7,8 @@ import { PageViewTracker } from "./components/PageViewTracker";
 import { ActualLocationContext } from "./contexts/ActualLocationContext";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";
+import { ContactButton } from "./components/ContactButton";
+import ImagePageSidebar from "./components/ImagePageSidebar";
 import {
   isPageRefresh,
   clearModalStateOnRefresh,
@@ -182,6 +184,12 @@ function App() {
   // - This way, navigation works even if initial load was a refresh
   const shouldRenderModalRoutes = Boolean(modalValidation.isValid && hasValidBackground);
 
+  // Show sidebar on all pages except admin and auth pages
+  const shouldShowSidebar = !location.pathname.startsWith('/admin') && 
+                            !location.pathname.startsWith('/signin') && 
+                            !location.pathname.startsWith('/signup') &&
+                            !location.pathname.startsWith('/auth/google/callback');
+
   return (
     <ActualLocationContext.Provider value={location}>
       <Suspense fallback={<PageLoader />}>
@@ -224,8 +232,11 @@ function App() {
           </Routes>
         )}
 
+        {/* Sidebar - appears on all pages except admin and auth */}
+        {shouldShowSidebar && <ImagePageSidebar />}
+
         {/* Floating Contact Button - appears on all pages */}
-        {/* <ContactButton /> */}
+        <ContactButton />
       </Suspense>
     </ActualLocationContext.Provider>
   )

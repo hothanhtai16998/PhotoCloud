@@ -33,7 +33,6 @@ import './ImagePage.css';
 import '@/components/NoFlashGrid/components/ImageModal.css';
 import '@/components/NoFlashGrid/components/modal-info.css';
 import '@/components/NoFlashGrid/components/modal-footer.css';
-import ImagePageSidebar from '@/components/ImagePageSidebar';
 
 // Import modals
 import EditImageModal from '@/components/EditImageModal';
@@ -1952,11 +1951,10 @@ function ImagePage() {
             {modalContent}
           </div>
         </div>
-      ) : (
-        // Regular page: Wrapper with sidebar
-        <div className="image-page">
-          <ImagePageSidebar />
-          <div
+       ) : (
+         // Regular page: Wrapper (sidebar is now rendered globally in App.tsx)
+         <div className="image-page">
+           <div
             ref={modalRef}
             className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
           >

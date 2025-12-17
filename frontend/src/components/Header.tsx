@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { User } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
-import { useImageStore } from "@/stores/useImageStore"
 import { SearchBar, type SearchBarRef } from "./SearchBar"
 import { Avatar } from "./Avatar"
 import NotificationBell from "./NotificationBell"
@@ -21,7 +20,6 @@ const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default
 export const Header = memo(function Header() {
   const { accessToken, signOut } = useAuthStore()
   const { user } = useUserStore()
-  const { fetchImages } = useImageStore()
   const navigate = useNavigate()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const searchBarRef = useRef<SearchBarRef>(null)
@@ -34,10 +32,11 @@ export const Header = memo(function Header() {
 
   const handleLogoClick = () => {
     if (window.location.pathname !== '/') {
+      // Navigate to homepage (HomePage will fetch fresh data on mount)
       navigate('/')
     } else {
-      // If already on homepage, refresh images
-      fetchImages()
+      // If already on homepage, scroll to top (smooth UX)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 

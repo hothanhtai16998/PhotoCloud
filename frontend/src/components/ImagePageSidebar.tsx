@@ -1,49 +1,89 @@
-import { Home, ImageIcon, Bookmark, Download, User, Menu } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Home, Bookmark, Heart, User, Info } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useUserStore } from '@/stores/useUserStore';
+import { t } from '@/i18n';
+import './ImagePageSidebar.css';
 
 /**
- * Slim left sidebar for the ImagePage, inspired by Unsplash.
- * Shown only on desktop in full-page mode.
+ * Hybrid-style sidebar for all pages, inspired by Unsplash.
+ * Icon-only with tooltips, active state indicators, and proper navigation.
  */
 const ImagePageSidebar = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  const { accessToken } = useAuthStore();
+  const { user } = useUserStore();
 
-  const iconButtonClass =
-    'flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors';
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/' || location.pathname.startsWith('/t/');
+    }
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
+
+  const getNavItemClass = (path: string) => {
+    const baseClass = 'sidebar-nav-item';
+    return isActive(path) ? `${baseClass} active` : baseClass;
+  };
 
   return (
-    <aside className="image-page-sidebar hidden md:flex">
-      {/* Top logo / home */}
-      <button
-        type="button"
-        className={iconButtonClass}
-        aria-label="Trang chủ"
-        onClick={() => navigate('/')}
-      >
-        <Home className="h-5 w-5" />
-      </button>
-
-      {/* Middle actions (placeholders for now) */}
-      <div className="flex flex-col items-center gap-4">
-        <button type="button" className={iconButtonClass} aria-label="Ảnh">
-          <ImageIcon className="h-5 w-5" />
-        </button>
-        <button type="button" className={iconButtonClass} aria-label="Bộ sưu tập">
-          <Bookmark className="h-5 w-5" />
-        </button>
-        <button type="button" className={iconButtonClass} aria-label="Tải xuống">
-          <Download className="h-5 w-5" />
-        </button>
+    <aside className="image-page-sidebar">
+      {/* Top section - Home */}
+      <div className="sidebar-section sidebar-section-top">
+        <Link
+          to="/"
+          className={getNavItemClass('/')}
+          aria-label={t('common.all')}
+          title={t('common.all')}
+        >
+          <Home className="sidebar-icon" />
+        </Link>
       </div>
 
-      {/* Bottom user / menu */}
-      <div className="flex flex-col items-center gap-4">
-        <button type="button" className={iconButtonClass} aria-label="Tài khoản">
-          <User className="h-5 w-5" />
-        </button>
-        <button type="button" className={iconButtonClass} aria-label="Menu">
-          <Menu className="h-5 w-5" />
-        </button>
+      {/* Middle section - Main Navigation */}
+      <div className="sidebar-section sidebar-section-middle">
+        <Link
+          to="/collections"
+          className={getNavItemClass('/collections')}
+          aria-label={t('collections.title')}
+          title={t('collections.title')}
+        >
+          <Bookmark className="sidebar-icon" />
+        </Link>
+
+        {accessToken && (
+          <Link
+            to="/favorites"
+            className={getNavItemClass('/favorites')}
+            aria-label={t('header.favorites')}
+            title={t('header.favorites')}
+          >
+            <Heart className="sidebar-icon" />
+          </Link>
+        )}
+
+        {accessToken && user && (
+          <Link
+            to="/profile"
+            className={getNavItemClass('/profile')}
+            aria-label={t('header.account')}
+            title={t('header.account')}
+          >
+            <User className="sidebar-icon" />
+          </Link>
+        )}
+      </div>
+
+      {/* Bottom section - About */}
+      <div className="sidebar-section sidebar-section-bottom">
+        <Link
+          to="/about"
+          className={getNavItemClass('/about')}
+          aria-label={t('header.about')}
+          title={t('header.about')}
+        >
+          <Info className="sidebar-icon" />
+        </Link>
       </div>
     </aside>
   );

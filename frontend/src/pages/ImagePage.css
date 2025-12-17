@@ -19,34 +19,8 @@
   background: transparent; /* Overlay handles background */
 }
 
-/* Image Page Sidebar - Only shown when NOT in modal-style */
-.image-page-sidebar {
-  width: 56px;
-  padding: 16px 0;
-  border-right: 1px solid hsl(var(--border));
-  background: #ffffff;
-  display: none; /* Hidden by default on mobile */
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 20;
-  flex-shrink: 0;
-}
-
-@media (min-width: 768px) {
-  .image-page-sidebar {
-    display: flex;
-    position: fixed; /* Fixed to viewport */
-    left: 0;
-    top: 66px; /* Below header (66px = 10px padding + 56px content) */
-    bottom: 0;
-    height: calc(100vh - 66px); /* Full viewport height minus header */
-    min-height: calc(100vh - 66px);
-    align-self: stretch;
-  }
-}
-
-/* Hide sidebar in modal-style */
+/* Sidebar is now global - styles are in ImagePageSidebar.css */
+/* Hide sidebar in modal-style (for ImagePage modal view) */
 .image-page.modal-style .image-page-sidebar {
   display: none;
 }
@@ -125,7 +99,7 @@
 /* On desktop, add left margin to account for fixed sidebar */
 @media (min-width: 768px) {
   .image-page .image-modal-container {
-    margin-left: 56px !important; /* Sidebar width */
+    margin-left: 64px !important; /* Sidebar width (updated from 56px to 64px) */
   }
 }
 
@@ -137,7 +111,7 @@
 
 @media (min-width: 768px) {
   .image-page .image-modal-container.scrolled {
-    margin-left: 56px !important; /* Keep left margin for sidebar */
+    margin-left: 64px !important; /* Keep left margin for sidebar (updated from 56px to 64px) */
   }
 }
 
