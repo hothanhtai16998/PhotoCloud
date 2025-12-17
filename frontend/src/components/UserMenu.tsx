@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Shield, Heart, User, LogOut, Info, Moon, Sun } from 'lucide-react'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { t } from '@/i18n'
+import { useUserStore } from '@/stores/useUserStore'
 import './Header.css'
 
 // Theme toggle menu item that doesn't use Radix UI
@@ -66,6 +67,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const { user: currentUser } = useUserStore()
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -153,7 +155,11 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
               {t('header.about')}
             </Link>
 
-            <Link to="/profile" className="user-menu-item" onClick={handleMenuItemClick}>
+            <Link 
+              to={currentUser?.username ? `/@${currentUser.username}` : '/profile'} 
+              className="user-menu-item" 
+              onClick={handleMenuItemClick}
+            >
               <User size={16} />
               {t('header.account')}
             </Link>

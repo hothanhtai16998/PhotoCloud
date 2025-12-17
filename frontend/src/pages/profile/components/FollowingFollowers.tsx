@@ -52,7 +52,11 @@ export function FollowingFollowers({ userId }: FollowingFollowersProps) {
     }, [userId]);
 
     const handleUserClick = (user: FollowUser) => {
-        navigate(`/profile/${user.username || user._id}`);
+        if (user.username) {
+            navigate(`/@${user.username}`);
+        } else {
+            navigate(`/profile/user/${user._id}`);
+        }
     };
 
     return (

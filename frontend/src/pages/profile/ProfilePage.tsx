@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense, useContext } from "react";
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
 import { useUserStore } from "@/stores/useUserStore";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { useUserImageStore } from "@/stores/useUserImageStore";
@@ -44,14 +44,50 @@ const TABS = {
 } as const;
 
 function ProfilePage() {
-    // currentUser: the logged-in user viewing the profile
+    // currentUser: the logged-in user viewing the profile (may be null if not authenticated)
     // profileUser: the user whose profile is being displayed (may be different from currentUser)
-    // ProtectedRoute handles authentication, so currentUser is guaranteed to exist here
+    // Profile pages are public, so currentUser may be null
     const { user: currentUser } = useUserStore();
     const navigate = useNavigate();
+    const location = useLocation();
     const params = useParams<{ username?: string; userId?: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
     const actualLocation = useContext(ActualLocationContext);
+    
+    // Refs for tracking previous values to prevent unnecessary recalculations
+    const previousPathname = useRef<string>('');
+    const isTabChangeFromUser = useRef<boolean>(false);
+    const skipUrlSyncRef = useRef<boolean>(false);
+    
+    // Extract username and tab from pathname if route param is not available
+    // This handles the /@username and /@username/tab format
+    // Only recalculate when username part changes, not when just tab changes
+    const { username: usernameFromPath, tab: tabFromPath } = useMemo(() => {
+        if (params.username) {
+            return { username: params.username, tab: undefined };
+        }
+        
+        // Extract username from pathname
+        const usernameMatch = location.pathname.match(/^\/@([^/]+)/);
+        const username = usernameMatch ? usernameMatch[1] : undefined;
+        
+        // Only recalculate if username part changed (not just tab)
+        const currentUsernamePath = username ? `/@${username}` : '';
+        if (previousPathname.current && previousPathname.current.startsWith(currentUsernamePath) && currentUsernamePath) {
+            // Username hasn't changed, just extract tab from current pathname
+            const tabMatch = location.pathname.match(/^\/@[^/]+\/(following|followers|collections|stats)$/);
+            const tab = tabMatch ? (tabMatch[1] as TabType) : undefined;
+            return { username, tab };
+        }
+        
+        // Username changed or first load - extract both
+        previousPathname.current = location.pathname;
+        const match = location.pathname.match(/^\/@([^/]+)(?:\/(following|followers|collections|stats))?$/);
+        if (match) {
+            return { username: match[1], tab: match[2] as TabType | undefined };
+        }
+        return { username: undefined, tab: undefined };
+    }, [params.username, location.pathname]);
 
     // Profile store
     const {
@@ -94,11 +130,22 @@ function ProfilePage() {
     // Cancel user lookup when params change
     const userLookupCancelSignal = useRequestCancellationOnChange([params.username, params.userId]);
 
+    // Redirect to username-based URL if no username/userId provided (fallback safety)
+    useEffect(() => {
+        if (!usernameFromPath && !params.userId && currentUser?.username) {
+            navigate(`/@${currentUser.username}`, { replace: true });
+            return;
+        }
+    }, [usernameFromPath, params.userId, currentUser?.username, navigate]);
+
     // Fetch profile user data if viewing someone else's profile
     useEffect(() => {
+        // Skip if redirecting
+        if (!usernameFromPath && !params.userId) return;
+
         const loadProfileUser = async () => {
             try {
-                await fetchProfileUser(params.username, params.userId, userLookupCancelSignal);
+                await fetchProfileUser(usernameFromPath, params.userId, userLookupCancelSignal);
             } catch (_error) {
                 // Error already handled in store, navigate away
                 navigate('/');
@@ -106,14 +153,15 @@ function ProfilePage() {
         };
 
         loadProfileUser();
-    }, [params.username, params.userId, navigate, userLookupCancelSignal, fetchProfileUser]);
+    }, [usernameFromPath, params.userId, navigate, userLookupCancelSignal, fetchProfileUser]);
 
     // Determine which user's profile to display
     const displayUserId = useMemo(() => {
         if (params.userId) return params.userId;
-        if (params.username && profileUser) return profileUser._id;
-        return currentUser?._id;
-    }, [params.userId, params.username, profileUser, currentUser?._id]);
+        if (usernameFromPath && profileUser) return profileUser._id;
+        if (currentUser) return currentUser._id;
+        return undefined;
+    }, [params.userId, usernameFromPath, profileUser, currentUser]);
 
     const isOwnProfile = useMemo(() => {
         return displayUserId === currentUser?._id;
@@ -121,45 +169,133 @@ function ProfilePage() {
 
     // Compute displayUser early so it can be used in callbacks
     const displayUser = useMemo(() => {
-        if (!currentUser) return null;
-        return profileUser || {
-            _id: currentUser._id,
-            username: currentUser.username,
-            displayName: currentUser.displayName || currentUser.username,
-            avatarUrl: currentUser.avatarUrl,
-            bio: currentUser.bio,
-            location: currentUser.location,
-            website: currentUser.website,
-            instagram: currentUser.instagram,
-            twitter: currentUser.twitter,
-            facebook: currentUser.facebook,
-            createdAt: currentUser.createdAt || new Date().toISOString(),
-        };
+        // If we have a profileUser (viewing someone else's profile), use that
+        if (profileUser) return profileUser;
+        // If we have currentUser (viewing own profile), use that
+        if (currentUser) {
+            return {
+                _id: currentUser._id,
+                username: currentUser.username,
+                displayName: currentUser.displayName || currentUser.username,
+                avatarUrl: currentUser.avatarUrl,
+                bio: currentUser.bio,
+                location: currentUser.location,
+                website: currentUser.website,
+                instagram: currentUser.instagram,
+                twitter: currentUser.twitter,
+                facebook: currentUser.facebook,
+                createdAt: currentUser.createdAt || new Date().toISOString(),
+            };
+        }
+        // If neither exists, return null (will show loading state)
+        return null;
     }, [profileUser, currentUser]);
 
-    // Statistics tab - Only allow access for own profile
-    // Also check URL params to prevent direct access via URL manipulation
+    // Sync activeTab with URL pathname (only when URL changes externally, not from user tab click)
     useEffect(() => {
-        const tabParam = searchParams.get('tab');
-        if (tabParam === 'stats' && !isOwnProfile) {
-            // Remove invalid tab param and redirect to photos
-            setSearchParams(prev => {
-                const newParams = new URLSearchParams(prev);
-                newParams.delete('tab');
-                return newParams;
-            });
-            setActiveTab(TABS.PHOTOS);
-        } else if (activeTab === TABS.STATS && !isOwnProfile) {
+        // Skip if we're in the middle of a user-initiated tab change
+        if (skipUrlSyncRef.current) {
+            return;
+        }
+        
+        // Skip if this change was initiated by user clicking a tab
+        if (isTabChangeFromUser.current) {
+            isTabChangeFromUser.current = false;
+            return;
+        }
+        
+        // Only update if the tab from URL is different from current active tab
+        const targetTab = tabFromPath || TABS.PHOTOS;
+        if (targetTab === activeTab) {
+            return;
+        }
+
+        if (tabFromPath) {
+            // Validate tab from URL
+            if (['following', 'followers', 'collections', 'stats'].includes(tabFromPath)) {
+                // Check if stats tab is only accessible for own profile
+                if (tabFromPath === 'stats' && !isOwnProfile) {
+                    // Redirect to base profile URL if trying to access stats on someone else's profile
+                    if (usernameFromPath) {
+                        navigate(`/@${usernameFromPath}`, { replace: true });
+                    }
+                    setActiveTab(TABS.PHOTOS);
+                } else {
+                    setActiveTab(tabFromPath as TabType);
+                }
+            } else {
+                setActiveTab(TABS.PHOTOS);
+            }
+        } else {
+            // No tab in URL, default to photos
             setActiveTab(TABS.PHOTOS);
         }
-    }, [activeTab, isOwnProfile, searchParams, setSearchParams]);
+    }, [tabFromPath, isOwnProfile, usernameFromPath, navigate, activeTab]);
+
+    // Statistics tab - Only allow access for own profile (fallback check)
+    useEffect(() => {
+        if (activeTab === TABS.STATS && !isOwnProfile) {
+            setActiveTab(TABS.PHOTOS);
+            // Update URL to remove stats tab
+            if (usernameFromPath) {
+                navigate(`/@${usernameFromPath}`, { replace: true });
+            }
+        }
+    }, [activeTab, isOwnProfile, usernameFromPath, navigate]);
+
+    // Handler for tab changes that updates URL
+    const handleTabChange = useCallback((tab: TabType) => {
+        // Set flag to skip URL sync for this change
+        skipUrlSyncRef.current = true;
+        
+        // Update active tab immediately (no waiting for URL sync)
+        setActiveTab(tab);
+        
+        // Update URL based on tab
+        if (!usernameFromPath) {
+            skipUrlSyncRef.current = false;
+            return;
+        }
+        
+        const baseUrl = `/@${usernameFromPath}`;
+        let newUrl = baseUrl;
+        
+        if (tab === TABS.PHOTOS) {
+            // Photos tab - base URL (no tab in URL)
+            newUrl = baseUrl;
+        } else if (['following', 'followers', 'collections', 'stats'].includes(tab)) {
+            // Other tabs - add tab to URL
+            // Only allow stats tab if it's own profile
+            if (tab === TABS.STATS && !isOwnProfile) {
+                newUrl = baseUrl;
+            } else {
+                newUrl = `${baseUrl}/${tab}`;
+            }
+        }
+        
+        // Update URL using window.history to avoid React Router re-renders
+        if (window.location.pathname !== newUrl) {
+            // Update previous pathname before changing URL
+            previousPathname.current = newUrl;
+            
+            // Use window.history.replaceState to update URL without triggering navigation
+            window.history.replaceState(null, '', newUrl);
+        }
+        
+        // Reset flag after a brief delay to allow any pending effects to skip
+        setTimeout(() => {
+            skipUrlSyncRef.current = false;
+        }, 50);
+    }, [usernameFromPath, isOwnProfile]);
 
     // Reset all state immediately when params change to prevent flashing old data
+    // Only reset when username/userId changes, NOT when just the tab changes
     useEffect(() => {
-        // Create a unique key from params to detect changes
-        const paramsKey = `${params.username || ''}-${params.userId || ''}`;
+        // Create a unique key from params to detect changes (exclude tab from pathname)
+        const paramsKey = `${params.username || usernameFromPath || ''}-${params.userId || ''}`;
 
         // Only reset if params actually changed (not on initial mount)
+        // Skip if this is just a tab change (username/userId hasn't changed)
         if (previousParams.current && previousParams.current !== paramsKey) {
             // Mark that we're switching profiles
             setIsSwitchingProfile(true);
@@ -182,7 +318,7 @@ function ProfilePage() {
         if (!previousParams.current || previousParams.current !== paramsKey) {
             previousParams.current = paramsKey;
         }
-    }, [params.username, params.userId, clearProfile, clearImages, activeTab]);
+    }, [params.username, params.userId, usernameFromPath, clearProfile, clearImages, activeTab]);
 
     // Helper to update statsUserId if still on the same user
     const updateStatsUserIdIfSame = useCallback((capturedUserId: string) => {
@@ -263,7 +399,7 @@ function ProfilePage() {
         // 3. Prepare modal navigation state
         // CRITICAL: backgroundLocation must be a proper Location object
         const backgroundLocation = {
-            pathname: actualLocation?.pathname || `/profile/${displayUser?.username || displayUserId}`,
+            pathname: actualLocation?.pathname || (displayUser?.username ? `/@${displayUser.username}` : `/profile/user/${displayUserId}`),
             search: actualLocation?.search || '',
             hash: actualLocation?.hash || '',
             state: null,
@@ -683,7 +819,7 @@ function ProfilePage() {
                         followStats={followStats}
                         onEditProfile={handleEditProfile}
                         onEditPins={handleEditPins}
-                        onTabChange={setActiveTab}
+                        onTabChange={handleTabChange}
                         onFollowToggle={handleFollowToggle}
                         isFollowingLoading={isFollowingLoading}
                     />
@@ -695,7 +831,7 @@ function ProfilePage() {
                         followingCount={followStats.following}
                         followersCount={followStats.followers}
                         collectionsCount={collectionsCount}
-                        onTabChange={setActiveTab}
+                        onTabChange={handleTabChange}
                         isOwnProfile={isOwnProfile}
                     />
 

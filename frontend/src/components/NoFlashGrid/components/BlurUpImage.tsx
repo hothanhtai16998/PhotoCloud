@@ -352,7 +352,7 @@ export function BlurUpImage({
 
         const userId = uploadedBy._id || uploadedBy;
         if (username) {
-            navigate(`/profile/${username}`);
+            navigate(`/@${username}`);
         } else if (userId) {
             navigate(`/profile/user/${userId}`);
         }

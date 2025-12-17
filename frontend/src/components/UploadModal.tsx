@@ -138,7 +138,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
         onClose();
         // Dispatch custom event to trigger image refresh
         window.dispatchEvent(new CustomEvent('refreshProfile'));
-        navigate('/profile');
+        navigate(user?.username ? `/@${user.username}` : '/profile');
     };
 
     // Cleanup pre-uploaded files that weren't finalized

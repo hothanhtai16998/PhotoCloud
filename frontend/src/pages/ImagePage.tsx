@@ -985,7 +985,7 @@ function ImagePage() {
     const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
     const username = (image.uploadedBy as any)?.username;
     if (username) {
-      navigate(`/profile/${username}`);
+      navigate(`/@${username}`);
       handleClose();
     } else if (userId) {
       navigate(`/profile/user/${userId}`);

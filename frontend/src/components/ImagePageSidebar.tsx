@@ -18,6 +18,12 @@ const ImagePageSidebar = () => {
     if (path === '/') {
       return location.pathname === '/' || location.pathname.startsWith('/t/');
     }
+    if (path === '/profile') {
+      // Match /profile/:username, /@:username, /@:username/tab, and /profile/user/:userId
+      return location.pathname === path || 
+             location.pathname.startsWith(path + '/') ||
+             location.pathname.match(/^\/@[^/]+(\/(following|followers|collections|stats))?$/);
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -64,7 +70,7 @@ const ImagePageSidebar = () => {
 
         {accessToken && user && (
           <Link
-            to="/profile"
+            to={user.username ? `/@${user.username}` : '/profile'}
             className={getNavItemClass('/profile')}
             aria-label={t('header.account')}
             title={t('header.account')}

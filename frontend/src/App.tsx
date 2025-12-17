@@ -25,6 +25,8 @@ const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
 const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
+const ProfileRouteHandler = lazy(() => import("./pages/profile/ProfileRouteHandler").then(module => ({ default: module.ProfileRouteHandler })));
+const ProfileRedirect = lazy(() => import("./pages/profile/ProfileRedirect").then(module => ({ default: module.ProfileRedirect })));
 const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const FavoriteCollectionsPage = lazy(() => import("./pages/FavoriteCollectionsPage"));
@@ -205,13 +207,13 @@ function App() {
           <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/test/visual-art-slider" element={<VisualArtFormsSlider />} />
+          {/* Fallback route for users without username */}
+          <Route path="/profile/user/:userId" element={<ProfilePage />} />
 
 
           {/**protected routes */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/profile/user/:userId" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfileRedirect />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
@@ -223,6 +225,9 @@ function App() {
           <Route element={<AdminRoute />}>
             <Route path="/admin" element={<AdminPage />} />
           </Route>
+          
+          {/* Catch-all route for /@username - must be last to only match unmatched paths */}
+          <Route path="/*" element={<ProfileRouteHandler />} />
         </Routes>
 
         {/* Modal routes: render on top when background exists */}
