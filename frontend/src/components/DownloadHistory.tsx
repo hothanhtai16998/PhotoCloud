@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { downloadHistoryService, type DownloadHistoryItem } from '@/services/downloadHistoryService';
 import { downloadImage } from '@/utils/downloadService';
-import { generateImageSlug } from '@/lib/utils';
+import { generateImageSlug, slugify } from '@/lib/utils';
 import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -54,7 +54,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
             setTotal(response.pagination.total);
         } catch (error) {
             console.error('Failed to fetch download history:', error);
-            toast.error(t('downloadHistory.loadFailed') || 'Failed to load download history');
+            toast.error(t('profile.downloadHistorySection.loadFailed') || 'Failed to load download history');
         } finally {
             setLoading(false);
             setLoadingMore(false);
@@ -72,7 +72,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
     }, [fetchDownloads, page, hasMore, loadingMore]);
 
     const handleImageClick = useCallback((image: Image) => {
-        const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+        const slug = generateImageSlug(image.imageTitle || t('image.untitled') || 'Untitled', image._id);
         const targetPath = `/photos/${slug}`;
 
         if (isMobile) {
@@ -130,30 +130,29 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         });
     };
 
-    // Format date for item (e.g., "17 Dec 2025")
-    const formatDateItem = (dateStr: string): string => {
-        const date = new Date(dateStr + 'T00:00:00');
-        const locale = getLocale() === 'vi' ? 'vi-VN' : 'en-US';
-        return date.toLocaleDateString(locale, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        });
-    };
 
     // Generate filename from image
     const getFileName = (image: Image): string => {
-        const sanitizedTitle = (image.imageTitle || 'photo').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        if (image.imageTitle) {
+            // Use slugify to properly handle Vietnamese characters
+            // Convert to filename format (underscores instead of hyphens)
+            const slug = slugify(image.imageTitle);
+            const filename = slug.replace(/-/g, '_'); // Use underscores for filename
+            const urlExtension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
+            return `${filename}.${urlExtension}`;
+        }
+        // Fallback to default
+        const defaultName = t('image.photo') || 'photo';
         const urlExtension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
-        return `${sanitizedTitle}.${urlExtension}`;
+        return `${defaultName}.${urlExtension}`;
     };
 
     // Get uploader name
     const getUploaderName = (image: Image): string => {
         if (typeof image.uploadedBy === 'object' && image.uploadedBy) {
-            return image.uploadedBy.displayName || image.uploadedBy.username || 'Unknown';
+            return image.uploadedBy.displayName || image.uploadedBy.username || t('common.unknown') || 'Unknown';
         }
-        return 'Unknown';
+        return t('common.unknown') || 'Unknown';
     };
 
     // Sort dates in descending order (most recent first)
@@ -165,7 +164,8 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         return (
             <div className={`download-history ${className}`}>
                 <div className="download-history-loading">
-                    <p>{t('downloadHistory.loading') || 'Loading download history...'}</p>
+                    <Loader2 className="download-history-spinner" size={32} />
+                    <p>{t('profile.downloadHistorySection.loading') || 'Loading download history...'}</p>
                 </div>
             </div>
         );
@@ -176,8 +176,8 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
             <div className={`download-history ${className}`}>
                 <div className="download-history-empty">
                     <img src={emptyImage} alt="" className="download-history-empty-image" />
-                    <h2>{t('downloadHistory.empty') || 'No downloads yet'}</h2>
-                    <p>{t('downloadHistory.emptyHint') || 'Your download history will appear here once you start downloading images.'}</p>
+                    <h2>{t('profile.downloadHistorySection.empty') || 'No downloads yet'}</h2>
+                    <p>{t('profile.downloadHistorySection.emptyHint') || 'Your download history will appear here once you start downloading images.'}</p>
                 </div>
             </div>
         );
@@ -192,7 +192,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
                             {formatDateHeader(date)}
                         </h3>
                         <div className="download-history-items">
-                            {groupedDownloads[date].map((item) => {
+                            {groupedDownloads[date].map((item, index) => {
                                 const image = item.image;
                                 if (!image) return null;
 
@@ -201,31 +201,39 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
                                         key={item._id}
                                         className="download-history-item"
                                         onClick={() => handleImageClick(image)}
+                                        style={{
+                                            animationDelay: `${index * 0.05}s`,
+                                            animation: 'fadeInUp 0.4s ease both'
+                                        }}
                                     >
-                                        <div className="download-history-item-thumbnail">
-                                            <img
-                                                src={image.thumbnailUrl || image.smallUrl || image.regularUrl || image.imageUrl}
-                                                alt={image.imageTitle || 'Downloaded image'}
-                                                loading="lazy"
-                                            />
-                                        </div>
-                                        <div className="download-history-item-info">
-                                            <div className="download-history-item-uploader">
-                                                {getUploaderName(image)}
+                                        <div className="download-history-item-thumbnail-wrapper">
+                                            <div className="download-history-item-thumbnail">
+                                                <img
+                                                    src={image.thumbnailUrl || image.smallUrl || image.regularUrl || image.imageUrl}
+                                                    alt={image.imageTitle || t('profile.downloadHistorySection.downloadedImage') || 'Downloaded image'}
+                                                    loading="lazy"
+                                                />
                                             </div>
-                                            <div className="download-history-item-filename">
-                                                {getFileName(image)}
+                                            <div className="download-history-item-info">
+                                                <div className="download-history-item-uploader">
+                                                    {getUploaderName(image)}
+                                                </div>
+                                                <div className="download-history-item-filename">
+                                                    {getFileName(image)}
+                                                </div>
+                                                {image.imageTitle && image.imageTitle !== 'photo' && (
+                                                    <div className="download-history-item-title">
+                                                        {image.imageTitle}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="download-history-item-meta">
-                                            <div className="download-history-item-date">
-                                                {formatDateItem(item.date)}
-                                            </div>
                                             <button
                                                 className="download-history-item-download-btn"
                                                 onClick={(e) => handleReDownload(e, image)}
-                                                title={t('downloadHistory.reDownload') || 'Download again'}
-                                                aria-label={t('downloadHistory.reDownload') || 'Download again'}
+                                                title={t('profile.downloadHistorySection.reDownload') || 'Download again'}
+                                                aria-label={t('profile.downloadHistorySection.reDownload') || 'Download again'}
                                             >
                                                 <Download size={16} />
                                             </button>
@@ -245,8 +253,8 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
                             disabled={loadingMore}
                         >
                             {loadingMore
-                                ? (t('downloadHistory.loadingMore') || 'Loading...')
-                                : (t('downloadHistory.loadMore') || 'Load More')}
+                                ? (t('profile.downloadHistorySection.loadingMore') || 'Loading...')
+                                : (t('profile.downloadHistorySection.loadMore') || 'Load More')}
                         </button>
                     </div>
                 )}

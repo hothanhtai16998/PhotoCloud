@@ -25,6 +25,7 @@ export const en = {
     all: 'All',
     contact: 'Contact',
     optional: 'Optional',
+    unknown: 'Unknown',
   },
 
   // Auth
@@ -724,14 +725,20 @@ export const en = {
     changePassword: 'Change password',
     downloadHistory: 'Download History',
     // Download History
-    'downloadHistory.description': 'Your download history includes everything that you have downloaded while being logged in. It is only visible to you.',
-    'downloadHistory.loading': 'Loading download history...',
-    'downloadHistory.loadingMore': 'Loading more...',
-    'downloadHistory.loadMore': 'Load More',
-    'downloadHistory.loadFailed': 'Failed to load download history',
-    'downloadHistory.empty': 'No downloads yet',
-    'downloadHistory.emptyHint': 'Your download history will appear here once you start downloading images.',
-    'downloadHistory.reDownload': 'Download again',
+    downloadHistorySection: {
+      description: 'Your download history includes everything that you have downloaded while being logged in. It is only visible to you.',
+      loading: 'Loading download history...',
+      loadingMore: 'Loading more...',
+      loadMore: 'Load More',
+      loadFailed: 'Failed to load download history',
+      empty: 'No downloads yet',
+      emptyHint: 'Your download history will appear here once you start downloading images.',
+      reDownload: 'Download again',
+      totalDownloads: 'Total Downloads',
+      uniqueImages: 'Unique Images',
+      thisWeek: 'This Week',
+      downloadedImage: 'Downloaded image',
+    },
     // Analytics
     analyticsLoadFailed: 'Could not load analytics data',
     noAnalyticsData: 'No analytics data',

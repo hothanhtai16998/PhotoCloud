@@ -14,7 +14,7 @@ export default function DownloadHistoryPage() {
                             {t('profile.downloadHistory')}
                         </h1>
                         <p className="download-history-page-description">
-                            {t('downloadHistory.description') || 'Your download history includes everything that you have downloaded while being logged in. It is only visible to you.'}
+                            {t('profile.downloadHistorySection.description') || 'Your download history includes everything that you have downloaded while being logged in. It is only visible to you.'}
                         </p>
                     </div>
                     <DownloadHistory />
