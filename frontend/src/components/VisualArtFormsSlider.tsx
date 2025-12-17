@@ -89,14 +89,17 @@ export function VisualArtFormsSlider() {
   const totalSlides = slides.length;
 
   // Fetch images from database
+  // CRITICAL: Start fetching immediately on mount for better LCP
   useEffect(() => {
+    const abortController = new AbortController();
+    
     const fetchSlides = async () => {
       try {
         setLoading(true);
         const response = await imageService.fetchImages({ 
           limit: 10, // Fetch 10 images for the slider
           _refresh: true 
-        });
+        }, abortController.signal);
         
         const images = response.images || [];
         
@@ -153,16 +156,39 @@ export function VisualArtFormsSlider() {
         setSlides(slideData);
         // Initialize previous slide ref
         prevSlideIndexRef.current = 0;
+        
+        // Preload the first slide image for better LCP discovery
+        // Add a preload link to help browser discover the LCP image earlier
+        if (slideData.length > 0 && slideData[0]?.image) {
+          const preloadLink = document.createElement('link');
+          preloadLink.rel = 'preload';
+          preloadLink.as = 'image';
+          preloadLink.href = slideData[0].image;
+          preloadLink.setAttribute('fetchpriority', 'high');
+          document.head.appendChild(preloadLink);
+        }
       } catch (error) {
+        // Ignore abort errors
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         console.error('Error fetching images for slider:', error);
         // Fallback to empty array or default slides
-        setSlides([]);
+        if (!abortController.signal.aborted) {
+          setSlides([]);
+        }
       } finally {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchSlides();
+    
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   // Helper function to preload and decode image
@@ -540,10 +566,8 @@ export function VisualArtFormsSlider() {
                   height={currentSlideData.height}
                   loading={currentSlide === 0 ? 'eager' : 'lazy'}
                   // Give the first slide highest priority for better LCP, others default
-                  // Cast to any to avoid TS JSX typing gap for fetchPriority
-                  {...({
-                    fetchPriority: currentSlide === 0 ? 'high' : 'auto',
-                  } as any)}
+                  // Use lowercase fetchpriority for proper HTML attribute recognition
+                  fetchpriority={currentSlide === 0 ? 'high' : 'auto'}
                   decoding="async"
                   className={`slide-image slide-image-current slide-image-common slide-image-current-static ${
                     isAnimating 
@@ -564,7 +588,7 @@ export function VisualArtFormsSlider() {
                   width={nextSlideData.width}
                   height={nextSlideData.height}
                   loading="lazy"
-                  {...({ fetchPriority: 'low' } as any)}
+                  fetchpriority="low"
                   decoding="async"
                   className={`slide-image slide-image-current slide-image-common slide-image-next ${
                     wipeProgress <= 0.6 ? 'slide-image-next-hidden' : 'slide-image-next-visible'

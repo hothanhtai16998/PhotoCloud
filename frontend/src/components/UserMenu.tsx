@@ -6,26 +6,41 @@ import { t } from '@/i18n'
 import './Header.css'
 
 // Theme toggle menu item that doesn't use Radix UI
+// Currently hidden but keeping code for future use
 function ThemeToggleMenuItem({ onToggle }: { onToggle: () => void }) {
+  // Initialize state from actual DOM state to ensure sync
   const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme')
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    return saved === 'dark' || (saved === null && prefersDark)
+    // Force light theme for now - always return false
+    // Future: Uncomment below to restore dark theme support
+    // const hasDarkClass = document.documentElement.classList.contains('dark')
+    // if (hasDarkClass) {
+    //   return true
+    // }
+    // const saved = localStorage.getItem('theme')
+    // if (saved === 'dark') return true
+    // if (saved === 'light') return false
+    // return window.matchMedia('(prefers-color-scheme: dark)').matches
+    return false
   })
 
   useEffect(() => {
     const root = document.documentElement
-    if (isDark) {
-      root.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      root.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
+    // Force light theme - always remove dark class
+    root.classList.remove('dark')
+    localStorage.setItem('theme', 'light')
+    
+    // Future: Uncomment below to restore dark theme support
+    // if (isDark) {
+    //   root.classList.add('dark')
+    //   localStorage.setItem('theme', 'dark')
+    // } else {
+    //   root.classList.remove('dark')
+    //   localStorage.setItem('theme', 'light')
+    // }
   }, [isDark])
   
   const handleClick = () => {
-    setIsDark(!isDark)
+    setIsDark(prev => !prev)
     onToggle()
   }
 
@@ -145,9 +160,10 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
 
             <div className="user-menu-separator" />
 
-            <ThemeToggleMenuItem onToggle={handleMenuItemClick} />
+            {/* Theme toggle - hidden for now, keeping code for future use */}
+            {/* <ThemeToggleMenuItem onToggle={handleMenuItemClick} /> */}
 
-            <div className="user-menu-separator" />
+            {/* <div className="user-menu-separator" /> */}
 
             <LanguageSwitcher variant="menu-item" onSwitch={handleMenuItemClick} />
 

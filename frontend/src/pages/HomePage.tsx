@@ -12,6 +12,7 @@ import { generateImageSlug } from "@/lib/utils";
 import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModalActive } from "@/utils/modalNavigation";
+import { imageService } from "@/services/imageService";
 
 function HomePage() {
     const { currentSearch, images, loading, fetchImages } = useImageStore();
@@ -21,6 +22,45 @@ function HomePage() {
     const prevCategoryRef = useRef<string | null>(null);
     const isInitialMountRef = useRef(true);
     const isMobile = useIsMobile();
+    
+    // Prefetch first slider image URL as early as possible for better LCP
+    // This runs in parallel with other initialization, before slider component mounts
+    useEffect(() => {
+        if (currentSearch) return; // Skip if search is active (no slider shown)
+        
+        const prefetchFirstImage = async () => {
+            try {
+                // Fetch just 1 image to get the first slider image URL quickly
+                const response = await imageService.fetchImages({ 
+                    limit: 1,
+                    _refresh: true 
+                });
+                
+                const firstImage = response.images?.[0];
+                if (firstImage?.regularUrl || firstImage?.imageUrl) {
+                    const imageUrl = firstImage.regularUrl || firstImage.imageUrl;
+                    // Preload the first image immediately for LCP
+                    const link = document.createElement('link');
+                    link.rel = 'preload';
+                    link.as = 'image';
+                    link.href = imageUrl;
+                    link.setAttribute('fetchpriority', 'high');
+                    // Remove existing preload if any
+                    const existing = document.querySelector('link[rel="preload"][as="image"][fetchpriority="high"]');
+                    if (existing) existing.remove();
+                    document.head.appendChild(link);
+                }
+            } catch (error) {
+                // Silently fail - don't block page load
+                if (import.meta.env.DEV) {
+                    console.warn('Failed to prefetch first slider image:', error);
+                }
+            }
+        };
+        
+        // Start prefetch immediately, don't wait
+        prefetchFirstImage();
+    }, [currentSearch]);
 
     // Check if modal is open (image param exists)
     const isModalOpen = actualLocation?.pathname?.startsWith('/photos/') || false;

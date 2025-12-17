@@ -59,30 +59,44 @@ export default defineConfig({
             return undefined; // Keep in entry chunk
           }
           
-          // Split vendor libraries into separate chunks for better caching
+          // Split vendor libraries into separate chunks for better caching and tree-shaking
           if (id.includes('node_modules')) {
-            // Router libraries - used on most pages
+            // Router libraries - used on most pages but can be code-split
             if (id.includes('react-router')) {
               return 'vendor-router';
             }
-            // UI libraries - can be lazy loaded
-            if (id.includes('lucide-react') || id.includes('@radix-ui')) {
-              return 'vendor-ui';
+            // UI libraries - only load when needed (modals, dropdowns, etc.)
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
             }
-            // Chart libraries - only used in admin
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix';
+            }
+            // Chart libraries - only used in admin (lazy load)
             if (id.includes('recharts')) {
               return 'vendor-charts';
             }
-            // State management - core functionality
-            if (id.includes('zustand') || id.includes('immer')) {
-              return 'vendor-state';
+            // State management - split zustand and immer
+            if (id.includes('zustand')) {
+              return 'vendor-zustand';
             }
-            // HTTP client
+            if (id.includes('immer')) {
+              return 'vendor-immer';
+            }
+            // HTTP client - used everywhere but can be optimized
             if (id.includes('axios')) {
               return 'vendor-http';
             }
-            // Other vendor code
-            return 'vendor';
+            // Form libraries - only used in specific pages
+            if (id.includes('react-hook-form') || id.includes('zod')) {
+              return 'vendor-forms';
+            }
+            // Toast/notification - only used when needed
+            if (id.includes('sonner')) {
+              return 'vendor-toast';
+            }
+            // Other vendor code - split further if possible
+            return 'vendor-misc';
           }
         },
         // Prevent circular dependency issues

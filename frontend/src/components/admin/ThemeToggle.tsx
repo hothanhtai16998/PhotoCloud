@@ -3,41 +3,60 @@ import { Moon, Sun } from 'lucide-react';
 import { t } from '@/i18n';
 import './ThemeToggle.css';
 
-// Initialize theme on module load - default to light
+// Initialize theme on module load - force light theme for now
+// TODO: Re-enable dark theme toggle in future if needed
 (function initializeTheme() {
+    // Force light theme - remove dark class if present
+    document.documentElement.classList.remove('dark');
+    // Clear any saved dark theme preference
     const saved = localStorage.getItem('theme');
-    // Check system preference if no saved theme
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    // Only use dark if explicitly saved as 'dark', otherwise check system preference
-    const shouldBeDark = saved === 'dark' || (saved === null && prefersDark);
-    
-    if (shouldBeDark) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
+    if (saved === 'dark') {
+        localStorage.setItem('theme', 'light');
     }
+    
+    // Future: Uncomment below to restore dark theme support
+    // const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // const shouldBeDark = saved === 'dark' || (saved === null && prefersDark);
+    // if (shouldBeDark) {
+    //     document.documentElement.classList.add('dark');
+    // } else {
+    //     document.documentElement.classList.remove('dark');
+    // }
 })();
 
 export function ThemeToggle() {
+    // Force light theme for now - keeping code for future use
+    // TODO: Re-enable dark theme toggle in future if needed
     const [isDark, setIsDark] = useState(() => {
-        const saved = localStorage.getItem('theme');
-        // Only return true if explicitly saved as 'dark', otherwise default to light (false)
-        return saved === 'dark';
+        // Always return false to force light theme
+        // Future: Uncomment below to restore dark theme support
+        // const hasDarkClass = document.documentElement.classList.contains('dark');
+        // if (hasDarkClass) {
+        //     return true;
+        // }
+        // const saved = localStorage.getItem('theme');
+        // return saved === 'dark';
+        return false;
     });
 
     useEffect(() => {
         const root = document.documentElement;
-        if (isDark) {
-            root.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            root.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
+        // Force light theme - always remove dark class
+        root.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+        
+        // Future: Uncomment below to restore dark theme support
+        // if (isDark) {
+        //     root.classList.add('dark');
+        //     localStorage.setItem('theme', 'dark');
+        // } else {
+        //     root.classList.remove('dark');
+        //     localStorage.setItem('theme', 'light');
+        // }
     }, [isDark]);
 
     const toggleTheme = () => {
-        setIsDark(!isDark);
+        setIsDark(prev => !prev);
     };
 
     return (
