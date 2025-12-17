@@ -194,7 +194,7 @@ export const getCollectionById = async (req, res) => {
             })
             .populate({
                 path: 'images',
-                select: 'thumbnailUrl smallUrl regularUrl imageUrl imageTitle location uploadedBy views downloads createdAt',
+                select: 'thumbnailUrl smallUrl regularUrl imageUrl imageTitle location uploadedBy views downloads createdAt width height',
                 populate: {
                     path: 'uploadedBy',
                     select: 'username displayName avatarUrl',

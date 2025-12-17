@@ -9,12 +9,9 @@ import { getErrorMessage } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { useCollectionsListStore } from '@/stores/useCollectionsListStore';
-import { useCollectionFavoriteStore } from '@/stores/useCollectionFavoriteStore';
-import { Folder, Plus, Trash2, Edit2, Eye, Copy, Lock, Unlock, Search, X, Filter, Heart, FileText } from 'lucide-react';
+import { Folder, Plus, Trash2, Edit2, Lock, Search, X, Filter } from 'lucide-react';
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
-import { CollectionShare } from '@/components/collection/CollectionShare';
-import { collectionTemplateService } from '@/services/collectionTemplateService';
-import { ConfirmModal, ModerationNotesModal } from '@/pages/admin/components/modals';
+import { ConfirmModal } from '@/pages/admin/components/modals';
 import { t } from '@/i18n';
 import './CollectionsPage.css';
 
@@ -48,24 +45,11 @@ export default function CollectionsPage() {
 	} = useCollectionsListStore();
 
 
-	// Collection favorite store
-	const {
-		favoriteStatuses,
-		togglingFavoriteId,
-		checkFavorites,
-		toggleFavorite,
-	} = useCollectionFavoriteStore();
 
 	const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
 	const [showEditModal, setShowEditModal] = useState(false);
-	const [savingAsTemplate, setSavingAsTemplate] = useState<string | null>(null);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
-	const [showDuplicateModal, setShowDuplicateModal] = useState(false);
-	const [collectionToDuplicate, setCollectionToDuplicate] = useState<Collection | null>(null);
-	const [showTemplateModal, setShowTemplateModal] = useState(false);
-	const [collectionForTemplate, setCollectionForTemplate] = useState<Collection | null>(null);
-	const [_templateName, setTemplateName] = useState('');
 
 	useEffect(() => {
 		if (!accessToken) {
@@ -77,20 +61,13 @@ export default function CollectionsPage() {
 		const loadCollections = async () => {
 			try {
 				await fetchCollections();
-				// Check favorite statuses after collections are loaded
-				// Get collections from store state
-				const currentCollections = useCollectionsListStore.getState().collections;
-				if (currentCollections.length > 0) {
-					const collectionIds = currentCollections.map((c) => c._id).filter(Boolean) as string[];
-					await checkFavorites(collectionIds);
-				}
 			} catch (_error) {
 				// Error already handled in store
 			}
 		};
 
 		loadCollections();
-	}, [accessToken, navigate, fetchCollections, checkFavorites]);
+	}, [accessToken, navigate, fetchCollections]);
 
 	// Get all unique tags from collections
 	const allTags = useMemo(() => {
@@ -137,103 +114,6 @@ export default function CollectionsPage() {
 		setSearchQuery('');
 	};
 
-	const handleToggleFavorite = async (e: React.MouseEvent, collection: Collection) => {
-		e.stopPropagation();
-		if (!accessToken || !collection._id || togglingFavoriteId === collection._id) return;
-
-		await toggleFavorite(collection._id);
-	};
-
-
-	const handleTogglePublic = async (e: React.MouseEvent, collection: Collection) => {
-		e.stopPropagation();
-		try {
-			await updateCollection(collection._id, {
-				isPublic: !collection.isPublic,
-			});
-			toast.success(
-				!collection.isPublic 
-					? t('collections.madePublic') 
-					: t('collections.madePrivate')
-			);
-		} catch (_error) {
-			// Error already handled in store
-		}
-	};
-
-	const handleSaveAsTemplateClick = (e: React.MouseEvent, collection: Collection) => {
-		e.stopPropagation();
-		setCollectionForTemplate(collection);
-		setTemplateName(collection.name);
-		setShowTemplateModal(true);
-	};
-
-	const handleSaveAsTemplateConfirm = async (templateNameInput?: string) => {
-		if (!collectionForTemplate || !templateNameInput?.trim()) {
-			return;
-		}
-
-		setSavingAsTemplate(collectionForTemplate._id);
-		try {
-			await collectionTemplateService.saveCollectionAsTemplate(collectionForTemplate._id, {
-				templateName: templateNameInput.trim(),
-			});
-			toast.success(t('collections.saveAsTemplateSuccess'));
-			setShowTemplateModal(false);
-			setCollectionForTemplate(null);
-			setTemplateName('');
-		} catch (error: unknown) {
-			console.error('Failed to save as template:', error);
-			toast.error(getErrorMessage(error, t('collections.saveAsTemplateFailed')));
-		} finally {
-			setSavingAsTemplate(null);
-		}
-	};
-
-	const handleDuplicateClick = (e: React.MouseEvent, collection: Collection) => {
-		e.stopPropagation();
-		setCollectionToDuplicate(collection);
-		setShowDuplicateModal(true);
-	};
-
-	const handleDuplicateConfirm = async () => {
-		if (!collectionToDuplicate) return;
-
-		try {
-			const newCollection = await collectionService.createCollection({
-				name: t('collections.copyName', { name: collectionToDuplicate.name }),
-				description: collectionToDuplicate.description || undefined,
-				isPublic: false, // Duplicates are private by default
-			});
-
-			// Copy images if any
-			if (collectionToDuplicate.images && Array.isArray(collectionToDuplicate.images) && collectionToDuplicate.images.length > 0) {
-				const imageIds = collectionToDuplicate.images
-					.filter((img): img is string => typeof img === 'string')
-					.concat(
-						collectionToDuplicate.images
-							.filter((img): img is Image => typeof img === 'object' && img !== null && '_id' in img)
-							.map(img => img._id)
-					);
-
-				// Add images in batches to avoid overwhelming the server
-				for (const imageId of imageIds) {
-					try {
-						await collectionService.addImageToCollection(newCollection._id, imageId);
-					} catch (err) {
-						console.warn('Failed to add image to duplicate:', err);
-					}
-				}
-			}
-
-			// Reload collections
-			await refreshCollections();
-			toast.success(t('collections.duplicateSuccess'));
-		} catch (error: unknown) {
-			console.error('Failed to duplicate collection:', error);
-			toast.error(t('collections.duplicateFailed'));
-		}
-	};
 
 	if (loading) {
 		return (
@@ -440,58 +320,11 @@ export default function CollectionsPage() {
 										<div className="collection-card-overlay">
 											<div className="collection-card-actions">
 												<button
-													className="collection-card-action-btn action-primary"
-													onClick={(e) => {
-														e.stopPropagation();
-														handleCollectionClick(collection);
-													}}
-													title={t('collections.view')}
-												>
-													<Eye size={18} />
-												</button>
-												<button
-													className={`collection-card-action-btn ${favoriteStatuses[collection._id] ? 'action-favorite' : ''}`}
-													onClick={(e) => handleToggleFavorite(e, collection)}
-													disabled={togglingFavoriteId === collection._id}
-													title={favoriteStatuses[collection._id] ? t('collections.removeFromFavorites') : t('collections.addToFavorites')}
-												>
-													<Heart size={18} fill={favoriteStatuses[collection._id] ? 'currentColor' : 'none'} />
-												</button>
-												<div onClick={(e) => e.stopPropagation()}>
-													<CollectionShare collection={collection} />
-												</div>
-												<button
-													className="collection-card-action-btn"
-													onClick={(e) => handleTogglePublic(e, collection)}
-													title={collection.isPublic ? t('collections.makePrivate') : t('collections.makePublic')}
-												>
-													{collection.isPublic ? (
-														<Unlock size={18} />
-													) : (
-														<Lock size={18} />
-													)}
-												</button>
-												<button
-													className="collection-card-action-btn"
-													onClick={(e) => handleDuplicateClick(e, collection)}
-													title={t('collections.duplicate')}
-												>
-													<Copy size={18} />
-												</button>
-												<button
 													className="collection-card-action-btn"
 													onClick={(e) => handleEditCollection(e, collection)}
 													title={t('collections.editCollection')}
 												>
 													<Edit2 size={18} />
-												</button>
-												<button
-													className="collection-card-action-btn action-secondary"
-													onClick={(e) => handleSaveAsTemplateClick(e, collection)}
-													disabled={savingAsTemplate === collection._id}
-													title={t('collections.saveAsTemplate')}
-												>
-													<FileText size={18} />
 												</button>
 												<button
 													className="collection-card-action-btn action-danger"
@@ -560,34 +393,6 @@ export default function CollectionsPage() {
 				variant="danger"
 			/>
 
-			{/* Duplicate Collection Modal */}
-			<ConfirmModal
-				isOpen={showDuplicateModal}
-				onClose={() => {
-					setShowDuplicateModal(false);
-					setCollectionToDuplicate(null);
-				}}
-				onConfirm={handleDuplicateConfirm}
-				title="Sao chép bộ sưu tập"
-				message={collectionToDuplicate ? t('collections.duplicateConfirm', { name: collectionToDuplicate.name }) : ''}
-				confirmText="Sao chép"
-				cancelText="Hủy"
-				variant="info"
-			/>
-
-			{/* Save as Template Modal */}
-			<ModerationNotesModal
-				isOpen={showTemplateModal}
-				onClose={() => {
-					setShowTemplateModal(false);
-					setCollectionForTemplate(null);
-					setTemplateName('');
-				}}
-				onConfirm={handleSaveAsTemplateConfirm}
-				title={t('collections.saveAsTemplate')}
-				placeholder={collectionForTemplate ? t('collections.enterTemplateName', { name: collectionForTemplate.name }) : ''}
-				isOptional={false}
-			/>
 		</>
 	);
 }

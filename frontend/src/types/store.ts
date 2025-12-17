@@ -2,7 +2,6 @@ import type { User } from './user';
 import type { Image } from './image';
 import type { Coordinates, Pagination } from './common';
 import type { Collection } from './collection';
-import type { CollectionVersion } from '@/services/collectionVersionService';
 import type { PublicUser } from '@/services/userService';
 import type { UserStats } from '@/services/userStatsService';
 
@@ -76,16 +75,12 @@ export interface CollectionState {
 	error: string | null;
 	isFavorited: boolean;
 	togglingFavorite: boolean;
-	versions: CollectionVersion[];
-	loadingVersions: boolean;
 	updatingCover: string | null;
 	fetchCollection: (collectionId: string) => Promise<void>;
 	updateCollection: (collectionId: string, data: { name?: string; description?: string; isPublic?: boolean; coverImage?: string | null; tags?: string[] }) => Promise<void>;
 	deleteCollection: (collectionId: string) => Promise<void>;
 	setCoverImage: (collectionId: string, imageId: string) => Promise<void>;
 	toggleFavorite: (collectionId: string) => Promise<void>;
-	fetchVersions: (collectionId: string) => Promise<void>;
-	restoreVersion: (collectionId: string, versionNumber: number) => Promise<void>;
 	clearCollection: () => void;
 }
 

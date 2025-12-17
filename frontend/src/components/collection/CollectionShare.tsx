@@ -186,7 +186,7 @@ export const CollectionShare = memo(({ collection }: CollectionShareProps) => {
 	}, [showShareMenu]);
 
 	return (
-		<div style={{ position: 'relative', zIndex: 10000, isolation: 'isolate' }}>
+		<div style={{ position: 'relative' }}>
 			<button
 				ref={shareButtonRef}
 				className={`collection-share-btn ${showShareMenu ? 'active' : ''}`}
@@ -194,6 +194,7 @@ export const CollectionShare = memo(({ collection }: CollectionShareProps) => {
 				title="Chia sẻ bộ sưu tập"
 			>
 				<Share2 size={18} />
+				<span>Chia sẻ</span>
 			</button>
 			{/* Share Menu */}
 			{showShareMenu && (

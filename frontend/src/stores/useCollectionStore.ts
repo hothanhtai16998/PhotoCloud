@@ -3,7 +3,6 @@ import { immer } from 'zustand/middleware/immer';
 import { toast } from 'sonner';
 import { collectionService } from '@/services/collectionService';
 import { collectionFavoriteService } from '@/services/collectionFavoriteService';
-import { collectionVersionService } from '@/services/collectionVersionService';
 import type { CollectionState } from '@/types/store';
 import type { ApiErrorResponse } from '@/types/errors';
 import { isCollection } from '@/utils/typeGuards';
@@ -15,8 +14,6 @@ export const useCollectionStore = create(
 		error: null,
 		isFavorited: false,
 		togglingFavorite: false,
-		versions: [],
-		loadingVersions: false,
 		updatingCover: null,
 
 		fetchCollection: async (collectionId: string) => {
@@ -152,63 +149,12 @@ export const useCollectionStore = create(
 			}
 		},
 
-		fetchVersions: async (collectionId: string) => {
-			set((state) => {
-				state.loadingVersions = true;
-			});
-
-			try {
-				const versionsData = await collectionVersionService.getCollectionVersions(collectionId);
-				set((state) => {
-					state.versions = versionsData;
-					state.loadingVersions = false;
-				});
-			} catch (error: unknown) {
-				console.error('Failed to load versions:', error);
-				set((state) => {
-					state.loadingVersions = false;
-				});
-				toast.error('Không thể tải lịch sử phiên bản');
-				throw error;
-			}
-		},
-
-		restoreVersion: async (collectionId: string, versionNumber: number) => {
-			try {
-				const restoredCollection = await collectionVersionService.restoreCollectionVersion(
-					collectionId,
-					versionNumber
-				);
-
-				// Use type guard for safe type checking
-				if (isCollection(restoredCollection)) {
-					set((state) => {
-						state.collection = restoredCollection;
-					});
-				} else {
-					console.error('Restored collection has invalid format:', restoredCollection);
-					throw new Error('Invalid collection data received');
-				}
-
-				// Reload versions
-				await get().fetchVersions(collectionId);
-				toast.success(`Đã khôi phục về phiên bản ${versionNumber}`);
-			} catch (error: unknown) {
-				console.error('Failed to restore version:', error);
-				const message =
-					(error as ApiErrorResponse)?.response?.data?.message ??
-					'Không thể khôi phục phiên bản. Vui lòng thử lại.';
-				toast.error(message);
-				throw error;
-			}
-		},
 
 		clearCollection: () => {
 			set((state) => {
 				state.collection = null;
 				state.error = null;
 				state.isFavorited = false;
-				state.versions = [];
 				state.updatingCover = null;
 			});
 		},

@@ -9,7 +9,6 @@ import { useCollectionDetail } from './hooks/useCollectionDetail';
 import { useCollectionImages } from './hooks/useCollectionImages';
 import { CollectionHeader } from './components/CollectionHeader';
 import { CollectionNoFlashGrid } from './components/CollectionNoFlashGrid';
-import { CollectionVersionHistory } from './components/CollectionVersionHistory';
 import { CollectionBulkActions } from './components/CollectionBulkActions';
 import CollectionCollaborators from './components/CollectionCollaborators';
 import { ConfirmModal } from '@/pages/admin/components/modals';
@@ -47,14 +46,10 @@ export default function CollectionDetailPage() {
 	const {
 		isFavorited,
 		togglingFavorite,
-		versions,
-		loadingVersions,
 		updatingCover,
 		fetchCollection,
 		setCoverImage,
 		toggleFavorite,
-		fetchVersions,
-		restoreVersion,
 	} = useCollectionStore();
 
 	// Collection images hook
@@ -133,40 +128,7 @@ export default function CollectionDetailPage() {
 	}, [collectionId, toggleFavorite]);
 
 
-	// Load versions when collection is loaded and user can edit
-	useEffect(() => {
-		if (collection && canEdit && collectionId) {
-			fetchVersions(collectionId);
-		}
-	}, [collection, canEdit, collectionId, fetchVersions]);
-
-	// Handle restore version
-	const [restoringVersion, setRestoringVersion] = useState<number | null>(null);
-	const [showRestoreModal, setShowRestoreModal] = useState(false);
-	const [versionToRestore, setVersionToRestore] = useState<number | null>(null);
 	const [showBulkRemoveModal, setShowBulkRemoveModal] = useState(false);
-
-	const handleRestoreVersionClick = useCallback((versionNumber: number) => {
-		setVersionToRestore(versionNumber);
-		setShowRestoreModal(true);
-	}, []);
-
-	const handleRestoreVersionConfirm = useCallback(async () => {
-		if (!collectionId || versionToRestore === null) return;
-
-		setRestoringVersion(versionToRestore);
-		try {
-			await restoreVersion(collectionId, versionToRestore);
-			// Reload collection to sync with backend
-			await fetchCollection(collectionId);
-			setShowRestoreModal(false);
-			setVersionToRestore(null);
-		} catch {
-			// Error already handled in store
-		} finally {
-			setRestoringVersion(null);
-		}
-	}, [collectionId, versionToRestore, restoreVersion, fetchCollection]);
 
 	const handleBulkRemoveClick = useCallback(() => {
 		if (selectedImageIds.size === 0) return;
@@ -280,14 +242,6 @@ export default function CollectionDetailPage() {
 					</div>
 				)}
 
-				{/* Version History Section */}
-				<CollectionVersionHistory
-					versions={versions}
-					loadingVersions={loadingVersions}
-					restoringVersion={restoringVersion}
-					canEdit={canEdit}
-					onRestoreVersion={handleRestoreVersionClick}
-				/>
 
 				{/* Bulk Action Bar */}
 				<CollectionBulkActions
@@ -323,20 +277,6 @@ export default function CollectionDetailPage() {
 			</div>
 
 
-			{/* Restore Version Modal */}
-			<ConfirmModal
-				isOpen={showRestoreModal}
-				onClose={() => {
-					setShowRestoreModal(false);
-					setVersionToRestore(null);
-				}}
-				onConfirm={handleRestoreVersionConfirm}
-				title="Khôi phục phiên bản"
-				message={versionToRestore !== null ? `Bạn có chắc chắn muốn khôi phục bộ sưu tập về phiên bản ${versionToRestore}? Tất cả thay đổi sau phiên bản này sẽ bị mất.` : ''}
-				confirmText="Khôi phục"
-				cancelText="Hủy"
-				variant="warning"
-			/>
 
 			{/* Bulk Remove Modal */}
 			<ConfirmModal
