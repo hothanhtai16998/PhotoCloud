@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
-import type { Image } from '@/types/image';
 import { toast } from 'sonner';
-import { generateImageSlug } from '@/lib/utils';
 import { useCollectionStore } from '@/stores/useCollectionStore';
 import { useCollectionDetail } from './hooks/useCollectionDetail';
 import { useCollectionImages } from './hooks/useCollectionImages';
@@ -15,7 +13,6 @@ import { CollectionVersionHistory } from './components/CollectionVersionHistory'
 import { CollectionBulkActions } from './components/CollectionBulkActions';
 import CollectionCollaborators from './components/CollectionCollaborators';
 import { ConfirmModal } from '@/pages/admin/components/modals';
-import api from '@/lib/axios';
 import { appConfig } from '@/config/appConfig';
 import './CollectionDetailPage.css';
 
@@ -73,7 +70,6 @@ export default function CollectionDetailPage() {
 		currentImageIds,
 		processedImages,
 		handleImageLoad,
-		handleImageUpdate,
 		handleDragStart,
 		handleDragOver,
 		handleDragLeave,
@@ -85,7 +81,6 @@ export default function CollectionDetailPage() {
 		toggleImageSelection,
 		selectAllImages,
 		deselectAllImages,
-		setSearchParams,
 	} = useCollectionImages({
 		collection,
 		collectionId,
@@ -112,34 +107,6 @@ export default function CollectionDetailPage() {
 		await toggleFavorite(collectionId);
 	}, [collectionId, toggleFavorite]);
 
-	// Handle download
-	const handleDownload = useCallback(async (image: Image, e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-
-		try {
-			const response = await api.get(`/images/${image._id}/download`, {
-				responseType: 'blob',
-				withCredentials: true,
-			});
-
-			const blob = new Blob([response.data], { type: response.headers['content-type'] });
-			const blobUrl = URL.createObjectURL(blob);
-			const link = document.createElement('a');
-			link.href = blobUrl;
-			link.download = `${image.imageTitle || 'image'}.jpg`;
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-			setTimeout(() => {
-				URL.revokeObjectURL(blobUrl);
-			}, 100);
-			toast.success('Tải ảnh thành công');
-		} catch (error) {
-			console.error('Download failed:', error);
-			toast.error('Tải ảnh thất bại. Vui lòng thử lại.');
-		}
-	}, []);
 
 	// Load versions when collection is loaded and user can edit
 	useEffect(() => {

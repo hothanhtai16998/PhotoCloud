@@ -4,7 +4,7 @@ import './NoFlashGrid.css';
 
 // Import extracted modules
 import { GRID_CONFIG } from './constants/gridConfig';
-import { preloadImage, preloadImages, loadedImages } from './utils/imagePreloader';
+import { preloadImage, preloadImages } from './utils/imagePreloader';
 import { loadImageDimensions } from './utils/imageDimensions';
 import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';

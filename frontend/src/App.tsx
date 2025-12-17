@@ -4,7 +4,6 @@ import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import { Skeleton } from "./components/ui/skeleton";
 import { PageViewTracker } from "./components/PageViewTracker";
-import { ContactButton } from './components/ContactButton';
 import { ActualLocationContext } from "./contexts/ActualLocationContext";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";

@@ -79,7 +79,7 @@ export const useUploadModalState = ({
         });
 
         // Create new imagesData array
-        const newImagesData = selectedFiles.map((file, index) => {
+        const newImagesData = selectedFiles.map((file) => {
           const key = `${file.name}-${file.size}`;
           const existing = existingMap.get(key);
 
@@ -498,7 +498,7 @@ export const useUploadModalState = ({
 
   // Update image coordinates
   const updateImageCoordinates = useCallback(
-    (index: number, coordinates: { latitude: number; longitude: number }) => {
+    (index: number, coordinates: { latitude: number; longitude: number } | undefined) => {
       setImagesData((prev) => {
         const updated = [...prev];
         if (updated[index]) {

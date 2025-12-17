@@ -71,6 +71,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
         document.removeEventListener('mousedown', handleClickOutside)
       }
     }
+    return undefined;
   }, [isOpen])
 
   // Close menu on Escape key
@@ -87,6 +88,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
         document.removeEventListener('keydown', handleEscape)
       }
     }
+    return undefined;
   }, [isOpen])
 
   const handleMenuItemClick = () => {

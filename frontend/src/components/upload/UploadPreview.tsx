@@ -91,7 +91,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
 
   // Detect image orientation and dimensions
   const [isPortrait, setIsPortrait] = useState<boolean | null>(null);
-  const [imageWidth, setImageWidth] = useState<number | null>(null);
+  const [_imageWidth, setImageWidth] = useState<number | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {

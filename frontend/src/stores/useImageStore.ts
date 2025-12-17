@@ -3,7 +3,8 @@ import { immer } from 'zustand/middleware/immer';
 import { toast } from 'sonner';
 import { imageService } from '@/services/imageService';
 import type { ImageState, UploadImageData } from '@/types/store';
-import type { FetchImagesParams } from '@/types/image';
+import type { FetchImagesParams, Image } from '@/types/image';
+import type { Pagination } from '@/types/common';
 import {
   getErrorMessage,
   getUploadErrorMessage,
@@ -91,8 +92,15 @@ export const useImageStore = create(
         }
 
         set((state) => {
-          const uploadedImage = {
+          if (!response.image) {
+            state.uploadProgress = 100;
+            state.loading = false;
+            return;
+          }
+
+          const uploadedImage: Image = {
             ...response.image,
+            _id: response.image._id || '',
             createdAt: response.image.createdAt || new Date().toISOString(),
           };
 
@@ -110,7 +118,7 @@ export const useImageStore = create(
         });
 
         // Show appropriate message based on moderation status
-        if (response.image.moderationStatus === 'pending') {
+        if (response.image?.moderationStatus === 'pending') {
           toast.success(
             'Image uploaded successfully! It will appear after admin approval.'
           );

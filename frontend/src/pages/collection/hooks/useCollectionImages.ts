@@ -3,8 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Image } from '@/types/image';
 import type { Collection } from '@/types/collection';
 import { useCollectionImageStore } from '@/stores/useCollectionImageStore';
-import { generateImageSlug, extractIdFromSlug } from '@/lib/utils';
-import { appConfig } from '@/config/appConfig';
+import { generateImageSlug } from '@/lib/utils';
 import { saveScrollPosition, setModalActive, prepareModalNavigationState } from '@/utils/modalNavigation';
 import { ActualLocationContext } from '@/contexts/ActualLocationContext';
 
@@ -24,7 +23,7 @@ export const useCollectionImages = ({
   fetchCollection,
 }: UseCollectionImagesProps) => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const processedImages = useRef<Set<string>>(new Set());
   const actualLocation = useContext(ActualLocationContext);
 

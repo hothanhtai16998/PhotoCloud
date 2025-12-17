@@ -177,7 +177,7 @@ export function generateSpiralClipPath(
   // Convert to array
   const corners: Array<[number, number]> = Array.from(cornerSet).map(str => {
     const [x, y] = str.split(',').map(Number);
-    return [x, y];
+    return [x ?? 0, y ?? 0];
   });
   
   // Filter corners that are on the boundary (not shared by 4 visible cells)
@@ -236,10 +236,10 @@ export function generateSpiralClipPath(
   
   // Fallback: simple bounding box
   if (visibleCells.length > 0) {
-    const minX = Math.min(...visibleCells.map(([r, c]) => c * cellWidth));
-    const maxX = Math.max(...visibleCells.map(([r, c]) => (c + 1) * cellWidth));
-    const minY = Math.min(...visibleCells.map(([r, c]) => r * cellHeight));
-    const maxY = Math.max(...visibleCells.map(([r, c]) => (r + 1) * cellHeight));
+    const minX = Math.min(...visibleCells.map(([, c]) => c * cellWidth));
+    const maxX = Math.max(...visibleCells.map(([, c]) => (c + 1) * cellWidth));
+    const minY = Math.min(...visibleCells.map(([r]) => r * cellHeight));
+    const maxY = Math.max(...visibleCells.map(([r]) => (r + 1) * cellHeight));
     
     return `polygon(${minX}% ${minY}%, ${maxX}% ${minY}%, ${maxX}% ${maxY}%, ${minX}% ${maxY}%)`;
   }

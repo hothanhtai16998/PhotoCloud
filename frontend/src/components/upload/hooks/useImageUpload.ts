@@ -291,9 +291,10 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
         const enqueueNext = () => {
           if (nextIndex >= imagesData.length) return;
           const current = nextIndex++;
-          const promise = startFinalize(current).then(() => {
+          const promise = startFinalize(current).then((result) => {
             // When one finishes, enqueue another if available
             enqueueNext();
+            return result;
           });
           running.push(promise);
         };

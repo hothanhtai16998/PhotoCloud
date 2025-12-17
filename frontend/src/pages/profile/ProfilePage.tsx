@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Image } from "@/types/image";
 import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
-import api from "@/lib/axios";
 import axios from "axios";
 import { generateImageSlug } from "@/lib/utils";
 import { Folder, Eye } from "lucide-react";
@@ -25,7 +24,6 @@ import { useRequestCancellationOnChange } from "@/hooks/useRequestCancellation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { toast } from "sonner";
 import { appConfig } from "@/config/appConfig";
-import { timingConfig } from "@/config/timingConfig";
 import { uiConfig } from "@/config/uiConfig";
 import { t } from "@/i18n";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
@@ -75,10 +73,7 @@ function ProfilePage() {
         images,
         loading,
         photosCount,
-        imageTypes,
         fetchUserImages,
-        setImageType,
-        updateImage,
         clearImages,
     } = useUserImageStore();
 
@@ -555,21 +550,7 @@ function ProfilePage() {
 
 
     // Get current image IDs for comparison
-    const currentImageIds = useMemo(() => new Set(displayImages.map(img => img._id)), [displayImages]);
 
-    // Determine image type when it loads
-    const handleImageLoad = useCallback((imageId: string, img: HTMLImageElement) => {
-        // Only process once per image and only if image still exists
-        if (!currentImageIds.has(imageId) || processedImages.current.has(imageId)) return;
-
-        // Double-check that image still exists in current set (race condition protection)
-        if (!currentImageIds.has(imageId)) return;
-
-        processedImages.current.add(imageId);
-        const isPortrait = img.naturalHeight > img.naturalWidth;
-        const imageType = isPortrait ? 'portrait' : 'landscape';
-        setImageType(imageId, imageType);
-    }, [currentImageIds, setImageType]);
 
     // Cleanup processedImages when component unmounts or displayUserId changes
     useEffect(() => {
@@ -579,10 +560,6 @@ function ProfilePage() {
         };
     }, [displayUserId]);
 
-    // Update image in the state when stats change
-    const handleImageUpdate = useCallback((updatedImage: Image) => {
-        updateImage(updatedImage._id, updatedImage);
-    }, [updateImage]);
 
 
     if (profileUserLoading) {
