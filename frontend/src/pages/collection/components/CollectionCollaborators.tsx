@@ -5,7 +5,7 @@ import type { Collection } from '@/types/collection';
 import { toast } from 'sonner';
 import { useUserStore } from '@/stores/useUserStore';
 import { userService, type UserSearchResult } from '@/services/userService';
-// import { ConfirmModal } from '@/pages/admin/components/modals';
+import { ConfirmModal } from '@/pages/admin/components/modals';
 import './CollectionCollaborators.css';
 
 // Custom event to trigger notification refresh
@@ -37,7 +37,7 @@ export default function CollectionCollaborators({
 	const [showCollaborators, setShowCollaborators] = useState(true);
 	const [updatingPermission, setUpdatingPermission] = useState<string | null>(null);
 	const [removingCollaborator, setRemovingCollaborator] = useState<string | null>(null);
-	const [_showRemoveModal, setShowRemoveModal] = useState(false);
+	const [showRemoveModal, setShowRemoveModal] = useState(false);
 
 	// User search state
 	const [searchQuery, setSearchQuery] = useState('');
@@ -175,7 +175,7 @@ export default function CollectionCollaborators({
 	};
 
 	const handleInvite = async () => {
-		const emailToInvite = selectedUser?.email || inviteEmail.trim();
+		const emailToInvite = selectedUser?.email || (inviteEmail?.trim() || '');
 
 		if (!emailToInvite) {
 			toast.error('Vui lòng chọn hoặc nhập email người dùng');
@@ -214,27 +214,26 @@ export default function CollectionCollaborators({
 		setShowRemoveModal(true);
 	};
 
-	// const handleRemoveCollaboratorConfirm = async () => {
-	// 	if (!removingCollaborator) return;
+	const handleRemoveCollaboratorConfirm = async () => {
+		if (!removingCollaborator) return;
 
-	// 	const collaboratorId = removingCollaborator;
-	// 	setRemovingCollaborator(collaboratorId);
-	// 	try {
-	// 		const updatedCollection = await collectionService.removeCollaborator(
-	// 			collection._id,
-	// 			collaboratorId
-	// 		);
-	// 		onCollectionUpdate(updatedCollection);
-	// 		toast.success('Đã xóa cộng tác viên');
-	// 	} catch (error: unknown) {
-	// 		console.error('Failed to remove collaborator:', error);
-	// 		const axiosError = error as { response?: { data?: { message?: string } } };
-	// 		toast.error(axiosError.response?.data?.message || 'Không thể xóa cộng tác viên. Vui lòng thử lại.');
-	// 	} finally {
-	// 		setRemovingCollaborator(null);
-	// 		setShowRemoveModal(false);
-	// 	}
-	// };
+		const collaboratorId = removingCollaborator;
+		try {
+			const updatedCollection = await collectionService.removeCollaborator(
+				collection._id,
+				collaboratorId
+			);
+			onCollectionUpdate(updatedCollection);
+			toast.success('Đã xóa cộng tác viên');
+		} catch (error: unknown) {
+			console.error('Failed to remove collaborator:', error);
+			const axiosError = error as { response?: { data?: { message?: string } } };
+			toast.error(axiosError.response?.data?.message || 'Không thể xóa cộng tác viên. Vui lòng thử lại.');
+		} finally {
+			setRemovingCollaborator(null);
+			setShowRemoveModal(false);
+		}
+	};
 
 	const handleUpdatePermission = async (collaboratorId: string, newPermission: 'view' | 'edit' | 'admin') => {
 		setUpdatingPermission(collaboratorId);
@@ -548,6 +547,21 @@ export default function CollectionCollaborators({
 					</div>
 				</>
 			)}
+
+			{/* Remove Collaborator Confirmation Modal */}
+			<ConfirmModal
+				isOpen={showRemoveModal}
+				onClose={() => {
+					setShowRemoveModal(false);
+					setRemovingCollaborator(null);
+				}}
+				onConfirm={handleRemoveCollaboratorConfirm}
+				title="Xóa cộng tác viên"
+				message="Bạn có chắc chắn muốn xóa cộng tác viên này khỏi bộ sưu tập?"
+				confirmText="Xóa"
+				cancelText="Hủy"
+				variant="danger"
+			/>
 		</div>
 	);
 }

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Share2, Mail, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import type { Collection } from '@/types/collection';
 import { collectionService } from '@/services/collectionService';
 import './CollectionShare.css';
@@ -182,20 +183,22 @@ export const CollectionShare = memo(({ collection }: CollectionShareProps) => {
 	// Handle share button click
 	const handleShare = useCallback((e: React.MouseEvent) => {
 		e.stopPropagation();
+		e.preventDefault();
 		setShowShareMenu(!showShareMenu);
 	}, [showShareMenu]);
 
 	return (
-		<div style={{ position: 'relative' }}>
-			<button
+		<>
+			<Button
 				ref={shareButtonRef}
+				variant="outline"
 				className={`collection-share-btn ${showShareMenu ? 'active' : ''}`}
 				onClick={handleShare}
 				title="Chia sẻ bộ sưu tập"
 			>
 				<Share2 size={18} />
 				<span>Chia sẻ</span>
-			</button>
+			</Button>
 			{/* Share Menu */}
 			{showShareMenu && (
 				<div
@@ -264,7 +267,7 @@ export const CollectionShare = memo(({ collection }: CollectionShareProps) => {
 					</div>
 				</div>
 			)}
-		</div>
+		</>
 	);
 });
 

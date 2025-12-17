@@ -10,7 +10,6 @@ import { useCollectionImages } from './hooks/useCollectionImages';
 import { CollectionHeader } from './components/CollectionHeader';
 import { CollectionNoFlashGrid } from './components/CollectionNoFlashGrid';
 import { CollectionBulkActions } from './components/CollectionBulkActions';
-import CollectionCollaborators from './components/CollectionCollaborators';
 import { ConfirmModal } from '@/pages/admin/components/modals';
 import { appConfig } from '@/config/appConfig';
 import './CollectionDetailPage.css';
@@ -227,20 +226,6 @@ export default function CollectionDetailPage() {
 					toggleSelectionMode={toggleSelectionMode}
 				/>
 
-				{/* Collaborators Section */}
-				{collection && (
-					<div className="collection-detail-collaborators-wrapper">
-						<CollectionCollaborators
-							collection={collection}
-							onCollectionUpdate={async () => {
-								// Update collection in store
-								await fetchCollection(collectionId!);
-							}}
-							isOwner={isOwner}
-							userPermission={userPermission}
-						/>
-					</div>
-				)}
 
 
 				{/* Bulk Action Bar */}

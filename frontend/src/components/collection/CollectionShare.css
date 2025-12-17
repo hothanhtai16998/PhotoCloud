@@ -35,20 +35,26 @@
 
 /* For collection detail page - different styling */
 .collection-detail-actions .collection-share-btn {
-	width: auto;
-	height: auto;
-	padding: 10px 20px;
-	border-radius: 10px;
-	background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-	border: 2px solid transparent;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	width: auto !important;
+	height: 36px !important;
+	padding: 10px 18px !important;
+	border-radius: 8px !important;
+	background: hsl(var(--background)) !important;
+	border: 1px solid hsl(var(--border)) !important;
+	box-shadow: none !important;
 	display: flex !important;
 	flex-direction: row !important;
 	align-items: center !important;
+	justify-content: center !important;
 	gap: 8px;
-	font-size: 0.9375rem;
-	font-weight: 500;
-	color: hsl(var(--foreground));
+	font-size: 0.875rem !important;
+	font-weight: 500 !important;
+	color: hsl(var(--foreground)) !important;
+	transition: all 0.15s ease !important;
+	backdrop-filter: none !important;
+	transform: none !important;
+	line-height: 1.5 !important;
+	box-sizing: border-box !important;
 }
 
 .collection-detail-actions .collection-share-btn > * {
@@ -59,14 +65,16 @@
 }
 
 .collection-detail-actions .collection-share-btn:hover {
-	background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	background: hsl(var(--muted) / 0.3) !important;
+	border-color: hsl(var(--border)) !important;
+	transform: none !important;
+	box-shadow: none !important;
 }
 
 .collection-detail-actions .collection-share-btn.active {
-	background: linear-gradient(135deg, #111 0%, #000 100%);
-	color: #fff;
+	background: hsl(var(--foreground));
+	color: hsl(var(--background));
+	border-color: hsl(var(--foreground));
 }
 
 /* For collection card actions - different styling */

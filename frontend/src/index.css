@@ -89,11 +89,15 @@
 		opacity: 0.6;
 	}
 
-	/* Button styling - reduce border radius for all buttons */
+	/* Button styling - consistent border radius for all buttons */
+	button,
 	button[data-slot="button"],
 	button[data-slot="button"].rounded-md,
-	button[data-slot="button"][class*="rounded"] {
-		border-radius: 4px !important;
+	button[data-slot="button"].rounded-lg,
+	button[data-slot="button"].rounded-xl,
+	button[data-slot="button"][class*="rounded"],
+	button:not([class*="rounded-none"]):not([class*="rounded-full"]) {
+		border-radius: 8px !important;
 	}
 
 	/* Save button styling - black background, white text (variant="default") - excluding admin */
