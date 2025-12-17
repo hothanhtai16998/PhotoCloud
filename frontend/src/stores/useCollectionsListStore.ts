@@ -24,11 +24,22 @@ export const useCollectionsListStore = create(
 
 			try {
 				const data = await collectionService.getUserCollections();
+				console.log('[CollectionsStore] Fetched collections:', data.length, data);
+				
+				// Update collections first
 				set((state) => {
 					state.collections = data;
-					// Apply current filters
-					get().applyFilters(data);
 					state.loading = false;
+				});
+				
+				// Then apply filters (outside of set to avoid nested updates)
+				get().applyFilters(data);
+				
+				console.log('[CollectionsStore] After filtering:', get().filteredCollections.length, 'collections');
+				console.log('[CollectionsStore] Active filters:', {
+					searchQuery: get().searchQuery,
+					showPublicOnly: get().showPublicOnly,
+					selectedTag: get().selectedTag,
 				});
 			} catch (error: unknown) {
 				console.error('Failed to load collections:', error);
@@ -147,13 +158,13 @@ export const useCollectionsListStore = create(
 				// Tag filter
 				if (state.selectedTag) {
 					filtered = filtered.filter((collection) =>
-						collection.tags?.includes(state.selectedTag!)
+						collection.tags && Array.isArray(collection.tags) && collection.tags.includes(state.selectedTag!)
 					);
 				}
 
 				// Public filter
 				if (state.showPublicOnly) {
-					filtered = filtered.filter((collection) => collection.isPublic);
+					filtered = filtered.filter((collection) => collection.isPublic === true);
 				}
 
 				// Sort

@@ -167,9 +167,13 @@ export function VisualArtFormsSlider() {
           preloadLink.setAttribute('fetchpriority', 'high');
           document.head.appendChild(preloadLink);
         }
-      } catch (error) {
-        // Ignore abort errors
-        if (error instanceof Error && error.name === 'AbortError') {
+      } catch (error: unknown) {
+        // Ignore abort/cancellation errors (expected when component unmounts)
+        if (
+          (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) ||
+          (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_CANCELED') ||
+          abortController.signal.aborted
+        ) {
           return;
         }
         console.error('Error fetching images for slider:', error);
@@ -566,8 +570,7 @@ export function VisualArtFormsSlider() {
                   height={currentSlideData.height}
                   loading={currentSlide === 0 ? 'eager' : 'lazy'}
                   // Give the first slide highest priority for better LCP, others default
-                  // Use lowercase fetchpriority for proper HTML attribute recognition
-                  fetchpriority={currentSlide === 0 ? 'high' : 'auto'}
+                  fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
                   decoding="async"
                   className={`slide-image slide-image-current slide-image-common slide-image-current-static ${
                     isAnimating 
@@ -588,7 +591,7 @@ export function VisualArtFormsSlider() {
                   width={nextSlideData.width}
                   height={nextSlideData.height}
                   loading="lazy"
-                  fetchpriority="low"
+                  fetchPriority="low"
                   decoding="async"
                   className={`slide-image slide-image-current slide-image-common slide-image-next ${
                     wipeProgress <= 0.6 ? 'slide-image-next-hidden' : 'slide-image-next-visible'

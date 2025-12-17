@@ -89,6 +89,41 @@ export default function CollectionDetailPage() {
 		fetchCollection,
 	});
 
+	// Listen for collection updates from other pages (e.g., when image is added from ImagePage)
+	useEffect(() => {
+		if (!collectionId) return;
+
+		console.log('[CollectionDetailPage] Setting up collection update listener for:', collectionId);
+
+		const handleCollectionUpdate = (event: Event) => {
+			try {
+				const customEvent = event as CustomEvent<{ collectionId: string; collection: Collection }>;
+				const { collectionId: updatedCollectionId } = customEvent.detail || {};
+				console.log('[CollectionDetailPage] Collection update event received', {
+					currentCollectionId: collectionId,
+					updatedCollectionId,
+					matches: updatedCollectionId === collectionId,
+				});
+				
+				if (updatedCollectionId === collectionId) {
+					console.log('[CollectionDetailPage] Refreshing collection...');
+					// Refresh the collection to show the new image immediately
+					fetchCollection(collectionId);
+				}
+			} catch (error) {
+				console.error('[CollectionDetailPage] Error handling collection update event:', error);
+			}
+		};
+
+		window.addEventListener('collectionUpdated', handleCollectionUpdate);
+		console.log('[CollectionDetailPage] Event listener registered');
+		
+		return () => {
+			window.removeEventListener('collectionUpdated', handleCollectionUpdate);
+			console.log('[CollectionDetailPage] Event listener removed');
+		};
+	}, [collectionId, fetchCollection]);
+
 	// Handle setting cover image
 	const handleSetCoverImage = useCallback(async (imageId: string, e: React.MouseEvent) => {
 		e.preventDefault();

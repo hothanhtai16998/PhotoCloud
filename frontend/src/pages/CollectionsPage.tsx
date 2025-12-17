@@ -45,6 +45,17 @@ export default function CollectionsPage() {
 		refreshCollections,
 	} = useCollectionsListStore();
 
+	// Debug: Log component state
+	useEffect(() => {
+		console.log('[CollectionsPage] Component state:', {
+			collectionsCount: collections.length,
+			filteredCount: filteredCollections.length,
+			loading,
+			collections: collections.map(c => ({ id: c._id, name: c.name })),
+			filtered: filteredCollections.map(c => ({ id: c._id, name: c.name })),
+		});
+	}, [collections, filteredCollections, loading]);
+
 	// Collection favorite store
 	const {
 		favoriteStatuses,
@@ -351,7 +362,7 @@ export default function CollectionsPage() {
 								? t('collections.noMatchSearch', { query: searchQuery })
 								: t('collections.noMatchFilter')}
 						</p>
-						{(searchQuery || showPublicOnly) && (
+						{(searchQuery || showPublicOnly || selectedTag) && (
 							<button
 								className="collections-empty-btn"
 							onClick={() => {

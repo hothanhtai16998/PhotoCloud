@@ -3,6 +3,7 @@ import { X, Plus, Folder, Check, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { collectionTemplateService, type CollectionTemplate } from '@/services/collectionTemplateService';
+import { useCollectionStore } from '@/stores/useCollectionStore';
 import type { Collection } from '@/types/collection';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -25,6 +26,7 @@ export default function CollectionModal({
 	onCollectionUpdate,
 }: CollectionModalProps) {
 	const isEditMode = !!collectionToEdit;
+	const { collection: currentCollection, fetchCollection } = useCollectionStore();
 	const [collections, setCollections] = useState<Collection[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [creating, setCreating] = useState(false);
@@ -209,20 +211,66 @@ export default function CollectionModal({
 			}
 			try {
 				if (isInCollection) {
-					await collectionService.removeImageFromCollection(collectionId, imageId);
+					const updatedCollection = await collectionService.removeImageFromCollection(collectionId, imageId);
 					setCollectionsContainingImage((prev) => {
 						const next = new Set(prev);
 						next.delete(collectionId);
 						return next;
 					});
+					
+					// Update the collection in local state to reflect new image count
+					setCollections((prev) => {
+						return prev.map((c) => {
+							if (c._id === collectionId) {
+								return {
+									...c,
+									imageCount: updatedCollection.imageCount || Math.max(0, (c.imageCount || 0) - 1),
+								};
+							}
+							return c;
+						});
+					});
+					
 					toast.success(t('collections.imageRemoved'));
+					
+					// Check if we're currently viewing this collection and refresh it
+					if (typeof window !== 'undefined') {
+						const currentPath = window.location.pathname;
+						
+						// Always dispatch event - let the detail page decide if it needs to refresh
+						window.dispatchEvent(new CustomEvent('collectionUpdated', { 
+							detail: { collectionId, collection: updatedCollection } 
+						}));
+						
+						// Also refresh directly if we're on that collection's page OR if the current collection matches
+						if (currentPath === `/collections/${collectionId}` || 
+						    (currentCollection && currentCollection._id === collectionId)) {
+							// Refresh the collection to get full image data
+							fetchCollection(collectionId);
+						}
+					}
 				} else {
-					await collectionService.addImageToCollection(collectionId, imageId);
+					const updatedCollection = await collectionService.addImageToCollection(collectionId, imageId);
 					setCollectionsContainingImage((prev) => {
 						const next = new Set(prev);
 						next.add(collectionId);
 						return next;
 					});
+					
+					// Update the collection in local state to reflect new image count and cover image
+					setCollections((prev) => {
+						return prev.map((c) => {
+							if (c._id === collectionId) {
+								return {
+									...c,
+									imageCount: updatedCollection.imageCount || (c.imageCount || 0) + 1,
+									coverImage: updatedCollection.coverImage || c.coverImage,
+								};
+							}
+							return c;
+						});
+					});
+					
 					toast.success(t('collections.imageAdded'));
 					
 					// Add to recent collections
@@ -233,6 +281,34 @@ export default function CollectionModal({
 						}
 						return updated;
 					});
+
+					// Check if we're currently viewing this collection and refresh it
+					if (typeof window !== 'undefined') {
+						const currentPath = window.location.pathname;
+						
+						console.log('[CollectionModal] Image added, dispatching update event', {
+							collectionId,
+							currentPath,
+							currentCollectionId: currentCollection?._id,
+							matchesPath: currentPath === `/collections/${collectionId}`,
+							matchesStore: currentCollection && currentCollection._id === collectionId,
+						});
+						
+						// Always dispatch event - let the detail page decide if it needs to refresh
+						const event = new CustomEvent('collectionUpdated', { 
+							detail: { collectionId, collection: updatedCollection } 
+						});
+						window.dispatchEvent(event);
+						console.log('[CollectionModal] Event dispatched:', event);
+						
+						// Also refresh directly if we're on that collection's page OR if the current collection matches
+						if (currentPath === `/collections/${collectionId}` || 
+						    (currentCollection && currentCollection._id === collectionId)) {
+							console.log('[CollectionModal] Directly refreshing collection store...');
+							// Refresh the collection to get full image data
+							fetchCollection(collectionId);
+						}
+					}
 				}
 				onCollectionUpdate?.();
 			} catch (error: unknown) {
@@ -384,8 +460,7 @@ export default function CollectionModal({
 
 				<div className="collection-modal-content">
 					{isEditMode ? (
-						<div className="collection-modal-create-form">
-							<h3>{t('collections.editCollection')}</h3>
+						<div className="collection-modal-create-form collection-modal-edit-form">
 							<div className="collection-modal-form-group">
 								<label htmlFor="edit-collection-name">{t('collections.collectionName')} *</label>
 								<input
