@@ -249,13 +249,11 @@
 }
 
 .user-menu-trigger:hover {
-  border-color: #d1d1d1;
-  background-color: #fafafa;
-  transform: translateZ(0) scale(1.05);
+  /* Removed all hover effects to prevent square appearance */
 }
 
 .user-menu-trigger:active {
-  transform: translateZ(0) scale(0.98);
+  /* Removed active state effects */
 }
 
 /* When modal is open, prevent transforms from causing layout shifts */
@@ -265,21 +263,22 @@ body.scroll-locked .user-menu-trigger {
 }
 
 body.scroll-locked .user-menu-trigger:hover {
-  transform: translateZ(0) scale(1.02);
+  /* Removed hover effects */
 }
 
 body.scroll-locked .user-menu-trigger:active {
-  transform: translateZ(0) scale(0.99);
+  /* Removed active state effects */
 }
 
 .user-menu-trigger:focus {
-  outline: 2px solid #111;
-  outline-offset: 2px;
+  /* Removed focus outline */
+  outline: none;
 }
 
 .user-menu-trigger[data-state='open'] {
-  border-color: #111;
-  background-color: #f5f5f5;
+  /* Removed border and background on open state */
+  border-color: transparent;
+  background-color: transparent;
 }
 
 .user-menu-trigger .avatar-container {
@@ -347,67 +346,32 @@ body.scroll-locked .user-menu-trigger:active {
   /* Prevent layout shifts when modal is open */
   contain: layout style paint;
   backface-visibility: hidden;
-  /* Disable all animations and transitions - menu appears instantly */
-  animation: none !important;
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
-  transition: none !important;
-  transition-duration: 0s !important;
-  transition-delay: 0s !important;
-  opacity: 1 !important;
-  transform: none !important;
-  will-change: auto !important;
+  /* Smooth fade-in/fade-out animation like Pexels */
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  will-change: opacity, transform;
 }
 
-/* Disable all Tailwind animation classes on user menu content - target exact Tailwind selectors */
+.user-menu-content.menu-enter {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Allow smooth animations for user menu content */
 .user-menu-content[data-state='open'],
 .user-menu-content[data-state='closed'],
 .user-menu-content,
 [data-slot='dropdown-menu-content'].user-menu-content,
 [data-slot='dropdown-menu-content'].user-menu-content[data-state='open'],
 [data-slot='dropdown-menu-content'].user-menu-content[data-state='closed'] {
-  animation: none !important;
-  animation-name: none !important;
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
-  animation-play-state: paused !important;
-  transition: none !important;
-  transition-property: none !important;
-  transition-duration: 0s !important;
-  transition-delay: 0s !important;
-  opacity: 1 !important;
-  transform: none !important;
-  scale: 1 !important;
+  /* Animations enabled for smooth fade-in/fade-out */
 }
 
-/* Override Tailwind's data-attribute animation selectors with higher specificity */
-.user-menu-content[data-state='open'][class*='animate-in'],
-.user-menu-content[data-state='open'][class*='fade-in'],
-.user-menu-content[data-state='open'][class*='zoom-in'],
-.user-menu-content[data-state='open'][class*='slide-in'],
-.user-menu-content[data-state='closed'][class*='animate-out'],
-.user-menu-content[data-state='closed'][class*='fade-out'],
-.user-menu-content[data-state='closed'][class*='zoom-out'],
-.user-menu-content[data-state='closed'][class*='slide-out'] {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-  scale: 1 !important;
-}
-
-/* Target all possible Tailwind animation class combinations */
-.user-menu-content[data-side='bottom'][data-state='open'],
-.user-menu-content[data-side='top'][data-state='open'],
-.user-menu-content[data-side='left'][data-state='open'],
-.user-menu-content[data-side='right'][data-state='open'],
-.user-menu-content[data-side='bottom'][data-state='closed'],
-.user-menu-content[data-side='top'][data-state='closed'],
-.user-menu-content[data-side='left'][data-state='closed'],
-.user-menu-content[data-side='right'][data-state='closed'] {
-  animation: none !important;
-  opacity: 1 !important;
-  transform: none !important;
-  scale: 1 !important;
+/* Allow our custom animation to work */
+.user-menu-content.menu-enter {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
 /* Prevent dropdown from causing layout shifts when modal is open */
@@ -1319,15 +1283,13 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 /* Override Tailwind animation utilities - target all possible states */
 .user-menu-content[data-state='open'],
 .user-menu-content[data-state='closed'],
-.user-menu-content[class*='animate-in'],
-.user-menu-content[class*='animate-out'],
-.user-menu-content[class*='fade-in'],
-.user-menu-content[class*='fade-out'],
-.user-menu-content[class*='zoom-in'],
-.user-menu-content[class*='zoom-out'],
-.user-menu-content[class*='slide-in'] {
-  animation: none !important;
-  transition: none !important;
-  opacity: 1 !important;
-  transform: none !important;
+/* Allow our custom animation to work - only override if not our menu-enter class */
+.user-menu-content:not(.menu-enter)[class*='animate-in'],
+.user-menu-content:not(.menu-enter)[class*='animate-out'],
+.user-menu-content:not(.menu-enter)[class*='fade-in'],
+.user-menu-content:not(.menu-enter)[class*='fade-out'],
+.user-menu-content:not(.menu-enter)[class*='zoom-in'],
+.user-menu-content:not(.menu-enter)[class*='zoom-out'],
+.user-menu-content:not(.menu-enter)[class*='slide-in'] {
+  /* Keep default behavior for non-custom animations */
 }

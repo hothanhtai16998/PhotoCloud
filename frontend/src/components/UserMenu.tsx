@@ -68,29 +68,11 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
   const [avatarError, setAvatarError] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  // Refs for timeout IDs - using refs instead of state to avoid unnecessary re-renders
+  const leaveTimeoutRef = useRef<number | null>(null)
   const { user: currentUser } = useUserStore()
 
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        menuRef.current &&
-        triggerRef.current &&
-        !menuRef.current.contains(event.target as Node) &&
-        !triggerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false)
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
-    }
-    return undefined;
-  }, [isOpen])
+  // No need for click outside handler with hover behavior
 
   // Close menu on Escape key
   useEffect(() => {
@@ -120,14 +102,46 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
     }
   }, [isOpen, currentUser?._id])
 
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (leaveTimeoutRef.current) {
+        clearTimeout(leaveTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleMouseEnter = () => {
+    // Clear any pending close timeout
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current)
+      leaveTimeoutRef.current = null
+    }
+    // Open menu immediately on hover
+    setIsOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    // Small delay before closing to prevent accidental closes
+    // Using ref to store timeout ID so we can clear it if user hovers back
+    // Refs don't cause re-renders, unlike state - perfect for storing timeout IDs
+    leaveTimeoutRef.current = window.setTimeout(() => {
+      setIsOpen(false)
+      leaveTimeoutRef.current = null
+    }, 150)
+  }
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div 
+      style={{ position: 'relative' }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         ref={triggerRef}
         className="header-link user-menu-trigger"
         aria-label={t('header.userMenu')}
         aria-expanded={isOpen}
-        onClick={() => setIsOpen(!isOpen)}
       >
         {trigger}
       </button>
@@ -135,7 +149,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
       {isOpen && (
         <div
           ref={menuRef}
-          className="user-menu-content"
+          className="user-menu-content menu-enter"
           style={{
             position: 'absolute',
             top: 'calc(100% + 8px)',
