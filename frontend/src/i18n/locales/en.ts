@@ -723,6 +723,15 @@ export const en = {
     changing: 'Changing...',
     changePassword: 'Change password',
     downloadHistory: 'Download History',
+    // Download History
+    'downloadHistory.description': 'Your download history includes everything that you have downloaded while being logged in. It is only visible to you.',
+    'downloadHistory.loading': 'Loading download history...',
+    'downloadHistory.loadingMore': 'Loading more...',
+    'downloadHistory.loadMore': 'Load More',
+    'downloadHistory.loadFailed': 'Failed to load download history',
+    'downloadHistory.empty': 'No downloads yet',
+    'downloadHistory.emptyHint': 'Your download history will appear here once you start downloading images.',
+    'downloadHistory.reDownload': 'Download again',
     // Analytics
     analyticsLoadFailed: 'Could not load analytics data',
     noAnalyticsData: 'No analytics data',

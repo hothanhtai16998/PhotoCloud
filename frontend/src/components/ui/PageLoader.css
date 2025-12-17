@@ -1,0 +1,28 @@
+.page-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 40px 20px;
+}
+
+.page-loader-fullscreen {
+  min-height: 100vh;
+  width: 100%;
+  background: hsl(var(--background));
+}
+
+.page-loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-loader-message {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9375rem;
+  margin: 0;
+  text-align: center;
+}
+

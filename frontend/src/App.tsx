@@ -30,6 +30,7 @@ const ProfileRedirect = lazy(() => import("./pages/profile/ProfileRedirect").the
 const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const FavoriteCollectionsPage = lazy(() => import("./pages/FavoriteCollectionsPage"));
+const DownloadHistoryPage = lazy(() => import("./pages/DownloadHistoryPage"));
 const ImagePage = lazy(() => import("./pages/ImagePage"));
 const CollectionsPage = lazy(() => import("./pages/CollectionsPage"));
 const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDetailPage"));
@@ -217,6 +218,7 @@ function App() {
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
+            <Route path="/downloads" element={<DownloadHistoryPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/collections/:collectionId" element={<CollectionDetailPage />} />
           </Route>

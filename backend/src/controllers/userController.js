@@ -8,6 +8,7 @@ import Collection from "../models/Collection.js";
 import Follow from "../models/Follow.js";
 import Notification from "../models/Notification.js";
 import Settings from "../models/Settings.js";
+import UserActivity from "../models/UserActivity.js";
 import { uploadAvatar, deleteAvatarFromR2 } from "../libs/s3.js";
 import { logger } from '../utils/logger.js';
 
@@ -921,5 +922,63 @@ export const reorderPinnedImages = asyncHandler(async (req, res) => {
         success: true,
         message: 'Pinned images reordered successfully',
         pinnedImages: user.pinnedImages,
+    });
+});
+
+/**
+ * Get user's download history
+ * GET /api/users/me/download-history
+ */
+export const getDownloadHistory = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(Math.max(1, parseInt(req.query.limit) || 20), 100);
+    const skip = (page - 1) * limit;
+
+    // Get download activities for the user, sorted by most recent first
+    const downloadActivities = await UserActivity.find({
+        userId,
+        activityType: 'download',
+    })
+        .populate({
+            path: 'imageId',
+            select: '_id imageTitle imageUrl thumbnailUrl smallUrl regularUrl width height uploadedBy',
+            populate: {
+                path: 'uploadedBy',
+                select: 'username displayName avatarUrl',
+            },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    // Get total count for pagination
+    const total = await UserActivity.countDocuments({
+        userId,
+        activityType: 'download',
+    });
+
+    // Filter out activities where image was deleted (imageId is null)
+    const validDownloads = downloadActivities.filter(activity => activity.imageId !== null);
+
+    // Format response
+    const downloads = validDownloads.map(activity => ({
+        _id: activity._id,
+        image: activity.imageId,
+        downloadedAt: activity.createdAt,
+        date: activity.date, // YYYY-MM-DD format
+    }));
+
+    res.status(200).json({
+        success: true,
+        downloads,
+        pagination: {
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+            hasMore: page * limit < total,
+        },
     });
 });

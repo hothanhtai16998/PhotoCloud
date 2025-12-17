@@ -1,0 +1,32 @@
+.download-history-page {
+    min-height: 100vh;
+    background: #fff;
+    padding: 40px 20px;
+    padding-top: calc(var(--header-height, 65px) + 40px);
+}
+
+.download-history-page-container {
+    max-width: min(1200px, 96%);
+    margin: 0 auto;
+    width: 100%;
+}
+
+.download-history-page-header {
+    margin-bottom: 40px;
+}
+
+.download-history-page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 12px 0;
+}
+
+.download-history-page-description {
+    font-size: 0.9375rem;
+    color: #767676;
+    margin: 0;
+    line-height: 1.6;
+    max-width: 600px;
+}
+

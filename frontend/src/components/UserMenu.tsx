@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Shield, Heart, User, LogOut, Info, Moon, Sun } from 'lucide-react'
+import { Shield, Heart, User, LogOut, Info, Moon, Sun, Download } from 'lucide-react'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { t } from '@/i18n'
 import { useUserStore } from '@/stores/useUserStore'
@@ -139,6 +139,11 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
             <Link to="/favorites" className="user-menu-item" onClick={handleMenuItemClick}>
               <Heart size={16} />
               {t('header.favorites')}
+            </Link>
+
+            <Link to="/downloads" className="user-menu-item" onClick={handleMenuItemClick}>
+              <Download size={16} />
+              {t('profile.downloadHistory')}
             </Link>
 
             {user?.isAdmin && (

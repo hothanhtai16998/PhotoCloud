@@ -719,6 +719,15 @@ export const vi = {
     changing: 'Đang đổi...',
     changePassword: 'Đổi mật khẩu',
     downloadHistory: 'Lịch sử tải',
+    // Download History
+    'downloadHistory.description': 'Lịch sử tải xuống của bạn bao gồm tất cả những gì bạn đã tải xuống khi đăng nhập. Chỉ bạn mới có thể xem.',
+    'downloadHistory.loading': 'Đang tải lịch sử tải xuống...',
+    'downloadHistory.loadingMore': 'Đang tải thêm...',
+    'downloadHistory.loadMore': 'Tải thêm',
+    'downloadHistory.loadFailed': 'Không thể tải lịch sử tải xuống',
+    'downloadHistory.empty': 'Chưa có lượt tải xuống nào',
+    'downloadHistory.emptyHint': 'Lịch sử tải xuống của bạn sẽ xuất hiện ở đây khi bạn bắt đầu tải ảnh.',
+    'downloadHistory.reDownload': 'Tải lại',
     // Analytics
     analyticsLoadFailed: 'Không thể tải dữ liệu phân tích',
     noAnalyticsData: 'Không có dữ liệu phân tích',

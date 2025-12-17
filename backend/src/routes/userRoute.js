@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMe, changePassword, forgotPassword, changeInfo, searchUsers, getUserStats, trackProfileView, getUserByUsername, getUserById, pinImage, unpinImage, getPinnedImages, reorderPinnedImages } from '../controllers/userController.js';
+import { authMe, changePassword, forgotPassword, changeInfo, searchUsers, getUserStats, trackProfileView, getUserByUsername, getUserById, pinImage, unpinImage, getPinnedImages, reorderPinnedImages, getDownloadHistory } from '../controllers/userController.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { avatarUpload } from '../middlewares/multerMiddleware.js';
 import { validateCsrf } from '../middlewares/csrfMiddleware.js';
@@ -8,6 +8,7 @@ import { getUserAnalytics } from '../controllers/userAnalyticsController.js';
 const router = express.Router();
 
 router.get('/me', protectedRoute, authMe);
+router.get('/me/download-history', protectedRoute, getDownloadHistory);
 router.get('/search', protectedRoute, searchUsers);
 
 router.put('/change-password', protectedRoute, validateCsrf, changePassword);

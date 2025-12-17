@@ -6,6 +6,7 @@ import { useProfileEdit } from "./profile/hooks/useProfileEdit";
 import { ProfileForm } from "./profile/components/ProfileForm";
 import { PasswordForm } from "./profile/components/PasswordForm";
 import { ActiveSessions } from "./profile/components/ActiveSessions";
+import { DownloadHistory } from "@/components/DownloadHistory";
 import { t } from "@/i18n";
 import "./EditProfilePage.css";
 
@@ -39,7 +40,8 @@ function canChangePassword(user: { isOAuthUser?: boolean } | null | undefined): 
 function isComingSoonSection(activeSection: string): boolean {
     return activeSection !== SECTION_IDS.EDIT_PROFILE && 
            activeSection !== SECTION_IDS.CHANGE_PASSWORD && 
-           activeSection !== SECTION_IDS.ACTIVE_SESSIONS;
+           activeSection !== SECTION_IDS.ACTIVE_SESSIONS &&
+           activeSection !== SECTION_IDS.DOWNLOAD_HISTORY;
 }
 
 type SectionId = typeof SECTION_IDS[keyof typeof SECTION_IDS];
@@ -158,6 +160,10 @@ function EditProfilePage() {
 
                         {activeSection === SECTION_IDS.ACTIVE_SESSIONS && (
                             <ActiveSessions />
+                        )}
+
+                        {activeSection === SECTION_IDS.DOWNLOAD_HISTORY && (
+                            <DownloadHistory />
                         )}
 
                         {isComingSoonSection(activeSection) && (

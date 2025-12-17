@@ -1,4 +1,4 @@
-import { Home, Bookmark, Heart, User, Info } from 'lucide-react';
+import { Home, Bookmark, Heart, User, Info, Download } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -65,6 +65,17 @@ const ImagePageSidebar = () => {
             title={t('header.favorites')}
           >
             <Heart className="sidebar-icon" />
+          </Link>
+        )}
+
+        {accessToken && (
+          <Link
+            to="/downloads"
+            className={getNavItemClass('/downloads')}
+            aria-label={t('profile.downloadHistory')}
+            title={t('profile.downloadHistory')}
+          >
+            <Download className="sidebar-icon" />
           </Link>
         )}
 
