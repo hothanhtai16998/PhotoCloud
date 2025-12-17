@@ -10,7 +10,7 @@ import type { Image } from "@/types/image";
 import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
 import axios from "axios";
 import { generateImageSlug } from "@/lib/utils";
-import { Folder, Eye } from "lucide-react";
+import { Folder, Eye, Lock } from "lucide-react";
 // Lazy load analytics dashboard - only needed when stats tab is active
 const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDashboard").then(module => ({ default: module.UserAnalyticsDashboard })));
 const UserList = lazy(() => import("./components/UserList").then(module => ({ default: module.UserList })));
@@ -30,6 +30,7 @@ import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { saveScrollPosition, prepareModalNavigationState, setModalActive } from "@/utils/modalNavigation";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import "./ProfilePage.css";
+import "../CollectionsPage.css"; // Import collection card styles
 
 type TabType = 'photos' | 'following' | 'followers' | 'collections' | 'stats';
 
@@ -684,9 +685,9 @@ function ProfilePage() {
                             </Suspense>
                         ) : activeTab === TABS.COLLECTIONS ? (
                             collectionsLoading ? (
-                                <div className="profile-collections-grid" aria-label={t('profile.loadingCollections')} aria-live="polite">
+                                <div className="collections-grid" aria-label={t('profile.loadingCollections')} aria-live="polite">
                                     {Array.from({ length: uiConfig.skeleton.collectionGridCount }).map((_, index) => (
-                                        <div key={`skeleton-${index}`} className="profile-collection-item">
+                                        <div key={`skeleton-${index}`} className="collection-card">
                                             <Skeleton className="w-full h-48 rounded-lg mb-3" />
                                             <Skeleton className="w-3/4 h-4 rounded" />
                                         </div>
@@ -706,7 +707,7 @@ function ProfilePage() {
                                     )}
                                 </div>
                             ) : (
-                                <div className="profile-collections-grid">
+                                <div className="collections-grid">
                                     {collections.map((collection) => {
                                         const coverImage =
                                             collection.coverImage &&
@@ -714,48 +715,76 @@ function ProfilePage() {
                                                 ? collection.coverImage
                                                 : null;
 
+                                        // Get sample images (2-3 images for thumbnails)
+                                        // Filter out coverImage to avoid duplicates
+                                        const allSampleImages = collection.sampleImages && Array.isArray(collection.sampleImages)
+                                            ? collection.sampleImages.filter((img): img is Image => 
+                                                typeof img === 'object' && img !== null && '_id' in img
+                                            )
+                                            : [];
+                                        
+                                        // Exclude coverImage from thumbnails to avoid showing the same image twice
+                                        const coverImageId = coverImage?._id;
+                                        const sampleImages = coverImageId
+                                            ? allSampleImages.filter(img => img._id !== coverImageId)
+                                            : allSampleImages;
+
+                                        // Get creator name
+                                        const creatorName = typeof collection.createdBy === 'object' 
+                                            ? collection.createdBy.displayName || collection.createdBy.username
+                                            : displayUser?.displayName || displayUser?.username || 'You';
+
                                         return (
                                             <div
                                                 key={collection._id}
-                                                className="profile-collection-item"
+                                                className="collection-card"
                                                 onClick={() => navigate(`/collections/${collection._id}`)}
                                             >
-                                                <div className="profile-collection-cover">
-                                                    {coverImage ? (
-                                                        <BlurUpImage
-                                                            image={coverImage}
-                                                            priority={false}
-                                                            minimal={true}
-                                                        />
-                                                    ) : (
-                                                        <div className="profile-collection-placeholder">
-                                                            <Folder size={48} />
+                                                <div className="collection-card-cover">
+                                                    <div className={`collection-card-images ${sampleImages.length < 2 ? 'no-thumbnails' : ''}`}>
+                                                        {/* Main large image on the left */}
+                                                        <div className="collection-card-main-image">
+                                                            {coverImage ? (
+                                                                <BlurUpImage
+                                                                    image={coverImage}
+                                                                    priority={false}
+                                                                    minimal={true}
+                                                                />
+                                                            ) : (
+                                                                <div className="collection-card-placeholder">
+                                                                    <Folder size={48} />
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                    <div className="profile-collection-overlay">
-                                                        <div className="profile-collection-actions">
-                                                            <button
-                                                                className="profile-collection-action-btn"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    navigate(`/collections/${collection._id}`);
-                                                                }}
-                                                                title={t('profile.viewCollection')}
-                                                            >
-                                                                <Eye size={18} />
-                                                            </button>
-                                                        </div>
+                                                        {/* Smaller thumbnails on the right (stacked) - only show if we have 2+ sample images */}
+                                                        {sampleImages.length >= 2 && (
+                                                            <div className="collection-card-thumbnails">
+                                                                {sampleImages.slice(0, 2).map((img, idx) => (
+                                                                    <div key={img._id || idx} className="collection-card-thumbnail">
+                                                                        <BlurUpImage
+                                                                            image={img}
+                                                                            priority={false}
+                                                                            minimal={true}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="profile-collection-info">
-                                                    <h3>{collection.name}</h3>
-                                                    {collection.description && (
-                                                        <p className="profile-collection-description">
-                                                            {collection.description}
-                                                        </p>
-                                                    )}
-                                                    <div className="profile-collection-meta">
-                                                        <span>{collection.imageCount || 0} ảnh</span>
+                                                <div className="collection-card-info">
+                                                    <div className="collection-card-header">
+                                                        <h3 className="collection-card-title">
+                                                            {collection.name}
+                                                            {!collection.isPublic && (
+                                                                <Lock size={14} className="collection-card-lock-icon" />
+                                                            )}
+                                                        </h3>
+                                                    </div>
+                                                    <div className="collection-card-meta">
+                                                        <span className="collection-card-meta-text">
+                                                            {collection.imageCount || 0} {collection.imageCount === 1 ? t('collections.image') : t('collections.images')} · {t('collections.curatedBy', { name: creatorName })}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>

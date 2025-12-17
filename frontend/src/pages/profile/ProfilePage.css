@@ -524,12 +524,36 @@
   margin: 0;
 }
 
-/* Collections Grid */
-.profile-collections-grid {
+/* Collections Grid - Use same styles as CollectionsPage but smaller */
+.profile-content .collections-grid {
+  max-width: min(1400px, 96%);
+  margin: 0 auto;
+  padding: 0 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
+  min-height: 500px; /* Fixed minimum height so it doesn't look too small when images are loading */
 }
+
+/* Make collection cards smaller in profile page */
+.profile-content .collection-card {
+  max-width: 100%;
+}
+
+.profile-content .collection-card-cover {
+  aspect-ratio: 3 / 2; /* Slightly taller than 4/3 to make cards more compact */
+}
+
+/* Mobile responsive - match CollectionsPage */
+@media (max-width: 768px) {
+  .profile-content .collections-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 0 16px;
+  }
+}
+
+/* Collection card styles are imported from CollectionsPage.css in ProfilePage.tsx */
 
 .profile-collection-item {
   background: hsl(var(--background));
