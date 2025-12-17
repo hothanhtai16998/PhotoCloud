@@ -257,6 +257,8 @@ export const en = {
     admin: 'Admin',
     about: 'About us',
     account: 'Account',
+    accountSettings: 'Account settings',
+    viewProfile: 'View profile',
     userMenu: 'User menu',
     toggleMenu: 'Toggle menu',
     company: 'Company',

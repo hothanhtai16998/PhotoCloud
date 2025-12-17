@@ -291,12 +291,12 @@ body.scroll-locked .user-menu-trigger:active {
 
 .header-user-avatar,
 .header-user-avatar-placeholder {
-  width: 32px !important;
-  height: 32px !important;
-  min-width: 32px !important;
-  min-height: 32px !important;
-  max-width: 32px !important;
-  max-height: 32px !important;
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+  min-height: 50px !important;
+  max-width: 50px !important;
+  max-height: 50px !important;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -319,7 +319,7 @@ body.scroll-locked .user-menu-trigger:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
+  font-size: 1.25rem;
   font-weight: 600;
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -536,6 +536,130 @@ body.scroll-locked .user-menu-content {
   margin: 6px 0 !important;
   background: #e5e5e5 !important;
   height: 1px !important;
+}
+
+/* Desktop Menu Header */
+.user-menu-desktop-header {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 16px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 8px;
+  margin: 2px 0;
+}
+
+.user-menu-desktop-header:hover {
+  background: #f5f5f5;
+}
+
+.user-menu-avatar-wrapper {
+  margin-bottom: 12px;
+}
+
+.user-menu-avatar,
+.user-menu-avatar-placeholder {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-menu-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e5e5;
+  color: #767676;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.user-menu-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-menu-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.4;
+}
+
+.user-menu-view-profile {
+  font-size: 0.875rem;
+  color: #767676;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.user-menu-view-profile:hover {
+  color: #111;
+}
+
+/* Desktop Menu Items */
+.user-menu-item-desktop {
+  display: none;
+  justify-content: flex-start;
+  padding: 10px 12px !important;
+  gap: 0 !important;
+}
+
+.user-menu-item-desktop svg {
+  display: none !important;
+}
+
+.user-menu-separator-desktop {
+  display: none;
+}
+
+/* Hide menu items on desktop - show only on mobile */
+@media (min-width: 768px) {
+  .user-menu-desktop-header {
+    display: flex;
+  }
+
+  .user-menu-item-desktop {
+    display: flex !important;
+  }
+
+  .user-menu-separator-desktop {
+    display: block !important;
+  }
+
+  .user-menu-item-mobile-only {
+    display: none !important;
+  }
+
+  .user-menu-item-mobile-only-wrapper {
+    display: none !important;
+  }
+
+  .user-menu-separator-mobile-only {
+    display: none !important;
+  }
+}
+
+/* Show menu items on mobile */
+@media (max-width: 767px) {
+  .user-menu-item-mobile-only {
+    display: flex !important;
+  }
+
+  .user-menu-item-mobile-only-wrapper {
+    display: block !important;
+  }
+
+  .user-menu-separator-mobile-only {
+    display: block !important;
+  }
 }
 
 .user-menu-content [data-slot='dropdown-menu-item']:hover {

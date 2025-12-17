@@ -47,6 +47,7 @@
 .sidebar-section-bottom {
   padding-top: 12px;
   border-top: 1px solid hsl(var(--border) / 0.5);
+  gap: 12px;
 }
 
 /* Navigation items */
@@ -62,6 +63,13 @@
   text-decoration: none;
   transition: all 0.2s ease;
   cursor: pointer;
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.sidebar-language-toggle {
+  /* Inherits all styles from .sidebar-nav-item */
 }
 
 .sidebar-nav-item:hover {

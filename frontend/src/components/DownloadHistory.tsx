@@ -263,3 +263,5 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
     );
 }
 
+export default DownloadHistory;
+

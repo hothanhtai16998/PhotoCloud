@@ -128,7 +128,7 @@ export const Header = memo(function Header() {
                     user ? (
                       <Avatar
                         user={user}
-                        size={32}
+                        size={50}
                         className="header-user-avatar"
                         fallbackClassName="header-user-avatar-placeholder"
                       />

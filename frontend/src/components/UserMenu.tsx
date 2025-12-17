@@ -65,6 +65,7 @@ interface UserMenuProps {
 
 export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [avatarError, setAvatarError] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const { user: currentUser } = useUserStore()
@@ -112,6 +113,13 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
     setIsOpen(false)
   }
 
+  // Reset avatar error when menu opens or user changes
+  useEffect(() => {
+    if (isOpen) {
+      setAvatarError(false)
+    }
+  }, [isOpen, currentUser?._id])
+
   return (
     <div style={{ position: 'relative' }}>
       <button
@@ -136,52 +144,109 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
           }}
         >
           <div className="user-menu-items">
-            <Link to="/favorites" className="user-menu-item" onClick={handleMenuItemClick}>
+            {/* Desktop Menu - User Info Section */}
+            <Link
+              to={currentUser?.username ? `/@${currentUser.username}` : '/profile'}
+              className="user-menu-desktop-header"
+              onClick={handleMenuItemClick}
+            >
+              <div className="user-menu-avatar-wrapper">
+                {currentUser?.avatarUrl && !avatarError ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={currentUser.displayName || currentUser.username || 'User'}
+                    className="user-menu-avatar"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <div className="user-menu-avatar-placeholder">
+                    {(currentUser?.displayName?.trim() || currentUser?.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="user-menu-user-info">
+                <div className="user-menu-name">
+                  {currentUser?.displayName || currentUser?.username || 'User'}
+                </div>
+                <div className="user-menu-view-profile">
+                  {t('header.viewProfile')}
+                </div>
+              </div>
+            </Link>
+
+            <div className="user-menu-separator user-menu-separator-desktop" />
+
+            {/* Desktop Menu - Account Settings */}
+            <Link
+              to="/profile/edit"
+              className="user-menu-item user-menu-item-desktop"
+              onClick={handleMenuItemClick}
+            >
+              {t('header.accountSettings')}
+            </Link>
+
+            <div className="user-menu-separator user-menu-separator-desktop" />
+
+            {/* Desktop Menu - Logout */}
+            <button
+              className="user-menu-item user-menu-item-desktop user-menu-item-destructive"
+              onClick={() => {
+                handleMenuItemClick()
+                onSignOut()
+              }}
+            >
+              {t('auth.signOut')} {currentUser?.username ? `@${currentUser.username}` : ''}
+            </button>
+
+            {/* Mobile Menu Items */}
+            <Link to="/favorites" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
               <Heart size={16} />
               {t('header.favorites')}
             </Link>
 
-            <Link to="/downloads" className="user-menu-item" onClick={handleMenuItemClick}>
+            <Link to="/downloads" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
               <Download size={16} />
               {t('profile.downloadHistory')}
             </Link>
 
             {user?.isAdmin && (
-              <Link to="/admin" className="user-menu-item" onClick={handleMenuItemClick}>
+              <Link to="/admin" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
                 <Shield size={16} />
                 Admin
               </Link>
             )}
 
-            <div className="user-menu-separator" />
+            <div className="user-menu-separator user-menu-separator-mobile-only" />
 
-            <Link to="/about" className="user-menu-item" onClick={handleMenuItemClick}>
+            <Link to="/about" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
               <Info size={16} />
               {t('header.about')}
             </Link>
 
             <Link 
               to={currentUser?.username ? `/@${currentUser.username}` : '/profile'} 
-              className="user-menu-item" 
+              className="user-menu-item user-menu-item-mobile-only" 
               onClick={handleMenuItemClick}
             >
               <User size={16} />
               {t('header.account')}
             </Link>
 
-            <div className="user-menu-separator" />
+            <div className="user-menu-separator user-menu-separator-mobile-only" />
 
             {/* Theme toggle - hidden for now, keeping code for future use */}
             {/* <ThemeToggleMenuItem onToggle={handleMenuItemClick} /> */}
 
             {/* <div className="user-menu-separator" /> */}
 
-            <LanguageSwitcher variant="menu-item" onSwitch={handleMenuItemClick} />
+            <div className="user-menu-item-mobile-only-wrapper">
+              <LanguageSwitcher variant="menu-item" onSwitch={handleMenuItemClick} />
+            </div>
 
-            <div className="user-menu-separator" />
+            <div className="user-menu-separator user-menu-separator-mobile-only" />
 
             <button
-              className="user-menu-item user-menu-item-destructive"
+              className="user-menu-item user-menu-item-mobile-only user-menu-item-destructive"
               onClick={() => {
                 handleMenuItemClick()
                 onSignOut()

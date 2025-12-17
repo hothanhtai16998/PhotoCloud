@@ -257,6 +257,8 @@ export const vi = {
     admin: 'Admin',
     about: 'Về chúng tôi',
     account: 'Tài khoản',
+    accountSettings: 'Cài đặt tài khoản',
+    viewProfile: 'Xem trang cá nhân',
     userMenu: 'Menu người dùng',
     toggleMenu: 'Chuyển đổi menu',
     company: 'Công ty',

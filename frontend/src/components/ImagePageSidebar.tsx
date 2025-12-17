@@ -1,8 +1,9 @@
-import { Home, Bookmark, Heart, User, Info, Download } from 'lucide-react';
+import { Home, Bookmark, Heart, User, Info, Download, Shield, Globe } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
-import { t } from '@/i18n';
+import { t, getLocale, setLocale, type Locale } from '@/i18n';
+import { useState, useEffect } from 'react';
 import './ImagePageSidebar.css';
 
 /**
@@ -13,6 +14,18 @@ const ImagePageSidebar = () => {
   const location = useLocation();
   const { accessToken } = useAuthStore();
   const { user } = useUserStore();
+  const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale());
+
+  // Listen for locale changes
+  useEffect(() => {
+    const handleLocaleChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ locale: Locale }>;
+      setCurrentLocale(customEvent.detail.locale);
+    };
+
+    window.addEventListener('localeChange', handleLocaleChange);
+    return () => window.removeEventListener('localeChange', handleLocaleChange);
+  }, []);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -24,6 +37,9 @@ const ImagePageSidebar = () => {
              location.pathname.startsWith(path + '/') ||
              location.pathname.match(/^\/@[^/]+(\/(following|followers|collections|stats))?$/);
     }
+    if (path === '/admin') {
+      return location.pathname === path || location.pathname.startsWith(path + '/');
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -31,6 +47,21 @@ const ImagePageSidebar = () => {
     const baseClass = 'sidebar-nav-item';
     return isActive(path) ? `${baseClass} active` : baseClass;
   };
+
+  const handleLanguageToggle = () => {
+    const newLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
+    setLocale(newLocale);
+    setCurrentLocale(newLocale);
+    // Reload to apply translations
+    window.location.reload();
+  };
+
+  const LANGUAGE_LABELS: Record<Locale, string> = {
+    vi: 'Tiếng Việt',
+    en: 'English',
+  };
+
+  const nextLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
 
   return (
     <aside className="image-page-sidebar">
@@ -48,6 +79,17 @@ const ImagePageSidebar = () => {
 
       {/* Middle section - Main Navigation */}
       <div className="sidebar-section sidebar-section-middle">
+        {accessToken && user?.isAdmin && (
+          <Link
+            to="/admin"
+            className={getNavItemClass('/admin')}
+            aria-label="Admin"
+            title="Admin"
+          >
+            <Shield className="sidebar-icon" />
+          </Link>
+        )}
+
         <Link
           to="/collections"
           className={getNavItemClass('/collections')}
@@ -91,7 +133,7 @@ const ImagePageSidebar = () => {
         )}
       </div>
 
-      {/* Bottom section - About */}
+      {/* Bottom section - About and Language */}
       <div className="sidebar-section sidebar-section-bottom">
         <Link
           to="/about"
@@ -101,6 +143,15 @@ const ImagePageSidebar = () => {
         >
           <Info className="sidebar-icon" />
         </Link>
+
+        <button
+          className="sidebar-nav-item sidebar-language-toggle"
+          onClick={handleLanguageToggle}
+          aria-label={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
+          title={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
+        >
+          <Globe className="sidebar-icon" />
+        </button>
       </div>
     </aside>
   );

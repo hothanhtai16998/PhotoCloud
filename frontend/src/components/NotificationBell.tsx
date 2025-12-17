@@ -470,7 +470,7 @@ export default function NotificationBell() {
 				aria-label={t('notifications.title')}
 				title={t('notifications.title')}
 			>
-				<Bell size={20} />
+				<Bell size={28} />
 				{unreadCount > 0 && (
 					<span className="notification-bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
 				)}
