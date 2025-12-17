@@ -134,7 +134,8 @@ export interface UserImageState {
 	photosCount: number;
 	illustrationsCount: number;
 	imageTypes: Map<string, 'portrait' | 'landscape'>;
-	fetchUserImages: (userId: string, refresh?: boolean, signal?: AbortSignal) => Promise<void>;
+	pagination: Pagination | null;
+	fetchUserImages: (userId: string, refresh?: boolean, signal?: AbortSignal, page?: number) => Promise<void>;
 	setImageType: (imageId: string, type: 'portrait' | 'landscape') => void;
 	updateImage: (imageId: string, updatedImage: Image) => void;
 	addImagesOptimistically: (newImages: Image[]) => void;

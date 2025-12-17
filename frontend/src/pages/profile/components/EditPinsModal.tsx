@@ -72,7 +72,12 @@ export function EditPinsModal({
     const loadAvailableImages = async () => {
         try {
             setLoading(true);
-            const response = await imageService.fetchUserImages(userId);
+            // Fetch up to 100 images (backend MAX_LIMIT) for pin modal
+            // This allows users to see most/all of their images without performance issues
+            const response = await imageService.fetchUserImages(userId, {
+                page: 1,
+                limit: 100, // Use backend MAX_LIMIT to show more images
+            });
             setAvailableImages(response.images || []);
         } catch (error) {
             console.error('Failed to load images:', error);

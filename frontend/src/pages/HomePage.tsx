@@ -15,7 +15,7 @@ import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModa
 import { imageService } from "@/services/imageService";
 
 function HomePage() {
-    const { currentSearch, images, loading, fetchImages } = useImageStore();
+    const { currentSearch, images, loading, pagination, fetchImages } = useImageStore();
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
     const navigate = useNavigate();
@@ -153,7 +153,8 @@ function HomePage() {
     const fetchImagesMemo = useCallback(() => {
         if (category === null) return;
         fetchImages({ 
-            page: 1, 
+            page: 1,
+            limit: 20, // Initial load: 20 images for better performance, infinite scroll will load more
             category: getCategoryParam(category),
             _refresh: false // Use cache for instant display
         });
@@ -229,11 +230,22 @@ function HomePage() {
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
         await fetchImages({ 
-            page: 1, 
+            page: 1,
+            limit: 20, // Initial load: 20 images for better performance, infinite scroll will load more
             category: getCategoryParam(category),
             _refresh: true // Only refresh when explicitly loading data
         });
     }, [fetchImages, category, getCategoryParam]);
+
+    // Load more images (infinite scroll)
+    const loadMore = useCallback(async () => {
+        if (!pagination || pagination.page >= pagination.pages) return;
+        await fetchImages({
+            page: pagination.page + 1,
+            limit: 20, // Load 20 more images per page for better performance
+            category: getCategoryParam(category),
+        });
+    }, [fetchImages, pagination, category, getCategoryParam]);
 
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
@@ -286,6 +298,8 @@ function HomePage() {
                     loading={loading}
                     onLoadData={loadData}
                     onImageClick={handleImageClick}
+                    pagination={pagination}
+                    onLoadMore={loadMore}
                 />
             </main>
         </>

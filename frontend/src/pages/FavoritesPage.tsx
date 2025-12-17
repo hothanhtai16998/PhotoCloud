@@ -34,8 +34,14 @@ function FavoritesPage() {
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
-        await fetchFavorites(currentPage);
-    }, [fetchFavorites, currentPage]);
+        await fetchFavorites(1);
+    }, [fetchFavorites]);
+
+    // Load more images (infinite scroll)
+    const loadMore = useCallback(async () => {
+        if (!pagination || currentPage >= pagination.pages) return;
+        await fetchFavorites(currentPage + 1);
+    }, [fetchFavorites, pagination, currentPage]);
 
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
@@ -120,6 +126,8 @@ function FavoritesPage() {
                             loading={loading}
                             onLoadData={loadData}
                             onImageClick={handleImageClick}
+                            pagination={pagination}
+                            onLoadMore={loadMore}
                         />
                     )}
 

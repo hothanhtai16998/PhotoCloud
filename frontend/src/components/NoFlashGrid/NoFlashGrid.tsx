@@ -9,6 +9,7 @@ import { loadImageDimensions } from './utils/imageDimensions';
 import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useInfiniteScroll } from './hooks/useInfiniteScroll';
 
 // Simple blur-up image with persistent back layer
 type ExtendedImage = Image & { categoryName?: string; category?: string };
@@ -20,9 +21,16 @@ export interface NoFlashGridProps {
     className?: string;
     onImageClick?: (image: ExtendedImage, index: number) => void; // Handler for image click (typically navigates to ImagePage)
     onImageHover?: (image: ExtendedImage) => void; // Handler for image hover (for preloading)
+    pagination?: {
+        page: number;
+        limit: number;
+        total: number;
+        pages: number;
+    } | null;
+    onLoadMore?: () => Promise<void>; // Handler for loading more images (infinite scroll)
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover }: NoFlashGridProps) {
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore }: NoFlashGridProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
     const [columnCount, setColumnCount] = useState(() => {
@@ -325,89 +333,111 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
     const isLoading = externalLoading ?? false;
 
+    // Calculate if there are more pages to load
+    const hasMore = pagination ? pagination.page < pagination.pages : false;
+
+    // Infinite scroll hook
+    const { loadMoreRef, isLoadingMore } = useInfiniteScroll({
+        hasMore: hasMore && !!onLoadMore,
+        isLoading: isLoading,
+        onLoadMore: onLoadMore || (async () => {}),
+    });
+
     return (
         <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
             {/* Only show loading state if we have no images - keep grid visible during category change */}
             {isLoading && filteredImages.length === 0 ? (
                 <div className="loading-state">Loading...</div>
             ) : (
-                <div
-                    ref={gridRef}
-                    className="no-flash-grid"
-                    style={{
-                        // Unsplash-style: Fixed columns with dynamic row spans
-                        gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
-                        gap: `${GRID_CONFIG.gap}px`,
-                        // Base row height for row span calculations - MUST be a string with units
-                        gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
-                        // Don't use grid-auto-flow: dense - we use explicit row positioning
-                    }}
-                >
-                    {gridLayout.map((layout, idx) => {
-                        const { image, column, rowSpan, rowStart } = layout;
-                        // Priority loading for first 12 images (above the fold)
-                        const isPriority = idx < 12;
+                <>
+                    <div
+                        ref={gridRef}
+                        className="no-flash-grid"
+                        style={{
+                            // Unsplash-style: Fixed columns with dynamic row spans
+                            gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
+                            gap: `${GRID_CONFIG.gap}px`,
+                            // Base row height for row span calculations - MUST be a string with units
+                            gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
+                            // Don't use grid-auto-flow: dense - we use explicit row positioning
+                        }}
+                    >
+                        {gridLayout.map((layout, idx) => {
+                            const { image, column, rowSpan, rowStart } = layout;
+                            // Priority loading for first 12 images (above the fold)
+                            const isPriority = idx < 12;
 
-                        return (
-                            <div
-                                key={`${image._id || idx}-${column}-${rowStart}`}
-                                className="grid-item-wrapper"
-                                data-pinned={(image as any).isPinned ? 'true' : 'false'}
-                                data-image-id={image._id}
-                                style={{
-                                    // Explicit column and row start, use span for row end
-                                    // This lets CSS Grid handle gaps automatically
-                                    gridColumn: column,
-                                    gridRowStart: rowStart,
-                                    gridRowEnd: `span ${rowSpan}`,
-                                    // Let the grid area determine height (includes internal row gaps)
-                                    // to avoid mismatch and sticking
-                                    height: 'auto',
-                                }}
-                            >
+                            return (
                                 <div
-                                    onMouseEnter={() => {
-                                        // Preload on hover for instant click (like Unsplash)
-                                        if (onImageHover) {
-                                            onImageHover(image);
-                                        }
+                                    key={`${image._id || idx}-${column}-${rowStart}`}
+                                    className="grid-item-wrapper"
+                                    data-pinned={(image as any).isPinned ? 'true' : 'false'}
+                                    data-image-id={image._id}
+                                    style={{
+                                        // Explicit column and row start, use span for row end
+                                        // This lets CSS Grid handle gaps automatically
+                                        gridColumn: column,
+                                        gridRowStart: rowStart,
+                                        gridRowEnd: `span ${rowSpan}`,
+                                        // Let the grid area determine height (includes internal row gaps)
+                                        // to avoid mismatch and sticking
+                                        height: 'auto',
                                     }}
                                 >
-                                    <BlurUpImage
-                                        image={image}
-                                        images={filteredImages}
-                                        currentIndex={idx}
-                                        onClick={isMobile && onImageClick
-                                            ? () => {
-                                                // Mobile: immediate navigation, preload in background
-                                                onImageClick(image, idx);
-                                                const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                                if (full) {
-                                                    preloadImage(full, false).catch(() => {});
-                                                }
+                                    <div
+                                        onMouseEnter={() => {
+                                            // Preload on hover for instant click (like Unsplash)
+                                            if (onImageHover) {
+                                                onImageHover(image);
                                             }
-                                            : async () => {
-                                                // DESKTOP: Preload before navigation for smoother experience
-                                                if (!onImageClick) return;
-                                                
-                                                const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                                if (full) {
-                                                    try {
-                                                        // Preload image before navigation
-                                                        await preloadImage(full, false);
-                                                    } catch {
-                                                        // Continue even if preload fails
+                                        }}
+                                    >
+                                        <BlurUpImage
+                                            image={image}
+                                            images={filteredImages}
+                                            currentIndex={idx}
+                                            onClick={isMobile && onImageClick
+                                                ? () => {
+                                                    // Mobile: immediate navigation, preload in background
+                                                    onImageClick(image, idx);
+                                                    const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                                    if (full) {
+                                                        preloadImage(full, false).catch(() => {});
                                                     }
                                                 }
-                                                onImageClick(image, idx);
-                                            }}
-                                        priority={isPriority}
-                                    />
+                                                : async () => {
+                                                    // DESKTOP: Preload before navigation for smoother experience
+                                                    if (!onImageClick) return;
+                                                    
+                                                    const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                                                    if (full) {
+                                                        try {
+                                                            // Preload image before navigation
+                                                            await preloadImage(full, false);
+                                                        } catch {
+                                                            // Continue even if preload fails
+                                                        }
+                                                    }
+                                                    onImageClick(image, idx);
+                                                }}
+                                            priority={isPriority}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                    {/* Infinite scroll trigger - hidden element at bottom */}
+                    {hasMore && onLoadMore && (
+                        <div ref={loadMoreRef} style={{ height: '1px', marginTop: '20px' }} />
+                    )}
+                    {/* Loading indicator for infinite scroll */}
+                    {isLoadingMore && (
+                        <div className="loading-more-state" style={{ textAlign: 'center', padding: '20px', color: 'hsl(var(--muted-foreground))' }}>
+                            Loading more...
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

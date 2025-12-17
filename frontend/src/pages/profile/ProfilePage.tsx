@@ -73,6 +73,7 @@ function ProfilePage() {
         images,
         loading,
         photosCount,
+        pagination,
         fetchUserImages,
         clearImages,
     } = useUserImageStore();
@@ -381,6 +382,12 @@ function ProfilePage() {
         await fetchUserImagesWrapper(false, cancelSignal);
     }, [fetchUserImagesWrapper, cancelSignal]);
 
+    // Load more images (infinite scroll)
+    const loadMore = useCallback(async () => {
+        if (!pagination || pagination.page >= pagination.pages) return;
+        await fetchUserImages(displayUserId || '', false, cancelSignal, pagination.page + 1);
+    }, [fetchUserImages, pagination, displayUserId, cancelSignal]);
+
     useEffect(() => {
         // ProtectedRoute ensures currentUser exists, but we still need displayUserId
         if (!displayUserId) {
@@ -663,6 +670,8 @@ function ProfilePage() {
                                     loading={loading}
                                     onLoadData={loadData}
                                     onImageClick={handleImageClick}
+                                    pagination={pagination}
+                                    onLoadMore={loadMore}
                                 />
                             )
                         ) : activeTab === TABS.FOLLOWING ? (

@@ -6,14 +6,15 @@ import type { UserImageState } from '@/types/store';
 import type { Image } from '@/types/image';
 
 export const useUserImageStore = create(
-	immer<UserImageState>((set) => ({
+	immer<UserImageState>((set, get) => ({
 		images: [],
 		loading: false,
 		photosCount: 0,
 		illustrationsCount: 0,
 		imageTypes: new Map<string, 'portrait' | 'landscape'>(),
+		pagination: null,
 
-		fetchUserImages: async (userId: string, refresh = false, signal?: AbortSignal) => {
+		fetchUserImages: async (userId: string, refresh = false, signal?: AbortSignal, page = 1) => {
 			set((state) => {
 				state.loading = true;
 			});
@@ -22,8 +23,8 @@ export const useUserImageStore = create(
 				const response = await imageService.fetchUserImages(
 					userId,
 					{
-						page: 1,
-						limit: 30, // Load first 30 images only for initial render
+						page,
+						limit: 20, // Load 20 images per page for better performance, infinite scroll will load more
 						...(refresh ? { _refresh: true } : {}),
 					},
 					signal
@@ -32,7 +33,16 @@ export const useUserImageStore = create(
 				const userImages = response.images || [];
 
 				set((state) => {
-					state.images = userImages;
+					if (page === 1 || refresh) {
+						// Replace images for first page or refresh
+						state.images = userImages;
+					} else {
+						// Append images for subsequent pages
+						const existingIds = new Set(state.images.map(img => img._id));
+						const newImages = userImages.filter(img => !existingIds.has(img._id));
+						state.images = [...state.images, ...newImages];
+					}
+					state.pagination = response.pagination || null;
 					state.loading = false;
 
 					// Count photos and illustrations efficiently (single pass)
@@ -143,6 +153,7 @@ export const useUserImageStore = create(
 				state.photosCount = 0;
 				state.illustrationsCount = 0;
 				state.imageTypes.clear();
+				state.pagination = null;
 			});
 		},
 	}))

@@ -17,14 +17,22 @@ export const useFavoriteStore = create(
 				state.loading = true;
 			});
 
-			try {
-				const response = await favoriteService.getFavorites({
-					page,
-					limit: 20,
-				});
+		try {
+			const response = await favoriteService.getFavorites({
+				page,
+				limit: 20, // Load 20 images per page for better performance, infinite scroll will load more
+			});
 
 				set((state) => {
-					state.images = response.images || [];
+					if (page === 1) {
+						// Replace images for first page
+						state.images = response.images || [];
+					} else {
+						// Append images for subsequent pages
+						const existingIds = new Set(state.images.map(img => img._id));
+						const newImages = (response.images || []).filter(img => !existingIds.has(img._id));
+						state.images = [...state.images, ...newImages];
+					}
 					state.pagination = response.pagination || null;
 					state.currentPage = page;
 					state.loading = false;

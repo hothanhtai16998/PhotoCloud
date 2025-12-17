@@ -18,6 +18,8 @@
   border-radius: 12px;
   width: 100%;
   max-width: 1400px;
+  height: 85vh;
+  min-height: 600px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -81,12 +83,11 @@
 .edit-pins-modal-content {
   flex: 1;
   overflow-y: auto;
-
+  min-height: 400px; /* Ensure content area has minimum height even when images are loading */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: 0;
   order: 2;
   margin: 0;
   position: relative;
