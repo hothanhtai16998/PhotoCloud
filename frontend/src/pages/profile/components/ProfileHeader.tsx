@@ -71,24 +71,28 @@ export function ProfileHeader({
                             <Button
                                 variant={followStats.isFollowing ? "outline" : "default"}
                                 size="sm"
-                                onClick={onFollowToggle}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onFollowToggle?.();
+                                }}
                                 disabled={isFollowingLoading}
                                 className="follow-btn"
                             >
                                 {isFollowingLoading ? (
                                     <>
                                         <span className="loading-spinner" />
-                                        {t('common.loading')}
+                                        <span>{t('common.loading')}</span>
                                     </>
                                 ) : followStats.isFollowing ? (
                                     <>
                                         <UserMinus size={16} />
-                                        {t('follow.unfollow') || 'Following'}
+                                        <span>{t('follow.unfollow') || 'Bỏ theo dõi'}</span>
                                     </>
                                 ) : (
                                     <>
                                         <UserPlus size={16} />
-                                        {t('follow.follow') || 'Follow'}
+                                        <span>{t('follow.follow') || 'Theo dõi'}</span>
                                     </>
                                 )}
                             </Button>

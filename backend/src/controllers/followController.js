@@ -443,3 +443,25 @@ export const getUserFollowers = asyncHandler(async (req, res) => {
         },
     });
 });
+
+/**
+ * Delete all follow relationships for ALL accounts (Admin only)
+ * DELETE /api/follows/all
+ */
+export const deleteAllFollows = asyncHandler(async (req, res) => {
+    // Delete ALL follow relationships in the database
+    const result = await Follow.deleteMany({});
+
+    logger.info('All follows deleted globally', {
+        deletedBy: req.user._id,
+        totalDeleted: result.deletedCount,
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'All follow relationships deleted successfully',
+        deleted: {
+            total: result.deletedCount,
+        },
+    });
+});

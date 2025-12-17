@@ -17,10 +17,10 @@ export const getUserCollections = async (req, res) => {
         const collections = await Collection.aggregate([
             {
                 $match: {
-                    $or: [
+            $or: [
                         { createdBy: new mongoose.Types.ObjectId(userId) },
                         { 'collaborators.user': new mongoose.Types.ObjectId(userId) },
-                    ],
+            ],
                 },
             },
             {

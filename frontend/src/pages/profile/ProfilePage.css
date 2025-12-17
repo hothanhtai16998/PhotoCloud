@@ -147,31 +147,48 @@
 }
 
 .edit-profile-btn:hover,
-.follow-btn:hover {
-  background: hsl(var(--muted));
-  border-color: hsl(var(--foreground));
-}
-
-
 .follow-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
   padding: 8px 16px;
   font-size: 0.9375rem;
   font-weight: 500;
-  border: 1px solid hsl(var(--border));
+  border: 1.5px solid hsl(var(--border));
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 100px;
+  height: 36px;
+}
+
+.follow-btn > * {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.follow-btn:hover:not(:disabled) {
+  background: hsl(var(--muted) / 0.5);
+  border-color: hsl(var(--foreground) / 0.3);
+}
+
+.follow-btn:active:not(:disabled) {
+  background: hsl(var(--muted));
 }
 
 .follow-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.follow-btn svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
 }
 
 .loading-spinner {
@@ -532,7 +549,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
-  min-height: 500px; /* Fixed minimum height so it doesn't look too small when images are loading */
+  /* Fixed minimum height so it doesn't look too small when images are loading */
 }
 
 /* Make collection cards smaller in profile page */
@@ -542,6 +559,19 @@
 
 .profile-content .collection-card-cover {
   aspect-ratio: 3 / 2; /* Slightly taller than 4/3 to make cards more compact */
+}
+
+/* Reduce padding in collection card info to remove empty space */
+.profile-content .collection-card-info {
+  padding: 12px 16px;
+}
+
+.profile-content .collection-card-header {
+  margin-bottom: 4px;
+}
+
+.profile-content .collection-card-meta {
+  margin-top: 0;
 }
 
 /* Mobile responsive - match CollectionsPage */

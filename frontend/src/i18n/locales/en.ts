@@ -752,6 +752,15 @@ export const en = {
     viewsGoal: 'Reach 100k views',
     downloadsGoal: 'Reach 500k downloads',
     sortByViews: 'Sort by views',
+    // Performance Insights
+    bestPerformingImage: 'Best Performing Image',
+    topPerformer: '#1',
+    best: 'Best',
+    goals: 'Goals',
+    viewsGoalLabel: 'Views Goal',
+    downloadsGoalLabel: 'Downloads Goal',
+    invalidGoal: 'Invalid goal value',
+    noGoalSet: 'No goal set',
     // Profile Completion
     avatar: 'Avatar',
     addAvatar: 'Add avatar',

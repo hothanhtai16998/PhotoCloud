@@ -749,6 +749,15 @@ export const vi = {
     viewsGoal: 'Đạt 100k lượt xem',
     downloadsGoal: 'Đạt 500k lượt tải',
     sortByViews: 'Sắp xếp theo lượt xem',
+    // Performance Insights
+    bestPerformingImage: 'Ảnh hoạt động tốt nhất',
+    topPerformer: '#1',
+    best: 'Tốt nhất',
+    goals: 'Mục tiêu',
+    viewsGoalLabel: 'Mục tiêu lượt xem',
+    downloadsGoalLabel: 'Mục tiêu lượt tải',
+    invalidGoal: 'Giá trị mục tiêu không hợp lệ',
+    noGoalSet: 'Chưa đặt mục tiêu',
     // Profile Completion
     avatar: 'Ảnh đại diện',
     addAvatar: 'Thêm ảnh đại diện',

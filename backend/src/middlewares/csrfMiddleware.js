@@ -92,6 +92,12 @@ export const validateCsrf = (req, res, next) => {
         return next();
     }
 
+    // Skip CSRF validation for admin API endpoints (used with API clients, not frontend)
+    // These are protected by admin authentication instead
+    if (fullPath === '/api/follows/all') {
+        return next();
+    }
+
     if (publicPaths.some((path) => fullPath.startsWith(path))) {
         return next();
     }

@@ -86,6 +86,7 @@ function ProfilePage() {
     const [isSwitchingProfile, setIsSwitchingProfile] = useState(false);
     // Track which user ID the current stats belong to
     const [statsUserId, setStatsUserId] = useState<string | undefined>(undefined);
+    
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const processedImages = useRef<Set<string>>(new Set());
     const previousParams = useRef<string>('');
@@ -497,39 +498,96 @@ function ProfilePage() {
     // Follow/Unfollow handler
     const [isFollowingLoading, setIsFollowingLoading] = useState(false);
     const handleFollowToggle = useCallback(async () => {
-        if (!displayUserId || isOwnProfile || isFollowingLoading || !displayUser) return;
+        if (!displayUserId) {
+            toast.error('User ID not found');
+            return;
+        }
 
+        if (isOwnProfile) {
+            return;
+        }
+
+        if (isFollowingLoading) {
+            return;
+        }
+
+        if (!displayUser) {
+            toast.error('User information not available');
+            return;
+        }
+
+        // Validate displayUserId is a valid MongoDB ObjectId format
+        if (!/^[0-9a-fA-F]{24}$/.test(displayUserId)) {
+            toast.error(t('follow.error') || 'Invalid user ID');
+            return;
+        }
+        
         setIsFollowingLoading(true);
+        
         try {
             const { followService } = await import('@/services/followService');
             const userName = displayUser.displayName || displayUser.username;
             
-            if (followStats.isFollowing) {
+            // First, get the current follow status from the server to ensure we have the correct state
+            const followStatus = await followService.getFollowStatus(displayUserId);
+            const isCurrentlyFollowing = followStatus.isFollowing || false;
+            
+            // Now perform the opposite action
+            if (isCurrentlyFollowing) {
                 await followService.unfollowUser(displayUserId);
-                // Update follow stats optimistically
-                useProfileStore.setState((state) => {
-                    state.followStats.isFollowing = false;
-                });
                 toast.success(t('follow.unfollowed', { name: userName }) || 'Unfollowed successfully');
             } else {
                 await followService.followUser(displayUserId);
-                // Update follow stats optimistically
+                toast.success(t('follow.followed', { name: userName }) || 'Followed successfully');
+            }
+            
+            // Always refresh follow stats to get accurate counts and state from server
+            await fetchFollowStatsWrapper(cancelSignal);
+        } catch (error: any) {
+            console.error('Failed to toggle follow:', error);
+            
+            // Extract error message and error code from API response
+            const errorCode = error?.response?.data?.errorCode;
+            const errorMessage = error?.response?.data?.message || error?.message;
+            
+            // Handle specific error cases gracefully
+            if (errorCode === 'ALREADY_FOLLOWING' || errorMessage?.toLowerCase().includes('already following')) {
+                // State was out of sync - user is already following, update state and refresh stats
                 useProfileStore.setState((state) => {
                     state.followStats.isFollowing = true;
                 });
-                toast.success(t('follow.followed', { name: userName }) || 'Followed successfully');
+                await fetchFollowStatsWrapper(cancelSignal);
+                // Don't show error toast for state sync issues
+            } else if (errorCode === 'NOT_FOLLOWING' || errorMessage?.toLowerCase().includes('not following')) {
+                // State was out of sync - user is not following, update state and refresh stats
+                useProfileStore.setState((state) => {
+                    state.followStats.isFollowing = false;
+                });
+                await fetchFollowStatsWrapper(cancelSignal);
+                // Don't show error toast for state sync issues
+            } else if (errorCode === 'CANNOT_FOLLOW_SELF' || errorMessage?.toLowerCase().includes('cannot follow yourself')) {
+                // User trying to follow themselves
+                toast.error(t('follow.error') || 'You cannot follow yourself');
+                await fetchFollowStatsWrapper(cancelSignal);
+            } else if (errorCode === 'INVALID_ID' || errorMessage?.toLowerCase().includes('invalid user id')) {
+                // Invalid user ID
+                toast.error(t('follow.error') || 'Invalid user ID');
+                await fetchFollowStatsWrapper(cancelSignal);
+            } else if (errorCode === 'USER_NOT_FOUND' || errorMessage?.toLowerCase().includes('user not found')) {
+                // User not found
+                toast.error(t('follow.error') || 'User not found');
+                await fetchFollowStatsWrapper(cancelSignal);
+            } else {
+                // Show error for other issues
+                const displayMessage = errorMessage || t('follow.error') || 'An error occurred. Please try again.';
+                toast.error(displayMessage);
+                // Refresh to get correct state from server
+                await fetchFollowStatsWrapper(cancelSignal);
             }
-            // Refresh follow stats to get accurate counts
-            await fetchFollowStatsWrapper(cancelSignal);
-        } catch (error) {
-            console.error('Failed to toggle follow:', error);
-            toast.error(t('follow.followToggleFailed') || 'Failed to update follow status');
-            // Refresh to get correct state
-            await fetchFollowStatsWrapper(cancelSignal);
         } finally {
             setIsFollowingLoading(false);
         }
-    }, [displayUserId, displayUser, isOwnProfile, isFollowingLoading, followStats.isFollowing, fetchFollowStatsWrapper, cancelSignal]);
+    }, [displayUserId, displayUser, isOwnProfile, isFollowingLoading, fetchFollowStatsWrapper, cancelSignal, t]);
 
     // Get selected image slug or ID from URL
     const imageParamFromUrl = searchParams.get('image');

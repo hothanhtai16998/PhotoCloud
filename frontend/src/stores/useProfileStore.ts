@@ -84,7 +84,12 @@ export const useProfileStore = create(
 			try {
 				const response = await followService.getUserFollowStats(userId, signal);
 				set((state) => {
-					state.followStats = response.stats;
+					// Create a new object to ensure reference change and trigger re-render
+					state.followStats = {
+						followers: response.stats.followers,
+						following: response.stats.following,
+						isFollowing: response.stats.isFollowing,
+					};
 				});
 			} catch (error) {
 				// Ignore cancelled requests

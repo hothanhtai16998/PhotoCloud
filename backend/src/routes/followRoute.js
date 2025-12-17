@@ -8,8 +8,10 @@ import {
     getFollowStatus,
     getUserFollowing,
     getUserFollowers,
+    deleteAllFollows,
 } from '../controllers/followController.js';
-import { protectedRoute } from '../middlewares/authMiddleware.js';
+import { protectedRoute, optionalAuth } from '../middlewares/authMiddleware.js';
+import { adminRoute } from '../middlewares/adminMiddleware.js';
 
 const router = express.Router();
 
@@ -19,6 +21,9 @@ router.get('/following', protectedRoute, getFollowing);
 
 // Get users that follow current user
 router.get('/followers', protectedRoute, getFollowers);
+
+// Delete all follow relationships for ALL accounts (Admin only)
+router.delete('/all', protectedRoute, adminRoute, deleteAllFollows);
 
 // Get users that a specific user is following (public endpoint)
 router.get('/:userId/following', getUserFollowing);
@@ -32,8 +37,8 @@ router.post('/:userId', protectedRoute, followUser);
 // Unfollow a user
 router.delete('/:userId', protectedRoute, unfollowUser);
 
-// Get follow stats for a specific user (public endpoint)
-router.get('/:userId/stats', getUserFollowStats);
+// Get follow stats for a specific user (public endpoint, but uses optionalAuth to check if current user is following)
+router.get('/:userId/stats', optionalAuth, getUserFollowStats);
 
 // Check if current user is following a specific user
 router.get('/:userId/status', protectedRoute, getFollowStatus);

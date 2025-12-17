@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { analyticsService, type UserAnalytics } from '@/services/analyticsService';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Eye, Download, ChevronDown, Award, Target } from 'lucide-react';
+import { Eye, Download, ChevronDown, Award, Target, TrendingUp, TrendingDown, Trophy, Edit2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { uiConfig } from '@/config/uiConfig';
 import { t, getLocale } from '@/i18n';
+import { useNavigate } from 'react-router-dom';
+import { generateImageSlug } from '@/lib/utils';
 import {
   ChartContainer,
   ChartTooltip,
@@ -18,12 +20,25 @@ import {
 } from 'recharts';
 import './UserAnalyticsDashboard.css';
 
+interface Goals {
+  views: number | null;
+  downloads: number | null;
+}
+
 export const UserAnalyticsDashboard = () => {
+  const navigate = useNavigate();
   const [analytics, setAnalytics] = useState<UserAnalytics | null>(null);
+  const [previousAnalytics, setPreviousAnalytics] = useState<UserAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState<number>(uiConfig.analytics.dayOptions[1]); // Default to 30 days
   const [periodDropdownOpen, setPeriodDropdownOpen] = useState(false);
   const periodDropdownRef = useRef<HTMLDivElement>(null);
+  const [goals, setGoals] = useState<Goals>(() => {
+    const saved = localStorage.getItem('analytics-goals');
+    return saved ? JSON.parse(saved) : { views: null, downloads: null };
+  });
+  const [editingGoal, setEditingGoal] = useState<'views' | 'downloads' | null>(null);
+  const [goalInput, setGoalInput] = useState<string>('');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -46,8 +61,16 @@ export const UserAnalyticsDashboard = () => {
     const loadAnalytics = async () => {
       try {
         setLoading(true);
-        const data = await analyticsService.getUserAnalytics(days);
-        setAnalytics(data);
+        const [currentData, previousData] = await Promise.all([
+          analyticsService.getUserAnalytics(days),
+          analyticsService.getUserAnalytics(days).catch(() => null), // Try to get previous period
+        ]);
+        setAnalytics(currentData);
+        
+        // For comparison, we'd ideally fetch previous period data
+        // For now, we'll calculate it from the current data structure
+        // In a real implementation, you'd fetch with a date range offset
+        setPreviousAnalytics(null); // Placeholder - would need backend support
       } catch (error) {
         console.error('Failed to load analytics:', error);
         toast.error(t('profile.analyticsLoadFailed'));
@@ -58,6 +81,70 @@ export const UserAnalyticsDashboard = () => {
 
     loadAnalytics();
   }, [days]);
+
+  // Calculate comparison with previous period
+  const comparison = useMemo(() => {
+    if (!analytics || !previousAnalytics) {
+      return {
+        views: null,
+        downloads: null,
+      };
+    }
+
+    const viewsChange = previousAnalytics.summary.totalViews > 0
+      ? ((analytics.summary.totalViews - previousAnalytics.summary.totalViews) / previousAnalytics.summary.totalViews) * 100
+      : null;
+    
+    const downloadsChange = previousAnalytics.summary.totalDownloads > 0
+      ? ((analytics.summary.totalDownloads - previousAnalytics.summary.totalDownloads) / previousAnalytics.summary.totalDownloads) * 100
+      : null;
+
+    return {
+      views: viewsChange,
+      downloads: downloadsChange,
+    };
+  }, [analytics, previousAnalytics]);
+
+  // Get best performing image (top image by total engagement)
+  const bestPerformingImage = useMemo(() => {
+    if (!analytics || analytics.mostPopularImages.length === 0) return null;
+    return analytics.mostPopularImages[0];
+  }, [analytics]);
+
+  // Calculate goal progress
+  const goalProgress = useMemo(() => {
+    if (!analytics) return { views: null, downloads: null };
+    
+    return {
+      views: goals.views ? Math.min(100, (analytics.summary.totalViews / goals.views) * 100) : null,
+      downloads: goals.downloads ? Math.min(100, (analytics.summary.totalDownloads / goals.downloads) * 100) : null,
+    };
+  }, [analytics, goals]);
+
+  // Save goals to localStorage
+  const saveGoal = (type: 'views' | 'downloads', value: number | null) => {
+    const newGoals = { ...goals, [type]: value };
+    setGoals(newGoals);
+    localStorage.setItem('analytics-goals', JSON.stringify(newGoals));
+    setEditingGoal(null);
+    setGoalInput('');
+  };
+
+  // Handle goal edit
+  const handleGoalEdit = (type: 'views' | 'downloads') => {
+    setEditingGoal(type);
+    setGoalInput(goals[type]?.toString() || '');
+  };
+
+  // Handle goal save
+  const handleGoalSave = (type: 'views' | 'downloads') => {
+    const value = goalInput.trim() === '' ? null : parseInt(goalInput, 10);
+    if (value !== null && (isNaN(value) || value < 0)) {
+      toast.error(t('profile.invalidGoal') || 'Invalid goal value');
+      return;
+    }
+    saveGoal(type, value);
+  };
 
   // Calculate max values for charts
   useMemo(() => {
@@ -218,13 +305,203 @@ export const UserAnalyticsDashboard = () => {
         </div>
       </div>
 
+      {/* Performance Insights Section */}
+      {bestPerformingImage && (
+        <div className="insights-performance-section">
+          <div className="insights-performance-card">
+            <div className="insights-performance-header">
+              <Trophy size={20} className="insights-performance-icon" />
+              <h3 className="insights-performance-title">{t('profile.bestPerformingImage') || 'Best Performing Image'}</h3>
+            </div>
+            <div 
+              className="insights-performance-image"
+              onClick={() => {
+                const slug = generateImageSlug(bestPerformingImage.imageTitle || 'Untitled', bestPerformingImage._id);
+                navigate(`/photos/${slug}`);
+              }}
+            >
+              {bestPerformingImage.thumbnailUrl || bestPerformingImage.smallUrl || bestPerformingImage.imageUrl ? (
+                <img 
+                  src={bestPerformingImage.thumbnailUrl || bestPerformingImage.smallUrl || bestPerformingImage.imageUrl} 
+                  alt={bestPerformingImage.imageTitle || ''}
+                  className="insights-performance-img"
+                />
+              ) : (
+                <div className="insights-performance-placeholder">
+                  <Eye size={24} />
+                </div>
+              )}
+              <div className="insights-performance-badge">
+                <Trophy size={14} />
+                <span>{t('profile.topPerformer') || '#1'}</span>
+              </div>
+            </div>
+            <div className="insights-performance-stats">
+              <div className="insights-performance-stat">
+                <Eye size={16} />
+                <span>{formatNumber(bestPerformingImage.views)} {t('image.views')}</span>
+              </div>
+              <div className="insights-performance-stat">
+                <Download size={16} />
+                <span>{formatNumber(bestPerformingImage.downloads)} {t('image.downloads')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Goals Card */}
+          <div className="insights-goals-card">
+            <div className="insights-goals-header">
+              <Target size={20} className="insights-goals-icon" />
+              <h3 className="insights-goals-title">{t('profile.goals') || 'Goals'}</h3>
+            </div>
+            <div className="insights-goals-content">
+              {/* Views Goal */}
+              <div className="insights-goal-item">
+                <div className="insights-goal-header-row">
+                  <span className="insights-goal-label">{t('profile.viewsGoalLabel') || 'Views Goal'}</span>
+                  {editingGoal === 'views' ? (
+                    <div className="insights-goal-edit-controls">
+                      <input
+                        type="number"
+                        value={goalInput}
+                        onChange={(e) => setGoalInput(e.target.value)}
+                        className="insights-goal-input"
+                        placeholder="0"
+                        min="0"
+                        autoFocus
+                      />
+                      <button
+                        className="insights-goal-save-btn"
+                        onClick={() => handleGoalSave('views')}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        className="insights-goal-cancel-btn"
+                        onClick={() => {
+                          setEditingGoal(null);
+                          setGoalInput('');
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="insights-goal-edit-btn"
+                      onClick={() => handleGoalEdit('views')}
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                  )}
+                </div>
+                {goals.views !== null ? (
+                  <>
+                    <div className="insights-goal-progress-bar">
+                      <div 
+                        className="insights-goal-progress-fill"
+                        style={{ width: `${goalProgress.views || 0}%` }}
+                      />
+                    </div>
+                    <div className="insights-goal-stats">
+                      <span>{formatNumber(analytics.summary.totalViews)} / {formatNumber(goals.views)}</span>
+                      <span className="insights-goal-percentage">
+                        {goalProgress.views ? Math.round(goalProgress.views) : 0}%
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="insights-goal-empty">
+                    {t('profile.noGoalSet') || 'No goal set'}
+                  </div>
+                )}
+              </div>
+
+              {/* Downloads Goal */}
+              <div className="insights-goal-item">
+                <div className="insights-goal-header-row">
+                  <span className="insights-goal-label">{t('profile.downloadsGoalLabel') || 'Downloads Goal'}</span>
+                  {editingGoal === 'downloads' ? (
+                    <div className="insights-goal-edit-controls">
+                      <input
+                        type="number"
+                        value={goalInput}
+                        onChange={(e) => setGoalInput(e.target.value)}
+                        className="insights-goal-input"
+                        placeholder="0"
+                        min="0"
+                        autoFocus
+                      />
+                      <button
+                        className="insights-goal-save-btn"
+                        onClick={() => handleGoalSave('downloads')}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        className="insights-goal-cancel-btn"
+                        onClick={() => {
+                          setEditingGoal(null);
+                          setGoalInput('');
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      className="insights-goal-edit-btn"
+                      onClick={() => handleGoalEdit('downloads')}
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                  )}
+                </div>
+                {goals.downloads !== null ? (
+                  <>
+                    <div className="insights-goal-progress-bar">
+                      <div 
+                        className="insights-goal-progress-fill"
+                        style={{ width: `${goalProgress.downloads || 0}%` }}
+                      />
+                    </div>
+                    <div className="insights-goal-stats">
+                      <span>{formatNumber(analytics.summary.totalDownloads)} / {formatNumber(goals.downloads)}</span>
+                      <span className="insights-goal-percentage">
+                        {goalProgress.downloads ? Math.round(goalProgress.downloads) : 0}%
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="insights-goal-empty">
+                    {t('profile.noGoalSet') || 'No goal set'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Insights Grid - Two Large Cards */}
       <div className="insights-main-grid">
         {/* Views Card */}
         <div className="insights-card">
           <div className="insights-card-header">
             <div className="insights-metric-label">{t('profile.views')}</div>
-            <div className="insights-metric-value">{formatNumber(analytics.summary.totalViews)}</div>
+            <div className="insights-metric-value-row">
+              <div className="insights-metric-value">{formatNumber(analytics.summary.totalViews)}</div>
+              {comparison.views !== null && (
+                <div className={`insights-comparison ${comparison.views >= 0 ? 'positive' : 'negative'}`}>
+                  {comparison.views >= 0 ? (
+                    <TrendingUp size={14} />
+                  ) : (
+                    <TrendingDown size={14} />
+                  )}
+                  <span>{Math.abs(Math.round(comparison.views))}%</span>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Line Chart */}
@@ -319,7 +596,19 @@ export const UserAnalyticsDashboard = () => {
         <div className="insights-card">
           <div className="insights-card-header">
             <div className="insights-metric-label">{t('profile.downloads')}</div>
-            <div className="insights-metric-value">{formatNumber(analytics.summary.totalDownloads)}</div>
+            <div className="insights-metric-value-row">
+              <div className="insights-metric-value">{formatNumber(analytics.summary.totalDownloads)}</div>
+              {comparison.downloads !== null && (
+                <div className={`insights-comparison ${comparison.downloads >= 0 ? 'positive' : 'negative'}`}>
+                  {comparison.downloads >= 0 ? (
+                    <TrendingUp size={14} />
+                  ) : (
+                    <TrendingDown size={14} />
+                  )}
+                  <span>{Math.abs(Math.round(comparison.downloads))}%</span>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Line Chart */}
@@ -484,8 +773,21 @@ export const UserAnalyticsDashboard = () => {
         {analytics.mostPopularImages.length > 0 ? (
           <div className="insights-images-list">
             {analytics.mostPopularImages.map((image, index) => (
-              <div key={image._id} className="insights-image-item">
+              <div 
+                key={image._id} 
+                className={`insights-image-item ${index === 0 ? 'best-performing' : ''}`}
+                onClick={() => {
+                  const slug = generateImageSlug(image.imageTitle || 'Untitled', image._id);
+                  navigate(`/photos/${slug}`);
+                }}
+              >
                 <div className="insights-image-thumbnail">
+                  {index === 0 && (
+                    <div className="insights-image-best-badge">
+                      <Trophy size={12} />
+                      <span>{t('profile.best') || 'Best'}</span>
+                    </div>
+                  )}
                   <div className="insights-image-rank">#{index + 1}</div>
                   {image.thumbnailUrl || image.smallUrl || image.imageUrl ? (
                     <img 
