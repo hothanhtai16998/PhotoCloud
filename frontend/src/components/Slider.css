@@ -1,0 +1,609 @@
+/* ============================================
+   SLIDER CSS - Consolidated from split files
+   ============================================ */
+
+/* Base Slider Container and Main Carousel */
+/* 
+  HEADER SIZE CALCULATION (category nav is now part of header):
+  Desktop Header:
+    - Header top: 10px (padding-top) + 56px (container height) = 66px
+    - Category nav: 6px (nav padding top) + ~22px (content) + 6px (nav padding bottom) = ~34px
+    - Total Desktop Header: 66px + 34px = 100px
+  
+  Mobile Header:
+    - Header top: 10px (padding-top) + 48px (container height) = 58px
+    - Category nav: 6px (nav padding top) + ~22px (content) + 6px (nav padding bottom) = ~34px
+    - Total Mobile Header: 58px + 34px = 92px
+*/
+.tripzo-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 100px); /* Desktop: 100vh - total header (100px) */
+  height: calc(100vh - 100px);
+  overflow: hidden;
+  background: #222;
+  margin-top: 100px; /* Desktop: header-top (66px) + category nav (34px) = 100px */
+  margin-bottom: 30px;
+  touch-action: pan-y; /* Allow vertical scrolling but handle horizontal swipes */
+}
+
+/* Mobile: Remove gap between search bar and slider - MOBILE ONLY */
+@media (max-width: 768px) {
+  .tripzo-page {
+    margin-top: 92px !important; /* Mobile: total header (58px top + 34px category = 92px) */
+    min-height: calc(100vh - 92px) !important;
+    height: calc(100vh - 92px) !important;
+    margin-bottom: 20px !important; /* Reduced margin on mobile */
+    padding-top: 0 !important; /* Remove any padding */
+  }
+
+  .main-carousel-container {
+    margin-top: 0 !important; /* Remove any margin */
+    padding-top: 0 !important; /* Remove any padding */
+    height: calc(100vh - 92px - 220px) !important; /* Mobile header (92px) + search bar space (220px) */
+  }
+}
+
+/* Loading States */
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 100px); /* Desktop: total header height */
+    color: #fff;
+    font-size: 24px;
+    gap: 20px;
+  }
+
+.skeleton-main-slide {
+  width: 80%;
+  height: 60vh;
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-loader {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.loading-text {
+  opacity: 0.7;
+}
+
+/* Main Carousel Container */
+.main-carousel-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 100px); /* Desktop: total header height (100px) */
+  overflow: hidden;
+}
+
+.main-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: scale(1.1);
+  transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+  z-index: 1;
+  visibility: hidden;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+/* Transition: Fade (default) */
+.main-slide.transition-fade {
+  opacity: 0;
+  transform: scale(1);
+  transition: opacity 0.6s ease-in-out;
+}
+
+.main-slide.transition-fade.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Transition: Slide */
+.main-slide.transition-slide {
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+/* Slide right (next) */
+.main-carousel-container.transition-slide.slide-direction-right
+  .main-slide:not(.active) {
+  transform: translateX(-100%);
+}
+
+.main-carousel-container.transition-slide.slide-direction-right
+  .main-slide.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide left (previous) */
+.main-carousel-container.transition-slide.slide-direction-left
+  .main-slide:not(.active) {
+  transform: translateX(100%);
+}
+
+.main-carousel-container.transition-slide.slide-direction-left
+  .main-slide.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Transition: Zoom */
+.main-slide.transition-zoom {
+  opacity: 0;
+  transform: scale(1.2);
+  transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+}
+
+.main-slide.transition-zoom.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.main-slide.split-screen-mode .main-image-layer {
+  width: 65%;
+  right: 35%;
+}
+
+/* Blurred background layer for Option 1 - fills black space only */
+.blur-background-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  filter: blur(50px) brightness(0.7) saturate(1.3);
+  transform: scale(1.2);
+  z-index: 0;
+  opacity: 1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  /* The main image with contain will naturally cover this, so blur only shows in black space */
+  will-change: opacity;
+}
+
+/* Overlay only on blurred background layer (not main image) */
+.blur-background-layer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.2) 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* Main image layer for Option 1 - separate bright layer */
+.main-image-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  -ms-interpolation-mode: bicubic;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: opacity;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.main-image-layer.loaded {
+  opacity: 1;
+}
+
+.main-image-layer.loading {
+  opacity: 0;
+}
+
+/* Mobile: Keep contain to show full image */
+@media (max-width: 768px) {
+  .main-image-layer {
+    background-size: contain !important; /* Show full image on mobile */
+    background-position: center;
+  }
+
+  .main-carousel-container {
+    height: calc(100vh - 92px - 220px) !important; /* Mobile header (92px) + search bar space (220px) */
+  }
+
+  .tripzo-page {
+    height: calc(100vh - 92px - 220px) !important;
+    min-height: calc(100vh - 92px - 220px) !important;
+    margin-top: 92px !important; /* Mobile: total header (58px top + 34px category = 92px) */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-carousel-container {
+    height: calc(100vh - 92px - 220px); /* Mobile header (92px) + search bar space (220px) */
+  }
+
+  .tripzo-page {
+    height: calc(100vh - 92px - 220px);
+    min-height: calc(100vh - 92px - 220px);
+    margin-top: 92px; /* Mobile: total header (58px top + 34px category = 92px) */
+    margin-bottom: 16px; /* Smaller margin on small mobile */
+  }
+}
+
+.main-slide.active {
+  opacity: 1;
+  transform: scale(1);
+  z-index: 2;
+  visibility: visible;
+}
+
+/* Blur-up placeholder for progressive loading */
+.blur-up-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  will-change: opacity;
+  /* Match main image layer positioning exactly */
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Loading skeleton for slides */
+.slide-loading-skeleton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Enhanced skeleton with blur-up effect */
+.blur-up-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-blur-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  filter: blur(20px);
+  transform: scale(1.1);
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+.skeleton-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* ============================================
+   AUTO-PLAY PROGRESS INDICATOR
+   ============================================ */
+.autoplay-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 3; /* Same level as slide content */
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+}
+
+.autoplay-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(
+    90deg,
+    #6b46c1 0%,
+    #7c3aed 25%,
+    #1e40af 60%,
+    #1e3a8a 100%
+  );
+  transition: none;
+  box-shadow: 0 0 12px rgba(107, 70, 193, 0.6), 0 0 20px rgba(124, 58, 237, 0.4),
+    0 0 30px rgba(30, 64, 175, 0.3);
+  border-radius: 0;
+  will-change: width;
+  box-sizing: border-box;
+  display: block;
+  transform: translateZ(0);
+  position: relative;
+  overflow: hidden;
+}
+
+.autoplay-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================
+   NAVIGATION ARROWS
+   ============================================ */
+.carousel-nav-arrow {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.carousel-nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #fff;
+  transform: scale(1.1);
+}
+
+/* Bottom Carousel */
+.bottom-carousel-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 40px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Center the entire carousel */
+  gap: 12px; /* Reduced gap */
+}
+
+.bottom-carousel {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.bottom-slide {
+  width: 200px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
+  background: #1a1a1a;
+}
+
+.bottom-slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+/* Hover effect */
+.bottom-slide:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5), 0 0 40px rgba(138, 43, 226, 0.3),
+    0 0 60px rgba(255, 20, 147, 0.2);
+}
+
+.bottom-slide:hover .bottom-slide-image {
+  transform: scale(1.02);
+}
+
+/* Active thumbnail indicator */
+.bottom-slide.active-thumbnail {
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.bottom-slide.active-thumbnail .bottom-slide-image {
+  opacity: 1;
+}
+
+.bottom-slide:not(.active-thumbnail) .bottom-slide-image {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+/* Bottom Navigation Arrows */
+.carousel-nav-arrow.bottom-nav {
+  position: static;
+  transform: none;
+  width: 50px;
+  height: 50px;
+  margin: 0;
+  min-width: 44px; /* Ensure minimum touch target */
+  min-height: 44px;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1024px) {
+  .bottom-slide {
+    width: 160px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel-nav-arrow {
+    width: 48px; /* Better touch target */
+    height: 48px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .carousel-nav-left {
+    left: 12px; /* Reduced from 20px for better mobile spacing */
+  }
+
+  .carousel-nav-right {
+    right: 12px;
+  }
+
+  .bottom-carousel-container {
+    padding: 12px 8px; /* Reduced padding */
+    flex-wrap: nowrap; /* Keep everything on one line */
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .bottom-carousel {
+    flex: 1; /* Take available space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px; /* Reduced gap */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    min-width: 0; /* Allow shrinking */
+  }
+
+  .bottom-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bottom-slide {
+    width: 100px; /* Reduced size */
+    height: 60px;
+    flex-shrink: 0; /* Prevent shrinking */
+  }
+
+  .carousel-nav-arrow.bottom-nav {
+    width: 40px; /* Smaller buttons for bottom nav */
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    flex-shrink: 0; /* Don't shrink */
+    position: static; /* Keep inline */
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-nav-arrow {
+    width: 44px;
+    height: 44px;
+  }
+
+  .carousel-nav-left {
+    left: 8px;
+  }
+
+  .carousel-nav-right {
+    right: 8px;
+  }
+
+  .bottom-carousel-container {
+    padding: 12px 8px;
+    gap: 6px;
+  }
+
+  .bottom-carousel {
+    gap: 8px;
+  }
+
+  .bottom-slide {
+    width: 100px; /* Further reduced for small screens */
+    height: 60px;
+  }
+
+  .carousel-nav-arrow.bottom-nav {
+    width: 40px; /* Minimum acceptable size */
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+

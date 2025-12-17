@@ -1,0 +1,44 @@
+{
+	"name": "backend",
+	"version": "1.0.0",
+	"description": "",
+	"main": "src/server.js",
+	"scripts": {
+		"dev": "nodemon --exec \"node --no-deprecation src/server.js\"",
+		"start": "node --no-deprecation src/server.js",
+		"make:superadmin": "node src/utils/makeSuperAdmin.js",
+		"kill:3000": "node kill-port-3000.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "module",
+	"dependencies": {
+		"@aws-sdk/client-s3": "^3.935.0",
+		"@aws-sdk/lib-storage": "^3.940.0",
+		"@aws-sdk/s3-request-presigner": "^3.935.0",
+		"axios": "^1.13.2",
+		"bcrypt": "^6.0.0",
+		"compression": "^1.8.1",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.5",
+		"csurf": "^1.11.0",
+		"dotenv": "^17.2.3",
+		"exif-parser": "^0.1.12",
+		"express": "^4.21.2",
+		"express-rate-limit": "^8.2.1",
+		"express-validator": "^7.3.0",
+		"helmet": "^8.1.0",
+		"jsonwebtoken": "^9.0.2",
+		"jszip": "^3.10.1",
+		"mongoose": "^8.19.3",
+		"multer": "^2.0.2",
+		"nodemailer": "^7.0.11",
+		"sharp": "^0.34.5"
+	},
+	"devDependencies": {
+		"cross-env": "^10.1.0",
+		"nodemon": "^3.1.11",
+		"prettier": "^3.6.2"
+	}
+}

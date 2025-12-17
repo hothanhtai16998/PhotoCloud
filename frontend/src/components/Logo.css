@@ -1,0 +1,39 @@
+.photoapp-logo {
+  display: inline-block;
+  transition: transform 0.3s ease, opacity 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.photoapp-logo:hover {
+  transform: scale(1.05);
+}
+
+.photoapp-logo:active {
+  transform: scale(0.98);
+}
+
+.logo-circle {
+  transition: opacity 0.3s ease;
+}
+
+.photoapp-logo:hover .logo-circle {
+  opacity: 0.9;
+}
+
+.logo-letter {
+  transition: opacity 0.3s ease;
+}
+
+.photoapp-logo:hover .logo-letter {
+  opacity: 0.95;
+}
+
+.logo-accent {
+  transition: r 0.3s ease;
+}
+
+.photoapp-logo:hover .logo-accent {
+  r: 2.5;
+}
+

@@ -1,0 +1,1 @@
+nơi lưu trữ và quản lý state của ứng dụng

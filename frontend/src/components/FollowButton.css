@@ -1,0 +1,32 @@
+.follow-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	transition: all 0.2s ease;
+}
+
+.follow-btn.following {
+	border-color: var(--border-color);
+}
+
+.follow-btn:hover:not(:disabled) {
+	transform: translateY(-1px);
+}
+
+.follow-btn:active:not(:disabled) {
+	transform: translateY(0);
+}
+
+.follow-btn .spinning {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+

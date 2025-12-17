@@ -1,0 +1,178 @@
+/* Profile Completion Component */
+.profile-completion {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.profile-completion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.profile-completion-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111;
+  margin: 0;
+}
+
+.profile-completion-percentage {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.percentage-value {
+  transition: color 0.2s ease;
+}
+
+.profile-completion-progress {
+  margin-bottom: 20px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.profile-completion-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.completion-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.completion-item:hover {
+  background: #f9f9f9;
+}
+
+.completion-item.completed {
+  opacity: 1;
+}
+
+.completion-item.incomplete {
+  opacity: 0.7;
+}
+
+.completion-item-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f0f0f0;
+}
+
+.completion-item.completed .completion-item-icon {
+  background: #d1fae5;
+}
+
+.completion-item.incomplete .completion-item-icon {
+  background: #fee2e2;
+}
+
+.check-icon {
+  color: #059669;
+}
+
+.x-icon {
+  color: #dc2626;
+}
+
+.completion-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.completion-item-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  color: #111;
+  font-weight: 500;
+}
+
+.completion-item-label svg {
+  color: #767676;
+}
+
+.completion-item-action {
+  background: none;
+  border: none;
+  color: #0066cc;
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.completion-item-action:hover {
+  color: #0052a3;
+}
+
+.profile-completion-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.completion-message {
+  font-size: 0.875rem;
+  color: #767676;
+  margin: 0;
+  text-align: center;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .profile-completion {
+    padding: 16px;
+  }
+
+  .profile-completion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .completion-item {
+    padding: 10px;
+  }
+
+  .completion-item-label {
+    font-size: 0.875rem;
+  }
+}
+
+
+
+
+

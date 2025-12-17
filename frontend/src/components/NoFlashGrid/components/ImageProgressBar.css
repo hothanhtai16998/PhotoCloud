@@ -1,0 +1,43 @@
+/* Image Progress Bar - Fixed at top of viewport */
+.image-progress-bar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 99999; /* Above everything including modal */
+  pointer-events: none;
+  width: 100%;
+  display: block !important; /* Force display */
+  visibility: visible !important; /* Force visibility */
+}
+
+.image-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6);
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.5s ease-in-out infinite;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes progress-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Smooth fade in/out */
+.image-progress-bar-container {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.image-progress-bar-container[style*="display: none"] {
+  opacity: 0;
+}
+
