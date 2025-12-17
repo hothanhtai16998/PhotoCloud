@@ -10,17 +10,21 @@ import './FollowingFollowers.css';
 interface UserListProps {
     userId: string;
     mode: 'following' | 'followers';
+    skipLoading?: boolean;
 }
 
-export function UserList({ userId, mode }: UserListProps) {
+export function UserList({ userId, mode, skipLoading = false }: UserListProps) {
     const navigate = useNavigate();
     const [users, setUsers] = useState<FollowUser[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!skipLoading);
 
     useEffect(() => {
         const loadUsers = async () => {
             try {
-                setLoading(true);
+                // Only show loading if not skipping
+                if (!skipLoading) {
+                    setLoading(true);
+                }
                 const response = mode === 'following'
                     ? await followService.getUserFollowing(userId, { page: 1, limit: 20 })
                     : await followService.getUserFollowers(userId, { page: 1, limit: 20 });
@@ -42,7 +46,7 @@ export function UserList({ userId, mode }: UserListProps) {
         if (userId) {
             loadUsers();
         }
-    }, [userId, mode]);
+    }, [userId, mode, skipLoading]);
 
     const handleUserClick = (user: FollowUser) => {
         if (user.username) {

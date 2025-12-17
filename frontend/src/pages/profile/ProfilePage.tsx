@@ -13,7 +13,8 @@ import { generateImageSlug } from "@/lib/utils";
 import { Folder, Eye, Lock } from "lucide-react";
 // Lazy load analytics dashboard - only needed when stats tab is active
 const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDashboard").then(module => ({ default: module.UserAnalyticsDashboard })));
-const UserList = lazy(() => import("./components/UserList").then(module => ({ default: module.UserList })));
+// Import UserList directly instead of lazy loading to prevent Suspense fallback on tab switch
+import { UserList } from "./components/UserList";
 // Lazy load UploadModal - conditionally rendered
 const UploadModal = lazy(() => import("@/components/UploadModal").then(module => ({ default: module.default })));
 import { userStatsService } from "@/services/userStatsService";
@@ -126,6 +127,8 @@ function ProfilePage() {
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const processedImages = useRef<Set<string>>(new Set());
     const previousParams = useRef<string>('');
+    // Track which tabs have been loaded to avoid showing loading state when switching back
+    const loadedTabs = useRef<Set<TabType>>(new Set());
 
     // Cancel user lookup when params change
     const userLookupCancelSignal = useRequestCancellationOnChange([params.username, params.userId]);
@@ -248,6 +251,9 @@ function ProfilePage() {
         // Set flag to skip URL sync for this change
         skipUrlSyncRef.current = true;
         
+        // Mark tab as visited (so we don't show loading on subsequent visits)
+        loadedTabs.current.add(tab);
+        
         // Update active tab immediately (no waiting for URL sync)
         setActiveTab(tab);
         
@@ -307,6 +313,8 @@ function ProfilePage() {
             clearProfile();
             clearImages();
             processedImages.current.clear();
+            // Clear loaded tabs when switching profiles
+            loadedTabs.current.clear();
             
             // Reset active tab to photos when switching profiles (unless it's own profile and stats is valid)
             if (activeTab === TABS.STATS) {
@@ -335,6 +343,8 @@ function ProfilePage() {
         try {
             await fetchUserImages(displayUserId, refresh, signal);
             updateStatsUserIdIfSame(currentUserId);
+            // Mark photos tab as loaded when images are fetched (even if empty)
+            loadedTabs.current.add(TABS.PHOTOS);
         } catch (_error) {
             // Error already handled in store
         }
@@ -553,12 +563,20 @@ function ProfilePage() {
         if (activeTab === TABS.COLLECTIONS && !collectionsLoading && collections.length === 0 && displayUserId) {
             fetchCollectionsWrapper(cancelSignal);
         }
+        // Mark collections tab as loaded when fetch completes (even if empty)
+        if (activeTab === TABS.COLLECTIONS && !collectionsLoading) {
+            loadedTabs.current.add(TABS.COLLECTIONS);
+        }
     }, [activeTab, displayUserId, fetchCollectionsWrapper, cancelSignal, collectionsLoading, collections.length]);
 
     // Lazy-load stats only when stats tab is active
     useEffect(() => {
         if (activeTab === TABS.STATS && !userStats && displayUserId) {
             fetchUserStatsWrapper(cancelSignal);
+        }
+        // Mark stats tab as loaded when data is available
+        if (activeTab === TABS.STATS && userStats) {
+            loadedTabs.current.add(TABS.STATS);
         }
     }, [activeTab, displayUserId, fetchUserStatsWrapper, cancelSignal, userStats]);
 
@@ -837,8 +855,9 @@ function ProfilePage() {
 
                     {/* Content Area */}
                     <div className="profile-content">
-                        {activeTab === TABS.PHOTOS ? (
-                            loading && displayImages.length === 0 ? (
+                        {/* Photos Tab - Keep mounted to preserve state */}
+                        <div style={{ display: activeTab === TABS.PHOTOS ? 'block' : 'none' }}>
+                            {loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS) ? (
                                 <div className="empty-state" role="status" aria-live="polite">
                                     <p>{t('profile.loadingPhotos')}</p>
                                 </div>
@@ -868,17 +887,34 @@ function ProfilePage() {
                                     pagination={pagination}
                                     onLoadMore={loadMore}
                                 />
-                            )
-                        ) : activeTab === TABS.FOLLOWING ? (
-                            <Suspense fallback={<div className="following-loading"><Skeleton className="h-64 w-full" /></div>}>
-                                {displayUserId && <UserList userId={displayUserId} mode="following" />}
-                            </Suspense>
-                        ) : activeTab === TABS.FOLLOWERS ? (
-                            <Suspense fallback={<div className="following-loading"><Skeleton className="h-64 w-full" /></div>}>
-                                {displayUserId && <UserList userId={displayUserId} mode="followers" />}
-                            </Suspense>
-                        ) : activeTab === TABS.COLLECTIONS ? (
-                            collectionsLoading ? (
+                            )}
+                        </div>
+
+                        {/* Following Tab - Keep mounted to preserve state */}
+                        {displayUserId && (
+                            <div style={{ display: activeTab === TABS.FOLLOWING ? 'block' : 'none' }}>
+                                <UserList 
+                                    userId={displayUserId} 
+                                    mode="following" 
+                                    skipLoading={loadedTabs.current.has(TABS.FOLLOWING)}
+                                />
+                            </div>
+                        )}
+
+                        {/* Followers Tab - Keep mounted to preserve state */}
+                        {displayUserId && (
+                            <div style={{ display: activeTab === TABS.FOLLOWERS ? 'block' : 'none' }}>
+                                <UserList 
+                                    userId={displayUserId} 
+                                    mode="followers" 
+                                    skipLoading={loadedTabs.current.has(TABS.FOLLOWERS)}
+                                />
+                            </div>
+                        )}
+
+                        {/* Collections Tab - Keep mounted to preserve state */}
+                        <div style={{ display: activeTab === TABS.COLLECTIONS ? 'block' : 'none' }}>
+                            {collectionsLoading && !loadedTabs.current.has(TABS.COLLECTIONS) ? (
                                 <div className="collections-grid" aria-label={t('profile.loadingCollections')} aria-live="polite">
                                     {Array.from({ length: uiConfig.skeleton.collectionGridCount }).map((_, index) => (
                                         <div key={`skeleton-${index}`} className="collection-card">
@@ -985,14 +1021,18 @@ function ProfilePage() {
                                         );
                                     })}
                                 </div>
-                            )
-                        ) : activeTab === TABS.STATS ? (
-                            // Statistics tab content - Only visible for own profile
-                            isOwnProfile ? (
+                            )}
+                        </div>
+
+                        {/* Stats Tab - Keep mounted to preserve state */}
+                        <div style={{ display: activeTab === TABS.STATS ? 'block' : 'none' }}>
+                            {isOwnProfile ? (
                                 <Suspense fallback={
-                                    <div className="empty-state" role="status" aria-live="polite">
-                                        <Skeleton className="h-64 w-full" />
-                                    </div>
+                                    loadedTabs.current.has(TABS.STATS) ? null : (
+                                        <div className="empty-state" role="status" aria-live="polite">
+                                            <Skeleton className="h-64 w-full" />
+                                        </div>
+                                    )
                                 }>
                                     <UserAnalyticsDashboard />
                                 </Suspense>
@@ -1000,8 +1040,8 @@ function ProfilePage() {
                                 <div className="empty-state" role="status" aria-live="polite">
                                     <p>{t('profile.statsPrivate') || 'Statistics are private and only visible to the account owner.'}</p>
                                 </div>
-                            )
-                        ) : null}
+                            )}
+                        </div>
                     </div>
                 </div>
             </main>
