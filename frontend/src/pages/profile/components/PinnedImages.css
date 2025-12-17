@@ -35,6 +35,7 @@
   border-radius: 8px;
   cursor: pointer;
   background: hsl(var(--muted));
+  border: 2px solid hsl(var(--primary));
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 

@@ -92,8 +92,8 @@
   top: auto !important;
   left: auto !important;
   transform: none !important;
-  width: 600px;
-  min-width: 500px;
+  width: 450px;
+  min-width: 400px;
   max-width: none;
   animation: none !important;
 }
@@ -129,10 +129,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 28px;
+  padding: 20px 32px;
   border-bottom: 1px solid #f0f0f0;
   flex-shrink: 0;
   background: #fff;
+  min-height: 64px;
+  height: 64px;
+  box-sizing: border-box;
 }
 
 /* Hide header in dropdown mode */
@@ -146,6 +149,7 @@
   font-weight: 600;
   color: #111;
   letter-spacing: -0.02em;
+  line-height: 1.5;
 }
 
 .collection-modal-close {
@@ -772,7 +776,7 @@
 
 /* Create Form in centered modal (edit/create mode) - Better spacing */
 .collection-modal-centered .collection-modal-create-form {
-  padding: 28px;
+  padding: 32px;
   gap: 24px;
 }
 
@@ -955,8 +959,8 @@
 /* Image Picker Sidebar - Always visible on right side */
 .collection-modal-image-picker-sidebar {
   position: relative;
-  width: 500px;
-  min-width: 450px;
+  width: 650px;
+  min-width: 600px;
   max-height: 85vh;
   background: #fff;
   border-radius: 0 12px 12px 0;
@@ -974,9 +978,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 28px;
-  border-bottom: 1px solid hsl(var(--border));
+  padding: 20px 32px;
+  border-bottom: 1px solid #f0f0f0;
   background: hsl(var(--muted) / 0.3);
+  min-height: 64px;
+  box-sizing: border-box;
+  height: 64px;
+}
+
+/* Match header padding with modal header */
+.collection-modal-wrapper.with-image-picker .collection-modal-header {
+  padding: 20px 32px;
+  min-height: 64px;
+  box-sizing: border-box;
 }
 
 .collection-modal-image-picker-sidebar-header h3 {
@@ -996,7 +1010,7 @@
 .collection-modal-image-picker-sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 28px;
+  padding: 32px;
   min-height: 0;
 }
 
@@ -1097,8 +1111,13 @@
 
 .collection-modal-form-actions {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 4px;
+}
+
+.collection-modal-form-actions button {
+  width: 100%;
 }
 
 .collection-modal-edit-form .collection-modal-form-actions,
@@ -1107,6 +1126,14 @@
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #f0f0f0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.collection-modal-edit-form .collection-modal-form-actions button,
+.collection-modal-centered .collection-modal-create-form .collection-modal-form-actions button,
+.collection-modal-dropdown .collection-modal-create-form .collection-modal-form-actions button {
+  width: 100%;
 }
 
 /* Tags Input */

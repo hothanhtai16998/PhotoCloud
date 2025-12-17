@@ -429,6 +429,9 @@ export default function CollectionModal({
 				toast.success(t('collections.created'));
 			}
 			onCollectionUpdate?.();
+			
+			// Close the modal after successful creation
+			onClose();
 		} catch (error: unknown) {
 			console.error('Failed to create collection:', error);
 			toast.error(
@@ -446,6 +449,7 @@ export default function CollectionModal({
 		imageId,
 		selectedImageIds,
 		onCollectionUpdate,
+		onClose,
 	]);
 
 	const handleUpdateCollection = useCallback(async () => {
@@ -907,6 +911,14 @@ export default function CollectionModal({
 									</div>
 									<div className="collection-modal-form-actions">
 										<Button
+											className="collection-modal-submit-btn"
+											onClick={handleCreateCollection}
+											loading={creating}
+											disabled={!newCollectionName.trim()}
+										>
+											{creating ? t('collections.creating') : t('collections.createNew')}
+										</Button>
+										<Button
 											variant="outline"
 											className="collection-modal-cancel-btn"
 											onClick={() => {
@@ -918,14 +930,6 @@ export default function CollectionModal({
 											disabled={creating}
 										>
 											{t('common.cancel')}
-										</Button>
-										<Button
-											className="collection-modal-submit-btn"
-											onClick={handleCreateCollection}
-											loading={creating}
-											disabled={!newCollectionName.trim()}
-										>
-											{creating ? t('collections.creating') : t('collections.createNew')}
 										</Button>
 									</div>
 								</div>

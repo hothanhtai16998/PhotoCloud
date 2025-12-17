@@ -232,16 +232,23 @@
 
 /* Custom hover effect for images in Pin modal only */
 .edit-pins-noflash-grid .blur-up-image-container {
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.2s ease;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
 }
 
+.edit-pins-noflash-grid .grid-item-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+.edit-pins-noflash-grid .grid-item-wrapper:hover {
+  z-index: 10;
+}
+
 .edit-pins-noflash-grid .blur-up-image-container:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  position: relative;
 }
 
 .edit-pins-noflash-grid .blur-up-image-container:hover .blur-up-image {
@@ -258,7 +265,7 @@
   pointer-events: none;
   z-index: 5;
   border-radius: 8px;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 /* Persistent blue overlay for pinned images (always visible) */
@@ -271,11 +278,12 @@
   z-index: 5;
   border-radius: 8px;
   opacity: 1;
+  transition: background 0.2s ease;
 }
 
 /* More intense blue overlay for pinned images on hover */
 .edit-pins-noflash-grid .grid-item-wrapper[data-pinned="true"] .blur-up-image-container:hover::after {
-  background: rgba(59, 130, 246, 0.7); /* More intense blue overlay with 70% opacity on hover */
+  background: rgba(59, 130, 246, 0.8); /* Slightly more intense blue overlay on hover */
 }
 
 /* Pin icon overlay for pinned images - centered */
