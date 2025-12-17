@@ -47,16 +47,6 @@ export default function CollectionsPage() {
 		refreshCollections,
 	} = useCollectionsListStore();
 
-	// Debug: Log component state
-	useEffect(() => {
-		console.log('[CollectionsPage] Component state:', {
-			collectionsCount: collections.length,
-			filteredCount: filteredCollections.length,
-			loading,
-			collections: collections.map(c => ({ id: c._id, name: c.name })),
-			filtered: filteredCollections.map(c => ({ id: c._id, name: c.name })),
-		});
-	}, [collections, filteredCollections, loading]);
 
 	// Collection favorite store
 	const {
@@ -404,10 +394,6 @@ export default function CollectionsPage() {
 								? allSampleImages.filter(img => img._id !== coverImageId)
 								: allSampleImages;
 							
-							// Debug: Log sample images
-							if (collection._id && sampleImages.length > 0) {
-								console.log(`[CollectionCard] ${collection.name} has ${sampleImages.length} sample images (after filtering cover):`, sampleImages.map(img => img._id));
-							}
 							
 							// Get creator name
 							const creatorName = typeof collection.createdBy === 'object' 

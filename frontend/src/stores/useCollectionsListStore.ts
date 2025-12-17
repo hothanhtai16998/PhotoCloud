@@ -24,16 +24,6 @@ export const useCollectionsListStore = create(
 
 			try {
 				const data = await collectionService.getUserCollections();
-				console.log('[CollectionsStore] Fetched collections:', data.length, data);
-				
-				// Debug: Check if sampleImages are present
-				data.forEach((collection) => {
-					if (collection.sampleImages) {
-						console.log(`[CollectionsStore] Collection "${collection.name}" has ${collection.sampleImages.length} sample images`);
-					} else {
-						console.log(`[CollectionsStore] Collection "${collection.name}" has NO sampleImages`);
-					}
-				});
 				
 				// Update collections first
 				set((state) => {
@@ -43,13 +33,6 @@ export const useCollectionsListStore = create(
 				
 				// Then apply filters (outside of set to avoid nested updates)
 				get().applyFilters(data);
-				
-				console.log('[CollectionsStore] After filtering:', get().filteredCollections.length, 'collections');
-				console.log('[CollectionsStore] Active filters:', {
-					searchQuery: get().searchQuery,
-					showPublicOnly: get().showPublicOnly,
-					selectedTag: get().selectedTag,
-				});
 			} catch (error: unknown) {
 				console.error('Failed to load collections:', error);
 				set((state) => {

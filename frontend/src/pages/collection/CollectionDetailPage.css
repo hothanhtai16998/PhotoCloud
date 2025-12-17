@@ -6,14 +6,14 @@
 }
 
 .collection-detail-collaborators-wrapper {
-  max-width: min(1200px, 96%);
-  margin: 0 auto;
+  max-width: min(1400px, 96%);
+  margin: 0 auto 32px;
   padding: 0 24px;
 }
 
 .collection-detail-versions-wrapper {
-  max-width: min(1200px, 96%);
-  margin: 40px auto 60px;
+  max-width: min(1400px, 96%);
+  margin: 32px auto 48px;
   padding: 0 24px;
 }
 
@@ -239,9 +239,9 @@
 }
 
 .collection-detail-header {
-  max-width: min(1200px, 96%);
+  max-width: min(1400px, 96%);
   margin: 0 auto;
-  padding: 24px 24px 32px;
+  padding: 32px 24px 40px;
 }
 
 .collection-detail-back {
@@ -250,13 +250,18 @@
   color: hsl(var(--muted-foreground));
   cursor: pointer;
   font-size: 0.9375rem;
-  margin-bottom: 16px;
-  padding: 4px 0;
-  transition: color 0.2s ease;
+  margin-bottom: 24px;
+  padding: 8px 0;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .collection-detail-back:hover {
   color: hsl(var(--foreground));
+  transform: translateX(-4px);
 }
 
 .collection-detail-title-row {
@@ -344,10 +349,12 @@
 }
 
 .collection-detail-info h1 {
-  margin: 0 0 12px 0;
-  font-size: 2rem;
-  font-weight: 600;
+  margin: 0 0 16px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: hsl(var(--foreground));
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .collection-selection-mode-btn {
@@ -413,18 +420,20 @@
 }
 
 .collection-detail-description {
-  margin: 0 0 16px 0;
-  font-size: 1rem;
+  margin: 0 0 20px 0;
+  font-size: 1.125rem;
   color: hsl(var(--muted-foreground));
-  line-height: 1.6;
+  line-height: 1.7;
+  max-width: 800px;
 }
 
 .collection-detail-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 0.875rem;
+  gap: 20px;
+  font-size: 0.9375rem;
   color: hsl(var(--muted-foreground));
+  font-weight: 500;
 }
 
 .collection-detail-empty {
@@ -457,25 +466,29 @@
 }
 
 .collection-detail-images {
-  max-width: min(1200px, 96%);
+  max-width: min(1400px, 96%);
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 24px 48px;
 }
 
+/* OLD STYLES - No longer used since we switched to NoFlashGrid */
+/* Kept for reference but not active */
+/*
 .collection-images-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
 .collection-image-item {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   background: hsl(var(--muted));
-  transition: transform 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .collection-image-item.portrait {
@@ -487,15 +500,15 @@
 }
 
 .collection-image-item:hover {
-  transform: scale(1.02);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .collection-image-item.is-cover {
-  border: 3px solid #111;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 4px solid #111;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Drag and Drop Styles */
 .collection-image-item[draggable='true'] {
   cursor: grab;
 }
@@ -542,102 +555,7 @@
   height: 100%;
   object-fit: cover;
 }
-
-/* Cover Image Badge */
-.collection-image-cover-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  z-index: 2;
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.collection-image-cover-badge svg {
-  flex-shrink: 0;
-}
-
-/* Hover Overlay */
-.collection-image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 3;
-  pointer-events: none;
-}
-
-.collection-image-item:hover .collection-image-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* Set Cover Button */
-.collection-image-set-cover-btn {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  pointer-events: all;
-}
-
-.collection-image-set-cover-btn:hover:not(:disabled) {
-  background: hsl(var(--card));
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.collection-image-set-cover-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.collection-image-set-cover-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  background: rgba(0, 0, 0, 0.6);
-  color: #fff;
-}
-
-.collection-image-set-cover-btn.is-cover {
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
-}
-
-.collection-image-set-cover-btn.is-cover:hover {
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.collection-image-set-cover-btn svg {
-  flex-shrink: 0;
-}
+*/
 
 /* Loading Spinner for Cover Update */
 .cover-loading-spinner {
@@ -965,8 +883,16 @@
   }
 
   .collection-images-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  
+  .collection-detail-info h1 {
+    font-size: 1.875rem;
+  }
+  
+  .collection-detail-description {
+    font-size: 1rem;
   }
 
   .collection-detail-images {

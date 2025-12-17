@@ -8,7 +8,7 @@ import { useCollectionStore } from '@/stores/useCollectionStore';
 import { useCollectionDetail } from './hooks/useCollectionDetail';
 import { useCollectionImages } from './hooks/useCollectionImages';
 import { CollectionHeader } from './components/CollectionHeader';
-import { CollectionImageGrid } from './components/CollectionImageGrid';
+import { CollectionNoFlashGrid } from './components/CollectionNoFlashGrid';
 import { CollectionVersionHistory } from './components/CollectionVersionHistory';
 import { CollectionBulkActions } from './components/CollectionBulkActions';
 import CollectionCollaborators from './components/CollectionCollaborators';
@@ -93,34 +93,24 @@ export default function CollectionDetailPage() {
 	useEffect(() => {
 		if (!collectionId) return;
 
-		console.log('[CollectionDetailPage] Setting up collection update listener for:', collectionId);
-
 		const handleCollectionUpdate = (event: Event) => {
 			try {
 				const customEvent = event as CustomEvent<{ collectionId: string; collection: Collection }>;
 				const { collectionId: updatedCollectionId } = customEvent.detail || {};
-				console.log('[CollectionDetailPage] Collection update event received', {
-					currentCollectionId: collectionId,
-					updatedCollectionId,
-					matches: updatedCollectionId === collectionId,
-				});
 				
 				if (updatedCollectionId === collectionId) {
-					console.log('[CollectionDetailPage] Refreshing collection...');
 					// Refresh the collection to show the new image immediately
 					fetchCollection(collectionId);
 				}
 			} catch (error) {
-				console.error('[CollectionDetailPage] Error handling collection update event:', error);
+				// Silently handle errors
 			}
 		};
 
 		window.addEventListener('collectionUpdated', handleCollectionUpdate);
-		console.log('[CollectionDetailPage] Event listener registered');
 		
 		return () => {
 			window.removeEventListener('collectionUpdated', handleCollectionUpdate);
-			console.log('[CollectionDetailPage] Event listener removed');
 		};
 	}, [collectionId, fetchCollection]);
 
@@ -220,7 +210,6 @@ export default function CollectionDetailPage() {
 
 			toast.success(`Đã xuất ${images.length} ảnh thành công`, { id: 'export-collection' });
 		} catch (error: unknown) {
-			console.error('Export failed:', error);
 			const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
 			toast.error(
 				message || 'Xuất bộ sưu tập thất bại. Vui lòng thử lại.',
@@ -312,9 +301,8 @@ export default function CollectionDetailPage() {
 				/>
 
 				{/* Image Grid */}
-				<CollectionImageGrid
+				<CollectionNoFlashGrid
 					images={images}
-					imageTypes={imageTypes}
 					coverImageId={coverImageId}
 					isOwner={isOwner}
 					isReordering={isReordering}
@@ -323,18 +311,14 @@ export default function CollectionDetailPage() {
 					dragOverImageId={dragOverImageId}
 					selectedImageIds={selectedImageIds}
 					updatingCover={updatingCover}
-					currentImageIds={currentImageIds}
-					processedImages={processedImages}
-					handleImageLoad={handleImageLoad}
+					handleImageClick={handleImageClick}
+					handleSetCoverImage={handleSetCoverImage}
+					toggleImageSelection={toggleImageSelection}
 					handleDragStart={handleDragStart}
 					handleDragOver={handleDragOver}
 					handleDragLeave={handleDragLeave}
 					handleDrop={handleDrop}
 					handleDragEnd={handleDragEnd}
-					handleImageClick={handleImageClick}
-					handleSetCoverImage={handleSetCoverImage}
-					toggleImageSelection={toggleImageSelection}
-					isMobile={isMobile}
 				/>
 			</div>
 

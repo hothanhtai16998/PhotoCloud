@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useEffect, useContext } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import type { Image } from '@/types/image';
 import type { Collection } from '@/types/collection';
 import { useCollectionImageStore } from '@/stores/useCollectionImageStore';
@@ -23,9 +23,12 @@ export const useCollectionImages = ({
   fetchCollection,
 }: UseCollectionImagesProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [, setSearchParams] = useSearchParams();
   const processedImages = useRef<Set<string>>(new Set());
   const actualLocation = useContext(ActualLocationContext);
+  // Fallback to useLocation if actualLocation is not available
+  const currentLocation = actualLocation || location;
 
   const {
     images,
@@ -179,12 +182,14 @@ export const useCollectionImages = ({
 
     // 3. Prepare modal navigation state
     // CRITICAL: backgroundLocation must be a proper Location object
+    // Always use location.pathname directly to ensure we have the correct current path
+    // This ensures the background is always the collection detail page, not a stale route
     const backgroundLocation = {
-      pathname: actualLocation?.pathname || (collectionId ? `/collections/${collectionId}` : '/collections'),
-      search: actualLocation?.search || '',
-      hash: actualLocation?.hash || '',
+      pathname: location.pathname || (collectionId ? `/collections/${collectionId}` : '/collections'),
+      search: location.search || '',
+      hash: location.hash || '',
       state: null,
-      key: actualLocation?.key || 'default', // Use 'default' instead of empty string
+      key: location.key || 'default', // Use 'default' instead of empty string
     };
     const modalState = prepareModalNavigationState(backgroundLocation);
 
@@ -193,7 +198,7 @@ export const useCollectionImages = ({
       // Include clicked image for fast modal open
       state: { ...modalState, images, image, fromGrid: true }
     });
-  }, [selectionMode, isMobile, navigate, images, toggleImageSelection, actualLocation, collectionId]);
+  }, [selectionMode, isMobile, navigate, images, toggleImageSelection, location, collectionId]);
 
   // Handle bulk remove - Note: Confirmation is now handled by the component using ConfirmModal
   const handleBulkRemove = useCallback(async () => {
