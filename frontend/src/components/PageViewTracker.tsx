@@ -13,6 +13,7 @@ export function PageViewTracker() {
         // Track all page views (both authenticated and anonymous)
         // This allows us to track page views per second and most active pages
         // For "users online", we only count authenticated users (those with userId)
+        // DEFERRED: Wait for page to be interactive before tracking to reduce critical path
         const trackView = async () => {
             try {
                 // Track page view - userId will be null for anonymous users
@@ -27,10 +28,23 @@ export function PageViewTracker() {
             }
         };
 
-        // Small delay to ensure route is fully loaded
-        const timeoutId = setTimeout(trackView, 100);
+        // Defer analytics until after page is interactive (reduces critical path latency)
+        // Use requestIdleCallback if available, otherwise setTimeout with longer delay
+        const scheduleTracking = () => {
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(trackView, { timeout: 2000 });
+            } else {
+                // Fallback: wait for page load + idle time
+                setTimeout(trackView, 2000);
+            }
+        };
 
-        return () => clearTimeout(timeoutId);
+        // Wait for page to be interactive before scheduling
+        if (document.readyState === 'complete') {
+            scheduleTracking();
+        } else {
+            window.addEventListener('load', scheduleTracking, { once: true });
+        }
     }, [location.pathname]);
 
     return null;

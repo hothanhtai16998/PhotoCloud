@@ -49,19 +49,41 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]';
         },
-        // CRITICAL FIX: Explicitly prevent React from being chunked
-        // This ensures React stays in the entry chunk and is always available
+        // Optimized chunking strategy to reduce unused JavaScript
         manualChunks: (id) => {
           // NEVER chunk React or ReactDOM - they must stay in entry chunk
           if (
             id.includes('react') && 
             (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/'))
           ) {
-            // Return undefined to keep in entry chunk
-            return undefined;
+            return undefined; // Keep in entry chunk
           }
-          // For everything else, let Vite handle chunking naturally
-          // This prevents the vendor chunk from including React
+          
+          // Split vendor libraries into separate chunks for better caching
+          if (id.includes('node_modules')) {
+            // Router libraries - used on most pages
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            // UI libraries - can be lazy loaded
+            if (id.includes('lucide-react') || id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            // Chart libraries - only used in admin
+            if (id.includes('recharts')) {
+              return 'vendor-charts';
+            }
+            // State management - core functionality
+            if (id.includes('zustand') || id.includes('immer')) {
+              return 'vendor-state';
+            }
+            // HTTP client
+            if (id.includes('axios')) {
+              return 'vendor-http';
+            }
+            // Other vendor code
+            return 'vendor';
+          }
         },
         // Prevent circular dependency issues
         format: 'es',

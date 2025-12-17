@@ -37,8 +37,11 @@ export function hasFiltersChanged(
   locationChanged: boolean;
 } {
   return {
+    // Check if category changed - including switching to/from "all" (undefined)
+    // When category is "all", params?.category is undefined, so we need to check
+    // if currentCategory is defined (switching from specific to "all")
     categoryChanged:
-      params?.category !== undefined && params.category !== currentCategory,
+      params?.category !== currentCategory,
     searchChanged:
       params?.search !== undefined && params.search !== currentSearch,
     locationChanged:

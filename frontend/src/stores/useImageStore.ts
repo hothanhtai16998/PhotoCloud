@@ -174,8 +174,9 @@ export const useImageStore = create(
       }
 
       // Check cache FIRST, before any state changes (critical for zero-flash)
+      // BUT: if category changed, we should fetch fresh data even if cache exists
       const cacheKey = getCategoryCacheKey(params);
-      const cached = cacheKey ? categoryCache.get(cacheKey) : null;
+      const cached = cacheKey && !categoryChanged ? categoryCache.get(cacheKey) : null;
       
       // If we have cached data and not refreshing, use it IMMEDIATELY and synchronously
       if (cached && !params?._refresh && (params?.page === 1 || !params?.page)) {

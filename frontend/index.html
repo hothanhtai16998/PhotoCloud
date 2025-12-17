@@ -17,16 +17,13 @@
     />
     <meta name="theme-color" content="#ffffff" />
     <title>Upload</title>
-    <!-- Performance: Preconnect to external domains -->
-    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
-    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
-    <!-- Performance: Preconnect to image CDN used in hero slider -->
+    <!-- Performance: Preconnect only to most critical domains (reduced from 4+ to 2) -->
+    <!-- Image CDN - critical for LCP -->
     <link rel="preconnect" href="https://cdn.uploadanh.cloud" crossorigin />
     <link rel="dns-prefetch" href="https://cdn.uploadanh.cloud" />
-    <!-- Performance: Preconnect to Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Google Fonts CSS removed; fonts are now self-hosted from /src/assets/fonts -->
+    <!-- API domain - critical for initial data -->
+    <link rel="preconnect" href="https://api.uploadanh.cloud" crossorigin />
+    <link rel="dns-prefetch" href="https://api.uploadanh.cloud" />
     <style>
       /* CRITICAL: Hide scrollbar IMMEDIATELY on page load to prevent flash */
       /* Must be in <head> and load BEFORE any other CSS */

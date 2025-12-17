@@ -7,6 +7,7 @@ export const LOGO_CONFIG = {
 
   // Logo dimensions
   headerHeight: 40, // Height in pixels for header
+  headerWidth: 120, // Approximate width for explicit dimensions (prevents CLS)
 
   // Alternative logos for different contexts (optional)
   mobileLogo: HeaderLogo, // Can be different for mobile

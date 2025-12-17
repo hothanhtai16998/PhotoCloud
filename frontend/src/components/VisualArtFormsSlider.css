@@ -1,5 +1,4 @@
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap');
+/* Google Fonts removed - using self-hosted fonts from index.css to avoid render-blocking */
 
 .visual-art-slider {
   position: relative;
