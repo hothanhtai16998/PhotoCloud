@@ -25,6 +25,9 @@ export const vi = {
     all: 'Tất cả',
     contact: 'Liên hệ',
     optional: 'Tùy chọn',
+    show: 'Hiện',
+    hide: 'Ẩn',
+    done: 'Xong',
   },
 
   // Auth
@@ -184,6 +187,11 @@ export const vi = {
     sortImages: 'Nhiều ảnh nhất',
     clearFilters: 'Xóa bộ lọc',
     foundCount: 'Tìm thấy {count} bộ sưu tập',
+    addImages: 'Thêm ảnh (tùy chọn)',
+    selectImages: 'Chọn ảnh',
+    selectedImages: 'Đã chọn {count} ảnh',
+    noImagesAvailable: 'Bạn chưa có ảnh nào. Hãy tải lên ảnh trước.',
+    createdWithImages: 'Đã tạo bộ sưu tập với {count} ảnh',
   },
 
   // Upload

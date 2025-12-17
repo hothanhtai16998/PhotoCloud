@@ -185,6 +185,11 @@ export const en = {
     sortImages: 'Most photos',
     clearFilters: 'Clear filters',
     foundCount: 'Found {count} collections',
+    addImages: 'Add images (optional)',
+    selectImages: 'Select images',
+    selectedImages: '{count} images selected',
+    noImagesAvailable: 'You have no images yet. Please upload some images first.',
+    createdWithImages: 'Collection created with {count} images',
   },
 
   // Upload

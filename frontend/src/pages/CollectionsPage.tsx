@@ -48,6 +48,7 @@ export default function CollectionsPage() {
 
 	const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
 	const [showEditModal, setShowEditModal] = useState(false);
+	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
 
@@ -138,8 +139,7 @@ export default function CollectionsPage() {
 					<button
 						className="collections-create-btn"
 						onClick={() => {
-							// For now, show a message. In the future, we can add a create modal
-							toast.info(t('collections.openToCreate'));
+							setShowCreateModal(true);
 						}}
 					>
 						<Plus size={18} />
@@ -364,17 +364,29 @@ export default function CollectionsPage() {
 			</div>
 
 			{/* Edit Collection Modal */}
-			{showEditModal && (
+			{showEditModal && editingCollection && (
 				<Suspense fallback={null}>
-			<CollectionModal
-				isOpen={showEditModal}
-				onClose={() => {
-					setShowEditModal(false);
-					setEditingCollection(null);
-				}}
-				collectionToEdit={editingCollection || undefined}
-				onCollectionUpdate={handleCollectionUpdated}
-			/>
+					<CollectionModal
+						isOpen={showEditModal}
+						onClose={() => {
+							setShowEditModal(false);
+							setEditingCollection(null);
+						}}
+						collectionToEdit={editingCollection}
+						onCollectionUpdate={handleCollectionUpdated}
+					/>
+				</Suspense>
+			)}
+			{/* Create Collection Modal */}
+			{showCreateModal && (
+				<Suspense fallback={null}>
+					<CollectionModal
+						isOpen={showCreateModal}
+						onClose={() => {
+							setShowCreateModal(false);
+						}}
+						onCollectionUpdate={handleCollectionUpdated}
+					/>
 				</Suspense>
 			)}
 

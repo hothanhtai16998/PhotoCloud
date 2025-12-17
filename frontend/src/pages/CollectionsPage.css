@@ -67,25 +67,43 @@
   top: 50%;
   transform: translateY(-50%);
   color: hsl(var(--muted-foreground));
+  opacity: 0.6;
   pointer-events: none;
   z-index: 1;
+  transition: opacity 0.2s ease;
+}
+
+.collections-search-wrapper:focus-within .collections-search-icon {
+  color: hsl(var(--foreground));
+  opacity: 0.7;
 }
 
 .collections-search-input {
   width: 100%;
   padding: 12px 16px 12px 48px;
-  border: 2px solid hsl(var(--border));
-  border-radius: 12px;
+  border: 1.5px solid hsl(var(--border));
+  border-radius: 10px;
   font-size: 0.9375rem;
-  background: hsl(var(--card));
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
+.collections-search-input::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+.collections-search-input:hover {
+  border-color: hsl(var(--border) / 0.8);
+}
+
 .collections-search-input:focus {
   outline: none;
-  border-color: hsl(var(--foreground));
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  border-color: hsl(var(--foreground) / 0.3);
+  box-shadow: 0 0 0 2px hsl(var(--foreground) / 0.05);
+  background: hsl(var(--background));
 }
 
 .collections-search-clear {
@@ -120,19 +138,19 @@
 
 .collections-tag-filter-btn {
   padding: 8px 16px;
-  background: hsl(var(--card));
-  border: 2px solid hsl(var(--border));
+  background: hsl(var(--background));
+  border: 1.5px solid hsl(var(--border));
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--foreground));
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .collections-tag-filter-btn:hover {
-  border-color: #d0d0d0;
+  border-color: hsl(var(--foreground) / 0.2);
   background: hsl(var(--muted));
   color: hsl(var(--foreground));
 }
@@ -141,6 +159,7 @@
   background: hsl(var(--foreground));
   border-color: hsl(var(--foreground));
   color: hsl(var(--background));
+  font-weight: 600;
 }
 
 .collections-filter-controls {
@@ -154,8 +173,8 @@
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  background: hsl(var(--muted));
-  border: 2px solid transparent;
+  background: hsl(var(--background));
+  border: 1.5px solid hsl(var(--border));
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -165,32 +184,45 @@
 }
 
 .collections-filter-btn:hover {
+  border-color: hsl(var(--foreground) / 0.2);
   background: hsl(var(--muted));
+  color: hsl(var(--foreground));
 }
 
 .collections-filter-btn.active {
   background: hsl(var(--foreground));
-  color: hsl(var(--background));
   border-color: hsl(var(--foreground));
+  color: hsl(var(--background));
+  font-weight: 600;
 }
 
 .collections-sort-select {
   padding: 10px 16px;
-  border: 2px solid hsl(var(--border));
+  border: 1.5px solid hsl(var(--border));
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
-  background: hsl(var(--card));
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.collections-sort-select:hover {
+  border-color: hsl(var(--foreground) / 0.2);
+  background-color: hsl(var(--muted));
 }
 
 .collections-sort-select:focus {
   outline: none;
-  border-color: hsl(var(--foreground));
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+  border-color: hsl(var(--foreground) / 0.3);
+  box-shadow: 0 0 0 2px hsl(var(--foreground) / 0.05);
 }
 
 .collections-results-info {

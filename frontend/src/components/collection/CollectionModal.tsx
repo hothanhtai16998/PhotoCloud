@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { collectionTemplateService, type CollectionTemplate } from '@/services/collectionTemplateService';
 import { useCollectionStore } from '@/stores/useCollectionStore';
+import { useUserStore } from '@/stores/useUserStore';
+import { imageService } from '@/services/imageService';
 import type { Collection } from '@/types/collection';
+import type { Image } from '@/types/image';
+import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { t } from '@/i18n';
@@ -50,6 +54,10 @@ export default function CollectionModal({
 	const [_showTemplates, setShowTemplates] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 	const [recentCollectionIds, setRecentCollectionIds] = useState<string[]>([]);
+	const { user } = useUserStore();
+	const [availableImages, setAvailableImages] = useState<Image[]>([]);
+	const [loadingImages, setLoadingImages] = useState(false);
+	const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
 
 	// Initialize edit form when collectionToEdit changes
 	useEffect(() => {
@@ -128,7 +136,12 @@ export default function CollectionModal({
 			return;
 		}
 
-		if (!imageId) return;
+		// If no imageId and not editing, show create form directly (create-only mode)
+		if (!imageId) {
+			setShowCreateForm(true);
+			setLoading(false);
+			return;
+		}
 
 		const loadData = async () => {
 			setLoading(true);
@@ -153,6 +166,30 @@ export default function CollectionModal({
 
 		loadData();
 	}, [isOpen, imageId, isEditMode]);
+
+	// Load user images for image picker (when creating collection from collections page)
+	useEffect(() => {
+		if (!isOpen || imageId || isEditMode) return;
+		if (!user?._id) return;
+
+		const loadUserImages = async () => {
+			setLoadingImages(true);
+			try {
+				const response = await imageService.fetchUserImages(user._id, {
+					page: 1,
+					limit: 50, // Load first 50 images
+				});
+				setAvailableImages(response.images || []);
+			} catch (error: unknown) {
+				console.error('Failed to load user images:', error);
+				// Don't show error toast - image picker is optional
+			} finally {
+				setLoadingImages(false);
+			}
+		};
+
+		loadUserImages();
+	}, [isOpen, imageId, isEditMode, user?._id]);
 
 	// Apply template when selected
 	useEffect(() => {
@@ -358,6 +395,14 @@ export default function CollectionModal({
 				await collectionService.addImageToCollection(newCollection._id, imageId);
 			}
 
+			// Add selected images if any were selected
+			if (selectedImageIds.size > 0) {
+				const addPromises = Array.from(selectedImageIds).map(imageId =>
+					collectionService.addImageToCollection(newCollection._id, imageId)
+				);
+				await Promise.all(addPromises);
+			}
+
 			setCollections((prev) => [newCollection, ...prev]);
 			if (imageId) {
 				setCollectionsContainingImage((prev) => {
@@ -375,8 +420,14 @@ export default function CollectionModal({
 			setShowCreateForm(false);
 			setSelectedTemplate(null);
 			setShowTemplates(false);
+			setSelectedImageIds(new Set());
 
-			toast.success(imageId ? t('collections.createdAndAdded') : t('collections.created'));
+			const imageCount = (imageId ? 1 : 0) + selectedImageIds.size;
+			if (imageCount > 0) {
+				toast.success(t('collections.createdWithImages', { count: imageCount }));
+			} else {
+				toast.success(t('collections.created'));
+			}
 			onCollectionUpdate?.();
 		} catch (error: unknown) {
 			console.error('Failed to create collection:', error);
@@ -393,6 +444,7 @@ export default function CollectionModal({
 		newCollectionTags,
 		selectedTemplate,
 		imageId,
+		selectedImageIds,
 		onCollectionUpdate,
 	]);
 
@@ -436,16 +488,19 @@ export default function CollectionModal({
 
 	// If used as dropdown (when imageId is provided and not editing), render without overlay
 	const isDropdown = !!imageId && !collectionToEdit;
+	// Show image picker sidebar on the right when creating collection (no imageId and not editing)
+	const showImagePickerSidebar = !imageId && !collectionToEdit;
 
 	return (
 		<>
 			{!isDropdown && (
 				<div className="collection-modal-overlay" onClick={onClose} />
 			)}
-			<div className={`collection-modal ${isDropdown ? 'collection-modal-dropdown' : 'collection-modal-centered'}`} onClick={(e) => e.stopPropagation()}>
-				{!isDropdown && (
-					<div className="collection-modal-header">
-						<h2>{isEditMode ? t('collections.editCollection') : t('collections.saveToCollection')}</h2>
+			<div className={`collection-modal-wrapper ${showImagePickerSidebar ? 'with-image-picker' : ''}`}>
+				<div className={`collection-modal ${isDropdown ? 'collection-modal-dropdown' : 'collection-modal-centered'} ${showImagePickerSidebar ? 'with-sidebar' : ''}`} onClick={(e) => e.stopPropagation()}>
+					{!isDropdown && (
+						<div className="collection-modal-header">
+						<h2>{isEditMode ? t('collections.editCollection') : (imageId ? t('collections.saveToCollection') : t('collections.createNew'))}</h2>
 						<Button 
 							variant="ghost" 
 							size="icon" 
@@ -455,10 +510,10 @@ export default function CollectionModal({
 						>
 							<X size={20} />
 						</Button>
-					</div>
-				)}
+						</div>
+					)}
 
-				<div className="collection-modal-content">
+					<div className="collection-modal-content">
 					{isEditMode ? (
 						<div className="collection-modal-create-form collection-modal-edit-form">
 							<div className="collection-modal-form-group">
@@ -757,13 +812,11 @@ export default function CollectionModal({
 								</>
 							) : (
 								<div className="collection-modal-create-form">
-									<div className="collection-modal-form-header">
-										<h3>
-											{selectedTemplate
-												? t('collections.createFromTemplateTitle', { name: selectedTemplate.templateName })
-												: t('collections.createNew')}
-										</h3>
-										{selectedTemplate && (
+									{selectedTemplate && (
+										<div className="collection-modal-form-header">
+											<h3>
+												{t('collections.createFromTemplateTitle', { name: selectedTemplate.templateName })}
+											</h3>
 											<button
 												type="button"
 												className="collection-modal-clear-template"
@@ -778,8 +831,8 @@ export default function CollectionModal({
 											>
 												<X size={16} />
 											</button>
-										)}
-									</div>
+										</div>
+									)}
 									<div className="collection-modal-form-group">
 										<label htmlFor="collection-name">{t('collections.collectionName')} *</label>
 										<input
@@ -860,6 +913,7 @@ export default function CollectionModal({
 												setShowCreateForm(false);
 												setNewCollectionName('');
 												setNewCollectionDescription('');
+												setSelectedImageIds(new Set());
 											}}
 											disabled={creating}
 										>
@@ -878,7 +932,67 @@ export default function CollectionModal({
 							)}
 						</>
 					)}
+					</div>
 				</div>
+
+				{/* Image Picker Sidebar - Always visible on right side when creating collection */}
+				{showImagePickerSidebar && (
+					<div className="collection-modal-image-picker-sidebar" onClick={(e) => e.stopPropagation()}>
+						<div className="collection-modal-image-picker-sidebar-header">
+							<h3>{t('collections.selectImages')}</h3>
+							{selectedImageIds.size > 0 && (
+								<span className="collection-modal-image-picker-count">
+									{selectedImageIds.size} {t('collections.image')}
+								</span>
+							)}
+						</div>
+						<div className="collection-modal-image-picker-sidebar-content">
+							{loadingImages ? (
+								<div className="collection-modal-image-picker-loading">
+									<p>{t('common.loading')}</p>
+								</div>
+							) : availableImages.length === 0 ? (
+								<div className="collection-modal-image-picker-empty">
+									<p>{t('collections.noImagesAvailable')}</p>
+								</div>
+							) : (
+								<div className="collection-modal-image-picker-grid">
+									{availableImages.map((image) => {
+										const isSelected = selectedImageIds.has(image._id);
+										return (
+											<div
+												key={image._id}
+												className={`collection-modal-image-picker-item ${isSelected ? 'selected' : ''}`}
+												onClick={() => {
+													setSelectedImageIds((prev) => {
+														const next = new Set(prev);
+														if (isSelected) {
+															next.delete(image._id);
+														} else {
+															next.add(image._id);
+														}
+														return next;
+													});
+												}}
+											>
+												<BlurUpImage
+													image={image}
+													priority={false}
+													minimal={true}
+												/>
+												{isSelected && (
+													<div className="collection-modal-image-picker-check">
+														<Check size={20} />
+													</div>
+												)}
+											</div>
+										);
+									})}
+								</div>
+							)}
+						</div>
+					</div>
+				)}
 			</div>
 		</>
 	);

@@ -21,6 +21,33 @@
   }
 }
 
+/* Collection Modal - Wrapper for side-by-side layout */
+.collection-modal-wrapper {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 0;
+  z-index: 10002;
+  align-items: stretch;
+  max-width: 95vw;
+  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.collection-modal-wrapper.with-image-picker {
+  gap: 0;
+}
+
 /* Collection Modal - Base styles */
 .collection-modal {
   background: #fff;
@@ -30,6 +57,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.collection-modal.with-sidebar {
+  border-radius: 12px 0 0 12px;
 }
 
 /* Dropdown mode - positioned below button (like Unsplash) */
@@ -53,6 +84,22 @@
   max-width: min(540px, 96%);
   max-height: 85vh;
   animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* When inside wrapper with image picker, use relative positioning */
+.collection-modal-wrapper .collection-modal-centered {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  width: 600px;
+  min-width: 500px;
+  max-width: none;
+  animation: none !important;
+}
+
+.collection-modal-wrapper.with-image-picker .collection-modal-centered {
+  border-radius: 12px 0 0 12px;
 }
 
 @keyframes dropdownSlideIn {
@@ -896,6 +943,156 @@
 .collection-modal-dropdown .collection-modal-create-form .collection-modal-checkbox-label input[type='checkbox'] {
   width: 22px;
   height: 22px;
+}
+
+/* Image Picker Button */
+.collection-modal-open-image-picker-btn {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+/* Image Picker Sidebar - Always visible on right side */
+.collection-modal-image-picker-sidebar {
+  position: relative;
+  width: 500px;
+  min-width: 450px;
+  max-height: 85vh;
+  background: #fff;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  z-index: 10002;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: none;
+  border-left: 1px solid hsl(var(--border));
+  flex-shrink: 0;
+}
+
+.collection-modal-image-picker-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.3);
+}
+
+.collection-modal-image-picker-sidebar-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.01em;
+}
+
+.collection-modal-image-picker-count {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+
+.collection-modal-image-picker-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  min-height: 0;
+}
+
+.collection-modal-image-picker-loading,
+.collection-modal-image-picker-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+}
+
+.collection-modal-image-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+
+/* Larger grid in sidebar */
+.collection-modal-image-picker-sidebar-content .collection-modal-image-picker-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.collection-modal-image-picker-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  background: hsl(var(--muted));
+}
+
+.collection-modal-image-picker-item:hover {
+  border-color: hsl(var(--primary));
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.collection-modal-image-picker-item:hover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: hsl(var(--primary) / 0.1);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.collection-modal-image-picker-item:hover .blur-up-image {
+  filter: brightness(0.95);
+}
+
+.collection-modal-image-picker-item.selected {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+.collection-modal-image-picker-item .blur-up-image-container {
+  position: relative !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+}
+
+.collection-modal-image-picker-item .blur-up-image-image-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.collection-modal-image-picker-item img,
+.collection-modal-image-picker-item .blur-up-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer !important;
+  transition: filter 0.2s ease;
+}
+
+.collection-modal-image-picker-check {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10;
 }
 
 .collection-modal-form-actions {
