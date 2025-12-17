@@ -130,6 +130,7 @@ app.use(
                 if (
                     hostname.endsWith('.onrender.com') ||
                     hostname.endsWith('.vercel.app') ||
+                    hostname.endsWith('.pages.dev') ||
                     hostname.endsWith('uploadanh.cloud')
                 ) {
                     return callback(null, true);

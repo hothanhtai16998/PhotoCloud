@@ -2,11 +2,25 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { appConfig } from '@/config/appConfig';
 
+// Helper to get the API base URL
+const getApiBaseURL = () => {
+  if (import.meta.env.MODE === 'development') {
+    return 'http://localhost:3000/api';
+  }
+  
+  // In production, use VITE_API_URL if set
+  if (import.meta.env.VITE_API_URL) {
+    const apiUrl = import.meta.env.VITE_API_URL.trim();
+    // If it already ends with /api, use it as is; otherwise append /api
+    return apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+  }
+  
+  // Fallback to relative path (same domain)
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL:
-    import.meta.env.MODE === 'development'
-      ? 'http://localhost:3000/api'
-      : '/api',
+  baseURL: getApiBaseURL(),
   withCredentials: true,
   timeout: appConfig.apiTimeout,
 });
