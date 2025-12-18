@@ -111,6 +111,14 @@ function ProfilePage() {
     // Follow count store for real-time updates
     const { updateFollowCounts, getFollowCounts } = useUserFollowCountStore();
 
+    // Determine which user's profile to display (moved before useWebSocket to avoid TDZ error)
+    const displayUserId = useMemo(() => {
+        if (params.userId) return params.userId;
+        if (usernameFromPath && profileUser) return profileUser._id;
+        if (currentUser) return currentUser._id;
+        return undefined;
+    }, [params.userId, usernameFromPath, profileUser, currentUser]);
+
     // WebSocket for real-time follow count updates
     const { isConnected, joinProfileRoom, leaveProfileRoom } = useWebSocket({
         onUserFollowUpdate: useCallback((update) => {
@@ -207,14 +215,6 @@ function ProfilePage() {
 
         loadProfileUser();
     }, [usernameFromPath, params.userId, navigate, userLookupCancelSignal, fetchProfileUser]);
-
-    // Determine which user's profile to display
-    const displayUserId = useMemo(() => {
-        if (params.userId) return params.userId;
-        if (usernameFromPath && profileUser) return profileUser._id;
-        if (currentUser) return currentUser._id;
-        return undefined;
-    }, [params.userId, usernameFromPath, profileUser, currentUser]);
 
     const isOwnProfile = useMemo(() => {
         return displayUserId === currentUser?._id;

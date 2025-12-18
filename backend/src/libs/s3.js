@@ -243,18 +243,24 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 		// Very small file size (1-2 KB), loads instantly
 		// Using PNG instead of BMP since Sharp doesn't support BMP output
 		// Preserve aspect ratio to prevent distortion when stretching to container
-		const tinyPngBuffer = await sharp(buffer)
-			.resize(20, 20, { 
-				fit: 'inside', // Preserve aspect ratio, fit inside 20x20 box
-				withoutEnlargement: true
-			})
-			.png({ compressionLevel: 9, quality: 80 }) // High compression for tiny image
-			.toBuffer();
+		const { queueSharpOperation } = await import('../utils/sharpQueue.js');
+		const tinyPngBuffer = await queueSharpOperation(() =>
+			sharp(buffer)
+				.resize(20, 20, { 
+					fit: 'inside', // Preserve aspect ratio, fit inside 20x20 box
+					withoutEnlargement: true
+				})
+				.png({ compressionLevel: 9, quality: 80 }) // High compression for tiny image
+				.toBuffer()
+		);
 		const base64Thumbnail = `data:image/png;base64,${tinyPngBuffer.toString('base64')}`;
 		
 		// PHASE 1: Generate critical formats (WebP + original) for immediate display
 		logger.info(`[UPLOAD] Phase 1: Generating critical formats (WebP + original)...`);
 		const criticalStart = Date.now();
+		
+		// Use queue to limit concurrent Sharp operations (prevents CPU overload)
+		// queueSharpOperation already imported above
 		
 		const [
 			thumbnailWebpBuffer,
@@ -263,12 +269,12 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 			webpFullBuffer,
 			originalBuffer,
 		] = await Promise.all([
-			// WebP sizes (critical for display)
-			sharp(buffer).resize(200, 200, { fit: 'cover' }).webp().toBuffer(),
-			sharp(buffer).resize(500, 500, { fit: 'cover' }).webp().toBuffer(),
-			sharp(buffer).resize(1000, 1000, { fit: 'inside' }).webp().toBuffer(),
-			sharp(buffer).webp().toBuffer(), // WebP version for display
-			// Original buffer (unchanged)
+			// WebP sizes (critical for display) - queued to limit concurrency
+			queueSharpOperation(() => sharp(buffer).resize(200, 200, { fit: 'cover' }).webp().toBuffer()),
+			queueSharpOperation(() => sharp(buffer).resize(500, 500, { fit: 'cover' }).webp().toBuffer()),
+			queueSharpOperation(() => sharp(buffer).resize(1000, 1000, { fit: 'inside' }).webp().toBuffer()),
+			queueSharpOperation(() => sharp(buffer).webp().toBuffer()), // WebP version for display
+			// Original buffer (unchanged) - no processing needed
 			Promise.resolve(buffer), // Keep original buffer for true original file
 		]);
 		

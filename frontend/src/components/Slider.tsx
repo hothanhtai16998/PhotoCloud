@@ -268,8 +268,13 @@ function Slider() {
     progressStartTimeRef.current = startTime;
 
     // Progress bar animation - synchronized with auto-play
-    // Update every 16ms for smoother animation (60fps)
-    progressIntervalRef.current = window.setInterval(() => {
+    // Update every 33ms for smooth animation (30fps) - reduced from 60fps to save CPU
+    const updateProgress = () => {
+      // Only update if tab is visible
+      if (document.hidden) {
+        return;
+      }
+      
       // If progressStartTimeRef is null, don't update (but don't stop the interval)
       if (progressStartTimeRef.current === null) {
         // Keep the current progress value, don't update
@@ -278,7 +283,9 @@ function Slider() {
       const elapsed = Date.now() - progressStartTimeRef.current;
       const progress = Math.min((elapsed / intervalMs) * 100, 100);
       setAutoPlayProgress(progress);
-    }, progressUpdateIntervalMs); // Update every 16ms (~60fps) for smooth animation
+    };
+    
+    progressIntervalRef.current = window.setInterval(updateProgress, 33); // 30fps for better CPU efficiency
 
     // Auto-play interval - change slide at configured interval
     // Calculate delay based on remaining time if resuming from pause

@@ -5,6 +5,7 @@ import { safeTrim, isValidObjectId } from '../../utils/inputUtils.js';
 import { createCollectionVersion } from '../../utils/collectionVersionHelper.js';
 import { getUserId, hasPermission } from './collectionHelpers.js';
 import mongoose from 'mongoose';
+import { cached, generateCacheKey, deleteCache } from '../../utils/queryCache.js';
 
 /**
  * Get all collections for the authenticated user
@@ -13,8 +14,13 @@ export const getUserCollections = async (req, res) => {
     try {
         const userId = req.user._id;
 
-        // Use aggregation to get collections with sample images (2-3 per collection)
-        const collections = await Collection.aggregate([
+        // Generate cache key
+        const cacheKey = generateCacheKey('userCollections', { userId: userId.toString() });
+        
+        // Use cached query result (5 minute TTL)
+        const collections = await cached(cacheKey, async () => {
+            // Use aggregation to get collections with sample images (2-3 per collection)
+            return await Collection.aggregate([
             {
                 $match: {
             $or: [
@@ -147,7 +153,8 @@ export const getUserCollections = async (req, res) => {
                 },
             },
             { $sort: { createdAt: -1 } },
-        ]);
+            ]);
+        }, 5 * 60 * 1000); // Cache for 5 minutes
 
         res.json({
             success: true,
@@ -276,6 +283,9 @@ export const createCollection = async (req, res) => {
         await collection.save();
 
         // Create initial version
+        // Invalidate cache for this user's collections
+        deleteCache(generateCacheKey('userCollections', { userId: userId.toString() }));
+        
         await createCollectionVersion(
             collection._id,
             userId,
@@ -412,6 +422,9 @@ export const updateCollection = async (req, res) => {
         }
 
         await collection.save();
+
+        // Invalidate cache for this user's collections
+        deleteCache(generateCacheKey('userCollections', { userId: userId.toString() }));
 
         // Create version for each change
         if (changes.length > 0) {
@@ -592,6 +605,9 @@ export const deleteCollection = async (req, res) => {
         }
 
         await Collection.findByIdAndDelete(collectionId);
+
+        // Invalidate cache for this user's collections
+        deleteCache(generateCacheKey('userCollections', { userId: userId.toString() }));
 
         res.json({
             success: true,

@@ -2,6 +2,13 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { notificationService, type Notification } from '@/services/notificationService';
 
+// Simple logger for polling (avoid circular dependency)
+const logPolling = (message: string) => {
+	if (typeof window !== 'undefined' && import.meta.env.MODE === 'development') {
+		console.log(`[Notification Polling] ${message}`);
+	}
+};
+
 interface NotificationState {
 	notifications: Notification[];
 	unreadCount: number;
@@ -146,6 +153,12 @@ export const useNotificationStore = create(
 		},
 
 		startPolling: () => {
+			// Don't start polling if WebSocket is connected
+			const currentState = get();
+			if (currentState.websocketConnected) {
+				return;
+			}
+
 			// Only start polling if no interval exists
 			if (globalPollingInterval !== null) {
 				pollingSubscribers++;
@@ -154,25 +167,78 @@ export const useNotificationStore = create(
 
 			pollingSubscribers++;
 			
+			// Smart polling with exponential backoff
+			let pollAttempts = 0;
+			let currentInterval = 10000; // Start at 10 seconds (optimized from 1.5s)
+			const maxAttempts = 5; // Stop after 5 attempts
+			const maxInterval = 30000; // Max 30 seconds
+			let lastPollTime = 0;
+			const minPollGap = 5000; // Minimum 5 seconds between polls
+			
 			// Set up visibility change listener
 			const handleVisibilityChange = () => {
+				const wasHidden = !isTabVisible;
 				isTabVisible = !document.hidden;
-				// If tab becomes visible and we haven't polled recently, poll immediately
-				if (isTabVisible) {
-					get().fetchUnreadCount();
+				
+				// If tab becomes visible after being hidden > 30 seconds, poll immediately
+				if (isTabVisible && wasHidden && !get().websocketConnected) {
+					const timeHidden = Date.now() - (lastPollTime || Date.now());
+					if (timeHidden > 30000) {
+						get().fetchUnreadCount();
+						lastPollTime = Date.now();
+						pollAttempts = 0; // Reset attempts on manual poll
+						currentInterval = 10000; // Reset interval
+					}
 				}
 			};
 			
 			document.addEventListener('visibilitychange', handleVisibilityChange);
 			
-			// Poll for unread count every 1.5 seconds for near-instant notifications
-			// This matches the responsiveness of major social apps
-			globalPollingInterval = window.setInterval(() => {
-				// Only poll if tab is visible
-				if (isTabVisible) {
-					get().fetchUnreadCount();
+			// Smart polling with exponential backoff
+			const poll = () => {
+				const state = get();
+				
+				// Stop if WebSocket connected
+				if (state.websocketConnected) {
+					stopPolling();
+					return;
 				}
-			}, 1500); // 1.5 seconds = near-instant feel
+				
+				// Stop after max attempts
+				if (pollAttempts >= maxAttempts) {
+					logPolling('Stopped after max attempts, WebSocket likely unavailable');
+					stopPolling();
+					return;
+				}
+				
+				// Only poll if tab is visible
+				if (!isTabVisible) {
+					return;
+				}
+				
+				// Check minimum gap between polls
+				const timeSinceLastPoll = Date.now() - lastPollTime;
+				if (timeSinceLastPoll < minPollGap) {
+					return;
+				}
+				
+				// Perform poll
+				state.fetchUnreadCount();
+				lastPollTime = Date.now();
+				pollAttempts++;
+				
+				// Exponential backoff: 10s → 15s → 22s → 30s (max)
+				if (pollAttempts > 1) {
+					currentInterval = Math.min(currentInterval * 1.5, maxInterval);
+					// Restart interval with new delay
+					clearInterval(globalPollingInterval!);
+					globalPollingInterval = window.setInterval(poll, currentInterval);
+				}
+			};
+			
+			// Poll immediately on start, then use interval
+			poll();
+			globalPollingInterval = window.setInterval(poll, currentInterval);
 
 			set((state) => {
 				state.pollingInterval = globalPollingInterval;
@@ -208,6 +274,10 @@ export const useNotificationStore = create(
 		setWebSocketConnected: (connected: boolean) => {
 			set((state) => {
 				state.websocketConnected = connected;
+				// Stop polling when WebSocket connects
+				if (connected && globalPollingInterval !== null) {
+					get().stopPolling();
+				}
 			});
 		},
 

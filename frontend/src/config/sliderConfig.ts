@@ -21,8 +21,8 @@ export const sliderConfig = {
     // Interval between slides in milliseconds (6.2 seconds)
     intervalMs: 6200,
 
-    // Progress bar update interval in milliseconds (60fps = ~16ms)
-    progressUpdateIntervalMs: 16,
+    // Progress bar update interval in milliseconds (30fps = ~33ms) - optimized for CPU
+    progressUpdateIntervalMs: 33,
   },
 
   // Transition settings
