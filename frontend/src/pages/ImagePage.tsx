@@ -18,6 +18,7 @@ import { useImageStatsStore } from '@/stores/useImageStatsStore';
 import { shareService } from '@/utils/shareService';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
+import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
@@ -866,6 +867,25 @@ function ImagePage() {
     locale: locale === 'vi' ? 'vi-VN' : 'en-US',
     format: 'long',
   });
+
+  // Display tags - already translated to Vietnamese on backend (or translate if needed)
+  const displayTags = useMemo(() => {
+    if (!image?.tags || image.tags.length === 0) return [];
+    
+    // If English locale, check if we have English tags stored separately
+    if (locale === 'en' && image.tagsEnglish && image.tagsEnglish.length > 0) {
+      return image.tagsEnglish; // Use English tags if available
+    }
+    
+    // If Vietnamese locale and tags are already in Vietnamese (from backend translation)
+    // Just return them - no translation needed!
+    if (locale === 'vi') {
+      return image.tags; // Already in Vietnamese (automatically translated on backend)
+    }
+    
+    // Fallback: translate using dictionary (for other languages or if translation failed)
+    return translateTags(image.tags, locale);
+  }, [image?.tags, image?.tagsEnglish, locale]);
 
   // Author name
   const authorName = useMemo(() => {
@@ -1993,9 +2013,9 @@ function ImagePage() {
             )}
 
             {/* Tags */}
-            {image.tags && Array.isArray(image.tags) && image.tags.length > 0 && (
+            {displayTags.length > 0 && (
               <div className="image-modal-image-tags">
-                {image.tags.map((tag, idx) => (
+                {displayTags.map((tag, idx) => (
                   <span key={idx} className="image-modal-image-tag">
                     <Tag size={14} />
                     {tag}

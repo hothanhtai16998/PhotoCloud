@@ -160,6 +160,8 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ email: 1, isAdmin: 1 }); // For admin queries filtering by email
 userSchema.index({ createdAt: -1 }); // For sorting users by creation date
 userSchema.index({ username: 1, isAdmin: 1 }); // For admin queries filtering by username
+userSchema.index({ favorites: 1 }); // For favorite queries (array field)
+userSchema.index({ 'favorites': 1, createdAt: -1 }); // Compound index for favorite queries with sorting
 
 // Text index for fast user search (username, email, displayName)
 userSchema.index({ 

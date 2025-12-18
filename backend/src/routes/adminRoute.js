@@ -35,6 +35,9 @@ import {
     createSystemAnnouncement,
     getSystemMetrics,
     getWebSocketMetrics,
+    getAITaggingStatus,
+    testGoogleVisionAPI,
+    translateTags,
     resetAllViewDownloadCounts,
     addTestViewDownloadData,
     listTestIds,
@@ -54,6 +57,8 @@ router.use(adminRoute);
 router.get('/dashboard/stats', requirePermission('viewDashboard'), getDashboardStats);
 router.get('/dashboard/metrics', requirePermission('viewDashboard'), getSystemMetrics);
 router.get('/dashboard/websocket-metrics', requirePermission('viewDashboard'), getWebSocketMetrics);
+router.get('/dashboard/ai-tagging-status', requirePermission('viewDashboard'), getAITaggingStatus);
+router.get('/dashboard/test-google-vision', requirePermission('viewDashboard'), testGoogleVisionAPI);
 router.get('/analytics', requirePermission('viewAnalytics'), getAnalytics);
 router.get('/analytics/realtime', requirePermission('viewAnalytics'), getRealtimeAnalytics);
 // Note: trackPageView is handled as a public route in server.js (before adminRoute middleware)

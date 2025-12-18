@@ -3022,7 +3022,10 @@ export function AdminSettings() {
                                         <span>{settings.aiTagging?.enabled ? 'Enabled' : 'Disabled'}</span>
                                     </div>
                                     <p className="admin-form-help-text">
-                                        When enabled, images will automatically receive AI-generated tags during upload processing
+                                        When enabled, images will automatically receive AI-generated tags during upload processing.
+                                        <br />
+                                        <strong>Cost:</strong> Google Vision API charges ~$1.50 per 1,000 images (no free tier). 
+                                        Only enable if you need automatic tagging for search/discovery.
                                     </p>
                                 </div>
 

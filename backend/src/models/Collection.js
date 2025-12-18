@@ -78,6 +78,9 @@ collectionSchema.index({ isPublic: 1, createdAt: -1 });
 collectionSchema.index({ name: 'text', description: 'text' }); // Text search
 collectionSchema.index({ tags: 1 }); // Index for tag filtering
 collectionSchema.index({ 'collaborators.user': 1 }); // Index for collaborator queries
+collectionSchema.index({ 'collaborators.user': 1, createdAt: -1 }); // Collaborator queries with sorting
+collectionSchema.index({ coverImage: 1 }); // Cover image lookups
+collectionSchema.index({ isPublic: 1, 'collaborators.user': 1 }); // Public + collaborator queries
 
 // Virtual for image count
 collectionSchema.virtual('imageCount').get(function() {

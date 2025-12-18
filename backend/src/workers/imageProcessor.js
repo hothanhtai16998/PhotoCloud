@@ -8,7 +8,7 @@ import { getObjectFromR2, uploadImageWithSizes, generateAvifFormats, deleteObjec
 import { streamToBuffer, extractMetadata } from '../utils/imageHelpers.js';
 import { parseTags, validateCoordinates } from '../utils/imageHelpers.js';
 import { clearCache } from '../middlewares/cacheMiddleware.js';
-import { generateAITags, mergeTags } from '../utils/aiTaggingService.js';
+// AI tagging moved to background queue - see aiTaggingQueue.js
 import { sendImageProcessingCompleteEmail } from '../utils/emailAlerts.js';
 
 // Safe logger fallback
@@ -67,20 +67,6 @@ export async function processUploadJob(job) {
         const metadataMs = Date.now() - metadataStart;
         log(`✅ Metadata extracted in ${metadataMs}ms`);
 
-        // === Generate AI tags ===
-        log(`🤖 Generating AI tags...`);
-        const aiTagsStart = Date.now();
-        let aiTags = [];
-        if (!isVideoFile && !isLargeGif) {
-            try {
-                aiTags = await generateAITags(buffer, mimetype);
-                log(`✅ Generated ${aiTags.length} AI tags in ${Date.now() - aiTagsStart}ms`);
-            } catch (error) {
-                logError('AI tagging failed (non-fatal)', error);
-                // Continue without AI tags
-            }
-        }
-
         // === PHASE 1: Upload critical formats (WebP + original) ===
         log(`📤 Phase 1: Uploading critical formats (WebP + original)...`);
         const uploadStart = Date.now();
@@ -93,8 +79,8 @@ export async function processUploadJob(job) {
         log(`💾 Creating database record...`);
         const dbStart = Date.now();
         const parsedTags = parseTags(tags);
-        // Merge user tags with AI-generated tags
-        const mergedTags = mergeTags(parsedTags, aiTags);
+        // Use only user tags initially (AI tags will be added in background)
+        const mergedTags = parsedTags;
         const parsedCoords = validateCoordinates(coordinates);
 
         const isVideo = uploadResult.isVideo || mimetype?.startsWith('video/') || false;
@@ -181,6 +167,23 @@ export async function processUploadJob(job) {
                 logError('Failed to send processing email', error);
             }
         })().catch(() => { });
+
+        // === Schedule AI tagging in background ===
+        if (!isVideoFile && !isLargeGif) {
+            try {
+                const { addAITaggingJob } = await import('./aiTaggingQueue.js');
+                addAITaggingJob({
+                    imageId: newImage._id.toString(),
+                    buffer: buffer, // Keep buffer for AI tagging
+                    mimetype: mimetype,
+                    userTags: parsedTags,
+                });
+                log(`📋 AI tagging job queued for background processing`);
+            } catch (error) {
+                logError('Failed to queue AI tagging job (non-fatal)', error);
+                // Continue - image upload succeeded
+            }
+        }
 
         const totalMs = Date.now() - jobStart;
         log(`🎉 PHASE 1 COMPLETE! Total: ${totalMs}ms (download: ${downloadMs}ms, metadata: ${metadataMs}ms, upload: ${uploadMs}ms, db: ${dbMs}ms)`);

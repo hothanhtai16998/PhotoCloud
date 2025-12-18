@@ -9,9 +9,10 @@ import Settings from '../models/Settings.js';
 
 /**
  * Generate tags from image using AI service
+ * Returns English tags only - translation happens on frontend using dictionary (free, instant)
  * @param {Buffer} imageBuffer - Image buffer
  * @param {string} mimetype - Image MIME type
- * @returns {Promise<string[]>} Array of tag strings
+ * @returns {Promise<string[]>} Array of English tag strings
  */
 export async function generateAITags(imageBuffer, mimetype) {
     try {
@@ -20,7 +21,7 @@ export async function generateAITags(imageBuffer, mimetype) {
         const aiSettings = settings?.value?.aiTagging || {};
         
         const provider = aiSettings.provider || 'fallback'; // 'google', 'aws', or 'fallback'
-        const enabled = aiSettings.enabled !== false; // Default to true if not set
+        const enabled = aiSettings.enabled === true; // Default to false - must explicitly enable
 
         if (!enabled) {
             logger.info('[AI Tagging] Service disabled, skipping tag generation');
@@ -68,6 +69,8 @@ export async function generateAITags(imageBuffer, mimetype) {
 
 /**
  * Generate tags using Google Cloud Vision API
+ * Returns English tags only - translation happens on frontend (free, instant)
+ * @returns {Promise<string[]>} Array of English tag strings
  */
 async function generateTagsWithGoogleVision(imageBuffer, settings) {
     const apiKey = settings.googleApiKey;
@@ -101,7 +104,7 @@ async function generateTagsWithGoogleVision(imageBuffer, settings) {
 
         const tags = new Set();
 
-        // Extract labels
+        // Extract labels (in English from Vision API)
         if (response.data?.responses?.[0]?.labelAnnotations) {
             response.data.responses[0].labelAnnotations.forEach((label) => {
                 if (label.score > 0.5) { // Only include high-confidence labels
@@ -110,7 +113,7 @@ async function generateTagsWithGoogleVision(imageBuffer, settings) {
             });
         }
 
-        // Extract objects
+        // Extract objects (in English from Vision API)
         if (response.data?.responses?.[0]?.localizedObjectAnnotations) {
             response.data.responses[0].localizedObjectAnnotations.forEach((obj) => {
                 if (obj.score > 0.5) {
@@ -122,7 +125,15 @@ async function generateTagsWithGoogleVision(imageBuffer, settings) {
         return Array.from(tags);
 
     } catch (error) {
-        logger.error('[AI Tagging] Google Vision API error', { error: error.message });
+        const errorMessage = error.response?.data?.error?.message || error.message;
+        const statusCode = error.response?.status || error.code;
+        
+        logger.error('[AI Tagging] Google Vision API error', { 
+            error: errorMessage,
+            statusCode: statusCode,
+            details: statusCode === 403 ? 'API key may be invalid, restricted, or billing not enabled. Check Google Cloud Console.' : undefined
+        });
+        
         // Fallback to keyword extraction
         return await generateTagsFallback(imageBuffer);
     }

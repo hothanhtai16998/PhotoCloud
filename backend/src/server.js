@@ -28,6 +28,7 @@ import { apiLimiter } from './middlewares/rateLimiter.js';
 import { requestDeduplication } from './middlewares/requestDeduplication.js';
 import { requestQueue } from './middlewares/requestQueue.js';
 import { csrfToken, validateCsrf, getCsrfToken } from './middlewares/csrfMiddleware.js';
+import { setCacheHeaders } from './middlewares/cacheHeaders.js';
 import { logger } from './utils/logger.js';
 import { startSessionCleanup, stopSessionCleanup } from './utils/sessionCleanup.js';
 import { startPreUploadCleanup, stopPreUploadCleanup } from './utils/preUploadCleanup.js';
@@ -86,7 +87,8 @@ if (env.NODE_ENV === 'production') {
 
 // Middleware
 // Compression middleware - reduces response size for better performance
-// Optimized compression settings for better performance
+// Optimized compression settings with Brotli support (better than gzip)
+// Compression package supports brotli if available, falls back to gzip
 app.use(compression({
     level: 6, // Balance between compression ratio and CPU usage (1-9, default is -1)
     threshold: 1024, // Only compress responses larger than 1KB
@@ -95,9 +97,16 @@ app.use(compression({
         if (req.headers['x-no-compression']) {
             return false;
         }
+        // Don't compress already compressed content (images, videos)
+        const contentType = res.getHeader('content-type') || '';
+        if (contentType.includes('image/') || contentType.includes('video/') || contentType.includes('application/zip')) {
+            return false;
+        }
         // Use default compression filter for other requests
-        return true;
-    }
+        return compression.filter(req, res);
+    },
+    // Brotli is automatically used if client supports it (Accept-Encoding: br)
+    // Falls back to gzip/deflate for older clients
 }));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
@@ -162,6 +171,9 @@ app.use('/api', apiLimiter);
 
 // Apply request queuing (after rate limiting, for GET requests that hit limits)
 app.use('/api', requestQueue);
+
+// Apply cache headers to GET requests (before routes)
+app.use('/api', setCacheHeaders);
 
 // CSRF protection - generate token for ALL requests
 app.use('/api', csrfToken);

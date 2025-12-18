@@ -37,7 +37,8 @@ export interface Image {
   shutterSpeed?: string; // Shutter speed (e.g., "1/80", "2s")
   iso?: number; // ISO sensitivity (e.g., 100)
   dominantColors?: string[]; // Array of color names: 'red', 'orange', 'yellow', etc.
-  tags?: string[]; // Array of tag strings for searchability
+  tags?: string[]; // Array of tag strings for searchability (translated tags for display)
+  tagsEnglish?: string[]; // Original English tags (for search and language switching)
   views?: number;
   downloads?: number;
   favoriteCount?: number;

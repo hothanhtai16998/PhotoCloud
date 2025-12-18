@@ -155,6 +155,12 @@ const imageSchema = new mongoose.Schema(
             type: [String],
             default: [],
             index: true, // Index for fast tag-based searches
+            // Translated tags (e.g., Vietnamese) for display
+        },
+        tagsEnglish: {
+            type: [String],
+            default: undefined,
+            // English tags for search optimization (optional, can search in translated tags too)
         },
         views: {
             type: Number,
@@ -239,6 +245,11 @@ imageSchema.index({ dominantColors: 1 });
 
 // Compound index for location + date (for location-based queries)
 imageSchema.index({ location: 1, createdAt: -1 });
+
+// Additional performance indexes
+imageSchema.index({ uploadedBy: 1, moderationStatus: 1, createdAt: -1 }); // User images with moderation filter
+imageSchema.index({ isVideo: 1, createdAt: -1 }); // Video filtering
+imageSchema.index({ tags: 1, createdAt: -1 }); // Tag-based queries (if tags array exists)
 
 const Image = mongoose.model('Image', imageSchema);
 

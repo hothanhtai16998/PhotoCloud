@@ -286,3 +286,58 @@ export const getWebSocketMetrics = asyncHandler(async (req, res) => {
     });
 });
 
+// AI Tagging Status Endpoint
+export const getAITaggingStatus = asyncHandler(async (req, res) => {
+    // Permission check is handled by requirePermission('viewDashboard') middleware in routes
+    
+    const { checkAITaggingStatus } = await import('../../utils/checkAITaggingStatus.js');
+    const status = await checkAITaggingStatus();
+    
+    res.json({
+        success: true,
+        status: status,
+    });
+});
+
+// Test Google Vision API Key Endpoint
+export const testGoogleVisionAPI = asyncHandler(async (req, res) => {
+    // Permission check is handled by requirePermission('viewDashboard') middleware in routes
+    
+    const { testGoogleVisionAPI: testAPI } = await import('../../utils/testGoogleVisionAPI.js');
+    const apiKey = req.query.apiKey || null; // Optional: test specific key
+    const result = await testAPI(apiKey);
+    
+    res.json({
+        success: result.success,
+        result: result,
+    });
+});
+
+// Translate Tags Endpoint (for frontend)
+export const translateTags = asyncHandler(async (req, res) => {
+    const { tags, targetLanguage } = req.body;
+    
+    if (!tags || !Array.isArray(tags)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Tags array is required',
+        });
+    }
+
+    try {
+        const { translateTags: translateTagsFunc } = await import('../../utils/tagTranslator.js');
+        const translatedTags = await translateTagsFunc(tags, targetLanguage || 'vi');
+        
+        res.json({
+            success: true,
+            translatedTags: translatedTags,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Translation failed',
+            error: error.message,
+        });
+    }
+});
+
