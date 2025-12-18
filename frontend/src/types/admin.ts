@@ -41,6 +41,9 @@ export interface AnalyticsData {
     total: number;
     new: number;
     banned: number;
+    activeLast7Days?: number;
+    activeLast30Days?: number;
+    retentionRate?: number;
   };
   images: {
     total: number;
@@ -104,6 +107,93 @@ export interface AnalyticsData {
   }>;
   totalViews?: number;
   totalDownloads?: number;
+  // New engagement metrics
+  mostViewedImages?: Array<{
+    _id: string;
+    imageTitle: string;
+    imageUrl: string;
+    views: number;
+    downloads: number;
+    favorites: number;
+    uploadedBy: {
+      _id: string;
+      username: string;
+      displayName: string;
+    };
+    createdAt: string;
+  }>;
+  mostDownloadedImages?: Array<{
+    _id: string;
+    imageTitle: string;
+    imageUrl: string;
+    views: number;
+    downloads: number;
+    favorites: number;
+    uploadedBy: {
+      _id: string;
+      username: string;
+      displayName: string;
+    };
+    createdAt: string;
+  }>;
+  mostFavoritedImages?: Array<{
+    _id: string;
+    imageTitle: string;
+    imageUrl: string;
+    views: number;
+    downloads: number;
+    favorites: number;
+    uploadedBy: {
+      _id: string;
+      username: string;
+      displayName: string;
+    };
+    createdAt: string;
+  }>;
+  trendingImages?: Array<{
+    _id: string;
+    imageTitle: string;
+    imageUrl: string;
+    views: number;
+    downloads: number;
+    favorites: number;
+    engagementScore: number;
+    uploadedBy: {
+      _id: string;
+      username: string;
+      displayName: string;
+    };
+    createdAt: string;
+  }>;
+  popularTags?: Array<{
+    tag: string;
+    count: number;
+  }>;
+  popularLocations?: Array<{
+    location: string;
+    count: number;
+  }>;
+}
+
+export interface TrafficAnalyticsData {
+  period: {
+    days: number;
+    startDate: string;
+  };
+  pageViewsByRoute: Array<{
+    path: string;
+    views: number;
+  }>;
+  peakUsageTimes: Array<{
+    hour: number;
+    views: number;
+  }>;
+  dailyPageViews: Array<{
+    date: string;
+    views: number;
+  }>;
+  uniqueVisitors: number;
+  uniqueAuthenticatedUsers: number;
 }
 
 export interface RealtimeAnalyticsResponse {

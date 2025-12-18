@@ -206,12 +206,72 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
             setFilters(newFilters);
 
             if (location.pathname === '/') {
-                fetchImages({
+                const fetchParams: any = {
                     search: searchQuery.trim() || undefined,
                     color: newFilters.color !== 'all' ? newFilters.color : undefined,
                     page: 1,
                     _refresh: true,
-                });
+                };
+                
+                // Add date range filters
+                if (newFilters.dateFrom) {
+                    fetchParams.dateFrom = newFilters.dateFrom;
+                }
+                if (newFilters.dateTo) {
+                    fetchParams.dateTo = newFilters.dateTo;
+                }
+                
+                // Add orientation filter
+                if (newFilters.orientation && newFilters.orientation !== 'all') {
+                    fetchParams.orientation = newFilters.orientation;
+                }
+                
+                // Add sorting
+                if (newFilters.sortBy) {
+                    fetchParams.sortBy = newFilters.sortBy;
+                }
+                if (newFilters.order) {
+                    fetchParams.order = newFilters.order;
+                }
+                
+                // Add EXIF filters
+                if (newFilters.cameraMake) {
+                    fetchParams.cameraMake = newFilters.cameraMake;
+                }
+                if (newFilters.cameraModel) {
+                    fetchParams.cameraModel = newFilters.cameraModel;
+                }
+                if (newFilters.focalLengthMin !== undefined) {
+                    fetchParams.focalLengthMin = newFilters.focalLengthMin;
+                }
+                if (newFilters.focalLengthMax !== undefined) {
+                    fetchParams.focalLengthMax = newFilters.focalLengthMax;
+                }
+                if (newFilters.apertureMin !== undefined) {
+                    fetchParams.apertureMin = newFilters.apertureMin;
+                }
+                if (newFilters.apertureMax !== undefined) {
+                    fetchParams.apertureMax = newFilters.apertureMax;
+                }
+                if (newFilters.isoMin !== undefined) {
+                    fetchParams.isoMin = newFilters.isoMin;
+                }
+                if (newFilters.isoMax !== undefined) {
+                    fetchParams.isoMax = newFilters.isoMax;
+                }
+                
+                // Add dimension filters
+                if (newFilters.minWidth !== undefined) {
+                    fetchParams.minWidth = newFilters.minWidth;
+                }
+                if (newFilters.minHeight !== undefined) {
+                    fetchParams.minHeight = newFilters.minHeight;
+                }
+                if (newFilters.aspectRatio) {
+                    fetchParams.aspectRatio = newFilters.aspectRatio;
+                }
+                
+                fetchImages(fetchParams);
             }
         },
         [setFilters, location.pathname, searchQuery, fetchImages]

@@ -1,9 +1,12 @@
 // Service Worker for Aggressive Image Preloading and Caching (Unsplash Technique)
 // This service worker preloads images before they're needed to prevent flashing
 
-const CACHE_NAME = 'photo-app-images-v2';
-const PRELOAD_CACHE = 'photo-app-preload-v2';
+const CACHE_NAME = 'photo-app-images-v3';
+const PRELOAD_CACHE = 'photo-app-preload-v3';
+const API_CACHE = 'photo-app-api-v3';
+const STATIC_CACHE = 'photo-app-static-v3';
 const MAX_CACHE_SIZE = 100 * 1024 * 1024; // 100MB max cache size
+const API_CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes for API responses
 
 // Install event - set up cache
 self.addEventListener('install', (event) => {
@@ -18,7 +21,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== PRELOAD_CACHE)
+          .filter((name) => name !== CACHE_NAME && name !== PRELOAD_CACHE && name !== API_CACHE && name !== STATIC_CACHE)
           .map((name) => caches.delete(name))
       );
     })
@@ -30,7 +33,47 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
-  // Only handle image requests
+  // Only handle requests from same origin
+  if (url.origin !== self.location.origin) {
+    return; // Let browser handle cross-origin requests
+  }
+
+  // Priority order: API > Images > Static assets
+  // Handle API requests with network-first, fallback to cache
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache successful GET requests
+          if (event.request.method === 'GET' && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(API_CACHE).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Network failed, try cache
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            // Return offline response for API calls
+            return new Response(
+              JSON.stringify({ error: 'Offline', message: 'No internet connection' }),
+              {
+                status: 503,
+                headers: { 'Content-Type': 'application/json' }
+              }
+            );
+          });
+        })
+    );
+    return;
+  }
+
+  // Handle image requests
   if (
     url.pathname.match(/\.(jpg|jpeg|png|gif|webp|avif|svg)$/i) ||
     event.request.headers.get('accept')?.includes('image')
@@ -85,10 +128,31 @@ self.addEventListener('fetch', (event) => {
           });
       })
     );
+    return;
+  }
+
+  // Cache static assets (HTML, CSS, JS) with cache-first strategy
+  if (url.pathname.match(/\.(html|css|js|json|woff|woff2|ttf|eot)$/i)) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((response) => {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
   }
   
-  // For non-image requests, use network-first strategy
-  // (don't intercept, let browser handle normally)
+  // For all other requests, let browser handle normally (don't call respondWith)
 });
 
 // Cleanup old cache entries to prevent unlimited growth

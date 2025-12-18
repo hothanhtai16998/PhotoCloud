@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/chart';
 import type { AnalyticsData } from '@/types/admin';
 import { AdminWebSocketMetrics } from './AdminWebSocketMetrics';
+import { AdminTrafficAnalytics } from './AdminTrafficAnalytics';
 
 type MetricTab = 'users' | 'images' | 'pending' | 'approved';
 
@@ -350,6 +351,24 @@ export function AdminAnalytics() {
                                     <div className="falcon-stat-label">{t('admin.bannedUsers')}</div>
                                     <div className="falcon-stat-value">{(displayAnalytics.users as any).banned?.toLocaleString() || '0'}</div>
                                 </div>
+                                {displayAnalytics.users.activeLast7Days !== undefined && (
+                                    <div className="falcon-stat-item">
+                                        <div className="falcon-stat-label">{t('admin.activeUsers7Days') || 'Active (7 days)'}</div>
+                                        <div className="falcon-stat-value">{displayAnalytics.users.activeLast7Days.toLocaleString()}</div>
+                                    </div>
+                                )}
+                                {displayAnalytics.users.activeLast30Days !== undefined && (
+                                    <div className="falcon-stat-item">
+                                        <div className="falcon-stat-label">{t('admin.activeUsers30Days') || 'Active (30 days)'}</div>
+                                        <div className="falcon-stat-value">{displayAnalytics.users.activeLast30Days.toLocaleString()}</div>
+                                    </div>
+                                )}
+                                {displayAnalytics.users.retentionRate !== undefined && (
+                                    <div className="falcon-stat-item">
+                                        <div className="falcon-stat-label">{t('admin.retentionRate') || 'Retention Rate'}</div>
+                                        <div className="falcon-stat-value">{displayAnalytics.users.retentionRate.toFixed(1)}%</div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -591,6 +610,223 @@ export function AdminAnalytics() {
                         );
                     })}
                 </div>
+            </div>
+
+            {/* Image Performance Analytics */}
+            {(displayAnalytics.mostViewedImages || displayAnalytics.mostDownloadedImages || displayAnalytics.mostFavoritedImages || displayAnalytics.trendingImages) && (
+                <div className="admin-section" style={{ marginTop: '2rem' }}>
+                    <h2 className="admin-section-title">
+                        <BarChart2 size={20} />
+                        {t('admin.imagePerformance') || 'Image Performance'}
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
+                        {displayAnalytics.mostViewedImages && displayAnalytics.mostViewedImages.length > 0 && (
+                            <div className="falcon-card">
+                                <div className="falcon-card-header">
+                                    <h3 className="falcon-card-title">{t('admin.mostViewed') || 'Most Viewed'}</h3>
+                                </div>
+                                <div className="falcon-card-body">
+                                    <div className="falcon-table-container">
+                                        <table className="falcon-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th>Views</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {displayAnalytics.mostViewedImages.slice(0, 5).map((img) => (
+                                                    <tr key={img._id}>
+                                                        <td>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <img src={img.smallUrl || img.imageUrl} alt={img.imageTitle} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                                                <span style={{ fontSize: '0.875rem' }}>{img.imageTitle || 'Untitled'}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>{(img.views || 0).toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {displayAnalytics.mostDownloadedImages && displayAnalytics.mostDownloadedImages.length > 0 && (
+                            <div className="falcon-card">
+                                <div className="falcon-card-header">
+                                    <h3 className="falcon-card-title">{t('admin.mostDownloaded') || 'Most Downloaded'}</h3>
+                                </div>
+                                <div className="falcon-card-body">
+                                    <div className="falcon-table-container">
+                                        <table className="falcon-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th>Downloads</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {displayAnalytics.mostDownloadedImages.slice(0, 5).map((img) => (
+                                                    <tr key={img._id}>
+                                                        <td>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <img src={img.smallUrl || img.imageUrl} alt={img.imageTitle} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                                                <span style={{ fontSize: '0.875rem' }}>{img.imageTitle || 'Untitled'}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>{(img.downloads || 0).toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {displayAnalytics.mostFavoritedImages && displayAnalytics.mostFavoritedImages.length > 0 && (
+                            <div className="falcon-card">
+                                <div className="falcon-card-header">
+                                    <h3 className="falcon-card-title">{t('admin.mostFavorited') || 'Most Favorited'}</h3>
+                                </div>
+                                <div className="falcon-card-body">
+                                    <div className="falcon-table-container">
+                                        <table className="falcon-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Image</th>
+                                                    <th>Favorites</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {displayAnalytics.mostFavoritedImages.slice(0, 5).map((img) => (
+                                                    <tr key={img._id}>
+                                                        <td>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                                <img src={img.smallUrl || img.imageUrl} alt={img.imageTitle} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                                                <span style={{ fontSize: '0.875rem' }}>{img.imageTitle || 'Untitled'}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>{(img.favorites || 0).toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    {displayAnalytics.trendingImages && displayAnalytics.trendingImages.length > 0 && (
+                        <div className="falcon-card" style={{ marginTop: '1.5rem' }}>
+                            <div className="falcon-card-header">
+                                <h3 className="falcon-card-title">{t('admin.trendingImages') || 'Trending Images (Last 7 Days)'}</h3>
+                            </div>
+                            <div className="falcon-card-body">
+                                <div className="falcon-table-container">
+                                    <table className="falcon-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Image</th>
+                                                <th>Engagement Score</th>
+                                                <th>Views</th>
+                                                <th>Downloads</th>
+                                                <th>Favorites</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {displayAnalytics.trendingImages.slice(0, 10).map((img) => (
+                                                <tr key={img._id}>
+                                                    <td>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            <img src={img.smallUrl || img.imageUrl} alt={img.imageTitle} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                                                            <span style={{ fontSize: '0.875rem' }}>{img.imageTitle || 'Untitled'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td><strong>{(img.engagementScore || 0).toLocaleString()}</strong></td>
+                                                    <td>{(img.views || 0).toLocaleString()}</td>
+                                                    <td>{(img.downloads || 0).toLocaleString()}</td>
+                                                    <td>{(img.favorites || 0).toLocaleString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Content Analytics */}
+            {(displayAnalytics.popularTags || displayAnalytics.popularLocations) && (
+                <div className="admin-section" style={{ marginTop: '2rem' }}>
+                    <h2 className="admin-section-title">
+                        <BarChart2 size={20} />
+                        {t('admin.contentAnalytics') || 'Content Analytics'}
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginTop: '1rem' }}>
+                        {displayAnalytics.popularTags && displayAnalytics.popularTags.length > 0 && (
+                            <div className="falcon-card">
+                                <div className="falcon-card-header">
+                                    <h3 className="falcon-card-title">{t('admin.popularTags') || 'Popular Tags'}</h3>
+                                </div>
+                                <div className="falcon-card-body">
+                                    <div className="falcon-table-container">
+                                        <table className="falcon-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tag</th>
+                                                    <th>Count</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {displayAnalytics.popularTags.map((tag, idx) => (
+                                                    <tr key={idx}>
+                                                        <td><strong>#{tag.tag}</strong></td>
+                                                        <td>{tag.count.toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {displayAnalytics.popularLocations && displayAnalytics.popularLocations.length > 0 && (
+                            <div className="falcon-card">
+                                <div className="falcon-card-header">
+                                    <h3 className="falcon-card-title">{t('admin.popularLocations') || 'Popular Locations'}</h3>
+                                </div>
+                                <div className="falcon-card-body">
+                                    <div className="falcon-table-container">
+                                        <table className="falcon-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Location</th>
+                                                    <th>Count</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {displayAnalytics.popularLocations.map((loc, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{loc.location}</td>
+                                                        <td>{loc.count.toLocaleString()}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Traffic Analytics Section */}
+            <div style={{ marginTop: '2rem' }}>
+                <AdminTrafficAnalytics />
             </div>
 
             {/* WebSocket Metrics Section */}

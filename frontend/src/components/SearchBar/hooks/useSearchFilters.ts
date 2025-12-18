@@ -6,6 +6,21 @@ export interface SearchFiltersType {
   color: string;
   dateFrom: string;
   dateTo: string;
+  sortBy?: 'date' | 'views' | 'downloads' | 'favorites' | 'relevance';
+  order?: 'asc' | 'desc';
+  // EXIF filters
+  cameraMake?: string;
+  cameraModel?: string;
+  focalLengthMin?: number;
+  focalLengthMax?: number;
+  apertureMin?: number;
+  apertureMax?: number;
+  isoMin?: number;
+  isoMax?: number;
+  // Image dimensions
+  minWidth?: number;
+  minHeight?: number;
+  aspectRatio?: string;
 }
 
 interface UseSearchFiltersReturn {
@@ -19,6 +34,8 @@ const DEFAULT_FILTERS: SearchFiltersType = {
   color: 'all',
   dateFrom: '',
   dateTo: '',
+  sortBy: 'date',
+  order: 'desc',
 };
 
 /**

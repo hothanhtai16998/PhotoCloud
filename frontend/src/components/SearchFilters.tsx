@@ -1,17 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
-import { X, Filter, Calendar, Palette, Image as ImageIcon } from 'lucide-react';
+import { X, Filter, Calendar, Palette, Image as ImageIcon, ArrowUpDown, Camera, Settings } from 'lucide-react';
 import { t } from '@/i18n';
+import type { SearchFiltersType } from '@/components/SearchBar/hooks/useSearchFilters';
 import './SearchFilters.css';
 
 export type Orientation = 'all' | 'portrait' | 'landscape' | 'square';
 export type ColorFilter = 'all' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'brown' | 'black' | 'white' | 'gray';
 
-export interface SearchFilters {
-  orientation: Orientation;
-  color: ColorFilter;
-  dateFrom: string;
-  dateTo: string;
-}
+// Re-export SearchFiltersType as SearchFilters for backward compatibility
+export type SearchFilters = SearchFiltersType;
 
 interface SearchFiltersProps {
   filters: SearchFilters;
@@ -25,9 +22,10 @@ export default function SearchFiltersComponent({
   onReset,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [localFilters, setLocalFilters] = useState<SearchFilters>(filters);
 
-  const handleFilterChange = useCallback((key: keyof SearchFilters, value: string) => {
+  const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | undefined) => {
     const newFilters = { ...localFilters, [key]: value };
     setLocalFilters(newFilters);
     onFiltersChange(newFilters);
@@ -39,6 +37,8 @@ export default function SearchFiltersComponent({
       color: 'all',
       dateFrom: '',
       dateTo: '',
+      sortBy: 'date',
+      order: 'desc',
     };
     setLocalFilters(defaultFilters);
     onFiltersChange(defaultFilters);
@@ -48,7 +48,20 @@ export default function SearchFiltersComponent({
   const hasActiveFilters = filters.orientation !== 'all' || 
     filters.color !== 'all' || 
     filters.dateFrom || 
-    filters.dateTo;
+    filters.dateTo ||
+    filters.sortBy !== 'date' ||
+    filters.order !== 'desc' ||
+    filters.cameraMake ||
+    filters.cameraModel ||
+    filters.focalLengthMin !== undefined ||
+    filters.focalLengthMax !== undefined ||
+    filters.apertureMin !== undefined ||
+    filters.apertureMax !== undefined ||
+    filters.isoMin !== undefined ||
+    filters.isoMax !== undefined ||
+    filters.minWidth !== undefined ||
+    filters.minHeight !== undefined ||
+    filters.aspectRatio !== undefined;
 
   // Prevent body scroll when filter is open
   useEffect(() => {
@@ -221,6 +234,201 @@ export default function SearchFiltersComponent({
                   </div>
                 </div>
               </div>
+
+              {/* Sort Options */}
+              <div className="filter-group">
+                <label className="filter-label">
+                  <ArrowUpDown size={16} />
+                  {t('search.sortBy') || 'Sort by'}
+                </label>
+                <div className="filter-sort-container">
+                  <select
+                    value={localFilters.sortBy || 'date'}
+                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="date">{t('search.sortDate') || 'Date'}</option>
+                    <option value="views">{t('search.sortViews') || 'Views'}</option>
+                    <option value="downloads">{t('search.sortDownloads') || 'Downloads'}</option>
+                    <option value="favorites">{t('search.sortFavorites') || 'Favorites'}</option>
+                    <option value="relevance">{t('search.sortRelevance') || 'Relevance'}</option>
+                  </select>
+                  <select
+                    value={localFilters.order || 'desc'}
+                    onChange={(e) => handleFilterChange('order', e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="desc">{t('search.sortDesc') || 'Descending'}</option>
+                    <option value="asc">{t('search.sortAsc') || 'Ascending'}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Advanced Filters Toggle */}
+              <div className="filter-group">
+                <button
+                  type="button"
+                  className="filter-advanced-toggle"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                >
+                  <Settings size={16} />
+                  <span>{showAdvanced ? (t('search.hideAdvanced') || 'Hide Advanced') : (t('search.showAdvanced') || 'Show Advanced')}</span>
+                </button>
+              </div>
+
+              {/* Advanced Filters (EXIF & Dimensions) */}
+              {showAdvanced && (
+                <>
+                  {/* Camera Filters */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      <Camera size={16} />
+                      {t('search.camera') || 'Camera'}
+                    </label>
+                    <div className="filter-input-group">
+                      <input
+                        type="text"
+                        placeholder={t('search.cameraMake') || 'Make (e.g., Canon)'}
+                        value={localFilters.cameraMake || ''}
+                        onChange={(e) => handleFilterChange('cameraMake', e.target.value || undefined)}
+                        className="filter-input"
+                      />
+                      <input
+                        type="text"
+                        placeholder={t('search.cameraModel') || 'Model (e.g., EOS R5)'}
+                        value={localFilters.cameraModel || ''}
+                        onChange={(e) => handleFilterChange('cameraModel', e.target.value || undefined)}
+                        className="filter-input"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Focal Length */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      {t('search.focalLength') || 'Focal Length (mm)'}
+                    </label>
+                    <div className="filter-range-group">
+                      <input
+                        type="number"
+                        placeholder={t('search.min') || 'Min'}
+                        value={localFilters.focalLengthMin || ''}
+                        onChange={(e) => handleFilterChange('focalLengthMin', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                      />
+                      <span>-</span>
+                      <input
+                        type="number"
+                        placeholder={t('search.max') || 'Max'}
+                        value={localFilters.focalLengthMax || ''}
+                        onChange={(e) => handleFilterChange('focalLengthMax', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Aperture */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      {t('search.aperture') || 'Aperture (f/stop)'}
+                    </label>
+                    <div className="filter-range-group">
+                      <input
+                        type="number"
+                        placeholder={t('search.min') || 'Min'}
+                        value={localFilters.apertureMin || ''}
+                        onChange={(e) => handleFilterChange('apertureMin', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                        step="0.1"
+                      />
+                      <span>-</span>
+                      <input
+                        type="number"
+                        placeholder={t('search.max') || 'Max'}
+                        value={localFilters.apertureMax || ''}
+                        onChange={(e) => handleFilterChange('apertureMax', e.target.value ? parseFloat(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                        step="0.1"
+                      />
+                    </div>
+                  </div>
+
+                  {/* ISO */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      {t('search.iso') || 'ISO'}
+                    </label>
+                    <div className="filter-range-group">
+                      <input
+                        type="number"
+                        placeholder={t('search.min') || 'Min'}
+                        value={localFilters.isoMin || ''}
+                        onChange={(e) => handleFilterChange('isoMin', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                      />
+                      <span>-</span>
+                      <input
+                        type="number"
+                        placeholder={t('search.max') || 'Max'}
+                        value={localFilters.isoMax || ''}
+                        onChange={(e) => handleFilterChange('isoMax', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Image Dimensions */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      {t('search.dimensions') || 'Minimum Dimensions'}
+                    </label>
+                    <div className="filter-range-group">
+                      <input
+                        type="number"
+                        placeholder={t('search.width') || 'Width (px)'}
+                        value={localFilters.minWidth || ''}
+                        onChange={(e) => handleFilterChange('minWidth', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                      />
+                      <span>x</span>
+                      <input
+                        type="number"
+                        placeholder={t('search.height') || 'Height (px)'}
+                        value={localFilters.minHeight || ''}
+                        onChange={(e) => handleFilterChange('minHeight', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="filter-number-input"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Aspect Ratio */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      {t('search.aspectRatio') || 'Aspect Ratio'}
+                    </label>
+                    <select
+                      value={localFilters.aspectRatio || ''}
+                      onChange={(e) => handleFilterChange('aspectRatio', e.target.value || undefined)}
+                      className="filter-select"
+                    >
+                      <option value="">{t('common.all') || 'All'}</option>
+                      <option value="16:9">16:9</option>
+                      <option value="4:3">4:3</option>
+                      <option value="3:2">3:2</option>
+                      <option value="1:1">1:1</option>
+                      <option value="21:9">21:9</option>
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="search-filters-footer">

@@ -34,6 +34,59 @@ export const imageFetchService = {
     if (params?.tag) {
       queryParams.append('tag', params.tag);
     }
+    if (params?.tags && params.tags.length > 0) {
+      params.tags.forEach(tag => queryParams.append('tags', tag));
+    }
+    if (params?.dateFrom) {
+      queryParams.append('dateFrom', params.dateFrom);
+    }
+    if (params?.dateTo) {
+      queryParams.append('dateTo', params.dateTo);
+    }
+    if (params?.orientation && params.orientation !== 'all') {
+      queryParams.append('orientation', params.orientation);
+    }
+    if (params?.sortBy) {
+      queryParams.append('sortBy', params.sortBy);
+    }
+    if (params?.order) {
+      queryParams.append('order', params.order);
+    }
+    // EXIF filters
+    if (params?.cameraMake) {
+      queryParams.append('cameraMake', params.cameraMake);
+    }
+    if (params?.cameraModel) {
+      queryParams.append('cameraModel', params.cameraModel);
+    }
+    if (params?.focalLengthMin !== undefined) {
+      queryParams.append('focalLengthMin', params.focalLengthMin.toString());
+    }
+    if (params?.focalLengthMax !== undefined) {
+      queryParams.append('focalLengthMax', params.focalLengthMax.toString());
+    }
+    if (params?.apertureMin !== undefined) {
+      queryParams.append('apertureMin', params.apertureMin.toString());
+    }
+    if (params?.apertureMax !== undefined) {
+      queryParams.append('apertureMax', params.apertureMax.toString());
+    }
+    if (params?.isoMin !== undefined) {
+      queryParams.append('isoMin', params.isoMin.toString());
+    }
+    if (params?.isoMax !== undefined) {
+      queryParams.append('isoMax', params.isoMax.toString());
+    }
+    // Image dimensions
+    if (params?.minWidth !== undefined) {
+      queryParams.append('minWidth', params.minWidth.toString());
+    }
+    if (params?.minHeight !== undefined) {
+      queryParams.append('minHeight', params.minHeight.toString());
+    }
+    if (params?.aspectRatio) {
+      queryParams.append('aspectRatio', params.aspectRatio);
+    }
 
     // Add cache-busting timestamp if refresh is requested
     if (params?._refresh) {

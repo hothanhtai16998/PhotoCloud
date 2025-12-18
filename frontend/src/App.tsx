@@ -9,6 +9,7 @@ import { useSiteSettings } from "./hooks/useSiteSettings";
 import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";
 import { ContactButton } from "./components/ContactButton";
 import ImagePageSidebar from "./components/ImagePageSidebar";
+import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import {
   isPageRefresh,
   clearModalStateOnRefresh,
@@ -244,6 +245,9 @@ function App() {
 
         {/* Floating Contact Button - appears on all pages */}
         <ContactButton />
+        
+        {/* PWA Install Prompt */}
+        <PWAInstallPrompt />
       </Suspense>
     </ActualLocationContext.Provider>
   )

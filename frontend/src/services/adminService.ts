@@ -361,6 +361,17 @@ export const adminService = {
         return res.data;
     },
 
+    getTrafficAnalytics: async (days?: number): Promise<import('@/types/admin').TrafficAnalyticsData> => {
+        const queryParams = new URLSearchParams();
+        if (days) queryParams.append('days', days.toString());
+        const queryString = queryParams.toString();
+        const url = queryString ? `/admin/analytics/traffic?${queryString}` : '/admin/analytics/traffic';
+        const res = await api.get(url, {
+            withCredentials: true,
+        });
+        return res.data;
+    },
+
     trackPageView: async (path: string): Promise<void> => {
         await api.post('/admin/analytics/track', { path }, {
             withCredentials: true,

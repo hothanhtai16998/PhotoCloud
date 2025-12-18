@@ -13,6 +13,7 @@ import {
     moderateImage,
     getAnalytics,
     getRealtimeAnalytics,
+    getTrafficAnalytics,
     trackPageView,
     getAllAdminRoles,
     getAdminRole,
@@ -61,6 +62,7 @@ router.get('/dashboard/ai-tagging-status', requirePermission('viewDashboard'), g
 router.get('/dashboard/test-google-vision', requirePermission('viewDashboard'), testGoogleVisionAPI);
 router.get('/analytics', requirePermission('viewAnalytics'), getAnalytics);
 router.get('/analytics/realtime', requirePermission('viewAnalytics'), getRealtimeAnalytics);
+router.get('/analytics/traffic', requirePermission('viewAnalytics'), getTrafficAnalytics);
 // Note: trackPageView is handled as a public route in server.js (before adminRoute middleware)
 
 // User Management

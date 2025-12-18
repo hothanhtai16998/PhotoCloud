@@ -5,6 +5,41 @@ import { logger } from '../utils/logger.js';
 import { PAGINATION } from '../utils/constants.js';
 import { safeTrim, escapeRegex } from '../utils/inputUtils.js';
 
+/**
+ * Build sort query based on sortBy parameter
+ */
+function buildSortQuery(sortBy, order, useTextSearch) {
+    const sortOrder = order === 'asc' ? 1 : -1;
+    const sortQuery = {};
+    
+    switch (sortBy) {
+        case 'relevance':
+            if (useTextSearch) {
+                sortQuery.score = { $meta: 'textScore' };
+            }
+            sortQuery.createdAt = -1; // Fallback
+            break;
+        case 'views':
+            sortQuery.views = sortOrder;
+            sortQuery.createdAt = -1; // Secondary sort
+            break;
+        case 'downloads':
+            sortQuery.downloads = sortOrder;
+            sortQuery.createdAt = -1; // Secondary sort
+            break;
+        case 'favorites':
+            sortQuery.favorites = sortOrder;
+            sortQuery.createdAt = -1; // Secondary sort
+            break;
+        case 'date':
+        default:
+            sortQuery.createdAt = sortOrder;
+            break;
+    }
+    
+    return sortQuery;
+}
+
 export const getAllImages = asyncHandler(async (req, res) => {
     const page = Math.max(1, parseInt(req.query.page) || PAGINATION.DEFAULT_PAGE);
     const limit = Math.min(
@@ -16,7 +51,28 @@ export const getAllImages = asyncHandler(async (req, res) => {
     const category = safeTrim(req.query.category);
     const location = safeTrim(req.query.location);
     const color = safeTrim(req.query.color); // Color filter
-    const tag = safeTrim(req.query.tag); // Tag filter
+    const tag = safeTrim(req.query.tag); // Single tag filter (legacy)
+    const tags = req.query.tags ? (Array.isArray(req.query.tags) ? req.query.tags : req.query.tags.split(',')) : null; // Multiple tags
+    const dateFrom = safeTrim(req.query.dateFrom);
+    const dateTo = safeTrim(req.query.dateTo);
+    const orientation = safeTrim(req.query.orientation); // portrait, landscape, square
+    const sortBy = safeTrim(req.query.sortBy) || 'date'; // date, views, downloads, favorites, relevance
+    const order = safeTrim(req.query.order) || 'desc'; // asc, desc
+    
+    // EXIF filters
+    const cameraMake = safeTrim(req.query.cameraMake);
+    const cameraModel = safeTrim(req.query.cameraModel);
+    const focalLengthMin = req.query.focalLengthMin ? parseFloat(req.query.focalLengthMin) : null;
+    const focalLengthMax = req.query.focalLengthMax ? parseFloat(req.query.focalLengthMax) : null;
+    const apertureMin = req.query.apertureMin ? parseFloat(req.query.apertureMin) : null;
+    const apertureMax = req.query.apertureMax ? parseFloat(req.query.apertureMax) : null;
+    const isoMin = req.query.isoMin ? parseInt(req.query.isoMin) : null;
+    const isoMax = req.query.isoMax ? parseInt(req.query.isoMax) : null;
+    
+    // Image dimensions filters
+    const minWidth = req.query.minWidth ? parseInt(req.query.minWidth) : null;
+    const minHeight = req.query.minHeight ? parseInt(req.query.minHeight) : null;
+    const aspectRatio = safeTrim(req.query.aspectRatio); // e.g., "16:9", "4:3", "1:1"
 
     // Build query
     const query = {};
@@ -67,10 +123,107 @@ export const getAllImages = asyncHandler(async (req, res) => {
         // Check if the color exists in the dominantColors array
         query.dominantColors = color;
     }
-    if (tag) {
-        // Filter by tag (case-insensitive)
+    // Tag filtering - support both single tag (legacy) and multiple tags
+    if (tags && tags.length > 0) {
+        // Multiple tags - all must match (AND logic)
+        const escapedTags = tags.map(t => escapeRegex(safeTrim(t))).filter(t => t);
+        if (escapedTags.length > 0) {
+            query.tags = { $all: escapedTags.map(t => new RegExp(`^${t}$`, 'i')) };
+        }
+    } else if (tag) {
+        // Single tag filter (legacy support)
         const escapedTag = escapeRegex(tag);
         query.tags = { $regex: new RegExp(`^${escapedTag}$`, 'i') };
+    }
+    
+    // Date range filter
+    if (dateFrom || dateTo) {
+        query.createdAt = {};
+        if (dateFrom) {
+            const fromDate = new Date(dateFrom);
+            fromDate.setHours(0, 0, 0, 0); // Start of day
+            query.createdAt.$gte = fromDate;
+        }
+        if (dateTo) {
+            const toDate = new Date(dateTo);
+            toDate.setHours(23, 59, 59, 999); // End of day
+            query.createdAt.$lte = toDate;
+        }
+    }
+    
+    // Orientation filter (portrait, landscape, square)
+    if (orientation && orientation !== 'all') {
+        if (!query.$and) query.$and = [];
+        
+        if (orientation === 'portrait') {
+            query.$and.push({
+                $expr: { $gt: ['$height', '$width'] }
+            });
+        } else if (orientation === 'landscape') {
+            query.$and.push({
+                $expr: { $gt: ['$width', '$height'] }
+            });
+        } else if (orientation === 'square') {
+            query.$and.push({
+                $expr: { $eq: ['$width', '$height'] }
+            });
+        }
+    }
+    
+    // EXIF filters
+    if (cameraMake) {
+        const escapedMake = escapeRegex(cameraMake);
+        query.cameraMake = { $regex: new RegExp(escapedMake, 'i') };
+    }
+    if (cameraModel) {
+        const escapedModel = escapeRegex(cameraModel);
+        query.cameraModel = { $regex: new RegExp(escapedModel, 'i') };
+    }
+    if (focalLengthMin !== null || focalLengthMax !== null) {
+        query.focalLength = {};
+        if (focalLengthMin !== null) query.focalLength.$gte = focalLengthMin;
+        if (focalLengthMax !== null) query.focalLength.$lte = focalLengthMax;
+    }
+    if (apertureMin !== null || apertureMax !== null) {
+        query.aperture = {};
+        if (apertureMin !== null) query.aperture.$gte = apertureMin;
+        if (apertureMax !== null) query.aperture.$lte = apertureMax;
+    }
+    if (isoMin !== null || isoMax !== null) {
+        query.iso = {};
+        if (isoMin !== null) query.iso.$gte = isoMin;
+        if (isoMax !== null) query.iso.$lte = isoMax;
+    }
+    
+    // Image dimensions filters
+    if (minWidth !== null) {
+        query.width = { ...(query.width || {}), $gte: minWidth };
+    }
+    if (minHeight !== null) {
+        query.height = { ...(query.height || {}), $gte: minHeight };
+    }
+    if (aspectRatio) {
+        // Parse aspect ratio (e.g., "16:9" -> 16/9 = 1.777...)
+        const [width, height] = aspectRatio.split(':').map(Number);
+        if (width && height && !isNaN(width) && !isNaN(height)) {
+            const targetRatio = width / height;
+            const tolerance = 0.01; // Allow small tolerance for floating point
+            if (!query.$and) query.$and = [];
+            query.$and.push({
+                $expr: {
+                    $and: [
+                        { $ne: ['$width', null] },
+                        { $ne: ['$height', null] },
+                        {
+                            $lte: [
+                                { $abs: { $subtract: [{ $divide: ['$width', '$height'] }, targetRatio] } },
+                                tolerance
+                            ]
+                        }
+                    ]
+                }
+            });
+        }
     }
 
     // Only show approved images on homepage (or images with no moderation status for backward compatibility)
@@ -119,8 +272,8 @@ export const getAllImages = asyncHandler(async (req, res) => {
                     justOne: true,
                     match: { isActive: true } // Only populate if category is active
                 })
-                // Sort by text relevance score if using text search, otherwise by date
-                .sort(useTextSearch ? { score: { $meta: 'textScore' }, createdAt: -1 } : { createdAt: -1 })
+                // Sort based on sortBy parameter
+                .sort(buildSortQuery(sortBy, order, useTextSearch))
                 .skip(skip)
                 .limit(limit)
                 .lean(),
@@ -142,7 +295,7 @@ export const getAllImages = asyncHandler(async (req, res) => {
                     justOne: true,
                     match: { isActive: true }
                 })
-                .sort(useTextSearch ? { score: { $meta: 'textScore' }, createdAt: -1 } : { createdAt: -1 })
+                .sort(buildSortQuery(sortBy, order, useTextSearch))
                 .skip(skip)
                 .limit(limit)
                 .lean(),

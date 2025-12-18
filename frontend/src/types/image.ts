@@ -62,7 +62,26 @@ export interface FetchImagesParams {
   category?: string;
   location?: string;
   color?: string;
-  tag?: string;
+  tag?: string; // Legacy single tag
+  tags?: string[]; // Multiple tags (AND logic)
+  dateFrom?: string; // YYYY-MM-DD format
+  dateTo?: string; // YYYY-MM-DD format
+  orientation?: 'all' | 'portrait' | 'landscape' | 'square';
+  sortBy?: 'date' | 'views' | 'downloads' | 'favorites' | 'relevance';
+  order?: 'asc' | 'desc';
+  // EXIF filters
+  cameraMake?: string;
+  cameraModel?: string;
+  focalLengthMin?: number;
+  focalLengthMax?: number;
+  apertureMin?: number;
+  apertureMax?: number;
+  isoMin?: number;
+  isoMax?: number;
+  // Image dimensions
+  minWidth?: number;
+  minHeight?: number;
+  aspectRatio?: string; // e.g., "16:9", "4:3", "1:1"
   _refresh?: boolean;
 }
 

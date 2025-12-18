@@ -358,6 +358,139 @@ export const getAnalytics = asyncHandler(async (req, res) => {
     const totalViewsInPeriod = viewsData.reduce((sum, d) => sum + d.value, 0);
     const totalDownloadsInPeriod = downloadsData.reduce((sum, d) => sum + d.value, 0);
 
+    // User Engagement Metrics
+    const activeUsersLast7Days = await User.countDocuments({
+        lastLoginAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+    });
+    const activeUsersLast30Days = await User.countDocuments({
+        lastLoginAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+    });
+    
+    // Image Performance Analytics
+    const mostViewedImages = await Image.find({})
+        .select('imageTitle imageUrl views downloads favorites uploadedBy createdAt')
+        .populate('uploadedBy', 'username displayName')
+        .sort({ views: -1 })
+        .limit(10)
+        .lean();
+    
+    const mostDownloadedImages = await Image.find({})
+        .select('imageTitle imageUrl views downloads favorites uploadedBy createdAt')
+        .populate('uploadedBy', 'username displayName')
+        .sort({ downloads: -1 })
+        .limit(10)
+        .lean();
+    
+    const mostFavoritedImages = await Image.find({})
+        .select('imageTitle imageUrl views downloads favorites uploadedBy createdAt')
+        .populate('uploadedBy', 'username displayName')
+        .sort({ favorites: -1 })
+        .limit(10)
+        .lean();
+    
+    // Trending images (high views/downloads in the last 7 days)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const trendingImages = await Image.aggregate([
+        {
+            $match: {
+                createdAt: { $gte: sevenDaysAgo }
+            }
+        },
+        {
+            $project: {
+                imageTitle: 1,
+                imageUrl: 1,
+                views: 1,
+                downloads: 1,
+                favorites: 1,
+                uploadedBy: 1,
+                createdAt: 1,
+                engagementScore: {
+                    $add: [
+                        { $multiply: ['$views', 1] },
+                        { $multiply: ['$downloads', 3] },
+                        { $multiply: ['$favorites', 5] }
+                    ]
+                }
+            }
+        },
+        { $sort: { engagementScore: -1 } },
+        { $limit: 10 },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'uploadedBy',
+                foreignField: '_id',
+                as: 'user'
+            }
+        },
+        { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                imageTitle: 1,
+                imageUrl: 1,
+                views: 1,
+                downloads: 1,
+                favorites: 1,
+                createdAt: 1,
+                engagementScore: 1,
+                uploadedBy: {
+                    _id: '$user._id',
+                    username: '$user.username',
+                    displayName: '$user.displayName'
+                }
+            }
+        }
+    ]);
+    
+    // Content Analytics - Popular Tags
+    const popularTags = await Image.aggregate([
+        { $unwind: '$tags' },
+        { $group: { _id: '$tags', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+        {
+            $project: {
+                tag: '$_id',
+                count: 1,
+                _id: 0
+            }
+        }
+    ]);
+    
+    // Content Analytics - Popular Locations
+    const popularLocations = await Image.aggregate([
+        { $match: { location: { $exists: true, $ne: null, $ne: '' } } },
+        { $group: { _id: '$location', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+        {
+            $project: {
+                location: '$_id',
+                count: 1,
+                _id: 0
+            }
+        }
+    ]);
+    
+    // Calculate user retention (users who logged in in both periods)
+    const previousPeriodUsers = await User.find({
+        createdAt: { $gte: comparisonStartDateUTC, $lte: comparisonEndDateUTC }
+    }).select('_id').lean();
+    
+    const currentPeriodActiveUsers = await User.find({
+        lastLoginAt: { $gte: startDateUTC, $lte: endDateUTC }
+    }).select('_id').lean();
+    
+    const previousPeriodUserIds = new Set(previousPeriodUsers.map(u => u._id.toString()));
+    const retainedUsers = currentPeriodActiveUsers.filter(u => 
+        previousPeriodUserIds.has(u._id.toString())
+    ).length;
+    
+    const retentionRate = previousPeriodUsers.length > 0 
+        ? (retainedUsers / previousPeriodUsers.length) * 100 
+        : 0;
+
     res.status(200).json({
         period: {
             days,
@@ -368,6 +501,9 @@ export const getAnalytics = asyncHandler(async (req, res) => {
             total: totalUsers,
             new: newUsers,
             banned: bannedUsers,
+            activeLast7Days: activeUsersLast7Days,
+            activeLast30Days: activeUsersLast30Days,
+            retentionRate: Math.round(retentionRate * 100) / 100,
         },
         images: {
             total: totalImages,
@@ -392,6 +528,94 @@ export const getAnalytics = asyncHandler(async (req, res) => {
         downloadsOverTime: downloadsData,
         totalViews: totalViewsInPeriod,
         totalDownloads: totalDownloadsInPeriod,
+        // New engagement metrics
+        mostViewedImages,
+        mostDownloadedImages,
+        mostFavoritedImages,
+        trendingImages,
+        popularTags,
+        popularLocations,
+    });
+});
+
+// Traffic Analytics
+export const getTrafficAnalytics = asyncHandler(async (req, res) => {
+    // Permission check is handled by requirePermission('viewAnalytics') middleware
+    
+    const days = parseInt(req.query.days) || 30;
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    
+    // Page views by route
+    const pageViewsByRoute = await PageView.aggregate([
+        { $match: { timestamp: { $gte: startDate } } },
+        { $group: { _id: '$path', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+        {
+            $project: {
+                path: '$_id',
+                views: '$count',
+                _id: 0
+            }
+        }
+    ]);
+    
+    // Peak usage times (by hour of day)
+    const peakUsageTimes = await PageView.aggregate([
+        { $match: { timestamp: { $gte: startDate } } },
+        {
+            $group: {
+                _id: { $hour: { date: '$timestamp', timezone: 'Asia/Ho_Chi_Minh' } },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { _id: 1 } },
+        {
+            $project: {
+                hour: '$_id',
+                views: '$count',
+                _id: 0
+            }
+        }
+    ]);
+    
+    // Daily page views trend
+    const dailyPageViews = await PageView.aggregate([
+        { $match: { timestamp: { $gte: startDate } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp', timezone: 'Asia/Ho_Chi_Minh' } },
+                count: { $sum: 1 }
+            }
+        },
+        { $sort: { _id: 1 } },
+        {
+            $project: {
+                date: '$_id',
+                views: '$count',
+                _id: 0
+            }
+        }
+    ]);
+    
+    // Unique visitors (by sessionId or userId)
+    const uniqueVisitors = await PageView.distinct('sessionId', {
+        timestamp: { $gte: startDate },
+        sessionId: { $exists: true, $ne: null }
+    });
+    
+    const uniqueAuthenticatedUsers = await PageView.distinct('userId', {
+        timestamp: { $gte: startDate },
+        userId: { $exists: true, $ne: null }
+    });
+    
+    res.status(200).json({
+        period: { days, startDate },
+        pageViewsByRoute,
+        peakUsageTimes,
+        dailyPageViews,
+        uniqueVisitors: uniqueVisitors.length,
+        uniqueAuthenticatedUsers: uniqueAuthenticatedUsers.length,
     });
 });
 
