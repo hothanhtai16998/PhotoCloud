@@ -8,3 +8,6 @@ export * from './adminContentController.js';
 export * from './adminSystemController.js';
 export * from './adminTestUtilsController.js';
 
+// Explicitly export getWebSocketMetrics for clarity
+export { getWebSocketMetrics } from './adminSystemController.js';
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -11,22 +11,15 @@ import {
     ChartTooltipContent,
 } from '@/components/ui/chart';
 import type { AnalyticsData } from '@/types/admin';
-
-interface RealtimeData {
-    usersOnline: number;
-    viewsPerSecond: Array<{ second: number; count: number }>;
-    mostActivePages: Array<{ path: string; userCount: number }>;
-}
+import { AdminWebSocketMetrics } from './AdminWebSocketMetrics';
 
 type MetricTab = 'users' | 'images' | 'pending' | 'approved';
 
 export function AdminAnalytics() {
     const [, setLoading] = useState(true);
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-    const [realtimeData, setRealtimeData] = useState<RealtimeData | null>(null);
     const [days, setDays] = useState(30);
     const [activeTab, setActiveTab] = useState<MetricTab>('users');
-    const realtimeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const loadAnalytics = async () => {
         try {
@@ -41,37 +34,10 @@ export function AdminAnalytics() {
         }
     };
 
-    const loadRealtimeData = async () => {
-        try {
-            const data = await adminService.getRealtimeAnalytics();
-            setRealtimeData(data);
-        } catch (error: unknown) {
-            // Silently fail for realtime data to avoid spamming errors
-            void error;
-            console.error('Failed to load realtime data:', error);
-        }
-    };
-
     useEffect(() => {
         loadAnalytics();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [days]);
-
-    // Load realtime data on mount and set up polling
-    useEffect(() => {
-        loadRealtimeData();
-        
-        // Poll every 5 seconds for real-time updates
-        realtimeIntervalRef.current = setInterval(() => {
-            loadRealtimeData();
-        }, 5000);
-
-        return () => {
-            if (realtimeIntervalRef.current) {
-                clearInterval(realtimeIntervalRef.current);
-            }
-        };
-    }, []);
 
     // Calculate percentage changes (mock for now, can be enhanced with historical data)
     const calculatePercentage = (current: number, previous: number = current * 0.8) => {
@@ -356,50 +322,6 @@ export function AdminAnalytics() {
                 </div>
 
                 {/* Users Online Right Now Widget - 1/3 width */}
-                {realtimeData && (
-                    <div className="falcon-card falcon-realtime-widget">
-                    <div className="falcon-card-header">
-                        <h3 className="falcon-card-title">{t('admin.usersOnline')}</h3>
-                    </div>
-                    <div className="falcon-card-body">
-                        <div className="falcon-users-online-value">{realtimeData.usersOnline}</div>
-                        
-                        <div className="falcon-views-per-second">
-                            <div className="falcon-views-label">{t('admin.pageViewsPerSecond')}</div>
-                            <div className="falcon-views-chart">
-                                {realtimeData.viewsPerSecond.map((item, index) => {
-                                    const maxCount = Math.max(...realtimeData.viewsPerSecond.map(v => v.count), 1);
-                                    const height = (item.count / maxCount) * 100;
-                                    return (
-                                        <div key={index} className="falcon-views-bar" style={{ height: `${Math.max(height, 10)}%` }} />
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="falcon-most-active-pages">
-                            <div className="falcon-pages-header">
-                                <span>Trang hoạt động nhiều nhất</span>
-                                <span>Số người dùng</span>
-                            </div>
-                            <div className="falcon-pages-list">
-                                {realtimeData.mostActivePages.map((page, index) => (
-                                    <div key={index} className="falcon-page-item">
-                                        <span className="falcon-page-path">{page.path}</span>
-                                        <span className="falcon-page-count">{page.userCount}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="falcon-realtime-link">
-                            <a href="#" onClick={(e) => { e.preventDefault(); loadRealtimeData(); }}>
-                                {t('admin.realtimeData')} →
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                )}
             </div>
 
             {/* Main Content Grid */}
@@ -669,6 +591,11 @@ export function AdminAnalytics() {
                         );
                     })}
                 </div>
+            </div>
+
+            {/* WebSocket Metrics Section */}
+            <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+                <AdminWebSocketMetrics />
             </div>
         </div>
     );

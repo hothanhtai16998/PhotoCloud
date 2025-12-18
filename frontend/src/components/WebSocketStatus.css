@@ -1,0 +1,57 @@
+.websocket-status {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	border-radius: 6px;
+	background: rgba(0, 0, 0, 0.05);
+	font-size: 0.75rem;
+	color: #666;
+	transition: all 0.2s ease;
+	cursor: default;
+}
+
+.websocket-status:hover {
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.websocket-status-text {
+	font-weight: 500;
+}
+
+.websocket-status-attempts {
+	font-size: 0.7rem;
+	opacity: 0.7;
+}
+
+/* Pulse animation for reconnecting state */
+.websocket-status-reconnecting {
+	animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { 
+		opacity: 1; 
+	}
+	50% { 
+		opacity: 0.6; 
+	}
+}
+
+/* Status-specific colors */
+.websocket-status-connected {
+	background: rgba(16, 185, 129, 0.1);
+	color: #10b981;
+}
+
+.websocket-status-reconnecting {
+	background: rgba(245, 158, 11, 0.1);
+	color: #f59e0b;
+}
+
+.websocket-status-disconnected {
+	background: rgba(239, 68, 68, 0.1);
+	color: #ef4444;
+}
+
+

@@ -273,3 +273,16 @@ export const getSystemMetrics = asyncHandler(async (req, res) => {
     res.json(status);
 });
 
+// WebSocket Metrics Endpoint
+export const getWebSocketMetrics = asyncHandler(async (req, res) => {
+    // Permission check is handled by requirePermission('viewDashboard') middleware in routes
+    
+    const { socketMetrics } = await import('../../utils/socketMetrics.js');
+    const stats = socketMetrics.getStats();
+    
+    res.json({
+        success: true,
+        metrics: stats,
+    });
+});
+

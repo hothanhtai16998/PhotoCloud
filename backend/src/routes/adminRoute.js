@@ -34,6 +34,7 @@ import {
     getCacheStats,
     createSystemAnnouncement,
     getSystemMetrics,
+    getWebSocketMetrics,
     resetAllViewDownloadCounts,
     addTestViewDownloadData,
     listTestIds,
@@ -52,6 +53,7 @@ router.use(adminRoute);
 // Dashboard & Analytics
 router.get('/dashboard/stats', requirePermission('viewDashboard'), getDashboardStats);
 router.get('/dashboard/metrics', requirePermission('viewDashboard'), getSystemMetrics);
+router.get('/dashboard/websocket-metrics', requirePermission('viewDashboard'), getWebSocketMetrics);
 router.get('/analytics', requirePermission('viewAnalytics'), getAnalytics);
 router.get('/analytics/realtime', requirePermission('viewAnalytics'), getRealtimeAnalytics);
 // Note: trackPageView is handled as a public route in server.js (before adminRoute middleware)

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { authService } from '@/services/authService';
 import { logger } from '@/utils/logger';
+import { toast } from 'sonner';
 
 interface UseWebSocketOptions {
 	onNotification?: (notification: any) => void;
@@ -50,13 +52,16 @@ let globalSocket: Socket | null = null;
 let globalSubscribers = 0;
 const eventHandlers = new Map<string, Set<Function>>();
 const connectionStateCallbacks = new Set<() => void>();
+let isRefreshingToken = false;
+let refreshAttempts = 0;
+const MAX_REFRESH_ATTEMPTS = 3;
 
 /**
  * Custom hook for WebSocket connection with auto-reconnect
  * Handles authentication, reconnection, and event listeners
  */
 export const useWebSocket = (options: UseWebSocketOptions = {}) => {
-	const { accessToken } = useAuthStore();
+	const { accessToken, setAccessToken, clearAuth } = useAuthStore();
 	const [isConnected, setIsConnected] = useState(globalSocket?.connected || false);
 	const [reconnectAttempts, setReconnectAttempts] = useState(0);
 	const optionsRef = useRef(options);
@@ -134,6 +139,9 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			timeout: 20000,
 		});
 
+		// Store token in socket for comparison later
+		(socket as any).auth = { token: accessToken };
+
 		globalSocket = socket;
 		globalSubscribers++;
 
@@ -143,6 +151,8 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 				// Update all component states
 				connectionStateCallbacks.forEach(callback => callback());
 				setReconnectAttempts(0);
+				refreshAttempts = 0; // Reset refresh attempts on successful connection
+				isRefreshingToken = false;
 				logger.info('WebSocket connected');
 				// Call all subscriber handlers
 				eventHandlers.get('connect')?.forEach(handler => handler());
@@ -154,6 +164,10 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 				// Only log disconnect if it's not a normal close or auth error
 				if (reason !== 'io client disconnect' && !reason.includes('Authentication')) {
 					logger.warn('WebSocket disconnected:', reason);
+					// Show warning toast for unexpected disconnects
+					if (reason !== 'io client disconnect') {
+						toast.warning('Real-time updates disconnected', { duration: 3000 });
+					}
 				}
 				// Call all subscriber handlers
 				eventHandlers.get('disconnect')?.forEach(handler => handler());
@@ -164,11 +178,66 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 				}
 			});
 
-			socket.on('connect_error', (error) => {
-				logger.error('WebSocket connection error:', error.message || error);
-				// Don't call onError for auth errors - they're expected if token is invalid
-				if (!error.message?.includes('Authentication') && !error.message?.includes('token')) {
+			socket.on('connect_error', async (error) => {
+				const isAuthError = 
+					error.message?.includes('Authentication') || 
+					error.message?.includes('token') ||
+					error.message?.includes('Token expired') ||
+					error.message?.includes('Invalid token');
+
+				if (isAuthError && !isRefreshingToken && refreshAttempts < MAX_REFRESH_ATTEMPTS) {
+					logger.info('WebSocket auth error detected, attempting token refresh...');
+					isRefreshingToken = true;
+					refreshAttempts++;
+
+					try {
+						// Attempt to refresh token
+						const newToken = await authService.refresh();
+						setAccessToken(newToken);
+						
+						logger.info('Token refreshed, reconnecting WebSocket...');
+						
+						// Disconnect old socket
+						if (globalSocket) {
+							globalSocket.disconnect();
+							globalSocket = null;
+							globalSubscribers = 0;
+							eventHandlers.clear();
+						}
+						
+						// Wait a bit before reconnecting
+						await new Promise(resolve => setTimeout(resolve, 500));
+						
+						// Reconnect with new token - trigger by updating accessToken
+						// The useEffect will handle the actual reconnection
+						refreshAttempts = 0; // Reset attempts
+					} catch (refreshError) {
+						logger.error('Failed to refresh token for WebSocket:', refreshError);
+						refreshAttempts = MAX_REFRESH_ATTEMPTS; // Stop retrying
+						
+						// Clear auth state if refresh fails
+						clearAuth();
+						
+						// Notify error handlers
+						eventHandlers.get('error')?.forEach(handler => 
+							handler(new Error('Authentication failed. Please sign in again.'))
+						);
+						
+						toast.error('Connection failed. Please sign in again.', { duration: 5000 });
+					} finally {
+						isRefreshingToken = false;
+					}
+				} else if (!isAuthError) {
+					// Non-auth errors
+					logger.error('WebSocket connection error:', error.message || error);
 					eventHandlers.get('error')?.forEach(handler => handler(error));
+				} else if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+					// Auth error but max attempts reached
+					logger.error('WebSocket auth error: Max refresh attempts reached');
+					eventHandlers.get('error')?.forEach(handler => 
+						handler(new Error('Authentication failed. Please sign in again.'))
+					);
+					toast.error('Connection failed. Please refresh the page.', { duration: 5000 });
 				}
 			});
 
@@ -335,17 +404,84 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			return;
 		}
 
-		// Small delay to prevent race conditions during rapid re-renders
-		const timeoutId = setTimeout(() => {
-			connect();
-		}, 50);
+		// If token changed and socket exists, reconnect with new token
+		if (globalSocket && (globalSocket as any).auth?.token !== accessToken) {
+			logger.info('Access token changed, reconnecting WebSocket...');
+			
+			// Disconnect old connection
+			if (globalSocket.connected) {
+				globalSocket.disconnect();
+			}
+			globalSocket = null;
+			globalSubscribers = 0;
+			eventHandlers.clear();
+			refreshAttempts = 0; // Reset refresh attempts
+			isRefreshingToken = false;
+			
+			// Reconnect with new token
+			setTimeout(() => {
+				connect();
+			}, 100);
+		} else if (!globalSocket) {
+			// Initial connection
+			const timeoutId = setTimeout(() => {
+				connect();
+			}, 50);
 
-		return () => {
-			clearTimeout(timeoutId);
-			// Don't disconnect immediately - let the debounced disconnect handle it
-			// This prevents premature disconnection during re-renders
-		};
+			return () => {
+				clearTimeout(timeoutId);
+			};
+		}
 	}, [accessToken, connect, disconnect]);
+
+	// Proactive token refresh before expiration
+	useEffect(() => {
+		if (!accessToken || !globalSocket?.connected) return;
+
+		// Decode JWT to get expiration time
+		const decodeToken = (token: string) => {
+			try {
+				const payload = JSON.parse(atob(token.split('.')[1]));
+				return payload.exp * 1000; // Convert to milliseconds
+			} catch {
+				return null;
+			}
+		};
+
+		const tokenExpiry = decodeToken(accessToken);
+		if (!tokenExpiry) return;
+
+		const now = Date.now();
+		const timeUntilExpiry = tokenExpiry - now;
+		const refreshThreshold = 5 * 60 * 1000; // Refresh 5 minutes before expiry
+
+		const checkAndRefresh = () => {
+			const currentExpiry = decodeToken(accessToken);
+			if (!currentExpiry) return;
+			
+			const timeLeft = currentExpiry - Date.now();
+			if (timeLeft < refreshThreshold && timeLeft > 0) {
+				logger.info('Token expiring soon, refreshing proactively...');
+				
+				authService.refresh()
+					.then(newToken => {
+						setAccessToken(newToken);
+						logger.info('Token refreshed proactively');
+					})
+					.catch(error => {
+						logger.error('Proactive token refresh failed:', error);
+					});
+			}
+		};
+
+		// Check immediately
+		checkAndRefresh();
+
+		// Check every minute
+		const interval = setInterval(checkAndRefresh, 60 * 1000);
+
+		return () => clearInterval(interval);
+	}, [accessToken, setAccessToken, globalSocket?.connected]);
 
 	// Collection room management
 	const joinCollectionRoom = useCallback((collectionId: string) => {

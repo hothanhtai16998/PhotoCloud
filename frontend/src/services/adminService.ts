@@ -127,6 +127,56 @@ export const adminService = {
         });
         return res.data;
     },
+    getWebSocketMetrics: async (): Promise<{
+        success: boolean;
+        metrics: {
+            uptime: {
+                ms: number;
+                seconds: number;
+                minutes: number;
+                hours: number;
+                formatted: string;
+            };
+            connections: {
+                total: number;
+                active: number;
+                failed: number;
+                reconnected: number;
+                disconnected: number;
+                successRate: string;
+            };
+            events: {
+                total: number;
+                eventsPerSecond: number;
+                byType: Record<string, number>;
+                topEventTypes: Array<{ eventType: string; count: number }>;
+                latency: {
+                    average: string;
+                    min: string;
+                    max: string;
+                    samples: number;
+                };
+            };
+            rooms: {
+                total: number;
+                totalUsers: number;
+                topRooms: Array<{ roomId: string; userCount: number }>;
+            };
+            errors: {
+                auth: number;
+                join: number;
+                emit: number;
+                other: number;
+                total: number;
+            };
+            timestamp: string;
+        };
+    }> => {
+        const res = await api.get('/admin/dashboard/websocket-metrics', {
+            withCredentials: true,
+        });
+        return res.data;
+    },
 
     getAllUsers: async (params?: {
         page?: number;

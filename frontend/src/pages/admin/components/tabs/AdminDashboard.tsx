@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { t } from '@/i18n';
+import { AdminWebSocketMetrics } from './AdminWebSocketMetrics';
 
 interface AdminDashboardProps {
     stats: DashboardStats | null;
@@ -308,6 +309,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                     </CardContent>
                 </Card>
             )}
+
 
             {/* Stats Cards */}
             <div className="admin-stats-grid">

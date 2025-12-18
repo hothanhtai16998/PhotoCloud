@@ -12,6 +12,7 @@ import { updateFaviconWithImage } from "@/utils/faviconUpdater"
 import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
 import CategoryNavigation from "./CategoryNavigation"
+import { WebSocketStatus } from "./WebSocketStatus"
 import './Header.css'
 
 // Lazy load UploadModal to improve initial page load
@@ -119,6 +120,7 @@ export const Header = memo(function Header() {
                 >
                   {t('header.addImage')}
                 </Button>
+                <WebSocketStatus />
                 <NotificationBell />
                 <UserMenu
                   user={user}
