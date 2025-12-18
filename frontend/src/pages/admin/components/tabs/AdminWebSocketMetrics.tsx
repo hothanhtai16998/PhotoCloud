@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { adminService } from '@/services/adminService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -67,7 +67,7 @@ interface WebSocketMetrics {
     timestamp: string;
 }
 
-export function AdminWebSocketMetrics() {
+export const AdminWebSocketMetrics = memo(function AdminWebSocketMetrics() {
     const [metrics, setMetrics] = useState<WebSocketMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -735,5 +735,5 @@ export function AdminWebSocketMetrics() {
             </div>
         </div>
     );
-}
+});
 

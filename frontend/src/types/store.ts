@@ -194,4 +194,6 @@ export interface FavoriteState {
 	clearFavorites: () => void;
 	resetLoading: () => void;
 	checkAndRefreshIfStale: () => Promise<void>;
+	addImageToFavorites: (image: Image) => void;
+	removeImageFromFavorites: (imageId: string) => void;
 }

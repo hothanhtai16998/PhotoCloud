@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import type { TrafficAnalyticsData } from '@/types/admin';
 import { Calendar, TrendingUp, Users, Eye } from 'lucide-react';
 
-export function AdminTrafficAnalytics() {
+export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
     const [trafficData, setTrafficData] = useState<TrafficAnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [days, setDays] = useState(30);
@@ -27,6 +27,26 @@ export function AdminTrafficAnalytics() {
 
         loadTrafficData();
     }, [days]);
+
+    // Format peak usage times for display (memoized) - MUST be before any returns (Rules of Hooks)
+    const peakUsageData = useMemo(() => {
+        if (!trafficData?.peakUsageTimes) return [];
+        return trafficData.peakUsageTimes.map(item => ({
+            hour: `${item.hour}:00`,
+            views: item.views,
+        }));
+    }, [trafficData?.peakUsageTimes]);
+
+    // Calculate peak hour (memoized) - MUST be before any returns (Rules of Hooks)
+    const peakHour = useMemo(() => {
+        if (!trafficData?.peakUsageTimes || trafficData.peakUsageTimes.length === 0) {
+            return { hour: 0, views: 0 };
+        }
+        return trafficData.peakUsageTimes.reduce((max, item) => 
+            item.views > max.views ? item : max, 
+            trafficData.peakUsageTimes[0]
+        );
+    }, [trafficData?.peakUsageTimes]);
 
     if (loading) {
         return (
@@ -51,18 +71,6 @@ export function AdminTrafficAnalytics() {
             </div>
         );
     }
-
-    // Format peak usage times for display
-    const peakUsageData = trafficData.peakUsageTimes.map(item => ({
-        hour: `${item.hour}:00`,
-        views: item.views,
-    }));
-
-    // Calculate peak hour
-    const peakHour = trafficData.peakUsageTimes.reduce((max, item) => 
-        item.views > max.views ? item : max, 
-        trafficData.peakUsageTimes[0] || { hour: 0, views: 0 }
-    );
 
     return (
         <div className="admin-section" style={{ marginTop: '2rem' }}>
@@ -170,8 +178,9 @@ export function AdminTrafficAnalytics() {
                                 dataKey="views" 
                                 stroke="#667eea" 
                                 strokeWidth={3}
-                                dot={{ fill: '#667eea', r: 4, strokeWidth: 2, stroke: '#fff' }}
+                                dot={false}
                                 activeDot={{ r: 6, fill: '#667eea', stroke: '#fff', strokeWidth: 2 }}
+                                isAnimationActive={false}
                             />
                         </LineChart>
                     </ResponsiveContainer>
@@ -223,7 +232,7 @@ export function AdminTrafficAnalytics() {
                                     return null;
                                 }}
                             />
-                            <Bar dataKey="views" fill="#667eea" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="views" fill="#667eea" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -272,5 +281,5 @@ export function AdminTrafficAnalytics() {
             )}
         </div>
     );
-}
+});
 

@@ -50,6 +50,15 @@
   gap: 12px;
 }
 
+/* Separator between navigation items */
+.sidebar-separator {
+  width: 24px;
+  height: 2px;
+  background: hsl(var(--border));
+  margin: 6px 0;
+  border-radius: 1px;
+}
+
 /* Navigation items */
 .sidebar-nav-item {
   position: relative;
@@ -107,6 +116,39 @@
   display: block;
   width: 24px;
   height: 24px;
+}
+
+/* Favorite thumbnail */
+.sidebar-favorite-thumbnail {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-favorite-thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sidebar-favorite-count {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #111111;
+  color: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 4px 0 8px 0;
+  line-height: 1;
+  min-width: 16px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Tooltip on hover (using title attribute, can be enhanced with custom tooltip component later) */

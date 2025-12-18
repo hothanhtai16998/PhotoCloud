@@ -28,36 +28,48 @@ function FavoritesPage() {
         fetchFavorites,
         resetLoading,
         checkAndRefreshIfStale,
+        addImageToFavorites,
+        removeImageFromFavorites,
     } = useFavoriteStore();
 
     useEffect(() => {
         // ProtectedRoute ensures user is authenticated
-        // On mount, if we have data, ensure loading is false
-        if (images.length > 0) {
-            resetLoading();
-        }
-        
-        // Only fetch if we haven't loaded yet or if data is empty
+        // Unsplash-style: Use cached data if available (no flash on navigation)
+        // Only fetch if we don't have cached data
         if (!hasLoaded || images.length === 0) {
             fetchFavorites(1);
-        } else {
-            // Unsplash-style: Silent background refresh if stale
-            checkAndRefreshIfStale();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Unsplash-style: Periodic check for stale data (every 2 minutes)
+    // Unsplash-style: Refresh when tab becomes visible after being away for 2+ minutes
     useEffect(() => {
         if (!hasLoaded) return;
-        
-        const interval = setInterval(() => {
-            checkAndRefreshIfStale();
-        }, 2 * 60 * 1000); // Check every 2 minutes
-        
-        return () => clearInterval(interval);
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                // Check if data is stale (2+ minutes old)
+                const lastFetched = useFavoriteStore.getState().lastFetchedAt;
+                if (lastFetched) {
+                    const age = Date.now() - lastFetched;
+                    const STALE_THRESHOLD = 2 * 60 * 1000; // 2 minutes
+                    if (age > STALE_THRESHOLD) {
+                        // Refresh silently in background
+                        checkAndRefreshIfStale();
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hasLoaded]);
+
+    // Note: Optimistic updates are handled globally in the store
+    // No need for local listener here - the store listens globally
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {

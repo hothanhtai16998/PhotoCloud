@@ -286,6 +286,15 @@ export function BlurUpImage({
                 useImageFavoriteCountStore.getState().updateFavoriteCount(image._id, response.favoriteCount);
             }
             
+            // Dispatch event with image data for optimistic favorites list update
+            window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+                detail: { 
+                    imageId: image._id, 
+                    isFavorited: response.isFavorited,
+                    image: image // Include full image object for adding to favorites list
+                }
+            }));
+            
             if (response.isFavorited) {
                 toast.success(t('favorites.added'));
             } else {
@@ -297,7 +306,7 @@ export function BlurUpImage({
         } finally {
             setIsTogglingFavorite(false);
         }
-    }, [user, image?._id, isTogglingFavorite]);
+    }, [user, image, isTogglingFavorite]);
 
     // Handle bookmark button (using same favorite functionality for now)
     const handleBookmarkClick = useCallback(async (e: React.MouseEvent) => {

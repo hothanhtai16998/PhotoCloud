@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -22,7 +22,7 @@ export function AdminAnalytics() {
     const [days, setDays] = useState(30);
     const [activeTab, setActiveTab] = useState<MetricTab>('users');
 
-    const loadAnalytics = async () => {
+    const loadAnalytics = useCallback(async () => {
         try {
             // Don't block UI - load in background
             // setLoading(true);
@@ -33,18 +33,17 @@ export function AdminAnalytics() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [days]);
 
     useEffect(() => {
         loadAnalytics();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [days]);
+    }, [loadAnalytics]);
 
     // Calculate percentage changes (mock for now, can be enhanced with historical data)
-    const calculatePercentage = (current: number, previous: number = current * 0.8) => {
+    const calculatePercentage = useCallback((current: number, previous: number = current * 0.8) => {
         if (previous === 0) return 0;
         return ((current - previous) / previous) * 100;
-    };
+    }, []);
 
     // Use default/empty analytics if not loaded yet - define before useMemo
     const displayAnalytics = analytics || {
@@ -156,11 +155,26 @@ export function AdminAnalytics() {
         return firstDataIndex >= 0 ? chartDataArray.slice(firstDataIndex) : chartDataArray;
     }, [activeTab, displayAnalytics, days]);
 
-    // Calculate percentages - safe to call even if analytics is null
-    const userPercentage = displayAnalytics ? calculatePercentage(displayAnalytics.users.total) : 0;
-    const imagePercentage = displayAnalytics ? calculatePercentage(displayAnalytics.images.total) : 0;
-    const pendingPercentage = displayAnalytics ? calculatePercentage(displayAnalytics.images.pendingModeration) : 0;
-    const approvedPercentage = displayAnalytics ? calculatePercentage(displayAnalytics.images.approved) : 0;
+    // Calculate percentages - memoized to avoid recalculation
+    const percentages = useMemo(() => {
+        if (!displayAnalytics) return { user: 0, image: 0, pending: 0, approved: 0 };
+        return {
+            user: calculatePercentage(displayAnalytics.users.total),
+            image: calculatePercentage(displayAnalytics.images.total),
+            pending: calculatePercentage(displayAnalytics.images.pendingModeration),
+            approved: calculatePercentage(displayAnalytics.images.approved),
+        };
+    }, [displayAnalytics, calculatePercentage]);
+    
+    const userPercentage = percentages.user;
+    const imagePercentage = percentages.image;
+    const pendingPercentage = percentages.pending;
+    const approvedPercentage = percentages.approved;
+
+    // Memoize tab click handler
+    const handleTabClick = useCallback((tab: MetricTab) => {
+        setActiveTab(tab);
+    }, []);
 
     // Format chart data for the selected metric tab with profile page logic
     const formattedChartData = useMemo(() => {
@@ -218,7 +232,7 @@ export function AdminAnalytics() {
             <div className="falcon-metric-tabs">
                 <div 
                     className={`falcon-metric-tab ${activeTab === 'users' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('users')}
+                    onClick={() => handleTabClick('users')}
                 >
                     <div className="falcon-metric-label">{t('admin.users')}</div>
                     <div className="falcon-metric-value">{displayAnalytics.users.total.toLocaleString()}</div>
@@ -229,7 +243,7 @@ export function AdminAnalytics() {
                 </div>
                 <div 
                     className={`falcon-metric-tab ${activeTab === 'images' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('images')}
+                    onClick={() => handleTabClick('images')}
                 >
                     <div className="falcon-metric-label">{t('admin.images')}</div>
                     <div className="falcon-metric-value">{displayAnalytics.images.total.toLocaleString()}</div>
@@ -240,7 +254,7 @@ export function AdminAnalytics() {
                 </div>
                 <div 
                     className={`falcon-metric-tab ${activeTab === 'pending' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => handleTabClick('pending')}
                 >
                     <div className="falcon-metric-label">{t('admin.pending')}</div>
                     <div className="falcon-metric-value">{displayAnalytics.images.pendingModeration.toLocaleString()}</div>
@@ -251,7 +265,7 @@ export function AdminAnalytics() {
                 </div>
                 <div 
                     className={`falcon-metric-tab ${activeTab === 'approved' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('approved')}
+                    onClick={() => handleTabClick('approved')}
                 >
                     <div className="falcon-metric-label">{t('admin.approved')}</div>
                     <div className="falcon-metric-value">{displayAnalytics.images.approved.toLocaleString()}</div>
@@ -270,7 +284,7 @@ export function AdminAnalytics() {
                         <div className="falcon-chart-header-left">
                             <select
                                 value={days}
-                                onChange={(e) => setDays(Number(e.target.value))}
+                                onChange={useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setDays(Number(e.target.value)), [])}
                                 className="falcon-select-small"
                             >
                             <option value={7}>{t('admin.last7Days')}</option>
@@ -296,8 +310,9 @@ export function AdminAnalytics() {
                                         stroke="#667eea"
                                         strokeWidth={2}
                                         fill="url(#fillValue)"
-                                        dot={{ r: 2.5, fill: '#111' }}
+                                        dot={false}
                                         activeDot={{ r: 4, fill: '#111', stroke: '#111', strokeWidth: 1 }}
+                                        isAnimationActive={false}
                                     />
                                     <XAxis
                                         dataKey="dateLabel"
@@ -416,16 +431,19 @@ export function AdminAnalytics() {
                         <div className="falcon-card-body">
                             <div className="falcon-chart-container">
                                 <div className="falcon-bar-chart">
-                                    {(displayAnalytics.dailyUploads || []).map((day) => {
-                                        const maxCount = Math.max(...(displayAnalytics.dailyUploads || []).map(d => d.count), 1);
-                                        const height = (day.count / maxCount) * 100;
-                                        return (
-                                            <div key={day._id} className="falcon-bar-item">
-                                                <div className="falcon-bar" style={{ height: `${Math.max(height, 5)}%` }} />
-                                                <div className="falcon-bar-label">{new Date(day._id).getDate()}</div>
-                                            </div>
-                                        );
-                                    })}
+                                    {useMemo(() => {
+                                        const uploads = displayAnalytics.dailyUploads || [];
+                                        const maxCount = uploads.length > 0 ? Math.max(...uploads.map(d => d.count), 1) : 1;
+                                        return uploads.map((day) => {
+                                            const height = (day.count / maxCount) * 100;
+                                            return (
+                                                <div key={day._id} className="falcon-bar-item">
+                                                    <div className="falcon-bar" style={{ height: `${Math.max(height, 5)}%` }} />
+                                                    <div className="falcon-bar-label">{new Date(day._id).getDate()}</div>
+                                                </div>
+                                            );
+                                        });
+                                    }, [displayAnalytics.dailyUploads])}
                                 </div>
                             </div>
                         </div>
@@ -445,11 +463,12 @@ export function AdminAnalytics() {
                         <div className="falcon-card-body">
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart
-                                    data={(displayAnalytics.categories || []).map(cat => ({
+                                    data={useMemo(() => (displayAnalytics.categories || []).map(cat => ({
                                         name: cat.name || 'Không xác định',
                                         count: cat.count,
                                         _id: cat._id
-                                    }))}
+                                    })), [displayAnalytics.categories])}
+                                    isAnimationActive={false}
                                     margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
                                 >
                                     <CartesianGrid strokeDasharray="3 3" stroke="#e9ecef" strokeOpacity={0.5} />
@@ -494,8 +513,9 @@ export function AdminAnalytics() {
                                         dataKey="count" 
                                         stroke="#667eea" 
                                         strokeWidth={3}
-                                        dot={{ fill: '#667eea', r: 5, strokeWidth: 2, stroke: '#fff' }}
+                                        dot={false}
                                         activeDot={{ r: 7, fill: '#667eea', stroke: '#fff', strokeWidth: 2 }}
+                                        isAnimationActive={false}
                                     />
                                 </LineChart>
                             </ResponsiveContainer>
@@ -544,9 +564,11 @@ export function AdminAnalytics() {
                     {t('admin.dailyUploads')} ({t('admin.lastNDays', { count: days })})
                 </h2>
                 <div className="admin-daily-uploads-chart">
-                    {(() => {
-                        const maxCount = Math.max(...(displayAnalytics.dailyUploads || []).map(d => d.count), 1);
-                        return (displayAnalytics.dailyUploads || []).map((day) => {
+                    {useMemo(() => {
+                        const uploads = displayAnalytics.dailyUploads || [];
+                        if (uploads.length === 0) return null;
+                        const maxCount = Math.max(...uploads.map(d => d.count), 1);
+                        return uploads.map((day) => {
                             const height = (day.count / maxCount) * 100;
                             const date = new Date(day._id);
                             const dayNumber = date.getDate();
@@ -564,7 +586,7 @@ export function AdminAnalytics() {
                                 </div>
                             );
                         });
-                    })()}
+                    }, [displayAnalytics.dailyUploads])}
                 </div>
             </div>
 
@@ -575,45 +597,49 @@ export function AdminAnalytics() {
                     Top người tải lên ({days} ngày gần nhất)
                 </h2>
                 <div className="admin-top-uploaders">
-                    {(displayAnalytics.topUploaders || [])?.map((uploader, index) => {
-                        const maxCount = (displayAnalytics.topUploaders || [])?.[0]?.uploadCount || 1;
-                        const percentage = (uploader.uploadCount / maxCount) * 100;
+                    {useMemo(() => {
+                        const uploaders = displayAnalytics.topUploaders || [];
+                        if (uploaders.length === 0) return null;
+                        const maxCount = uploaders[0]?.uploadCount || 1;
                         const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-                        const medalColor = medalColors[index] || '#6B7280';
-                        return (
-                            <div key={uploader.userId} className="admin-top-uploader-item">
-                                <div className="admin-top-uploader-rank">
-                                    {index < 3 ? (
-                                        <span className="admin-top-uploader-medal" style={{ color: medalColor }}>
-                                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                                        </span>
-                                    ) : (
-                                        <span className="admin-top-uploader-number">#{index + 1}</span>
-                                    )}
-                                </div>
-                                <div className="admin-top-uploader-info">
-                                    <div className="admin-top-uploader-name">
-                                        <strong>{uploader.username}</strong>
-                                        {uploader.displayName && (
-                                            <span className="admin-top-uploader-display-name">{uploader.displayName}</span>
+                        return uploaders.map((uploader, index) => {
+                            const percentage = (uploader.uploadCount / maxCount) * 100;
+                            const medalColor = medalColors[index] || '#6B7280';
+                            return (
+                                <div key={uploader.userId} className="admin-top-uploader-item">
+                                    <div className="admin-top-uploader-rank">
+                                        {index < 3 ? (
+                                            <span className="admin-top-uploader-medal" style={{ color: medalColor }}>
+                                                {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                                            </span>
+                                        ) : (
+                                            <span className="admin-top-uploader-number">#{index + 1}</span>
                                         )}
                                     </div>
-                                    <div className="admin-top-uploader-bar-container">
-                                        <div
-                                            className="admin-top-uploader-bar-fill"
-                                            style={{ width: `${percentage}%` }}
-                                        />
+                                    <div className="admin-top-uploader-info">
+                                        <div className="admin-top-uploader-name">
+                                            <strong>{uploader.username}</strong>
+                                            {uploader.displayName && (
+                                                <span className="admin-top-uploader-display-name">{uploader.displayName}</span>
+                                            )}
+                                        </div>
+                                        <div className="admin-top-uploader-bar-container">
+                                            <div
+                                                className="admin-top-uploader-bar-fill"
+                                                style={{ width: `${percentage}%` }}
+                                            />
+                                        </div>
                                     </div>
+                                    <div className="admin-top-uploader-count">{uploader.uploadCount} ảnh</div>
                                 </div>
-                                <div className="admin-top-uploader-count">{uploader.uploadCount} ảnh</div>
-                            </div>
-                        );
-                    })}
+                            );
+                        });
+                    }, [displayAnalytics.topUploaders])}
                 </div>
             </div>
 
-            {/* Image Performance Analytics */}
-            {(displayAnalytics.mostViewedImages || displayAnalytics.mostDownloadedImages || displayAnalytics.mostFavoritedImages || displayAnalytics.trendingImages) && (
+            {/* Image Performance Analytics - Lazy render only when data is available */}
+            {analytics && (displayAnalytics.mostViewedImages || displayAnalytics.mostDownloadedImages || displayAnalytics.mostFavoritedImages || displayAnalytics.trendingImages) && (
                 <div className="admin-section" style={{ marginTop: '2rem' }}>
                     <h2 className="admin-section-title">
                         <BarChart2 size={20} />
@@ -758,8 +784,8 @@ export function AdminAnalytics() {
                 </div>
             )}
 
-            {/* Content Analytics */}
-            {(displayAnalytics.popularTags || displayAnalytics.popularLocations) && (
+            {/* Content Analytics - Lazy render only when data is available */}
+            {analytics && (displayAnalytics.popularTags || displayAnalytics.popularLocations) && (
                 <div className="admin-section" style={{ marginTop: '2rem' }}>
                     <h2 className="admin-section-title">
                         <BarChart2 size={20} />
@@ -824,15 +850,19 @@ export function AdminAnalytics() {
                 </div>
             )}
 
-            {/* Traffic Analytics Section */}
-            <div style={{ marginTop: '2rem' }}>
-                <AdminTrafficAnalytics />
-            </div>
+            {/* Traffic Analytics Section - Lazy loaded */}
+            {analytics && (
+                <div style={{ marginTop: '2rem' }}>
+                    <AdminTrafficAnalytics />
+                </div>
+            )}
 
-            {/* WebSocket Metrics Section */}
-            <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-                <AdminWebSocketMetrics />
-            </div>
+            {/* WebSocket Metrics Section - Lazy loaded */}
+            {analytics && (
+                <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+                    <AdminWebSocketMetrics />
+                </div>
+            )}
         </div>
     );
 }

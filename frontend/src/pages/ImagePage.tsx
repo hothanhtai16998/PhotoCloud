@@ -1064,6 +1064,15 @@ function ImagePage() {
         updateFavoriteCount(imageId, response.favoriteCount);
       }
       
+      // Dispatch event for optimistic favorites list update
+      window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+        detail: { 
+          imageId: String(imageId).trim(),
+          isFavorited: response.isFavorited,
+          image: response.isFavorited ? image : undefined
+        }
+      }));
+      
       if (response.isFavorited) {
         toast.success(t('favorites.added'));
       } else {

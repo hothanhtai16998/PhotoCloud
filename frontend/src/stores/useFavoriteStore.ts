@@ -128,6 +128,95 @@ export const useFavoriteStore = create(
 				console.error('Background refresh failed:', error);
 			}
 		},
+
+		// Optimistic update: Add image to favorites list immediately
+		addImageToFavorites: (image: Image) => {
+			set((state) => {
+				// Only add if not already in the list
+				const exists = state.images.some(img => img._id === image._id);
+				if (!exists) {
+					// Add to beginning (most recent first)
+					state.images = [image, ...state.images];
+					// Update pagination total
+					if (state.pagination) {
+						state.pagination.total = (state.pagination.total || 0) + 1;
+						state.pagination.pages = Math.ceil(state.pagination.total / (state.pagination.limit || 20));
+					} else {
+						// Initialize pagination if it doesn't exist
+						state.pagination = {
+							page: 1,
+							limit: 20,
+							total: state.images.length,
+							pages: Math.ceil(state.images.length / 20),
+						};
+					}
+				}
+			});
+		},
+
+		// Optimistic update: Remove image from favorites list immediately
+		removeImageFromFavorites: (imageId: string) => {
+			set((state) => {
+				const normalizedId = String(imageId).trim();
+				const beforeCount = state.images.length;
+				
+				// Filter out the image - compare as strings (handles ObjectId cases)
+				state.images = state.images.filter(img => {
+					const imgId = String(img._id).trim();
+					// Match by full ID or last 12 characters (MongoDB ObjectId format)
+					return imgId !== normalizedId && imgId.slice(-12) !== normalizedId.slice(-12);
+				});
+				
+				const removed = beforeCount - state.images.length;
+				
+				// Update pagination if image was removed
+				if (removed > 0 && state.pagination) {
+					state.pagination.total = Math.max(0, state.pagination.total - removed);
+					state.pagination.pages = Math.ceil(state.pagination.total / state.pagination.limit);
+				}
+			});
+		},
 	}))
 );
+
+// Listen to favorite toggle events globally (even when FavoritesPage is not mounted)
+// This ensures optimistic updates work from anywhere in the app
+if (typeof window !== 'undefined') {
+	window.addEventListener('favoriteCacheUpdated', ((event: CustomEvent<{ 
+		imageId: string; 
+		isFavorited: boolean; 
+		image?: Image;
+	}>) => {
+		const { imageId, isFavorited, image } = event.detail || {};
+		if (!imageId) return;
+
+		const store = useFavoriteStore.getState();
+		
+		if (isFavorited && image) {
+			// Add image to favorites
+			store.addImageToFavorites(image);
+			const updatedStore = useFavoriteStore.getState();
+			
+			// Update sidebar thumbnail with the newly favorited image
+			window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+				detail: { 
+					thumbnailImage: image,
+					total: updatedStore.pagination?.total || updatedStore.images.length
+				}
+			}));
+		} else {
+			// Remove image from favorites
+			store.removeImageFromFavorites(String(imageId).trim());
+			const updatedStore = useFavoriteStore.getState();
+			
+			// Update sidebar thumbnail with first remaining image or null
+			window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+				detail: { 
+					thumbnailImage: updatedStore.images[0] || null,
+					total: updatedStore.pagination?.total || updatedStore.images.length
+				}
+			}));
+		}
+	}) as EventListener);
+}
 
