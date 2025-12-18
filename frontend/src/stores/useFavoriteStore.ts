@@ -4,18 +4,29 @@ import { favoriteService } from '@/services/favoriteService';
 import type { FavoriteState } from '@/types/store';
 import type { Image } from '@/types/image';
 
+// Unsplash-style: 5 minutes stale threshold
+const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+
 export const useFavoriteStore = create(
-	immer<FavoriteState>((set) => ({
+	immer<FavoriteState>((set, get) => ({
 		images: [],
 		loading: false,
 		pagination: null,
 		currentPage: 1,
 		imageTypes: new Map<string, 'portrait' | 'landscape'>(),
+		hasLoaded: false,
+		lastFetchedAt: null,
 
 		fetchFavorites: async (page = 1) => {
-			set((state) => {
-				state.loading = true;
-			});
+			const currentState = get();
+			// Only set loading if we don't have data yet (prevents flash when navigating)
+			const shouldShowLoading = page === 1 && !currentState.hasLoaded && currentState.images.length === 0;
+			
+			if (shouldShowLoading) {
+				set((state) => {
+					state.loading = true;
+				});
+			}
 
 		try {
 			const response = await favoriteService.getFavorites({
@@ -27,6 +38,8 @@ export const useFavoriteStore = create(
 					if (page === 1) {
 						// Replace images for first page
 						state.images = response.images || [];
+						state.hasLoaded = true;
+						state.lastFetchedAt = Date.now();
 					} else {
 						// Append images for subsequent pages
 						const existingIds = new Set(state.images.map(img => img._id));
@@ -69,7 +82,51 @@ export const useFavoriteStore = create(
 				state.pagination = null;
 				state.currentPage = 1;
 				state.imageTypes.clear();
+				state.hasLoaded = false;
+				state.lastFetchedAt = null;
 			});
+		},
+
+		resetLoading: () => {
+			set((state) => {
+				// If we have images, ensure loading is false
+				if (state.images.length > 0) {
+					state.loading = false;
+				}
+			});
+		},
+
+		checkAndRefreshIfStale: async () => {
+			const currentState = get();
+			
+			// Don't refresh if already loading or never loaded
+			if (currentState.loading || !currentState.hasLoaded || !currentState.lastFetchedAt) {
+				return;
+			}
+			
+			// Check if data is stale (>5 minutes old)
+			const age = Date.now() - currentState.lastFetchedAt;
+			if (age <= STALE_THRESHOLD) {
+				return;
+			}
+			
+			// Silent background refresh - no loading state
+			try {
+				const response = await favoriteService.getFavorites({
+					page: 1,
+					limit: 20,
+				});
+				
+				set((state) => {
+					state.images = response.images || [];
+					state.pagination = response.pagination || null;
+					state.lastFetchedAt = Date.now();
+					// Don't set loading - this is a silent background refresh
+				});
+			} catch (error) {
+				// Silent fail - keep showing cached data
+				console.error('Background refresh failed:', error);
+			}
 		},
 	}))
 );

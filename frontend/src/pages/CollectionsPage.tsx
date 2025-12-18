@@ -33,6 +33,7 @@ export default function CollectionsPage() {
 		showPublicOnly,
 		sortBy,
 		selectedTag,
+		hasLoaded,
 		fetchCollections,
 		deleteCollection,
 		updateCollection,
@@ -42,6 +43,8 @@ export default function CollectionsPage() {
 		setSelectedTag,
 		clearFilters,
 		refreshCollections,
+		resetLoading,
+		checkAndRefreshIfStale,
 	} = useCollectionsListStore();
 
 
@@ -59,16 +62,40 @@ export default function CollectionsPage() {
 			return;
 		}
 
-		const loadCollections = async () => {
-			try {
-				await fetchCollections();
-			} catch (_error) {
-				// Error already handled in store
-			}
-		};
+		// On mount, if we have data, ensure loading is false
+		if (collections.length > 0) {
+			resetLoading();
+		}
 
-		loadCollections();
-	}, [accessToken, navigate, fetchCollections]);
+		// Only fetch if we haven't loaded yet or if data is empty
+		if (!hasLoaded || collections.length === 0) {
+			const loadCollections = async () => {
+				try {
+					await fetchCollections();
+				} catch (_error) {
+					// Error already handled in store
+				}
+			};
+
+			loadCollections();
+		} else {
+			// Unsplash-style: Silent background refresh if stale
+			checkAndRefreshIfStale();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [accessToken]);
+
+	// Unsplash-style: Periodic check for stale data (every 2 minutes)
+	useEffect(() => {
+		if (!hasLoaded || !accessToken) return;
+		
+		const interval = setInterval(() => {
+			checkAndRefreshIfStale();
+		}, 2 * 60 * 1000); // Check every 2 minutes
+		
+		return () => clearInterval(interval);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [hasLoaded, accessToken]);
 
 	// Get all unique tags from collections
 	const allTags = useMemo(() => {

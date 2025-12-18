@@ -151,6 +151,8 @@ export interface CollectionsListState {
 	showPublicOnly: boolean;
 	sortBy: 'newest' | 'oldest' | 'name' | 'images';
 	selectedTag: string | null;
+	hasLoaded: boolean;
+	lastFetchedAt: number | null;
 	fetchCollections: () => Promise<void>;
 	deleteCollection: (collectionId: string) => Promise<void>;
 	updateCollection: (collectionId: string, data: { name?: string; description?: string; isPublic?: boolean; tags?: string[] }) => Promise<void>;
@@ -161,6 +163,8 @@ export interface CollectionsListState {
 	clearFilters: () => void;
 	refreshCollections: () => Promise<void>;
 	applyFilters: (collectionsToFilter: Collection[]) => void;
+	resetLoading: () => void;
+	checkAndRefreshIfStale: () => Promise<void>;
 }
 
 export interface CollectionFavoriteState {
@@ -177,8 +181,12 @@ export interface FavoriteState {
 	pagination: Pagination | null;
 	currentPage: number;
 	imageTypes: Map<string, 'portrait' | 'landscape'>;
+	hasLoaded: boolean;
+	lastFetchedAt: number | null;
 	fetchFavorites: (page?: number) => Promise<void>;
 	setImageType: (imageId: string, type: 'portrait' | 'landscape') => void;
 	updateImage: (imageId: string, updatedImage: Image) => void;
 	clearFavorites: () => void;
+	resetLoading: () => void;
+	checkAndRefreshIfStale: () => Promise<void>;
 }

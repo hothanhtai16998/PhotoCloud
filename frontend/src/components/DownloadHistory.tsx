@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Download, Loader2 } from 'lucide-react';
-import { downloadHistoryService, type DownloadHistoryItem } from '@/services/downloadHistoryService';
 import { downloadImage } from '@/utils/downloadService';
 import { generateImageSlug, slugify } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -11,6 +10,7 @@ import { saveScrollPosition, prepareModalNavigationState, setModalActive } from 
 import { ActualLocationContext } from '@/contexts/ActualLocationContext';
 import { useContext } from 'react';
 import type { Image } from '@/types/image';
+import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
 import emptyImage from '@/assets/empty.avif';
 import './DownloadHistory.css';
 
@@ -24,46 +24,55 @@ interface GroupedDownloads {
 
 export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
     const navigate = useNavigate();
+    const location = useLocation();
     const actualLocation = useContext(ActualLocationContext);
     const isMobile = useIsMobile();
-    const [downloads, setDownloads] = useState<DownloadHistoryItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(false);
-    const [total, setTotal] = useState(0);
-
-    const fetchDownloads = useCallback(async (pageNum: number = 1, append: boolean = false) => {
-        try {
-            if (pageNum === 1) {
-                setLoading(true);
-            } else {
-                setLoadingMore(true);
-            }
-
-            const response = await downloadHistoryService.getDownloadHistory(pageNum, 20);
-            
-            if (append) {
-                setDownloads(prev => [...prev, ...response.downloads]);
-            } else {
-                setDownloads(response.downloads);
-            }
-
-            setPage(response.pagination.page);
-            setHasMore(response.pagination.hasMore);
-            setTotal(response.pagination.total);
-        } catch (error) {
-            console.error('Failed to fetch download history:', error);
-            toast.error(t('profile.downloadHistorySection.loadFailed') || 'Failed to load download history');
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
-        }
-    }, []);
+    
+    const {
+        downloads,
+        loading,
+        loadingMore,
+        page,
+        hasMore,
+        total,
+        hasLoaded,
+        fetchDownloads,
+        resetLoading,
+        checkAndRefreshIfStale,
+    } = useDownloadHistoryStore();
 
     useEffect(() => {
-        fetchDownloads(1, false);
-    }, [fetchDownloads]);
+        // Only fetch if we're on the downloads page
+        if (location.pathname !== '/downloads') {
+            return;
+        }
+
+        // On mount, if we have data, ensure loading is false
+        if (downloads.length > 0) {
+            resetLoading();
+        }
+
+        // Only fetch if we haven't loaded yet or if data is empty
+        if (!hasLoaded || downloads.length === 0) {
+            fetchDownloads(1, false);
+        } else {
+            // Unsplash-style: Silent background refresh if stale
+            checkAndRefreshIfStale();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname]);
+
+    // Unsplash-style: Periodic check for stale data (every 2 minutes)
+    useEffect(() => {
+        if (!hasLoaded || location.pathname !== '/downloads') return;
+        
+        const interval = setInterval(() => {
+            checkAndRefreshIfStale();
+        }, 2 * 60 * 1000); // Check every 2 minutes
+        
+        return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasLoaded, location.pathname]);
 
     const handleLoadMore = useCallback(() => {
         if (!loadingMore && hasMore) {

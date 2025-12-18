@@ -6,6 +6,9 @@ import type { CollectionsListState } from '@/types/store';
 import type { Collection } from '@/types/collection';
 import type { ApiErrorResponse } from '@/types/errors';
 
+// Unsplash-style: 5 minutes stale threshold
+const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+
 export const useCollectionsListStore = create(
 	immer<CollectionsListState>((set, get) => ({
 		collections: [],
@@ -16,11 +19,19 @@ export const useCollectionsListStore = create(
 		showPublicOnly: false,
 		sortBy: 'newest',
 		selectedTag: null,
+		hasLoaded: false,
+		lastFetchedAt: null,
 
 		fetchCollections: async () => {
-			set((state) => {
-				state.loading = true;
-			});
+			const currentState = get();
+			// Only set loading if we don't have data yet (prevents flash when navigating)
+			const shouldShowLoading = !currentState.hasLoaded && currentState.collections.length === 0;
+			
+			if (shouldShowLoading) {
+				set((state) => {
+					state.loading = true;
+				});
+			}
 
 			try {
 				const data = await collectionService.getUserCollections();
@@ -28,6 +39,8 @@ export const useCollectionsListStore = create(
 				// Update collections first
 				set((state) => {
 					state.collections = data;
+					state.hasLoaded = true;
+					state.lastFetchedAt = Date.now();
 					state.loading = false;
 				});
 				
@@ -181,6 +194,47 @@ export const useCollectionsListStore = create(
 
 				state.filteredCollections = filtered;
 			});
+		},
+
+		resetLoading: () => {
+			set((state) => {
+				// If we have collections, ensure loading is false
+				if (state.collections.length > 0) {
+					state.loading = false;
+				}
+			});
+		},
+
+		checkAndRefreshIfStale: async () => {
+			const currentState = get();
+			
+			// Don't refresh if already loading or never loaded
+			if (currentState.loading || !currentState.hasLoaded || !currentState.lastFetchedAt) {
+				return;
+			}
+			
+			// Check if data is stale (>5 minutes old)
+			const age = Date.now() - currentState.lastFetchedAt;
+			if (age <= STALE_THRESHOLD) {
+				return;
+			}
+			
+			// Silent background refresh - no loading state
+			try {
+				const data = await collectionService.getUserCollections();
+				
+				set((state) => {
+					state.collections = data;
+					state.lastFetchedAt = Date.now();
+					// Don't set loading - this is a silent background refresh
+				});
+				
+				// Apply filters after update
+				get().applyFilters(data);
+			} catch (error) {
+				// Silent fail - keep showing cached data
+				console.error('Background refresh failed:', error);
+			}
 		},
 	}))
 );

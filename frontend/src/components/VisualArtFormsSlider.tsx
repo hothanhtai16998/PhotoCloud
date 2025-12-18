@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { imageService } from '@/services/imageService';
-import type { Image } from '@/types/image';
+import { useSliderStore } from '@/stores/useSliderStore';
 import { t } from '@/i18n';
 import './VisualArtFormsSlider.css';
 
@@ -29,8 +28,15 @@ const CLOSE_ANIMATION_DURATION = 800; // 800ms - Close animation
 const PROGRESS_DURATION = OPEN_ANIMATION_DURATION + SLIDE_VISIBLE_TIME + CLOSE_ANIMATION_DURATION; // 9600ms total
 
 export function VisualArtFormsSlider() {
-  const [slides, setSlides] = useState<SlideData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    slides,
+    loading,
+    hasLoaded,
+    fetchSlides,
+    resetLoading,
+    checkAndRefreshIfStale,
+  } = useSliderStore();
+  
   const [currentSlide, setCurrentSlide] = useState(0);
   const [pendingSlideIndex, setPendingSlideIndex] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -93,107 +99,52 @@ export function VisualArtFormsSlider() {
   useEffect(() => {
     const abortController = new AbortController();
     
-    const fetchSlides = async () => {
-      try {
-        setLoading(true);
-        const response = await imageService.fetchImages({ 
-          limit: 10, // Fetch 10 images for the slider
-          _refresh: true 
-        }, abortController.signal);
-        
-        const images = response.images || [];
-        
-        // Filter out images with 21:9 aspect ratio (too wide)
-        const filteredImages = images.filter((img: Image) => {
-          // Get image dimensions
-          const width = img.width || 0;
-          const height = img.height || 0;
-          
-          if (width === 0 || height === 0) {
-            // If dimensions not available, include it (will be checked on load)
-            return true;
-          }
-          
-          const aspectRatio = width / height;
-          // 21:9 = 2.333..., filter out aspect ratio >= 2.3
-          return aspectRatio < 2.3;
-        });
-        
-        // Convert images to slide format
-        const slideData: SlideData[] = filteredImages.map((img: Image) => {
-          // Get category name (could be string or Category object)
-          const categoryName = typeof img.imageCategory === 'string' 
-            ? img.imageCategory 
-            : img.imageCategory?.name || 'Photography';
-          
-          // Use regularUrl if available, fallback to imageUrl
-          const imageUrl = img.regularUrl || img.imageUrl;
-          // Use full resolution imageUrl for zoom
-          const fullImageUrl = img.imageUrl || img.regularUrl;
-          
-          // Use imageTitle or fallback to category
-          const title = img.imageTitle || categoryName || 'Image';
-          
-          return {
-            id: img._id,
-            title: title,
-            image: imageUrl,
-            fullImage: fullImageUrl,
-            width: img.width,
-            height: img.height,
-            imageInfo: {
-              location: img.location,
-              cameraModel: img.cameraModel,
-              cameraMake: img.cameraMake,
-              focalLength: img.focalLength,
-              aperture: img.aperture,
-              shutterSpeed: img.shutterSpeed,
-              iso: img.iso,
-            },
-          };
-        });
-        
-        setSlides(slideData);
-        // Initialize previous slide ref
-        prevSlideIndexRef.current = 0;
-        
-        // Preload the first slide image for better LCP discovery
-        // Add a preload link to help browser discover the LCP image earlier
-        if (slideData.length > 0 && slideData[0]?.image) {
-          const preloadLink = document.createElement('link');
-          preloadLink.rel = 'preload';
-          preloadLink.as = 'image';
-          preloadLink.href = slideData[0].image;
-          preloadLink.setAttribute('fetchpriority', 'high');
-          document.head.appendChild(preloadLink);
-        }
-      } catch (error: unknown) {
-        // Ignore abort/cancellation errors (expected when component unmounts)
-        if (
-          (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) ||
-          (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_CANCELED') ||
-          abortController.signal.aborted
-        ) {
-          return;
-        }
-        console.error('Error fetching images for slider:', error);
-        // Fallback to empty array or default slides
-        if (!abortController.signal.aborted) {
-          setSlides([]);
-        }
-      } finally {
-        if (!abortController.signal.aborted) {
-          setLoading(false);
-        }
+    // On mount, if we have slides, ensure loading is false
+    if (slides.length > 0) {
+      resetLoading();
+      // Initialize previous slide ref
+      prevSlideIndexRef.current = 0;
+      
+      // Preload the first slide image for better LCP discovery
+      if (slides.length > 0 && slides[0]?.image) {
+        const preloadLink = document.createElement('link');
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'image';
+        preloadLink.href = slides[0].image;
+        preloadLink.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(preloadLink);
       }
-    };
-
-    fetchSlides();
+    }
+    
+    // Only fetch if we haven't loaded yet or if slides are empty
+    if (!hasLoaded || slides.length === 0) {
+      fetchSlides(abortController.signal);
+    } else {
+      // Unsplash-style: Silent background refresh if stale
+      checkAndRefreshIfStale(abortController.signal);
+    }
     
     return () => {
       abortController.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Unsplash-style: Periodic check for stale data (every 5 minutes for slider)
+  useEffect(() => {
+    if (!hasLoaded) return;
+    
+    const abortController = new AbortController();
+    const interval = setInterval(() => {
+      checkAndRefreshIfStale(abortController.signal);
+    }, 5 * 60 * 1000); // Check every 5 minutes (slider changes less frequently)
+    
+    return () => {
+      clearInterval(interval);
+      abortController.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasLoaded]);
 
   // Helper function to preload and decode image
   const preloadImage = useCallback((src: string): Promise<void> => {
@@ -497,11 +448,23 @@ export function VisualArtFormsSlider() {
     // Note: Resume is handled in handleImageClick and handleCloseZoom with delay
   }, [isZoomed, isZoomingOut]);
 
-  if (loading || slides.length === 0) {
+  // Only show loading if we're actively loading AND have no slides
+  // This prevents showing loading when navigating with existing slides
+  if (loading && slides.length === 0) {
     return (
       <div className="visual-art-slider">
         <div className="slider-loading-message">
-          {loading ? t('visualArtSlider.loadingImages') : t('visualArtSlider.noImagesAvailable')}
+          {t('visualArtSlider.loadingImages')}
+        </div>
+      </div>
+    );
+  }
+
+  if (slides.length === 0) {
+    return (
+      <div className="visual-art-slider">
+        <div className="slider-loading-message">
+          {t('visualArtSlider.noImagesAvailable')}
         </div>
       </div>
     );

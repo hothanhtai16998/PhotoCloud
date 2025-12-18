@@ -24,13 +24,40 @@ function FavoritesPage() {
         loading,
         pagination,
         currentPage,
+        hasLoaded,
         fetchFavorites,
+        resetLoading,
+        checkAndRefreshIfStale,
     } = useFavoriteStore();
 
     useEffect(() => {
         // ProtectedRoute ensures user is authenticated
-        fetchFavorites(1);
-    }, [fetchFavorites]);
+        // On mount, if we have data, ensure loading is false
+        if (images.length > 0) {
+            resetLoading();
+        }
+        
+        // Only fetch if we haven't loaded yet or if data is empty
+        if (!hasLoaded || images.length === 0) {
+            fetchFavorites(1);
+        } else {
+            // Unsplash-style: Silent background refresh if stale
+            checkAndRefreshIfStale();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Unsplash-style: Periodic check for stale data (every 2 minutes)
+    useEffect(() => {
+        if (!hasLoaded) return;
+        
+        const interval = setInterval(() => {
+            checkAndRefreshIfStale();
+        }, 2 * 60 * 1000); // Check every 2 minutes
+        
+        return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasLoaded]);
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
