@@ -81,17 +81,6 @@ const ImagePageSidebar = () => {
 
       {/* Middle section - Main Navigation */}
       <div className="sidebar-section sidebar-section-middle">
-        {accessToken && user?.isAdmin && (
-          <Link
-            to="/admin"
-            className={getNavItemClass('/admin')}
-            aria-label="Admin"
-            title="Admin"
-          >
-            <Shield className="sidebar-icon" />
-          </Link>
-        )}
-
         <Link
           to="/collections"
           className={getNavItemClass('/collections')}
@@ -124,7 +113,7 @@ const ImagePageSidebar = () => {
         )}
       </div>
 
-      {/* Bottom section - About and Language */}
+      {/* Bottom section - About, Admin, and Language */}
       <div className="sidebar-section sidebar-section-bottom">
         <Link
           to="/about"
@@ -134,6 +123,17 @@ const ImagePageSidebar = () => {
         >
           <Info className="sidebar-icon" />
         </Link>
+
+        {accessToken && user?.isAdmin && (
+          <Link
+            to="/admin"
+            className={getNavItemClass('/admin')}
+            aria-label="Admin"
+            title="Admin"
+          >
+            <Shield className="sidebar-icon" />
+          </Link>
+        )}
 
         <button
           className="sidebar-nav-item sidebar-language-toggle"
