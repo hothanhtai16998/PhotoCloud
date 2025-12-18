@@ -102,6 +102,13 @@
   flex-shrink: 0;
 }
 
+.sidebar-language-icon {
+  object-fit: contain;
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
 /* Tooltip on hover (using title attribute, can be enhanced with custom tooltip component later) */
 .sidebar-nav-item[title]:hover::after {
   content: attr(title);

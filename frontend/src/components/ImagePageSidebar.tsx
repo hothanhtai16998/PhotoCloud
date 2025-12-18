@@ -1,9 +1,11 @@
-import { Home, Bookmark, Heart, User, Info, Download, Shield, Globe } from 'lucide-react';
+import { Home, Bookmark, Heart, Info, Download, Shield } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { t, getLocale, setLocale, type Locale } from '@/i18n';
 import { useState, useEffect } from 'react';
+import vietnamFlag from '@/assets/vietnam.svg';
+import americaFlag from '@/assets/america.svg';
 import './ImagePageSidebar.css';
 
 /**
@@ -120,17 +122,6 @@ const ImagePageSidebar = () => {
             <Download className="sidebar-icon" />
           </Link>
         )}
-
-        {accessToken && user && (
-          <Link
-            to={user.username ? `/@${user.username}` : '/profile'}
-            className={getNavItemClass('/profile')}
-            aria-label={t('header.account')}
-            title={t('header.account')}
-          >
-            <User className="sidebar-icon" />
-          </Link>
-        )}
       </div>
 
       {/* Bottom section - About and Language */}
@@ -150,7 +141,11 @@ const ImagePageSidebar = () => {
           aria-label={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
           title={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
         >
-          <Globe className="sidebar-icon" />
+          <img 
+            src={nextLocale === 'vi' ? vietnamFlag : americaFlag} 
+            alt={LANGUAGE_LABELS[nextLocale]} 
+            className="sidebar-icon sidebar-language-icon" 
+          />
         </button>
       </div>
     </aside>
