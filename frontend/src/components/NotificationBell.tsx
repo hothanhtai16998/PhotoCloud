@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Bell, X, Check, CheckCheck, Trash2, Users, Image as ImageIcon, Shield, Folder, RefreshCw, Heart, Download, Share2, Upload, CheckCircle, XCircle, Loader2, Star, AlertTriangle, Ban, User, Eye, Key, Mail, Smartphone, LogIn, Megaphone, Wrench, FileText, Sparkles, Flag, UserPlus, UserMinus } from 'lucide-react';
-import { notificationService, type Notification } from '@/services/notificationService';
+import { type Notification } from '@/services/notificationService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { useNotificationStore } from '@/stores/useNotificationStore';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
@@ -12,15 +14,51 @@ export default function NotificationBell() {
 	const { accessToken } = useAuthStore();
 	const { user } = useUserStore();
 	const navigate = useNavigate();
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [unreadCount, setUnreadCount] = useState(0);
+	
+	// Use shared notification store
+	const {
+		notifications,
+		unreadCount,
+		loading,
+		refreshing,
+		hasLoaded,
+		websocketConnected,
+		fetchNotifications,
+		markAsRead,
+		markAllAsRead,
+		deleteNotification,
+		startPolling,
+		stopPolling,
+		setWebSocketConnected,
+		addNotification,
+		updateUnreadCount,
+	} = useNotificationStore();
+
+	// WebSocket connection for instant notifications
+	const { isConnected: wsConnected } = useWebSocket({
+		onNotification: (notification: Notification) => {
+			// Add notification instantly when received via WebSocket
+			addNotification(notification);
+		},
+		onUnreadCount: (count: number) => {
+			// Update unread count instantly
+			updateUnreadCount(count);
+		},
+		onConnect: () => {
+			setWebSocketConnected(true);
+		},
+		onDisconnect: () => {
+			setWebSocketConnected(false);
+		},
+		onError: (error) => {
+			console.error('WebSocket error:', error);
+		},
+	});
+	
 	const [isOpen, setIsOpen] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [refreshing, setRefreshing] = useState(false);
 	const [hasNewNotification, setHasNewNotification] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const bellButtonRef = useRef<HTMLButtonElement>(null);
-	const pollingIntervalRef = useRef<number | null>(null);
 	const previousUnreadCountRef = useRef(0);
 
 	// Get notification message helper
@@ -204,82 +242,59 @@ export default function NotificationBell() {
 	}, []);
 
 
-	// Fetch notifications
-	const fetchNotifications = useCallback(async (showLoading = false) => {
-		if (!accessToken || !user) return;
-
-		if (showLoading) {
-			setRefreshing(true);
-		}
-
-		try {
-			const response = await notificationService.getNotifications({ limit: 20 });
-			const newNotifications = response.notifications;
-			const newUnreadCount = response.unreadCount;
-
-			// Check for new notifications and trigger visual feedback
-			if (previousUnreadCountRef.current > 0 && newUnreadCount > previousUnreadCountRef.current) {
-				// New notification arrived - trigger bell animation
-				setHasNewNotification(true);
-				setTimeout(() => setHasNewNotification(false), 500);
-			} else if (previousUnreadCountRef.current === 0 && newUnreadCount > 0) {
-				// First notification after having none - trigger bell animation
-				setHasNewNotification(true);
-				setTimeout(() => setHasNewNotification(false), 500);
-			}
-
-			setNotifications(newNotifications);
-			setUnreadCount(newUnreadCount);
-			previousUnreadCountRef.current = newUnreadCount;
-		} catch (error) {
-			console.error('Failed to fetch notifications:', error);
-		} finally {
-			if (showLoading) {
-				setRefreshing(false);
-			}
-			setLoading(false);
-		}
-	}, [accessToken, user]);
-
-	// Poll for unread count - Option 3: Faster polling (5 seconds)
+	// Watch for unread count changes to trigger bell animation
 	useEffect(() => {
-		if (!accessToken || !user) return;
+		if (previousUnreadCountRef.current > 0 && unreadCount > previousUnreadCountRef.current) {
+			// New notification arrived - trigger bell animation
+			setHasNewNotification(true);
+			setTimeout(() => setHasNewNotification(false), 500);
+		} else if (previousUnreadCountRef.current === 0 && unreadCount > 0) {
+			// First notification after having none - trigger bell animation
+			setHasNewNotification(true);
+			setTimeout(() => setHasNewNotification(false), 500);
+		}
+		previousUnreadCountRef.current = unreadCount;
+	}, [unreadCount]);
 
-		// Initial fetch
-		fetchNotifications();
+	// Initialize: Use WebSocket for instant notifications, polling as fallback
+	useEffect(() => {
+		if (!accessToken || !user) {
+			stopPolling();
+			return;
+		}
 
-		// Poll for updates - Option 3: Faster polling (5 seconds)
-		pollingIntervalRef.current = window.setInterval(() => {
-			notificationService.getUnreadCount()
-				.then(count => {
-					// If count increased, fetch full notifications
-					if (count > unreadCount) {
-						fetchNotifications();
-					} else {
-						setUnreadCount(count);
-					}
-				})
-				.catch(err => console.error('Failed to fetch unread count:', err));
-		}, 5000); // Poll every 5 seconds (Option 3: Faster polling)
+		// Initial fetch if not loaded yet
+		if (!hasLoaded) {
+			fetchNotifications();
+		}
+
+		// Only start polling if WebSocket is not connected (fallback)
+		if (!wsConnected) {
+			startPolling();
+		} else {
+			// WebSocket is connected, stop polling to save resources
+			stopPolling();
+		}
 
 		return () => {
-			if (pollingIntervalRef.current) {
-				clearInterval(pollingIntervalRef.current);
-			}
+			// Stop polling when component unmounts (store handles cleanup)
+			stopPolling();
 		};
-	}, [accessToken, user, fetchNotifications, unreadCount]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [accessToken, user, wsConnected]);
 
-	// Listen for manual refresh triggers (Option 3: Optimistic update)
+	// Listen for manual refresh triggers
 	useEffect(() => {
 		const handleRefresh = () => {
-			fetchNotifications();
+			fetchNotifications(true);
 		};
 
 		window.addEventListener('notification:refresh', handleRefresh);
 		return () => {
 			window.removeEventListener('notification:refresh', handleRefresh);
 		};
-	}, [fetchNotifications]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -301,35 +316,22 @@ export default function NotificationBell() {
 		if (isOpen && accessToken) {
 			fetchNotifications();
 		}
-	}, [isOpen, accessToken, fetchNotifications]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen, accessToken]);
 
 	const handleMarkAsRead = async (notificationId: string) => {
 		try {
-			const response = await notificationService.markAsRead(notificationId);
-			setUnreadCount(response.unreadCount);
-			setNotifications(prev =>
-				prev.map(notif =>
-					notif._id === notificationId
-						? { ...notif, isRead: true, readAt: new Date().toISOString() }
-						: notif
-				)
-			);
+			await markAsRead(notificationId);
 		} catch (error) {
-			console.error('Failed to mark notification as read:', error);
 			toast.error(t('notifications.markReadFailed'));
 		}
 	};
 
 	const handleMarkAllAsRead = async () => {
 		try {
-			await notificationService.markAllAsRead();
-			setUnreadCount(0);
-			setNotifications(prev =>
-				prev.map(notif => ({ ...notif, isRead: true, readAt: new Date().toISOString() }))
-			);
+			await markAllAsRead();
 			toast.success(t('notifications.markAllReadSuccess'));
 		} catch (error) {
-			console.error('Failed to mark all as read:', error);
 			toast.error(t('notifications.markAllReadFailed'));
 		}
 	};
@@ -337,11 +339,8 @@ export default function NotificationBell() {
 	const handleDelete = async (notificationId: string, e: React.MouseEvent) => {
 		e.stopPropagation();
 		try {
-			const response = await notificationService.deleteNotification(notificationId);
-			setUnreadCount(response.unreadCount);
-			setNotifications(prev => prev.filter(notif => notif._id !== notificationId));
+			await deleteNotification(notificationId);
 		} catch (error) {
-			console.error('Failed to delete notification:', error);
 			toast.error(t('notifications.deleteFailed'));
 		}
 	};
@@ -457,7 +456,8 @@ export default function NotificationBell() {
 	const handleManualRefresh = useCallback(async () => {
 		await fetchNotifications(true);
 		toast.success(t('notifications.refreshed'));
-	}, [fetchNotifications]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	if (!accessToken || !user) return null;
 

@@ -1,9 +1,10 @@
 import type { Image } from './image';
 
 export interface FavoriteResponse {
-	success: boolean;
-	isFavorited: boolean;
-	message: string;
+  success: boolean;
+  isFavorited: boolean;
+  favoriteCount?: number;
+  message: string;
 }
 
 export interface FavoritesCheckResponse {

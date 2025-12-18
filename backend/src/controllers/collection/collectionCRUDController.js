@@ -525,6 +525,33 @@ export const updateCollection = async (req, res) => {
             .populate('images', 'thumbnailUrl smallUrl imageUrl imageTitle')
             .lean();
 
+        // Emit WebSocket event for real-time collaboration
+        try {
+            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            const updateData = {
+                type: 'collection_updated',
+                collectionId,
+                actorId: userId.toString(),
+                changes: changes.map(c => c.field),
+            };
+            
+            // Include specific changes if relevant
+            if (changes.some(c => c.field === 'coverImage')) {
+                updateData.coverImageId = populatedCollection.coverImage?._id?.toString() || null;
+            }
+            if (changes.some(c => c.field === 'name')) {
+                updateData.name = populatedCollection.name;
+            }
+            if (changes.some(c => c.field === 'description')) {
+                updateData.description = populatedCollection.description;
+            }
+            
+            emitCollectionUpdate(collectionId, updateData);
+        } catch (wsError) {
+            logger.error('Failed to emit collection update via WebSocket:', wsError);
+            // Don't fail the request if WebSocket fails
+        }
+
         res.json({
             success: true,
             collection: {

@@ -279,6 +279,13 @@ export function BlurUpImage({
         try {
             const response = await favoriteService.toggleFavorite(image._id);
             updateFavoriteCache(image._id, response.isFavorited);
+            
+            // Update favorite count from response (optimistic update)
+            if (response.favoriteCount !== undefined) {
+                const { useImageFavoriteCountStore } = await import('@/stores/useImageFavoriteCountStore');
+                useImageFavoriteCountStore.getState().updateFavoriteCount(image._id, response.favoriteCount);
+            }
+            
             if (response.isFavorited) {
                 toast.success(t('favorites.added'));
             } else {
@@ -488,9 +495,11 @@ export function BlurUpImage({
                             /* Disable transition during initial load to prevent flashing */
                             transition: loaded ? 'opacity 0.15s ease-out' : 'opacity 0s',
                             pointerEvents: 'none', // Let wrapper handle clicks
-                            /* Ensure placeholder always covers the area */
-                            minWidth: '100%',
-                            minHeight: '100%'
+                            /* Ensure placeholder has exact same dimensions as full image to prevent scaling */
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'center'
                         }}
                     />
                 ) : (
@@ -523,7 +532,13 @@ export function BlurUpImage({
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
                         // Don't use loading="lazy" - we handle lazy loading with IntersectionObserver
                         // This prevents browser's native lazy loading from conflicting
-                        style={{ pointerEvents: 'none' }} // Let wrapper handle clicks
+                        style={{ 
+                            pointerEvents: 'none', // Let wrapper handle clicks
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'center'
+                        }}
                         onLoad={() => {
                             setLoaded(true);
                             onLoadComplete?.();

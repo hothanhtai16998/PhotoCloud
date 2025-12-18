@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import { collectionService } from '@/services/collectionService';
@@ -54,6 +54,15 @@ export default function CollectionsPage() {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showDeleteModal, setShowDeleteModal] = useState(false);
 	const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
+
+	// Reset loading synchronously before paint if we have data
+	// This prevents grid flash when navigating with cached data
+	useLayoutEffect(() => {
+		if (collections.length > 0) {
+			resetLoading();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [collections.length]); // Run when collections change
 
 	useEffect(() => {
 		if (!accessToken) {
@@ -143,7 +152,9 @@ export default function CollectionsPage() {
 	};
 
 
-	if (loading) {
+	// Only show loading if we're actually loading AND have no data
+	// This prevents showing loading placeholder when navigating with existing data
+	if (loading && collections.length === 0) {
 		return (
 			<>
 				<Header />

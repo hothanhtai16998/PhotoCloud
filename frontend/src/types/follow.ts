@@ -44,6 +44,8 @@ export interface FollowersListResponse {
 export interface FollowActionResponse {
 	success: boolean;
 	message: string;
+	followersCount?: number;
+	followingCount?: number;
 }
 
 export interface UserFollowStatsResponse {

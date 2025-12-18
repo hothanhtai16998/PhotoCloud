@@ -374,9 +374,23 @@
 .collection-card-main-image img,
 .collection-card-main-image .progressive-image-wrapper,
 .collection-card-main-image .blur-up-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  /* Prevent any scaling or layout shifts */
+  transform: translateZ(0) !important;
+  transition: opacity 0s !important;
+}
+
+/* Ensure placeholder and full image have identical sizing */
+.collection-card-main-image .blur-up-image.placeholder,
+.collection-card-main-image .blur-up-image.full {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transform: translateZ(0) !important;
 }
 
 .collection-card-thumbnails {
@@ -411,9 +425,23 @@
 .collection-card-thumbnail img,
 .collection-card-thumbnail .progressive-image-wrapper,
 .collection-card-thumbnail .blur-up-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  /* Prevent any scaling or layout shifts */
+  transform: translateZ(0) !important;
+  transition: opacity 0s !important;
+}
+
+/* Ensure placeholder and full image have identical sizing */
+.collection-card-thumbnail .blur-up-image.placeholder,
+.collection-card-thumbnail .blur-up-image.full {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transform: translateZ(0) !important;
 }
 
 /* Remove this - it's too broad and conflicts with the flex layout */

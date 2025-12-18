@@ -358,6 +358,13 @@
   opacity: 0.6;
 }
 
+.image-modal-favorite-count {
+  margin-left: 4px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 400;
+}
+
 /* Share Button */
 .image-modal-share-button {
   display: flex;

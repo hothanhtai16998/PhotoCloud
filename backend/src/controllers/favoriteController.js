@@ -47,6 +47,8 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
     ) || false;
 
     let updatedUser;
+    let newFavoriteCount;
+    
     if (isFavorited) {
         // Remove from favorites
         updatedUser = await User.findByIdAndUpdate(
@@ -55,9 +57,19 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
             { new: true }
         ).select('favorites');
 
+        // Decrement favorite count on image
+        const updatedImage = await Image.findByIdAndUpdate(
+            imageId,
+            { $inc: { favoriteCount: -1 } },
+            { new: true }
+        ).select('favoriteCount');
+
+        newFavoriteCount = updatedImage?.favoriteCount ?? 0;
+
         logger.info('Image removed from favorites', {
             userId,
             imageId,
+            favoriteCount: newFavoriteCount,
         });
     } else {
         // Add to favorites
@@ -67,15 +79,26 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
             { new: true }
         ).select('favorites');
 
+        // Increment favorite count on image
+        const updatedImage = await Image.findByIdAndUpdate(
+            imageId,
+            { $inc: { favoriteCount: 1 } },
+            { new: true }
+        ).select('favoriteCount');
+
+        newFavoriteCount = updatedImage?.favoriteCount ?? 0;
+
         logger.info('Image added to favorites', {
             userId,
             imageId,
+            favoriteCount: newFavoriteCount,
         });
 
         // Create notification for image owner (if different from user who favorited)
         if (image.uploadedBy && image.uploadedBy.toString() !== userId.toString()) {
             try {
-                await Notification.create({
+                const { createAndEmitNotification } = await import('../utils/notificationEmitter.js');
+                await createAndEmitNotification({
                     recipient: image.uploadedBy,
                     type: 'image_favorited',
                     image: imageId,
@@ -88,9 +111,24 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
         }
     }
 
+    // Emit WebSocket event for real-time favorite count updates
+    try {
+        const { emitImageFavoriteUpdate } = await import('../utils/socketServer.js');
+        emitImageFavoriteUpdate(imageId, {
+            imageId,
+            favoriteCount: newFavoriteCount,
+            actorId: userId.toString(),
+            action: isFavorited ? 'unfavorited' : 'favorited',
+        });
+    } catch (wsError) {
+        logger.error('Failed to emit favorite count update via WebSocket:', wsError);
+        // Don't fail the request if WebSocket fails
+    }
+
     res.status(200).json({
         success: true,
         isFavorited: !isFavorited,
+        favoriteCount: newFavoriteCount,
         message: !isFavorited
             ? 'Image added to favorites'
             : 'Image removed from favorites',

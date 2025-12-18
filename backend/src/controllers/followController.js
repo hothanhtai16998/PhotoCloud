@@ -59,22 +59,62 @@ export const followUser = asyncHandler(async (req, res) => {
         following: followingId,
     });
 
+    // Update cached counts
+    await Promise.all([
+        // Increment followingCount for the follower
+        User.findByIdAndUpdate(followerId, { $inc: { followingCount: 1 } }),
+        // Increment followersCount for the user being followed
+        User.findByIdAndUpdate(followingId, { $inc: { followersCount: 1 } }),
+    ]);
+
+    // Get updated counts
+    const [followerUser, followingUser] = await Promise.all([
+        User.findById(followerId).select('followingCount').lean(),
+        User.findById(followingId).select('followersCount').lean(),
+    ]);
+
     // Create notification for the user being followed
     try {
-        await Notification.create({
+        const { createAndEmitNotification } = await import('../utils/notificationEmitter.js');
+        await createAndEmitNotification({
             recipient: followingId,
             type: 'user_followed',
             actor: followerId,
-            follow: follow._id,
         });
     } catch (notifError) {
         logger.error('Failed to create follow notification:', notifError);
         // Don't fail the main operation if notification fails
     }
 
+    // Emit WebSocket events for real-time updates
+    try {
+        const { emitUserFollowUpdate } = await import('../utils/socketServer.js');
+        
+        // Emit to the user being followed (their followersCount increased)
+        emitUserFollowUpdate(followingId, {
+            userId: followingId,
+            followersCount: followingUser?.followersCount ?? 0,
+            actorId: followerId.toString(),
+            action: 'followed',
+        });
+        
+        // Emit to the follower (their followingCount increased)
+        emitUserFollowUpdate(followerId, {
+            userId: followerId,
+            followingCount: followerUser?.followingCount ?? 0,
+            actorId: followerId.toString(),
+            action: 'followed',
+        });
+    } catch (wsError) {
+        logger.error('Failed to emit follow update via WebSocket:', wsError);
+        // Don't fail the request if WebSocket fails
+    }
+
     logger.info('User followed', {
         followerId,
         followingId,
+        followersCount: followingUser?.followersCount,
+        followingCount: followerUser?.followingCount,
     });
 
     res.status(201).json({
@@ -86,6 +126,8 @@ export const followUser = asyncHandler(async (req, res) => {
             following: followingId,
             createdAt: follow.createdAt,
         },
+        followersCount: followingUser?.followersCount,
+        followingCount: followerUser?.followingCount,
     });
 });
 
@@ -119,6 +161,20 @@ export const unfollowUser = asyncHandler(async (req, res) => {
         });
     }
 
+    // Update cached counts
+    await Promise.all([
+        // Decrement followingCount for the follower
+        User.findByIdAndUpdate(followerId, { $inc: { followingCount: -1 } }),
+        // Decrement followersCount for the user being unfollowed
+        User.findByIdAndUpdate(followingId, { $inc: { followersCount: -1 } }),
+    ]);
+
+    // Get updated counts
+    const [followerUser, followingUser] = await Promise.all([
+        User.findById(followerId).select('followingCount').lean(),
+        User.findById(followingId).select('followersCount').lean(),
+    ]);
+
     // Create notification for the user being unfollowed
     try {
         await Notification.create({
@@ -132,14 +188,42 @@ export const unfollowUser = asyncHandler(async (req, res) => {
         // Don't fail the main operation if notification fails
     }
 
+    // Emit WebSocket events for real-time updates
+    try {
+        const { emitUserFollowUpdate } = await import('../utils/socketServer.js');
+        
+        // Emit to the user being unfollowed (their followersCount decreased)
+        emitUserFollowUpdate(followingId, {
+            userId: followingId,
+            followersCount: followingUser?.followersCount ?? 0,
+            actorId: followerId.toString(),
+            action: 'unfollowed',
+        });
+        
+        // Emit to the unfollower (their followingCount decreased)
+        emitUserFollowUpdate(followerId, {
+            userId: followerId,
+            followingCount: followerUser?.followingCount ?? 0,
+            actorId: followerId.toString(),
+            action: 'unfollowed',
+        });
+    } catch (wsError) {
+        logger.error('Failed to emit unfollow update via WebSocket:', wsError);
+        // Don't fail the request if WebSocket fails
+    }
+
     logger.info('User unfollowed', {
         followerId,
         followingId,
+        followersCount: followingUser?.followersCount,
+        followingCount: followerUser?.followingCount,
     });
 
     res.status(200).json({
         success: true,
         message: 'User unfollowed successfully',
+        followersCount: followingUser?.followersCount,
+        followingCount: followerUser?.followingCount,
     });
 });
 

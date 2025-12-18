@@ -439,6 +439,21 @@ export const incrementView = asyncHandler(async (req, res) => {
             }
         }
 
+        // Emit WebSocket event for real-time view count updates
+        try {
+            const { emitImageStatsUpdate } = await import('../utils/socketServer.js');
+            emitImageStatsUpdate(imageId, {
+                imageId,
+                views: image.views,
+                downloads: image.downloads,
+                dailyViews: dailyViewsObj,
+                action: 'view_incremented',
+            });
+        } catch (wsError) {
+            console.error('Failed to emit view count update via WebSocket:', wsError);
+            // Don't fail the request if WebSocket fails
+        }
+
         res.status(200).json({
             views: image.views,
             dailyViews: dailyViewsObj,
@@ -592,6 +607,21 @@ export const incrementDownload = asyncHandler(async (req, res) => {
         } else if (typeof image.dailyDownloads === 'object') {
             dailyDownloadsObj = image.dailyDownloads;
         }
+    }
+
+    // Emit WebSocket event for real-time download count updates
+    try {
+        const { emitImageStatsUpdate } = await import('../utils/socketServer.js');
+        emitImageStatsUpdate(imageId, {
+            imageId,
+            views: image.views,
+            downloads: image.downloads,
+            dailyDownloads: dailyDownloadsObj,
+            action: 'download_incremented',
+        });
+    } catch (wsError) {
+        console.error('Failed to emit download count update via WebSocket:', wsError);
+        // Don't fail the request if WebSocket fails
     }
 
     res.status(200).json({

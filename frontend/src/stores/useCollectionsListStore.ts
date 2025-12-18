@@ -198,9 +198,13 @@ export const useCollectionsListStore = create(
 
 		resetLoading: () => {
 			set((state) => {
-				// If we have collections, ensure loading is false
+				// If we have collections, ensure loading is false and hasLoaded is true
+				// This prevents flash and unnecessary fetches when navigating with cached data
 				if (state.collections.length > 0) {
 					state.loading = false;
+					if (!state.hasLoaded) {
+						state.hasLoaded = true;
+					}
 				}
 			});
 		},

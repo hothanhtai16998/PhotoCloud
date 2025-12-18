@@ -12,6 +12,9 @@ import { imageFetchService } from '@/services/imageFetchService';
 import { imageStatsService } from '@/services/imageStatsService';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { useImageFavoriteCountStore } from '@/stores/useImageFavoriteCountStore';
+import { useImageStatsStore } from '@/stores/useImageStatsStore';
 import { shareService } from '@/utils/shareService';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
@@ -241,6 +244,18 @@ function ImagePage() {
   // Favorite state
   const isFavorited = useBatchedFavoriteCheck(image?._id || '');
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  
+  // Favorite count state
+  const { updateFavoriteCount, getFavoriteCount } = useImageFavoriteCountStore();
+  const favoriteCount = useMemo(() => {
+    if (!image?._id) return 0;
+    // Use store count if available, otherwise fall back to image data
+    const storeCount = getFavoriteCount(image._id);
+    return storeCount > 0 ? storeCount : (image.favoriteCount || 0);
+  }, [image?._id, image?.favoriteCount, getFavoriteCount]);
+
+  // Image stats store for real-time updates
+  const { updateStats, getStats } = useImageStatsStore();
 
   // Download menu state
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
@@ -395,6 +410,61 @@ function ImagePage() {
     fetchImage();
   }, [imageId, location.state]);
 
+  // WebSocket for real-time updates
+  const { isConnected, joinImageRoom, leaveImageRoom } = useWebSocket({
+    onImageFavoriteUpdate: useCallback((update) => {
+      if (!image?._id || update.imageId !== image._id) return;
+      
+      // Don't update if the change was made by the current user (optimistic update already handled)
+      if (update.actorId === user?._id) return;
+
+      // Update favorite count
+      updateFavoriteCount(update.imageId, update.favoriteCount);
+    }, [image?._id, user?._id, updateFavoriteCount]),
+    onImageStatsUpdate: useCallback((update) => {
+      if (!image?._id || update.imageId !== image._id) return;
+
+      // Update stats in store
+      updateStats(update.imageId, {
+        views: update.views,
+        downloads: update.downloads,
+        dailyViews: update.dailyViews,
+        dailyDownloads: update.dailyDownloads,
+      });
+
+      // Update local state for immediate UI update
+      setViews(update.views);
+      setDownloads(update.downloads);
+      
+      // Update API cache
+      const stats = apiStatsCache.get(update.imageId) || {};
+      stats.views = update.views;
+      stats.downloads = update.downloads;
+      apiStatsCache.set(update.imageId, stats);
+    }, [image?._id, updateStats]),
+  });
+
+  // Join/leave image room for real-time updates
+  useEffect(() => {
+    if (!image?._id || !isConnected) return;
+
+    // Initialize favorite count from image data
+    if (image.favoriteCount !== undefined) {
+      updateFavoriteCount(image._id, image.favoriteCount);
+    }
+
+    // Initialize stats from image data
+    updateStats(image._id, {
+      views: image.views || 0,
+      downloads: image.downloads || 0,
+    });
+
+    joinImageRoom(image._id);
+
+    return () => {
+      leaveImageRoom(image._id);
+    };
+  }, [image?._id, image?.favoriteCount, image?.views, image?.downloads, isConnected, joinImageRoom, leaveImageRoom, updateFavoriteCount, updateStats]);
 
   // Update stats when image changes
   useLayoutEffect(() => {
@@ -408,8 +478,15 @@ function ImagePage() {
       incrementedViewIds.current.delete(imageId);
     }
 
+    // Check store first, then API cache, then image data
+    const storeStats = getStats(imageId);
     const apiStats = apiStatsCache.get(imageId);
-    if (apiStats) {
+    
+    if (storeStats) {
+      // Use store stats (most up-to-date, includes real-time updates)
+      setViews(storeStats.views);
+      setDownloads(storeStats.downloads);
+    } else if (apiStats) {
       if (apiStats.views !== undefined) {
         setViews(apiStats.views);
       } else if (isNewImage) {
@@ -424,7 +501,7 @@ function ImagePage() {
       setViews(image.views || 0);
       setDownloads(image.downloads || 0);
     }
-  }, [image?._id, image?.views, image?.downloads]);
+  }, [image?._id, image?.views, image?.downloads, getStats]);
 
   // Increment view count when image is viewed
   useEffect(() => {
@@ -439,6 +516,12 @@ function ImagePage() {
           const stats = apiStatsCache.get(imageId) || {};
           stats.views = response.views;
           apiStatsCache.set(imageId, stats);
+          
+          // Update stats store (optimistic update)
+          updateStats(imageId, {
+            views: response.views,
+            dailyViews: response.dailyViews,
+          });
         })
         .catch((error: any) => {
           if (error.response?.status === 429) {
@@ -887,6 +970,12 @@ function ImagePage() {
         const stats = apiStatsCache.get(image._id) || {};
         stats.downloads = statsResponse.downloads;
         apiStatsCache.set(image._id, stats);
+        
+        // Update stats store (optimistic update)
+        updateStats(image._id, {
+          downloads: statsResponse.downloads,
+          dailyDownloads: statsResponse.dailyDownloads,
+        });
       } catch (error: any) {
         if (error.response?.status === 429) {
           const rateLimitData = error.response.data;
@@ -895,6 +984,11 @@ function ImagePage() {
             const stats = apiStatsCache.get(image._id) || {};
             stats.downloads = rateLimitData.downloads;
             apiStatsCache.set(image._id, stats);
+            
+            // Update stats store
+            updateStats(image._id, {
+              downloads: rateLimitData.downloads,
+            });
           }
         } else {
           console.error('Failed to increment download count:', error);
@@ -944,6 +1038,12 @@ function ImagePage() {
       const imageId = String(image._id);
       const response = await favoriteService.toggleFavorite(imageId);
       updateFavoriteCache(imageId, response.isFavorited);
+      
+      // Update favorite count from response (optimistic update)
+      if (response.favoriteCount !== undefined) {
+        updateFavoriteCount(imageId, response.favoriteCount);
+      }
+      
       if (response.isFavorited) {
         toast.success(t('favorites.added'));
       } else {
@@ -955,7 +1055,7 @@ function ImagePage() {
     } finally {
       setIsTogglingFavorite(false);
     }
-  }, [user, image, isTogglingFavorite]);
+  }, [user, image, isTogglingFavorite, updateFavoriteCount]);
 
   const handleShare = useCallback(() => {
     if (!image?._id) return;
@@ -1453,6 +1553,9 @@ function ImagePage() {
             >
               <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
               <span>{t('image.save')}</span>
+              {favoriteCount > 0 && (
+                <span className="image-modal-favorite-count">{favoriteCount.toLocaleString()}</span>
+              )}
               <kbd className="image-modal-kbd">F</kbd>
             </button>
           )}

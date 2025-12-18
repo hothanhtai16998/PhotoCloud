@@ -96,8 +96,9 @@ export const addImageToCollection = async (req, res) => {
                 }
             });
 
+            const { createAndEmitNotification } = await import('../../utils/notificationEmitter.js');
             const notificationPromises = Array.from(notificationRecipients).map(recipientId =>
-                Notification.create({
+                createAndEmitNotification({
                     recipient: recipientId,
                     type: 'collection_image_added',
                     collection: collectionId,
@@ -114,6 +115,28 @@ export const addImageToCollection = async (req, res) => {
             .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
             .populate('images', 'thumbnailUrl smallUrl imageUrl imageTitle')
             .lean();
+
+        // Emit WebSocket event for real-time collaboration
+        try {
+            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            const image = await Image.findById(imageId)
+                .select('thumbnailUrl smallUrl imageUrl imageTitle')
+                .lean();
+            
+            if (image) {
+                emitCollectionUpdate(collectionId, {
+                    type: 'image_added',
+                    collectionId,
+                    imageId,
+                    image,
+                    actorId: userId.toString(),
+                    imageCount: populatedCollection.images ? populatedCollection.images.length : 0,
+                });
+            }
+        } catch (wsError) {
+            logger.error('Failed to emit collection update via WebSocket:', wsError);
+            // Don't fail the request if WebSocket fails
+        }
 
         res.json({
             success: true,
@@ -222,6 +245,22 @@ export const removeImageFromCollection = async (req, res) => {
             .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
             .populate('images', 'thumbnailUrl smallUrl imageUrl imageTitle')
             .lean();
+
+        // Emit WebSocket event for real-time collaboration
+        try {
+            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            emitCollectionUpdate(collectionId, {
+                type: 'image_removed',
+                collectionId,
+                imageId,
+                actorId: userId.toString(),
+                imageCount: populatedCollection.images ? populatedCollection.images.length : 0,
+                coverImageId: populatedCollection.coverImage?._id?.toString() || null,
+            });
+        } catch (wsError) {
+            logger.error('Failed to emit collection update via WebSocket:', wsError);
+            // Don't fail the request if WebSocket fails
+        }
 
         res.json({
             success: true,
@@ -393,6 +432,20 @@ export const reorderCollectionImages = async (req, res) => {
                 },
             })
             .lean();
+
+        // Emit WebSocket event for real-time collaboration
+        try {
+            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            emitCollectionUpdate(collectionId, {
+                type: 'images_reordered',
+                collectionId,
+                imageIds,
+                actorId: userId.toString(),
+            });
+        } catch (wsError) {
+            logger.error('Failed to emit collection update via WebSocket:', wsError);
+            // Don't fail the request if WebSocket fails
+        }
 
         res.json({
             success: true,

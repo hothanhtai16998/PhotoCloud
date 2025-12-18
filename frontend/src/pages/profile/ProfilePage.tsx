@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams, useParams, useLocation } from "react-rout
 import { useUserStore } from "@/stores/useUserStore";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { useUserImageStore } from "@/stores/useUserImageStore";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { useUserFollowCountStore } from "@/stores/useUserFollowCountStore";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,6 +107,54 @@ function ProfilePage() {
         fetchCollections,
         clearProfile,
     } = useProfileStore();
+
+    // Follow count store for real-time updates
+    const { updateFollowCounts, getFollowCounts } = useUserFollowCountStore();
+
+    // WebSocket for real-time follow count updates
+    const { isConnected, joinProfileRoom, leaveProfileRoom } = useWebSocket({
+        onUserFollowUpdate: useCallback((update) => {
+            if (!displayUserId || update.userId !== displayUserId) return;
+            
+            // Don't update if the change was made by the current user (optimistic update already handled)
+            if (update.actorId === currentUser?._id) return;
+
+            // Update follow counts in store
+            if (update.followersCount !== undefined || update.followingCount !== undefined) {
+                updateFollowCounts(update.userId, {
+                    followersCount: update.followersCount,
+                    followingCount: update.followingCount,
+                });
+            }
+
+            // Update followStats in profile store
+            useProfileStore.setState((state) => {
+                if (update.followersCount !== undefined) {
+                    state.followStats.followers = update.followersCount;
+                }
+                if (update.followingCount !== undefined) {
+                    state.followStats.following = update.followingCount;
+                }
+            });
+        }, [displayUserId, currentUser?._id, updateFollowCounts]),
+    });
+
+    // Join/leave profile room for real-time follow count updates
+    useEffect(() => {
+        if (!displayUserId || !isConnected) return;
+
+        // Initialize follow counts from current followStats
+        updateFollowCounts(displayUserId, {
+            followersCount: followStats.followers,
+            followingCount: followStats.following,
+        });
+
+        joinProfileRoom(displayUserId);
+
+        return () => {
+            leaveProfileRoom(displayUserId);
+        };
+    }, [displayUserId, isConnected, joinProfileRoom, leaveProfileRoom, updateFollowCounts, followStats.followers, followStats.following]);
 
     // User image store
     const {
@@ -647,7 +697,7 @@ function ProfilePage() {
                 }
             });
         }
-    }, [displayUser, profileUser]);
+    }, [displayUser, profileUser, updateFollowCounts]);
 
     // Follow/Unfollow handler
     const [isFollowingLoading, setIsFollowingLoading] = useState(false);
@@ -687,12 +737,31 @@ function ProfilePage() {
             const isCurrentlyFollowing = followStatus.isFollowing || false;
             
             // Now perform the opposite action
+            let response;
             if (isCurrentlyFollowing) {
-                await followService.unfollowUser(displayUserId);
+                response = await followService.unfollowUser(displayUserId);
                 toast.success(t('follow.unfollowed', { name: userName }) || 'Unfollowed successfully');
             } else {
-                await followService.followUser(displayUserId);
+                response = await followService.followUser(displayUserId);
                 toast.success(t('follow.followed', { name: userName }) || 'Followed successfully');
+            }
+            
+            // Update counts from response (optimistic update)
+            if (response.followersCount !== undefined || response.followingCount !== undefined) {
+                updateFollowCounts(displayUserId, {
+                    followersCount: response.followersCount,
+                    followingCount: response.followingCount,
+                });
+                
+                // Update followStats in profile store
+                useProfileStore.setState((state) => {
+                    if (response.followersCount !== undefined) {
+                        state.followStats.followers = response.followersCount;
+                    }
+                    if (response.followingCount !== undefined) {
+                        state.followStats.following = response.followingCount;
+                    }
+                });
             }
             
             // Always refresh follow stats to get accurate counts and state from server
@@ -741,7 +810,7 @@ function ProfilePage() {
         } finally {
             setIsFollowingLoading(false);
         }
-    }, [displayUserId, displayUser, isOwnProfile, isFollowingLoading, fetchFollowStatsWrapper, cancelSignal, t]);
+    }, [displayUserId, displayUser, isOwnProfile, isFollowingLoading, fetchFollowStatsWrapper, cancelSignal, t, updateFollowCounts]);
 
     // Get selected image slug or ID from URL
     const imageParamFromUrl = searchParams.get('image');
@@ -846,8 +915,16 @@ function ProfilePage() {
                     <ProfileTabs
                         activeTab={activeTab}
                         photosCount={photosCount}
-                        followingCount={followStats.following}
-                        followersCount={followStats.followers}
+                        followingCount={(() => {
+                            // Use store count if available, otherwise fall back to followStats
+                            const storeCounts = displayUserId ? getFollowCounts(displayUserId) : null;
+                            return storeCounts?.followingCount ?? followStats.following;
+                        })()}
+                        followersCount={(() => {
+                            // Use store count if available, otherwise fall back to followStats
+                            const storeCounts = displayUserId ? getFollowCounts(displayUserId) : null;
+                            return storeCounts?.followersCount ?? followStats.followers;
+                        })()}
                         collectionsCount={collectionsCount}
                         onTabChange={handleTabChange}
                         isOwnProfile={isOwnProfile}

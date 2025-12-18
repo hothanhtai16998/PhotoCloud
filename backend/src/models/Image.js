@@ -166,6 +166,12 @@ const imageSchema = new mongoose.Schema(
             default: 0,
             min: 0,
         },
+        favoriteCount: {
+            type: Number,
+            default: 0,
+            min: 0,
+            index: true, // Index for sorting by popularity
+        },
         // Track views per day (date string as key: "YYYY-MM-DD")
         dailyViews: {
             type: Map,

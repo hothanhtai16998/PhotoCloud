@@ -12,6 +12,9 @@ import { CollectionNoFlashGrid } from './components/CollectionNoFlashGrid';
 import { CollectionBulkActions } from './components/CollectionBulkActions';
 import { ConfirmModal } from '@/pages/admin/components/modals';
 import { appConfig } from '@/config/appConfig';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { useUserStore } from '@/stores/useUserStore';
+import type { Collection } from '@/types/collection';
 import './CollectionDetailPage.css';
 
 export default function CollectionDetailPage() {
@@ -49,7 +52,13 @@ export default function CollectionDetailPage() {
 		fetchCollection,
 		setCoverImage,
 		toggleFavorite,
+		addImageToCollection,
+		removeImageFromCollection,
+		reorderCollectionImages,
+		updateCollectionMetadata,
 	} = useCollectionStore();
+
+	const { user } = useUserStore();
 
 	// Collection images hook
 	const {
@@ -83,7 +92,54 @@ export default function CollectionDetailPage() {
 		fetchCollection,
 	});
 
+	// WebSocket for real-time collaboration
+	const { isConnected, joinCollectionRoom, leaveCollectionRoom } = useWebSocket({
+		onCollectionUpdate: useCallback((update) => {
+			if (!collectionId || update.collectionId !== collectionId) return;
+			
+			// Don't update if the change was made by the current user (optimistic update already handled)
+			if (update.actorId === user?._id) return;
+
+			switch (update.type) {
+				case 'image_added':
+					if (update.imageId && update.image) {
+						addImageToCollection(update.imageId, update.image);
+					}
+					break;
+				case 'image_removed':
+					if (update.imageId) {
+						removeImageFromCollection(update.imageId);
+					}
+					break;
+				case 'images_reordered':
+					if (update.imageIds) {
+						reorderCollectionImages(update.imageIds);
+					}
+					break;
+				case 'collection_updated':
+					updateCollectionMetadata({
+						name: update.name,
+						description: update.description,
+						coverImageId: update.coverImageId,
+					});
+					break;
+			}
+		}, [collectionId, user?._id, addImageToCollection, removeImageFromCollection, reorderCollectionImages, updateCollectionMetadata]),
+	});
+
+	// Join/leave collection room for real-time collaboration
+	useEffect(() => {
+		if (!collectionId || !isConnected) return;
+
+		joinCollectionRoom(collectionId);
+
+		return () => {
+			leaveCollectionRoom(collectionId);
+		};
+	}, [collectionId, isConnected, joinCollectionRoom, leaveCollectionRoom]);
+
 	// Listen for collection updates from other pages (e.g., when image is added from ImagePage)
+	// This is a fallback for same-tab updates (WebSocket handles cross-device)
 	useEffect(() => {
 		if (!collectionId) return;
 

@@ -94,6 +94,17 @@ const userSchema = new mongoose.Schema(
             type: String,
             maxlength: 500,
         },
+        // Cached follower/following counts for performance
+        followersCount: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
+        followingCount: {
+            type: Number,
+            default: 0,
+            min: 0,
+        },
         location: {
             type: String,
             trim: true,

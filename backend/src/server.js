@@ -32,6 +32,8 @@ import { logger } from './utils/logger.js';
 import { startSessionCleanup, stopSessionCleanup } from './utils/sessionCleanup.js';
 import { startPreUploadCleanup, stopPreUploadCleanup } from './utils/preUploadCleanup.js';
 import { checkSocialScraper } from './controllers/socialShareController.js';
+import { initializeSocketServer } from './utils/socketServer.js';
+import { createServer } from 'http';
 import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -319,9 +321,17 @@ const startServer = async () => {
         startMonitoring();
 
         const PORT = env.PORT;
-        app.listen(PORT, '0.0.0.0', () => {
+        
+        // Create HTTP server (needed for Socket.io)
+        const httpServer = createServer(app);
+        
+        // Initialize Socket.io for real-time notifications
+        initializeSocketServer(httpServer);
+        
+        httpServer.listen(PORT, '0.0.0.0', () => {
             logger.info(`🚀 Server is running on port ${PORT}`);
             logger.info(`📦 Environment: ${env.NODE_ENV}`);
+            logger.info(`🔌 WebSocket server ready for real-time notifications`);
         });
 
         // Graceful shutdown handlers

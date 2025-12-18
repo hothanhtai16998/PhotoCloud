@@ -82,6 +82,11 @@ export interface CollectionState {
 	setCoverImage: (collectionId: string, imageId: string) => Promise<void>;
 	toggleFavorite: (collectionId: string) => Promise<void>;
 	clearCollection: () => void;
+	// Real-time update methods
+	addImageToCollection: (imageId: string, image: any) => void;
+	removeImageFromCollection: (imageId: string) => void;
+	reorderCollectionImages: (imageIds: string[]) => void;
+	updateCollectionMetadata: (updates: { name?: string; description?: string; coverImageId?: string | null }) => void;
 }
 
 export interface CollectionImageState {

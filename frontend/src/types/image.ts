@@ -40,6 +40,7 @@ export interface Image {
   tags?: string[]; // Array of tag strings for searchability
   views?: number;
   downloads?: number;
+  favoriteCount?: number;
   // Daily views and downloads tracking (date string as key: "YYYY-MM-DD")
   dailyViews?: Record<string, number>;
   dailyDownloads?: Record<string, number>;

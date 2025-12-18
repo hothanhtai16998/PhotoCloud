@@ -26,7 +26,7 @@
 }
 
 .blur-up-image-container:hover .blur-up-image {
-  transform: scale(1); /* Remove zoom effect on hover */
+  transform: translateZ(0); /* Remove zoom effect on hover */
 }
 
 /* Image wrapper for mobile layout */
@@ -45,15 +45,17 @@
   object-fit: cover;
   object-position: center;
   display: block;
-  /* Disable transition during initial load to prevent flashing */
-  transition: opacity 0s, transform 0.3s ease;
-  transform: scale(1);
+  /* Disable transition during initial load to prevent flashing and scaling */
+  transition: opacity 0s;
+  transform: translateZ(0); /* Force GPU acceleration, no scale */
   
   /* Optimize for scroll performance */
-  will-change: opacity, transform;
-  transform: translateZ(0) scale(1); /* Force GPU acceleration */
+  will-change: opacity;
   backface-visibility: hidden;
   image-rendering: -webkit-optimize-contrast; /* Better image quality during scroll */
+  
+  /* Prevent any scaling animations */
+  transform-origin: center center;
 }
 
 /* Mobile Layout - Author at top */
