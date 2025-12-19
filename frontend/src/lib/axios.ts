@@ -144,20 +144,47 @@ api.interceptors.request.use(
  * Request Interceptor #2: Add CSRF token for state-changing requests
  * POST, PUT, DELETE, PATCH requests must include X-XSRF-TOKEN header
  * The token comes from the XSRF-TOKEN cookie set by backend
+ * If token is missing, fetch it first to avoid 403 errors
  */
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     const isStateChangingMethod = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(
       config.method?.toUpperCase() ?? ''
     );
 
     if (isStateChangingMethod) {
-      const csrfToken = getCsrfTokenFromCookie();
+      let csrfToken = getCsrfTokenFromCookie();
+      
+      // If no CSRF token, fetch it first to avoid 403 errors
+      if (!csrfToken) {
+        try {
+          // Use a simple fetch to avoid circular dependency with axios
+          const baseURL = config.baseURL || getApiBaseURL();
+          const url = baseURL.startsWith('http') 
+            ? `${baseURL}/csrf-token`
+            : `${window.location.origin}${baseURL}/csrf-token`;
+          
+          const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'include',
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            csrfToken = data.csrfToken || getCsrfTokenFromCookie();
+          }
+        } catch (error) {
+          // If fetch fails, continue without token - response interceptor will handle retry
+          // Don't log in production to avoid console spam
+          if (import.meta.env.DEV) {
+            console.warn('Failed to fetch CSRF token:', error);
+          }
+        }
+      }
+      
       if (csrfToken && config.headers) {
         config.headers['X-XSRF-TOKEN'] = csrfToken;
       }
-      // If no CSRF token, the request will fail with 403 and the response interceptor
-      // will fetch the token and retry the request
     }
 
     return config;
