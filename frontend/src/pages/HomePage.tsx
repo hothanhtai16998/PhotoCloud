@@ -12,6 +12,7 @@ import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModalActive } from "@/utils/modalNavigation";
 import { imageService } from "@/services/imageService";
+import { timingConfig } from '@/config/timingConfig';
 
 function HomePage() {
     const { currentSearch, images, loading, pagination, fetchImages } = useImageStore();
@@ -165,7 +166,25 @@ function HomePage() {
             return;
         }
 
-        fetchImagesMemo();
+        // Unsplash-style: Use requestIdleCallback to make requests after initial render
+        // This naturally keeps requests pending during page load phase (like Unsplash)
+        // The browser's stop button (X) appears because requests are pending during load
+        const scheduleFetch = () => {
+            if ('requestIdleCallback' in window) {
+                requestIdleCallback(() => {
+                    fetchImagesMemo();
+                }, { timeout: 100 }); // Fallback timeout to ensure it runs
+            } else {
+                // Fallback for browsers without requestIdleCallback
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        fetchImagesMemo();
+                    });
+                });
+            }
+        };
+        
+        scheduleFetch();
     }, [category, fetchImagesMemo]);
 
     // Scroll to NoFlashGrid when category changes (except on initial mount or when restoring scroll)

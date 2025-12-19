@@ -33,6 +33,24 @@ export default function NotificationBell() {
 		addNotification,
 		updateUnreadCount,
 	} = useNotificationStore();
+	
+	// Optimistic unreadCount: Start with 0 to prevent flash, update when data loads
+	// This prevents the badge from appearing/disappearing on refresh
+	const optimisticUnreadCount = useRef(0);
+	const hasReceivedCountUpdate = useRef(false);
+	
+	// Once we get actual count, use that instead of optimistic
+	useEffect(() => {
+		if (!hasReceivedCountUpdate.current && hasLoaded) {
+			hasReceivedCountUpdate.current = true;
+			optimisticUnreadCount.current = unreadCount;
+		} else if (hasReceivedCountUpdate.current) {
+			optimisticUnreadCount.current = unreadCount;
+		}
+	}, [unreadCount, hasLoaded]);
+	
+	// Use optimistic count until we've received actual count
+	const displayUnreadCount = hasReceivedCountUpdate.current ? unreadCount : optimisticUnreadCount.current;
 
 	// WebSocket connection for instant notifications
 	const { isConnected: wsConnected } = useWebSocket({
@@ -243,18 +261,19 @@ export default function NotificationBell() {
 
 
 	// Watch for unread count changes to trigger bell animation
+	// Use displayUnreadCount to prevent flash on initial load
 	useEffect(() => {
-		if (previousUnreadCountRef.current > 0 && unreadCount > previousUnreadCountRef.current) {
+		if (previousUnreadCountRef.current > 0 && displayUnreadCount > previousUnreadCountRef.current) {
 			// New notification arrived - trigger bell animation
 			setHasNewNotification(true);
 			setTimeout(() => setHasNewNotification(false), 500);
-		} else if (previousUnreadCountRef.current === 0 && unreadCount > 0) {
+		} else if (previousUnreadCountRef.current === 0 && displayUnreadCount > 0) {
 			// First notification after having none - trigger bell animation
 			setHasNewNotification(true);
 			setTimeout(() => setHasNewNotification(false), 500);
 		}
-		previousUnreadCountRef.current = unreadCount;
-	}, [unreadCount]);
+		previousUnreadCountRef.current = displayUnreadCount;
+	}, [displayUnreadCount]);
 
 	// Initialize: Use WebSocket for instant notifications, polling as fallback
 	useEffect(() => {
@@ -471,8 +490,8 @@ export default function NotificationBell() {
 				title={t('notifications.title')}
 			>
 				<Bell size={28} />
-				{unreadCount > 0 && (
-					<span className="notification-bell-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+				{displayUnreadCount > 0 && (
+					<span className="notification-bell-badge">{displayUnreadCount > 99 ? '99+' : displayUnreadCount}</span>
 				)}
 			</button>
 
@@ -489,7 +508,7 @@ export default function NotificationBell() {
 							>
 								<RefreshCw size={16} />
 							</button>
-							{unreadCount > 0 && (
+							{displayUnreadCount > 0 && (
 								<button
 									className="notification-action-btn"
 									onClick={handleMarkAllAsRead}

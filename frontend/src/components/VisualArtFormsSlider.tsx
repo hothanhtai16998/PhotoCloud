@@ -3,6 +3,7 @@ import { useSliderStore } from '@/stores/useSliderStore';
 import { t } from '@/i18n';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import './VisualArtFormsSlider.css';
+import { timingConfig } from '@/config/timingConfig';
 
 // Timing Constants
 const OPEN_ANIMATION_DURATION = 800;   // 800ms - Open animation
@@ -101,17 +102,41 @@ export function VisualArtFormsSlider() {
       }
     }
     
-    // Simple: if no slides, fetch. If we have slides, check if stale.
-    if (slides.length === 0) {
-      fetchSlides(abortController.signal).catch(() => {
-        // Ignore errors - already handled in store
-      });
-    } else {
-      // If we have slides, check if stale and refresh in background
-      checkAndRefreshIfStale(abortController.signal).catch(() => {
-        // Ignore errors - already handled in store
-      });
-    }
+    // Unsplash-style: Use requestIdleCallback to make requests after initial render
+    // This naturally keeps requests pending during page load phase (like Unsplash)
+    const fetchData = () => {
+      if (slides.length === 0) {
+        fetchSlides(abortController.signal).catch(() => {
+          // Ignore errors - already handled in store
+        });
+      } else {
+        // If we have slides, check if stale and refresh in background
+        checkAndRefreshIfStale(abortController.signal).catch(() => {
+          // Ignore errors - already handled in store
+        });
+      }
+    };
+    
+    const scheduleFetch = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          if (!abortController.signal.aborted) {
+            fetchData();
+          }
+        }, { timeout: 100 });
+      } else {
+        // Fallback for browsers without requestIdleCallback
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (!abortController.signal.aborted) {
+              fetchData();
+            }
+          });
+        });
+      }
+    };
+    
+    scheduleFetch();
     
     return () => {
       isMounted = false;
@@ -451,15 +476,9 @@ export function VisualArtFormsSlider() {
     );
   }
 
-  // Show empty state if we have no slides (and not loading)
+  // Don't render anything if we have no slides (and not loading)
   if (slides.length === 0) {
-    return (
-      <div className="visual-art-slider">
-        <div className="slider-loading-message">
-          {t('visualArtSlider.noImagesAvailable')}
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const currentSlideData = slides[currentSlide];

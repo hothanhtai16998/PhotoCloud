@@ -1,28 +1,51 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useAuthStore } from '@/stores/useAuthStore';
 import './WebSocketStatus.css';
 
 export function WebSocketStatus() {
-	// Only show in development mode
-	const isDev = import.meta.env.MODE === 'development' || import.meta.env.DEV;
-	
 	const { isConnected, reconnectAttempts } = useWebSocket();
+	const { accessToken, isInitializing } = useAuthStore();
 	
-	// Don't render in production
-	if (!isDev) {
-		return null;
+	// Track if we've ever had an accessToken to prevent icon from flashing
+	const hasAuthRef = useRef(Boolean(accessToken));
+	if (accessToken) {
+		hasAuthRef.current = true;
 	}
+	const stableHasAuth = hasAuthRef.current;
+	
+	// Track if we've ever received a connection state update
+	const [hasReceivedActualState, setHasReceivedActualState] = useState(false);
+	
+	// Once we get the actual connection state, use that instead of optimistic
+	useEffect(() => {
+		if (isConnected || reconnectAttempts > 0) {
+			setHasReceivedActualState(true);
+		}
+	}, [isConnected, reconnectAttempts]);
+	
+	// Optimistic: If we have auth and are initializing, assume connected
+	// Otherwise, use actual state once we've received it
+	const effectiveConnected = useMemo(() => {
+		if (!hasReceivedActualState && (stableHasAuth || (isInitializing && accessToken))) {
+			return true; // Optimistic: assume connected if authenticated
+		}
+		return isConnected;
+	}, [isConnected, hasReceivedActualState, stableHasAuth, isInitializing, accessToken]);
 	
 	const status = useMemo(() => {
-		if (isConnected) {
-			// Don't show anything when connected (everything is working fine)
-			return null;
+		if (effectiveConnected) {
+			return {
+				icon: Wifi,
+				color: '#10b981', // green
+				tooltip: 'Real-time updates connected',
+				className: 'connected'
+			};
 		} else if (reconnectAttempts > 0) {
 			return {
 				icon: AlertCircle,
 				color: '#f59e0b', // amber
-				text: 'Reconnecting...',
 				tooltip: `Reconnecting (attempt ${reconnectAttempts})`,
 				className: 'reconnecting'
 			};
@@ -30,17 +53,11 @@ export function WebSocketStatus() {
 			return {
 				icon: WifiOff,
 				color: '#ef4444', // red
-				text: 'Disconnected',
 				tooltip: 'Real-time updates unavailable',
 				className: 'disconnected'
 			};
 		}
-	}, [isConnected, reconnectAttempts]);
-	
-	// Only show when there's an issue (not connected)
-	if (!status) {
-		return null;
-	}
+	}, [effectiveConnected, reconnectAttempts]);
 	
 	const Icon = status.icon;
 	
@@ -50,11 +67,7 @@ export function WebSocketStatus() {
 			title={status.tooltip}
 			aria-label={status.tooltip}
 		>
-			<Icon size={16} color={status.color} />
-			<span className="websocket-status-text">{status.text}</span>
-			{reconnectAttempts > 0 && (
-				<span className="websocket-status-attempts">({reconnectAttempts})</span>
-			)}
+			<Icon size={20} color={status.color} />
 		</div>
 	);
 }

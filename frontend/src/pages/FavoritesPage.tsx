@@ -4,13 +4,14 @@ import { useFavoriteStore } from "@/stores/useFavoriteStore";
 import { Heart } from "lucide-react";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { generateImageSlug } from "@/lib/utils";
-import { saveScrollPosition, prepareModalNavigationState, setModalActive } from "@/utils/modalNavigation";
+import { saveScrollPosition, prepareModalNavigationState, setModalActive, isPageRefresh } from "@/utils/modalNavigation";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { Image } from "@/types/image";
 import { t } from "@/i18n";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import "./FavoritesPage.css";
+import { timingConfig } from '@/config/timingConfig';
 
 
 function FavoritesPage() {
@@ -45,7 +46,24 @@ function FavoritesPage() {
         // Don't check for stale data on mount - use cached data immediately
         // Stale data will be refreshed via visibility change or periodic checks
         if (!hasLoaded) {
-            fetchFavorites(1);
+            // Unsplash-style: Use requestIdleCallback to make requests after initial render
+            // This naturally keeps requests pending during page load phase (like Unsplash)
+            const scheduleFetch = () => {
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                        fetchFavorites(1);
+                    }, { timeout: 100 });
+                } else {
+                    // Fallback for browsers without requestIdleCallback
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            fetchFavorites(1);
+                        });
+                    });
+                }
+            };
+            
+            scheduleFetch();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

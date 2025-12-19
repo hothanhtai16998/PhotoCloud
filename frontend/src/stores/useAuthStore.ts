@@ -20,6 +20,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			accessToken: null,
 			loading: false,
 		});
+		// Clear sessionStorage on logout to prevent icons from showing on next refresh
+		if (typeof window !== 'undefined') {
+			sessionStorage.removeItem('hasAuth');
+		}
 		// Dispatch event to notify other stores (decoupled from useUserStore)
 		dispatchLogout();
 	},

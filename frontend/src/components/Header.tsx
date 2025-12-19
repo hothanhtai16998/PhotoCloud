@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect, lazy, Suspense } from "react"
+import { memo, useState, useRef, useEffect, useLayoutEffect, useMemo, lazy, Suspense } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { User } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
@@ -12,11 +12,13 @@ import { updateFaviconWithImage } from "@/utils/faviconUpdater"
 import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
 import CategoryNavigation from "./CategoryNavigation"
-import { WebSocketStatus } from "./WebSocketStatus"
 import './Header.css'
 
 // Lazy load UploadModal to improve initial page load
 const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default: module.default })))
+
+// NOTE: refreshToken cookie is httpOnly, so we can't check it from JavaScript
+// Instead, we use optimistic rendering based on isInitializing and accessToken state
 
 export const Header = memo(function Header() {
   const { accessToken, signOut, isInitializing } = useAuthStore()
@@ -25,31 +27,36 @@ export const Header = memo(function Header() {
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const searchBarRef = useRef<SearchBarRef>(null)
   
-  // Track if we've completed initial auth check to prevent showing sign-in button prematurely
-  // Show placeholder during initialization to prevent layout shift
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
+  // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
+  // Instead, use sessionStorage to persist auth state across refreshes
+  // This prevents icons from flashing on refresh
+  // Initialize stableHasAuth from sessionStorage (persists across refreshes)
+  const getInitialHasAuth = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const persisted = sessionStorage.getItem('hasAuth');
+    return persisted === 'true';
+  };
+  const hasAuthRef = useRef(getInitialHasAuth());
   
+  // Update sessionStorage when accessToken changes
   useEffect(() => {
-    // Once initialization completes, mark as checked
-    // If we have an accessToken, we can mark as checked immediately
-    if (!isInitializing) {
-      // Once initialization is complete, we know the auth state
-      // Set hasCheckedAuth to true regardless of whether we have a token or not
-      // This allows us to show the correct UI (buttons if logged in, sign-in if not)
-      const timer = setTimeout(() => {
-        setHasCheckedAuth(true)
-      }, 50) // Small delay to ensure Zustand state has propagated
-      return () => clearTimeout(timer)
-    } else {
-      // Reset when initialization starts again (e.g., on rapid refresh)
-      setHasCheckedAuth(false)
+    if (accessToken) {
+      hasAuthRef.current = true;
+      sessionStorage.setItem('hasAuth', 'true');
+    } else if (!isInitializing) {
+      // Only clear on logout (when not initializing), not on initial load
+      hasAuthRef.current = false;
+      sessionStorage.removeItem('hasAuth');
     }
-  }, [isInitializing])
+  }, [accessToken, isInitializing]);
   
-  // Show placeholder only during actual initialization
-  // Once initialization is complete, show the appropriate UI based on accessToken
-  const showPlaceholder = isInitializing || !hasCheckedAuth
-
+  const stableHasAuth = hasAuthRef.current;
+  
+  // Unsplash-style: Optimistically show icons during initialization
+  // Only show placeholder if we're initializing AND never had auth before
+  // This prevents flash while still allowing icons to appear immediately
+  const showPlaceholder = isInitializing && !accessToken && !stableHasAuth;
+  
   useEffect(() => {
     // Update favicon with configured logo on initial load
     updateFaviconWithImage(LOGO_CONFIG.faviconLogo)
@@ -90,27 +97,18 @@ export const Header = memo(function Header() {
           </div>
 
           {/* Mobile Header Actions - Icons visible on mobile */}
-          <div className="mobile-header-actions">
-            {showPlaceholder ? (
-              // Prevent layout shift: show placeholder with exact dimensions during auth init
-              // Matches: NotificationBell (40px on mobile) + Avatar (32px) + gap (8px) = ~80px total
+          {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
+          <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative' }}>
+            {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
+            {(accessToken || (isInitializing && stableHasAuth) || stableHasAuth) && (
               <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '8px', // Match mobile-header-actions gap
-                minWidth: '80px', // Reserve space for NotificationBell + Avatar
-                height: '40px' // Match NotificationBell height on mobile
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}>
-                <div style={{ width: '40px', height: '40px', flexShrink: 0 }} /> {/* Placeholder for NotificationBell (40x40 on mobile) */}
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0 }} /> {/* Placeholder for Avatar */}
-              </div>
-            ) : accessToken ? (
-              <>
-                {/* Notification Bell */}
                 <div className="mobile-header-icon-wrapper">
                   <NotificationBell />
                 </div>
-                {/* User Icon/Avatar - Custom Menu */}
                 <UserMenu
                   user={user}
                   onSignOut={handleSignOut}
@@ -124,46 +122,66 @@ export const Header = memo(function Header() {
                         fallbackClassName="mobile-header-avatar-placeholder"
                       />
                     ) : (
-                      <User size={20} />
+                      // Show placeholder avatar when user data is loading (prevents flash)
+                      <div 
+                        className="mobile-header-avatar-placeholder"
+                        style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          borderRadius: '50%',
+                          backgroundColor: '#e5e7eb',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#6b7280',
+                          fontSize: '14px',
+                          fontWeight: 500
+                        }}
+                      >
+                        <User size={20} />
+                      </div>
                     )
                   }
                 />
-              </>
-            ) : (
-              <>
-                {/* User Icon for Sign In */}
-                <Link to="/signin" className="mobile-header-icon" aria-label={t('auth.signIn')}>
-                  <User size={20} />
-                </Link>
-              </>
+              </div>
             )}
-
+            
+            {/* Placeholder - only visible during initialization when no cookie/token */}
+            {showPlaceholder && (
+              <div style={{ 
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <div style={{ width: '40px', height: '40px', flexShrink: 0 }} />
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0 }} />
+              </div>
+            )}
+            
+            {/* Sign In Link - only visible when not authenticated and not initializing */}
+            {!showPlaceholder && !accessToken && !stableHasAuth && (
+              <Link to="/signin" className="mobile-header-icon" aria-label={t('auth.signIn')}>
+                <User size={20} />
+              </Link>
+            )}
           </div>
 
           {/* Search Bar */}
           <SearchBar ref={searchBarRef} />
 
           {/* Right Actions - Desktop */}
-          <div className="header-actions desktop-only">
-            {showPlaceholder ? (
-              // Prevent layout shift: show placeholder with exact dimensions during auth init
-              // Matches: WebSocketStatus (~120px) + Upload button (~100px) + NotificationBell (60px) + Avatar (50px) + gaps (20px × 3 = 60px)
-              // Total: ~390px to prevent any layout shift
+          {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
+          <div className="header-actions desktop-only" style={{ minWidth: '250px', height: '56px', position: 'relative' }}>
+            {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
+            {(accessToken || (isInitializing && stableHasAuth) || stableHasAuth) && (
               <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '20px', // Match header-actions gap exactly
-                minWidth: '390px', // Reserve space for all elements
-                height: '56px' // Match header-container height
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px'
               }}>
-                <div style={{ width: '120px', height: '24px', flexShrink: 0 }} /> {/* Placeholder for WebSocketStatus */}
-                <div style={{ width: '100px', height: '32px', flexShrink: 0 }} /> {/* Placeholder for Upload button */}
-                <div style={{ width: '60px', height: '60px', flexShrink: 0 }} /> {/* Placeholder for NotificationBell (60x60) */}
-                <div style={{ width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0 }} /> {/* Placeholder for Avatar (50x50) */}
-              </div>
-            ) : accessToken ? (
-              <>
-                <WebSocketStatus />
                 <Button
                   variant="ghost"
                   onClick={(e) => {
@@ -189,16 +207,56 @@ export const Header = memo(function Header() {
                         fallbackClassName="header-user-avatar-placeholder"
                       />
                     ) : (
-                      <User size={18} />
+                      // Show placeholder avatar when user data is loading (prevents flash)
+                      <div 
+                        className="header-user-avatar-placeholder"
+                        style={{ 
+                          width: '50px', 
+                          height: '50px', 
+                          borderRadius: '50%',
+                          backgroundColor: '#e5e7eb',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#6b7280',
+                          fontSize: '18px',
+                          fontWeight: 500
+                        }}
+                      >
+                        <User size={18} />
+                      </div>
                     )
                   }
                 />
-              </>
-            ) : (
-              <>
+              </div>
+            )}
+            
+            {/* Placeholder - only visible during initialization when no cookie/token */}
+            {showPlaceholder && (
+              <div style={{ 
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px'
+              }}>
+                <div style={{ width: '100px', height: '32px', flexShrink: 0 }} />
+                <div style={{ width: '60px', height: '60px', flexShrink: 0 }} />
+                <div style={{ width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0 }} />
+              </div>
+            )}
+            
+            {/* Sign In Links - only visible when not authenticated and not initializing */}
+            {!showPlaceholder && !accessToken && !stableHasAuth && (
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px'
+              }}>
                 <Link to="/signin" className="header-link">{t('auth.signIn')}</Link>
                 <Button onClick={() => navigate('/signin')} className="header-button">{t('header.addImage')}</Button>
-              </>
+              </div>
             )}
           </div>
         </div>

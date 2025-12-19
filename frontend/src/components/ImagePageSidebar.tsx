@@ -1,15 +1,20 @@
 import { Home, Bookmark, Heart, Info, Download, Shield } from 'lucide-react';
+import { WebSocketStatus } from './WebSocketStatus';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { t, getLocale, setLocale, type Locale } from '@/i18n';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { favoriteService } from '@/services/favoriteService';
 import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import type { Image } from '@/types/image';
 import vietnamFlag from '@/assets/vietnam.svg';
 import americaFlag from '@/assets/america.svg';
 import './ImagePageSidebar.css';
+import { timingConfig } from '@/config/timingConfig';
+
+// NOTE: refreshToken cookie is httpOnly, so we can't check it from JavaScript
+// Instead, we use optimistic rendering based on isInitializing and accessToken state
 
 /**
  * Hybrid-style sidebar for all pages, inspired by Unsplash.
@@ -19,6 +24,57 @@ const ImagePageSidebar = () => {
   const location = useLocation();
   const { accessToken } = useAuthStore();
   const { user } = useUserStore();
+  
+  // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
+  // Instead, use sessionStorage to persist auth state across refreshes
+  // This prevents icons from flashing on refresh
+  const { isInitializing } = useAuthStore();
+  
+  // Initialize stableHasAuth from sessionStorage (persists across refreshes)
+  // This ensures icons appear immediately on refresh if user was previously authenticated
+  const getInitialHasAuth = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const persisted = sessionStorage.getItem('hasAuth');
+    return persisted === 'true';
+  };
+  const hasAuthRef = useRef(getInitialHasAuth());
+  
+  // Update sessionStorage when accessToken changes
+  useEffect(() => {
+    if (accessToken) {
+      hasAuthRef.current = true;
+      sessionStorage.setItem('hasAuth', 'true');
+    } else if (!isInitializing) {
+      // Only clear on logout (when not initializing), not on initial load
+      hasAuthRef.current = false;
+      sessionStorage.removeItem('hasAuth');
+    }
+  }, [accessToken, isInitializing]);
+  
+  const stableHasAuth = hasAuthRef.current;
+  
+  // Unsplash-style: Show icons optimistically during initialization, then use actual state
+  // Icons appear instantly on refresh (optimistic), then stay visible if authenticated
+  // CRITICAL: Show icons if:
+  // 1. We have accessToken (confirmed authenticated), OR
+  // 2. We're still initializing (optimistic - user likely logged in), OR
+  // 3. We've had auth before (stableHasAuth - prevents disappearing)
+  const showAuthIcons = useMemo(() => {
+    // During initialization, optimistically show icons (user likely logged in)
+    // After initialization, only show if we have accessToken or had it before
+    const result = accessToken || (isInitializing && stableHasAuth) || stableHasAuth;
+    // Debug: Log in dev mode to verify calculation
+    if (import.meta.env.DEV) {
+      console.log('[Sidebar] showAuthIcons calculation:', {
+        accessToken: Boolean(accessToken),
+        isInitializing,
+        stableHasAuth,
+        result
+      });
+    }
+    return Boolean(result);
+  }, [accessToken, isInitializing, stableHasAuth]);
+  
   const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale());
   const [favoriteThumbnail, setFavoriteThumbnail] = useState<Image | null>(null);
   const [favoriteTotal, setFavoriteTotal] = useState<number>(0);
@@ -41,7 +97,7 @@ const ImagePageSidebar = () => {
   // Listen for favorites updates to update thumbnail immediately (optimistic updates)
   // Count is handled by store subscription below (more reliable)
   useEffect(() => {
-    if (!accessToken) return;
+    if (!showAuthIcons) return;
 
     const handleFavoritesUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<{ thumbnailImage: Image | null }>;
@@ -51,15 +107,15 @@ const ImagePageSidebar = () => {
 
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
     return () => window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
-  }, [accessToken]);
+  }, [showAuthIcons]);
 
   // Clear state when logged out (consolidated logic)
   useEffect(() => {
-    if (!accessToken) {
+    if (!showAuthIcons) {
       setFavoriteThumbnail(null);
       setFavoriteTotal(0);
     }
-  }, [accessToken]);
+  }, [showAuthIcons]);
 
   // Fetch thumbnail on initial load (for new sessions/refresh) - like Unsplash
   // Only runs if store has no data yet
@@ -88,27 +144,53 @@ const ImagePageSidebar = () => {
   }, []);
 
   // Fetch on mount if store is empty (initial load/refresh)
+  // Use showAuthIcons to check for refresh token cookie (optimistic rendering)
   useEffect(() => {
-    if (!accessToken) return;
+    if (!showAuthIcons) return;
     
     const abortController = new AbortController();
     
     // Check store state at mount time - if empty, fetch thumbnail
     const hasStoreData = favoritePagination || favoriteImages.length > 0;
     if (!hasStoreData) {
-      fetchInitialThumbnail(abortController.signal);
+      // Unsplash-style: Use requestIdleCallback to make requests after initial render
+      // This naturally keeps requests pending during page load phase (like Unsplash)
+      const scheduleFetch = () => {
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            if (!abortController.signal.aborted) {
+              fetchInitialThumbnail(abortController.signal);
+            }
+          }, { timeout: 100 });
+        } else {
+          // Fallback for browsers without requestIdleCallback
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (!abortController.signal.aborted) {
+                fetchInitialThumbnail(abortController.signal);
+              }
+            });
+          });
+        }
+      };
+      
+      scheduleFetch();
+      
+      return () => {
+        abortController.abort();
+      };
     }
     
     return () => {
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]); // Only run on mount/accessToken change, intentionally not including store values
+  }, [showAuthIcons]); // Only run on mount/showAuthIcons change, intentionally not including store values
 
   // Sync thumbnail and count from store (PRIMARY SOURCE OF TRUTH)
   // Takes over once store has data (e.g., after visiting favorites page)
   useEffect(() => {
-    if (!accessToken) return;
+    if (!showAuthIcons) return;
     
     // Skip if store is empty (initial fetch handles it)
     if (!favoritePagination && favoriteImages.length === 0) return;
@@ -186,7 +268,8 @@ const ImagePageSidebar = () => {
           <Bookmark className="sidebar-icon" />
         </Link>
 
-        {accessToken && (
+        {/* CRITICAL: Always render auth icons - show immediately if we have cookie/token */}
+        {showAuthIcons && (
           <>
             <div className="sidebar-separator" />
             <Link
@@ -213,7 +296,7 @@ const ImagePageSidebar = () => {
           </>
         )}
 
-        {accessToken && (
+        {showAuthIcons && (
           <>
             <div className="sidebar-separator" />
             <Link
@@ -239,7 +322,8 @@ const ImagePageSidebar = () => {
           <Info className="sidebar-icon" />
         </Link>
 
-        {accessToken && user?.isAdmin && (
+        {/* CRITICAL: Always render admin icon when user is admin */}
+        {showAuthIcons && user?.isAdmin && (
           <>
             <div className="sidebar-separator" />
             <Link
@@ -253,6 +337,13 @@ const ImagePageSidebar = () => {
           </>
         )}
 
+        <div className="sidebar-separator" />
+        
+        {/* WebSocket Status - Icon only, no text */}
+        <div className="sidebar-nav-item" style={{ cursor: 'default' }}>
+          <WebSocketStatus />
+        </div>
+        
         <div className="sidebar-separator" />
         <button
           className="sidebar-nav-item sidebar-language-toggle"
