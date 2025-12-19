@@ -200,14 +200,14 @@ export const useNotificationStore = create(
 				
 				// Stop if WebSocket connected
 				if (state.websocketConnected) {
-					stopPolling();
+					get().stopPolling();
 					return;
 				}
 				
 				// Stop after max attempts
 				if (pollAttempts >= maxAttempts) {
 					logPolling('Stopped after max attempts, WebSocket likely unavailable');
-					stopPolling();
+					get().stopPolling();
 					return;
 				}
 				

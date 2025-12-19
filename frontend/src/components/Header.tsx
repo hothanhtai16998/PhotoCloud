@@ -19,11 +19,36 @@ import './Header.css'
 const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default: module.default })))
 
 export const Header = memo(function Header() {
-  const { accessToken, signOut } = useAuthStore()
+  const { accessToken, signOut, isInitializing } = useAuthStore()
   const { user } = useUserStore()
   const navigate = useNavigate()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const searchBarRef = useRef<SearchBarRef>(null)
+  
+  // Track if we've completed initial auth check to prevent showing sign-in button prematurely
+  // Show placeholder during initialization to prevent layout shift
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
+  
+  useEffect(() => {
+    // Once initialization completes, mark as checked
+    // If we have an accessToken, we can mark as checked immediately
+    if (!isInitializing) {
+      // Once initialization is complete, we know the auth state
+      // Set hasCheckedAuth to true regardless of whether we have a token or not
+      // This allows us to show the correct UI (buttons if logged in, sign-in if not)
+      const timer = setTimeout(() => {
+        setHasCheckedAuth(true)
+      }, 50) // Small delay to ensure Zustand state has propagated
+      return () => clearTimeout(timer)
+    } else {
+      // Reset when initialization starts again (e.g., on rapid refresh)
+      setHasCheckedAuth(false)
+    }
+  }, [isInitializing])
+  
+  // Show placeholder only during actual initialization
+  // Once initialization is complete, show the appropriate UI based on accessToken
+  const showPlaceholder = isInitializing || !hasCheckedAuth
 
   useEffect(() => {
     // Update favicon with configured logo on initial load
@@ -66,7 +91,20 @@ export const Header = memo(function Header() {
 
           {/* Mobile Header Actions - Icons visible on mobile */}
           <div className="mobile-header-actions">
-            {accessToken ? (
+            {showPlaceholder ? (
+              // Prevent layout shift: show placeholder with exact dimensions during auth init
+              // Matches: NotificationBell (40px on mobile) + Avatar (32px) + gap (8px) = ~80px total
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', // Match mobile-header-actions gap
+                minWidth: '80px', // Reserve space for NotificationBell + Avatar
+                height: '40px' // Match NotificationBell height on mobile
+              }}>
+                <div style={{ width: '40px', height: '40px', flexShrink: 0 }} /> {/* Placeholder for NotificationBell (40x40 on mobile) */}
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0 }} /> {/* Placeholder for Avatar */}
+              </div>
+            ) : accessToken ? (
               <>
                 {/* Notification Bell */}
                 <div className="mobile-header-icon-wrapper">
@@ -107,8 +145,25 @@ export const Header = memo(function Header() {
 
           {/* Right Actions - Desktop */}
           <div className="header-actions desktop-only">
-            {accessToken ? (
+            {showPlaceholder ? (
+              // Prevent layout shift: show placeholder with exact dimensions during auth init
+              // Matches: WebSocketStatus (~120px) + Upload button (~100px) + NotificationBell (60px) + Avatar (50px) + gaps (20px × 3 = 60px)
+              // Total: ~390px to prevent any layout shift
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '20px', // Match header-actions gap exactly
+                minWidth: '390px', // Reserve space for all elements
+                height: '56px' // Match header-container height
+              }}>
+                <div style={{ width: '120px', height: '24px', flexShrink: 0 }} /> {/* Placeholder for WebSocketStatus */}
+                <div style={{ width: '100px', height: '32px', flexShrink: 0 }} /> {/* Placeholder for Upload button */}
+                <div style={{ width: '60px', height: '60px', flexShrink: 0 }} /> {/* Placeholder for NotificationBell (60x60) */}
+                <div style={{ width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0 }} /> {/* Placeholder for Avatar (50x50) */}
+              </div>
+            ) : accessToken ? (
               <>
+                <WebSocketStatus />
                 <Button
                   variant="ghost"
                   onClick={(e) => {
@@ -120,7 +175,6 @@ export const Header = memo(function Header() {
                 >
                   {t('header.addImage')}
                 </Button>
-                <WebSocketStatus />
                 <NotificationBell />
                 <UserMenu
                   user={user}

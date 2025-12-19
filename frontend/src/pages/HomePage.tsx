@@ -1,6 +1,5 @@
 import { useEffect, useContext, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
 import { useImageStore } from "@/stores/useImageStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
@@ -288,7 +287,6 @@ function HomePage() {
 
     return (
         <>
-            <Header />
             <main className="homepage">
                 {!currentSearch && (
                     <VisualArtFormsSlider />

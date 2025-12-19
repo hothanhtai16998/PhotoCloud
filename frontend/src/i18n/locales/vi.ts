@@ -551,8 +551,6 @@ export const vi = {
     peakUsageTimes: 'Thời gian sử dụng cao điểm (theo giờ)',
     topPages: 'Trang phổ biến',
     page: 'Trang',
-    views: 'lượt xem',
-    noData: 'Không có dữ liệu',
     deleteImageConfirm: 'Bạn có muốn xoá ảnh "{title}" không?',
     deleteCategoryConfirm:
       'Bạn có muốn xoá danh mục "{name}" không? Chỉ xoá được nếu không có ảnh nào thuộc loại danh mục này.',

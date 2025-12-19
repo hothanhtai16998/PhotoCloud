@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-const LoadingSpinner = memo(({ size = 'medium', className = '' }: LoadingSpinnerProps) => {
+const LoadingSpinner = memo(({ size = 'large', className = '' }: LoadingSpinnerProps) => {
   return (
     <div 
       className={`loading-spinner-optimized loading-spinner-${size} ${className}`}

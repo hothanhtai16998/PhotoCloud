@@ -5,7 +5,6 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { Menu, X } from 'lucide-react';
 import type { AdminRolePermissions } from '@/services/adminService';
 import type { User as AuthUser } from '@/types/user';
-import Header from '@/components/Header';
 import {
     Users,
     Images,
@@ -183,7 +182,6 @@ function AdminPage() {
 
     return (
         <>
-            <Header />
             <div className="admin-page">
                 <div className="admin-container">
                     {/* Mobile Menu Button */}

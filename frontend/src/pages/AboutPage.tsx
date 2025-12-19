@@ -1,4 +1,3 @@
-import Header from "@/components/Header";
 import { Mail, Phone, MapPin, Globe, Linkedin, Github, Facebook, Twitter } from "lucide-react";
 import { authorInfo } from "@/config/authorInfo";
 import "./AboutPage.css";
@@ -7,7 +6,6 @@ function AboutPage() {
 
     return (
         <div className="about-page">
-            <Header />
             <div className="about-container">
                 <div className="about-content">
                     <h1 className="about-title">Về chúng tôi</h1>

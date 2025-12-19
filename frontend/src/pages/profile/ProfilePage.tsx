@@ -5,9 +5,9 @@ import { useProfileStore } from "@/stores/useProfileStore";
 import { useUserImageStore } from "@/stores/useUserImageStore";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useUserFollowCountStore } from "@/stores/useUserFollowCountStore";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import type { Image } from "@/types/image";
 import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
 import axios from "axios";
@@ -20,6 +20,7 @@ import { UserList } from "./components/UserList";
 // Lazy load UploadModal - conditionally rendered
 const UploadModal = lazy(() => import("@/components/UploadModal").then(module => ({ default: module.default })));
 import { userStatsService } from "@/services/userStatsService";
+import { followService } from "@/services/followService";
 import { ProfileHeader } from "./components/ProfileHeader";
 import { ProfileTabs } from "./components/ProfileTabs";
 import { EditPinsModal } from "./components/EditPinsModal";
@@ -729,7 +730,6 @@ function ProfilePage() {
         setIsFollowingLoading(true);
         
         try {
-            const { followService } = await import('@/services/followService');
             const userName = displayUser.displayName || displayUser.username;
             
             // First, get the current follow status from the server to ensure we have the correct state
@@ -854,7 +854,6 @@ function ProfilePage() {
     if (profileUserLoading) {
         return (
             <>
-                <Header />
                 <main className="profile-page">
                     <div className="profile-container">
                         <Skeleton className="h-32 w-full" />
@@ -868,7 +867,6 @@ function ProfilePage() {
     if (!currentUser || !displayUser) {
         return (
             <>
-                <Header />
                 <main className="profile-page">
                     <div className="profile-container">
                         <Skeleton className="h-32 w-full" />
@@ -880,7 +878,6 @@ function ProfilePage() {
 
     return (
         <>
-            <Header />
             <main className="profile-page">
                 <div className="profile-container">
                     {/* Loading Overlay for Profile Switch */}
@@ -936,7 +933,9 @@ function ProfilePage() {
                         <div style={{ display: activeTab === TABS.PHOTOS ? 'block' : 'none' }}>
                             {loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS) ? (
                                 <div className="empty-state" role="status" aria-live="polite">
-                                    <p>{t('profile.loadingPhotos')}</p>
+                                    <div className="flex items-center justify-center py-12">
+                                        <LoadingSpinner size="large" />
+                                    </div>
                                 </div>
                             ) : displayImages.length === 0 ? (
                                 <div className="empty-state" role="status" aria-live="polite">

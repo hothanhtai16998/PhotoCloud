@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/stores/useUserStore";
-import Header from "@/components/Header";
 import { useProfileEdit } from "./profile/hooks/useProfileEdit";
 import { ProfileForm } from "./profile/components/ProfileForm";
 import { PasswordForm } from "./profile/components/PasswordForm";
@@ -108,7 +107,6 @@ function EditProfilePage() {
 
     return (
         <>
-            <Header />
             <main className="profile-settings-page">
                 <div className="profile-settings-container">
                     {/* Left Sidebar */}

@@ -30,10 +30,13 @@ export const favoriteService = {
   /**
    * Get user's favorite images
    */
-  getFavorites: async (params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<FavoritesListResponse> => {
+  getFavorites: async (
+    params?: {
+      page?: number;
+      limit?: number;
+    },
+    signal?: AbortSignal
+  ): Promise<FavoritesListResponse> => {
     const queryParams = new URLSearchParams();
     if (params?.page) {
       queryParams.append('page', params.page.toString());
@@ -47,6 +50,7 @@ export const favoriteService = {
 
     const res = await api.get(url, {
       withCredentials: true,
+      signal,
     });
     return res.data;
   },

@@ -1,30 +1,61 @@
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useEffect, useRef } from 'react';
 
+/**
+ * AuthInitializer - Optimized for better UX, especially poor connections
+ * 
+ * Strategy:
+ * - Render children immediately (no blocking) - app works even if auth fails/times out
+ * - Initialize auth in background - doesn't block public pages
+ * - ProtectedRoute handles auth-gated content gracefully with timeout fallback
+ * - Poor internet: Public pages work immediately, protected pages timeout gracefully after 15s
+ * - This prevents blank screen flash and improves perceived performance
+ */
 const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
 	const { initializeApp, isInitializing } = useAuthStore();
 	const hasInitialized = useRef(false);
+	const initAbortControllerRef = useRef<AbortController | null>(null);
 
 	useEffect(() => {
-		// Only initialize once
+		// Reset on mount to handle rapid refreshes
+		hasInitialized.current = false;
+		
+		// Abort any pending initialization from previous mount
+		if (initAbortControllerRef.current) {
+			initAbortControllerRef.current.abort();
+		}
+		
+		// Only initialize once per mount - non-blocking
+		// Don't check isInitializing here - it starts as true and we need to call initializeApp to set it to false
 		if (!hasInitialized.current) {
 			hasInitialized.current = true;
-			initializeApp();
+			const abortController = new AbortController();
+			initAbortControllerRef.current = abortController;
+			
+			// Initialize auth in background, don't block rendering
+			initializeApp().catch(() => {
+				// Silently handle - user might not be logged in
+				// ProtectedRoute will handle redirect if needed
+			}).finally(() => {
+				if (abortController.signal.aborted) {
+					// Don't clear ref if this was aborted
+					return;
+				}
+				initAbortControllerRef.current = null;
+			});
 		}
-	}, [initializeApp]);
+		
+		return () => {
+			// Cleanup: abort pending initialization on unmount
+			if (initAbortControllerRef.current) {
+				initAbortControllerRef.current.abort();
+				initAbortControllerRef.current = null;
+			}
+		};
+	}, [initializeApp]); // Removed isInitializing from dependencies
 
-	// While initializing, show a loading state
-	if (isInitializing) {
-		return (
-			<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900">
-				<div className="text-center">
-					<div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-					<p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
-				</div>
-			</div>
-		);
-	}
-
+	// Render children immediately - no blocking loader
+	// Individual components handle their own loading states
 	return <>{children}</>;
 };
 

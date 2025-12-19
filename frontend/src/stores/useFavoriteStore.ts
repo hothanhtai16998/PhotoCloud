@@ -94,8 +94,9 @@ export const useFavoriteStore = create(
 
 		resetLoading: () => {
 			set((state) => {
-				// If we have images, ensure loading is false
-				if (state.images.length > 0) {
+				// If we have loaded data (hasLoaded), ensure loading is false
+				// This prevents flash when navigating with cached data (even if empty)
+				if (state.hasLoaded) {
 					state.loading = false;
 				}
 			});

@@ -555,8 +555,6 @@ export const en = {
     peakUsageTimes: 'Peak Usage Times (by Hour)',
     topPages: 'Top Pages',
     page: 'Page',
-    views: 'views',
-    noData: 'No data available',
     deleteImageConfirm: 'Do you want to delete image "{title}"?',
     deleteCategoryConfirm:
       'Do you want to delete category "{name}"? It can only be deleted if there are no images in this category.',

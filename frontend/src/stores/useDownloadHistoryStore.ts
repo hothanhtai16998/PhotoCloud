@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import { downloadHistoryService, type DownloadHistoryItem } from '@/services/downloadHistoryService';
 import { toast } from 'sonner';
 import { t } from '@/i18n';
+import type { Image } from '@/types/image';
 
 // Unsplash-style: 1 minute stale threshold (matches Unsplash behavior)
 const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
@@ -20,6 +21,7 @@ export interface DownloadHistoryState {
 	resetLoading: () => void;
 	clearDownloads: () => void;
 	checkAndRefreshIfStale: () => Promise<void>;
+	addDownloadToHistory: (image: Image) => void;
 }
 
 export const useDownloadHistoryStore = create(
@@ -82,8 +84,9 @@ export const useDownloadHistoryStore = create(
 
 		resetLoading: () => {
 			set((state) => {
-				// If we have data, ensure loading is false
-				if (state.downloads.length > 0) {
+				// If we have loaded data (hasLoaded), ensure loading is false
+				// This prevents flash when navigating with cached data (even if empty)
+				if (state.hasLoaded) {
 					state.loading = false;
 					state.loadingMore = false;
 				}
@@ -133,6 +136,44 @@ export const useDownloadHistoryStore = create(
 				// Silent fail - keep showing cached data
 				console.error('Background refresh failed:', error);
 			}
+		},
+
+		// Optimistic update: Add download to history immediately
+		addDownloadToHistory: (image: Image) => {
+			set((state) => {
+				// Check if already exists (prevent duplicates)
+				const exists = state.downloads.some(item => item.image._id === image._id);
+				if (exists) {
+					return; // Already in history
+				}
+
+				// Create new download history item
+				const now = new Date();
+				const dateStr = now.toISOString().split('T')[0] || now.toISOString().substring(0, 10); // YYYY-MM-DD format
+				
+				const newDownloadItem: DownloadHistoryItem = {
+					_id: `temp-${Date.now()}`, // Temporary ID, will be replaced on next fetch
+					image: image,
+					downloadedAt: now.toISOString(),
+					date: dateStr,
+				};
+
+				// Add to beginning (most recent first)
+				state.downloads = [newDownloadItem, ...state.downloads];
+				
+				// Update total count (always increment, even if pagination not loaded yet)
+				state.total = state.total + 1;
+
+				// Dispatch event to update sidebar thumbnail immediately
+				if (typeof window !== 'undefined') {
+					window.dispatchEvent(new CustomEvent('downloadsUpdated', {
+						detail: {
+							thumbnailImage: image,
+							total: state.total
+						}
+					}));
+				}
+			});
 		},
 	}))
 );

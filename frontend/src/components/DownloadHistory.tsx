@@ -1,7 +1,8 @@
 import { useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Download, Loader2 } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { downloadImage } from '@/utils/downloadService';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { generateImageSlug, slugify } from '@/lib/utils';
 import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
@@ -11,6 +12,7 @@ import { ActualLocationContext } from '@/contexts/ActualLocationContext';
 import { useContext } from 'react';
 import type { Image } from '@/types/image';
 import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
+import type { DownloadHistoryItem } from '@/services/downloadHistoryService';
 import emptyImage from '@/assets/empty.avif';
 import './DownloadHistory.css';
 
@@ -34,7 +36,6 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         loadingMore,
         page,
         hasMore,
-        total,
         hasLoaded,
         fetchDownloads,
         resetLoading,
@@ -47,17 +48,17 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
             return;
         }
 
-        // On mount, if we have data, ensure loading is false
-        if (downloads.length > 0) {
+        // CRITICAL: Ensure loading is false if we have loaded data (even if empty)
+        // This prevents flash when navigating with cached data
+        if (hasLoaded) {
             resetLoading();
         }
 
         // Only fetch if we haven't loaded yet
+        // Don't check for stale data on mount - use cached data immediately
+        // Stale data will be refreshed via periodic checks
         if (!hasLoaded) {
             fetchDownloads(1, false);
-        } else {
-            // Unsplash-style: Silent background refresh if stale
-            checkAndRefreshIfStale();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname]);
@@ -173,8 +174,9 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         return (
             <div className={`download-history ${className}`}>
                 <div className="download-history-loading">
-                    <Loader2 className="download-history-spinner" size={32} />
-                    <p>{t('profile.downloadHistorySection.loading') || 'Loading download history...'}</p>
+                    <div className="flex items-center justify-center py-12">
+                        <LoadingSpinner size="large" />
+                    </div>
                 </div>
             </div>
         );
@@ -201,7 +203,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
                             {formatDateHeader(date)}
                         </h3>
                         <div className="download-history-items">
-                            {groupedDownloads[date].map((item, index) => {
+                            {groupedDownloads[date]?.map((item) => {
                                 const image = item.image;
                                 if (!image) return null;
 

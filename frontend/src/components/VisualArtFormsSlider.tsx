@@ -1,25 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSliderStore } from '@/stores/useSliderStore';
 import { t } from '@/i18n';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import './VisualArtFormsSlider.css';
-
-interface SlideData {
-  id: string;
-  title: string;
-  image: string;
-  fullImage?: string; // Full resolution for zoom
-  width?: number;
-  height?: number;
-  imageInfo?: {
-    location?: string;
-    cameraModel?: string;
-    cameraMake?: string;
-    focalLength?: number;
-    aperture?: number;
-    shutterSpeed?: string;
-    iso?: number;
-  };
-}
 
 // Timing Constants
 const OPEN_ANIMATION_DURATION = 800;   // 800ms - Open animation
@@ -98,9 +81,10 @@ export function VisualArtFormsSlider() {
   // CRITICAL: Start fetching immediately on mount for better LCP
   useEffect(() => {
     const abortController = new AbortController();
+    let isMounted = true;
     
     // On mount, if we have slides, ensure loading is false
-    if (slides.length > 0) {
+    if (slides.length > 0 && isMounted) {
       resetLoading();
       // Initialize previous slide ref
       prevSlideIndexRef.current = 0;
@@ -116,15 +100,22 @@ export function VisualArtFormsSlider() {
       }
     }
     
-    // Only fetch if we haven't loaded yet or if slides are empty
+    // Always fetch on mount to ensure fresh data (handles rapid refresh)
+    // The store will handle caching and prevent duplicate requests
     if (!hasLoaded || slides.length === 0) {
-      fetchSlides(abortController.signal);
+      fetchSlides(abortController.signal).catch(() => {
+        // Ignore errors - already handled in store
+      });
     } else {
-      // Unsplash-style: Silent background refresh if stale
-      checkAndRefreshIfStale(abortController.signal);
+      // If we have data, still check if stale and refresh in background
+      // This ensures data is fresh even on rapid refresh
+      checkAndRefreshIfStale(abortController.signal).catch(() => {
+        // Ignore errors - already handled in store
+      });
     }
     
     return () => {
+      isMounted = false;
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -454,7 +445,9 @@ export function VisualArtFormsSlider() {
     return (
       <div className="visual-art-slider">
         <div className="slider-loading-message">
-          {t('visualArtSlider.loadingImages')}
+          <div className="flex items-center justify-center py-12">
+            <LoadingSpinner size="large" />
+          </div>
         </div>
       </div>
     );

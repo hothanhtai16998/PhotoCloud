@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ActualLocationContext } from '@/contexts/ActualLocationContext';
-import Header from '@/components/Header';
 import { imageService } from '@/services/imageService';
 import api from '@/lib/axios';
 import { extractIdFromSlug, generateImageSlug } from '@/lib/utils';
@@ -15,6 +14,8 @@ import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatched
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useImageFavoriteCountStore } from '@/stores/useImageFavoriteCountStore';
 import { useImageStatsStore } from '@/stores/useImageStatsStore';
+import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { shareService } from '@/utils/shareService';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
@@ -25,6 +26,7 @@ import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalIn
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
 import { detectAvifSupport } from '@/utils/avifSupport';
 import leftArrowIcon from '@/assets/left-arrow.svg';
@@ -1043,6 +1045,19 @@ function ImagePage() {
       link.click();
       document.body.removeChild(link);
       setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+      // Optimistic update: Add to download history immediately (if authenticated)
+      try {
+        const { accessToken } = useAuthStore.getState();
+        const { addDownloadToHistory } = useDownloadHistoryStore.getState();
+        if (accessToken && image) {
+          addDownloadToHistory(image);
+        }
+      } catch (error) {
+        // Silently fail - download still succeeded
+        console.error('Failed to update download history:', error);
+      }
+
       toast.success(t('image.downloadSuccess'));
       setShowDownloadMenu(false);
     } catch (error) {
@@ -1356,10 +1371,10 @@ function ImagePage() {
   if (loading) {
     return (
       <>
-        <Header />
         <div className="image-page-loading">
-          <div className="loading-spinner" />
-          <p>{t('imagePage.loading')}</p>
+          <div className="flex items-center justify-center py-12">
+            <LoadingSpinner size="large" />
+          </div>
         </div>
       </>
     );
@@ -1369,7 +1384,6 @@ function ImagePage() {
   if (error || !image) {
     return (
       <>
-        <Header />
         <div className="image-page-error">
           <p>{error || t('imagePage.notFound')}</p>
           <button onClick={() => navigate('/')}>{t('imagePage.backToHome')}</button>
@@ -2069,7 +2083,6 @@ function ImagePage() {
     <>
       {/* Progress bar at top of viewport */}
       <ImageProgressBar progress={imageProgress} visible={showProgressBar || isLoadingRef.current} />
-      {!showModalStyle && <Header />}
       {showModalStyle ? (
         // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)
         <div

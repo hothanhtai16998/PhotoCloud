@@ -2,12 +2,13 @@ import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 const ProtectedRoute = () => {
     const { isInitializing, accessToken } = useAuthStore();
     const { user, fetchMe, loading: userLoading } = useUserStore();
     const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+    const [hasTimedOut, setHasTimedOut] = useState(false);
 
     useEffect(() => {
         // Only attempt to fetch if:
@@ -23,14 +24,27 @@ const ProtectedRoute = () => {
         }
     }, [isInitializing, accessToken, user, hasAttemptedFetch, fetchMe]);
 
-    // Show loading while auth is initializing or while fetching user data
-    if (isInitializing || (accessToken && !user && !hasAttemptedFetch) || (accessToken && !user && userLoading)) {
+    // Timeout fallback for poor connections (don't show skeleton forever)
+    // After 15 seconds, assume connection is too slow and redirect to signin
+    useEffect(() => {
+        if (isInitializing || (accessToken && !user && userLoading)) {
+            const timeout = setTimeout(() => {
+                setHasTimedOut(true);
+            }, 15000); // 15 second timeout for very poor connections
+            
+            return () => clearTimeout(timeout);
+        } else {
+            setHasTimedOut(false);
+            return undefined;
+        }
+    }, [isInitializing, accessToken, user, userLoading]);
+
+    // Show loading animation while auth is initializing or while fetching user data
+    // BUT: Don't wait forever - timeout after 15s for poor connections
+    if (!hasTimedOut && (isInitializing || (accessToken && !user && !hasAttemptedFetch) || (accessToken && !user && userLoading))) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <Skeleton className="h-8 w-32" />
-                    <Skeleton className="h-64 w-full max-w-4xl" />
-                </div>
+            <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+                <LoadingSpinner size="large" />
             </div>
         );
     }
@@ -48,6 +62,7 @@ const ProtectedRoute = () => {
     }
 
     // If the token exists and user is loaded, show the protected content
+    // This is the final return, ensuring all code paths return a value
     return <Outlet />;
 };
 

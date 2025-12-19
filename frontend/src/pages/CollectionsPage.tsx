@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
 import { collectionService } from '@/services/collectionService';
 import type { Collection } from '@/types/collection';
 import type { Image } from '@/types/image';
@@ -13,6 +12,7 @@ import { Folder, Plus, Trash2, Edit2, Lock, Search, X, Filter } from 'lucide-rea
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { ConfirmModal } from '@/pages/admin/components/modals';
 import { t } from '@/i18n';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import './CollectionsPage.css';
 
 // Lazy load CollectionModal - only shown when editing
@@ -157,22 +157,21 @@ export default function CollectionsPage() {
 	if (loading && collections.length === 0) {
 		return (
 			<>
-				<Header />
 				<div className="collections-page">
 					<div className="collections-loading">
-						<div className="loading-spinner" />
-						<p>{t('collections.loading')}</p>
+						<div className="flex items-center justify-center py-12">
+							<LoadingSpinner size="large" />
+						</div>
 					</div>
 				</div>
 			</>
 		);
 	}
 
-	return (
-		<>
-			<Header />
-			<div className="collections-page">
-				<div className="collections-header">
+		return (
+			<>
+				<div className="collections-page">
+					<div className="collections-header">
 					<h1>{t('collections.myCollections')}</h1>
 					<button
 						className="collections-create-btn"

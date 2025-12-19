@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { collectionFavoriteService } from '@/services/collectionFavoriteService';
-import Header from '@/components/Header';
 import { Folder, Heart } from 'lucide-react';
 import type { Collection } from '@/types/collection';
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { toast } from 'sonner';
 import { t } from '@/i18n';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import './FavoriteCollectionsPage.css';
 
 export default function FavoriteCollectionsPage() {
@@ -60,12 +60,12 @@ export default function FavoriteCollectionsPage() {
 	if (loading) {
 		return (
 			<>
-				<Header />
 				<div className="favorite-collections-page">
-				<div className="favorite-collections-loading">
-					<div className="loading-spinner" />
-					<p>{t('favorites.loadingFavoriteCollections')}</p>
-				</div>
+					<div className="favorite-collections-loading">
+						<div className="flex items-center justify-center py-12">
+							<LoadingSpinner size="large" />
+						</div>
+					</div>
 				</div>
 			</>
 		);
@@ -73,7 +73,6 @@ export default function FavoriteCollectionsPage() {
 
 	return (
 		<>
-			<Header />
 			<div className="favorite-collections-page">
 				<div className="favorite-collections-header">
 					<h1>

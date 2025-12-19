@@ -81,23 +81,23 @@ export const useSliderStore = create(
 						? img.imageCategory 
 						: img.imageCategory?.name || 'Photography';
 					
-					const imageUrl = img.regularUrl || img.imageUrl;
-					const fullImageUrl = img.imageUrl || img.regularUrl;
-					const title = img.imageTitle || categoryName || 'Image';
-					
-					return {
-						id: img._id,
-						title: title,
-						image: imageUrl,
-						fullImage: fullImageUrl,
+				const imageUrl = img.regularUrl || img.imageUrl || '';
+				const fullImageUrl = img.imageUrl || img.regularUrl || imageUrl;
+				const title = img.imageTitle || categoryName || 'Image';
+				
+				return {
+					id: img._id,
+					title: title,
+					image: imageUrl,
+					fullImage: fullImageUrl,
 						width: img.width,
 						height: img.height,
 						imageInfo: {
 							location: img.location,
 							cameraModel: img.cameraModel,
 							cameraMake: img.cameraMake,
-							focalLength: img.focalLength,
-							aperture: img.aperture,
+							focalLength: img.focalLength ? String(img.focalLength) : undefined,
+							aperture: img.aperture ? String(img.aperture) : undefined,
 							shutterSpeed: img.shutterSpeed,
 							iso: img.iso,
 						},
@@ -181,23 +181,23 @@ export const useSliderStore = create(
 					const categoryName = typeof img.imageCategory === 'string' 
 						? img.imageCategory 
 						: img.imageCategory?.name || 'Photography';
-					const imageUrl = img.regularUrl || img.imageUrl;
-					const fullImageUrl = img.imageUrl || img.regularUrl;
-					const title = img.imageTitle || categoryName || 'Image';
-					
-					return {
-						id: img._id,
-						title: title,
-						image: imageUrl,
-						fullImage: fullImageUrl,
+				const imageUrl = img.regularUrl || img.imageUrl || '';
+				const fullImageUrl = img.imageUrl || img.regularUrl || imageUrl;
+				const title = img.imageTitle || categoryName || 'Image';
+				
+				return {
+					id: img._id,
+					title: title,
+					image: imageUrl,
+					fullImage: fullImageUrl,
 						width: img.width,
 						height: img.height,
 						imageInfo: {
 							location: img.location,
 							cameraModel: img.cameraModel,
 							cameraMake: img.cameraMake,
-							focalLength: img.focalLength,
-							aperture: img.aperture,
+							focalLength: img.focalLength ? String(img.focalLength) : undefined,
+							aperture: img.aperture ? String(img.aperture) : undefined,
 							shutterSpeed: img.shutterSpeed,
 							iso: img.iso,
 						},

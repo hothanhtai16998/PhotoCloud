@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useImageStore } from '@/stores/useImageStore';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
 import { Upload, TrendingUp } from 'lucide-react';
 import type { Image, PreUploadResponse, FinalizeImageData } from '@/types/image';
 import { compressImage } from '@/utils/imageCompression';
@@ -184,7 +183,6 @@ function UploadPage() {
 
     return (
         <>
-            <Header />
             <div className="upload-page">
                 {/* Upload Progress Overlay */}
                 {isUploading && (

@@ -11,6 +11,8 @@ import { t } from '@/i18n';
 import { useUserStore } from '@/stores/useUserStore';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import type { DownloadSize } from './DownloadSizeSelector';
 import { detectAvifSupport } from '@/utils/avifSupport';
 import './BlurUpImage.css';
@@ -263,6 +265,8 @@ export function BlurUpImage({
 
     // Favorite state
     const { user } = useUserStore();
+    const { accessToken } = useAuthStore();
+    const { addDownloadToHistory } = useDownloadHistoryStore();
     const isFavorited = useBatchedFavoriteCheck(image?._id);
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
     const navigate = useNavigate();
@@ -353,6 +357,11 @@ export function BlurUpImage({
             link.click();
             document.body.removeChild(link);
             setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+
+            // Optimistic update: Add to download history immediately (if authenticated)
+            if (accessToken && image) {
+                addDownloadToHistory(image);
+            }
 
             toast.success(t('image.downloadSuccess'));
         } catch (error) {

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { t } from '@/i18n';
 import './NoFlashGrid.css';
 
 // Import extracted modules
@@ -347,7 +349,11 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
             {/* Only show loading state if we have no images - keep grid visible during category change */}
             {isLoading && filteredImages.length === 0 ? (
-                <div className="loading-state">Loading...</div>
+                <div className="loading-state">
+                    <div className="flex items-center justify-center py-12">
+                        <LoadingSpinner size="large" />
+                    </div>
+                </div>
             ) : (
                 <>
                     <div

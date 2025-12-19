@@ -2,13 +2,14 @@ import { lazy, Suspense, useEffect, useMemo, useLayoutEffect, useRef } from "rea
 import { Route, Routes, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
-import { Skeleton } from "./components/ui/skeleton";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 import { PageViewTracker } from "./components/PageViewTracker";
 import { ActualLocationContext } from "./contexts/ActualLocationContext";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";
 import { ContactButton } from "./components/ContactButton";
 import ImagePageSidebar from "./components/ImagePageSidebar";
+import Header from "./components/Header";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import {
   isPageRefresh,
@@ -38,13 +39,11 @@ const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDet
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 
 
-// Loading fallback component
+// Loading animation fallback for lazy-loaded routes
+// Unsplash-style: Show layout structure (header/sidebar) immediately, spinner only in content area
 const PageLoader = () => (
-  <div className="flex min-h-screen items-center justify-center">
-    <div className="flex flex-col items-center gap-4">
-      <Skeleton className="h-12 w-12 rounded-full" />
-      <Skeleton className="h-4 w-32" />
-    </div>
+  <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
+    <LoadingSpinner size="large" />
   </div>
 );
 
@@ -194,8 +193,22 @@ function App() {
                             !location.pathname.startsWith('/signup') &&
                             !location.pathname.startsWith('/auth/google/callback');
 
+  // Show header on all pages except auth pages (signin/signup/callback)
+  const shouldShowHeader = !location.pathname.startsWith('/signin') && 
+                            !location.pathname.startsWith('/signup') &&
+                            !location.pathname.startsWith('/auth/google/callback');
+
   return (
     <ActualLocationContext.Provider value={location}>
+      {/* Header - Unsplash-style: Always visible, even during loading */}
+      {shouldShowHeader && <Header />}
+
+      {/* Sidebar - Unsplash-style: Always visible, even during loading */}
+      {shouldShowSidebar && <ImagePageSidebar />}
+
+      {/* Floating Contact Button - Always visible */}
+      <ContactButton />
+
       <Suspense fallback={<PageLoader />}>
         <PageViewTracker />
         {/* Primary routes. If background exists, render using the background location */}
@@ -239,12 +252,6 @@ function App() {
             <Route path="/photos/:slug" element={<ImagePage />} />
           </Routes>
         )}
-
-        {/* Sidebar - appears on all pages except admin and auth */}
-        {shouldShowSidebar && <ImagePageSidebar />}
-
-        {/* Floating Contact Button - appears on all pages */}
-        <ContactButton />
         
         {/* PWA Install Prompt */}
         <PWAInstallPrompt />

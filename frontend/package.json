@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+		"build": "vite build",
+		"build:check": "tsc -b && vite build",
     "build:analyze": "tsc -b && vite build && echo Bundle analysis complete! Open dist/stats.html in your browser",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

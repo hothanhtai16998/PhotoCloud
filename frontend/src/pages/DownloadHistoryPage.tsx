@@ -1,4 +1,3 @@
-import Header from '@/components/Header';
 import { DownloadHistory } from '@/components/DownloadHistory';
 import { t } from '@/i18n';
 import './DownloadHistoryPage.css';
@@ -6,7 +5,6 @@ import './DownloadHistoryPage.css';
 export default function DownloadHistoryPage() {
     return (
         <>
-            <Header />
             <main className="download-history-page">
                 <div className="download-history-page-container">
                     <div className="download-history-page-header">

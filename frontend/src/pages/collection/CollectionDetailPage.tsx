@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { toast } from 'sonner';
@@ -15,6 +14,7 @@ import { appConfig } from '@/config/appConfig';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useUserStore } from '@/stores/useUserStore';
 import type { Collection } from '@/types/collection';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import './CollectionDetailPage.css';
 
 export default function CollectionDetailPage() {
@@ -58,7 +58,7 @@ export default function CollectionDetailPage() {
 		updateCollectionMetadata,
 	} = useCollectionStore();
 
-	const { user } = useUserStore();
+	const { user: currentUser } = useUserStore();
 
 	// Collection images hook
 	const {
@@ -238,11 +238,11 @@ export default function CollectionDetailPage() {
 	if (loading) {
 		return (
 			<>
-				<Header />
 				<div className="collection-detail-page">
 					<div className="collection-detail-loading">
-						<div className="loading-spinner" />
-						<p>Đang tải bộ sưu tập...</p>
+						<div className="flex items-center justify-center py-12">
+							<LoadingSpinner size="large" />
+						</div>
 					</div>
 				</div>
 			</>
@@ -252,7 +252,6 @@ export default function CollectionDetailPage() {
 	if (!collection) {
 		return (
 			<>
-				<Header />
 				<div className="collection-detail-page">
 					<div className="collection-detail-error">
 						<p>Không tìm thấy bộ sưu tập</p>
@@ -267,7 +266,6 @@ export default function CollectionDetailPage() {
 
 	return (
 		<>
-			<Header />
 			<div className="collection-detail-page">
 				<CollectionHeader
 					collection={collection}

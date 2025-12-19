@@ -1,7 +1,6 @@
 import { useEffect, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavoriteStore } from "@/stores/useFavoriteStore";
-import Header from "@/components/Header";
 import { Heart } from "lucide-react";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { generateImageSlug } from "@/lib/utils";
@@ -10,6 +9,7 @@ import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { Image } from "@/types/image";
 import { t } from "@/i18n";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import "./FavoritesPage.css";
 
 
@@ -35,17 +35,17 @@ function FavoritesPage() {
     useEffect(() => {
         // ProtectedRoute ensures user is authenticated
         // Unsplash-style: Use cached data if available (no flash on navigation)
-        // On mount, if we have cached data, ensure loading is false
-        if (images.length > 0) {
+        // CRITICAL: Ensure loading is false if we have loaded data (even if empty)
+        // This prevents flash when navigating with cached data
+        if (hasLoaded) {
             resetLoading();
         }
 
         // Only fetch if we haven't loaded yet
+        // Don't check for stale data on mount - use cached data immediately
+        // Stale data will be refreshed via visibility change or periodic checks
         if (!hasLoaded) {
             fetchFavorites(1);
-        } else {
-            // Unsplash-style: Silent background refresh if stale
-            checkAndRefreshIfStale();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -132,7 +132,6 @@ function FavoritesPage() {
 
     return (
         <>
-            <Header />
             <main className="favorites-page">
                 <div className="favorites-container">
                     {/* Page Header */}
@@ -153,7 +152,9 @@ function FavoritesPage() {
                     {/* Favorites Content */}
                     {loading && images.length === 0 ? (
                         <div className="favorites-empty" role="status" aria-live="polite">
-                            <p>{t('favorites.loading') || 'Loading favorites...'}</p>
+                            <div className="flex items-center justify-center py-12">
+                                <LoadingSpinner size="large" />
+                            </div>
                         </div>
                     ) : images.length === 0 ? (
                         <div className="favorites-empty" role="status" aria-live="polite">

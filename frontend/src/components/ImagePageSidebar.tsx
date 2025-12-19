@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { t, getLocale, setLocale, type Locale } from '@/i18n';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { favoriteService } from '@/services/favoriteService';
+import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import type { Image } from '@/types/image';
 import vietnamFlag from '@/assets/vietnam.svg';
 import americaFlag from '@/assets/america.svg';
@@ -21,7 +22,9 @@ const ImagePageSidebar = () => {
   const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale());
   const [favoriteThumbnail, setFavoriteThumbnail] = useState<Image | null>(null);
   const [favoriteTotal, setFavoriteTotal] = useState<number>(0);
-  const prevPathnameRef = useRef<string>(location.pathname);
+  // Subscribe to store values separately to ensure reactivity
+  const favoriteImages = useFavoriteStore((state) => state.images);
+  const favoritePagination = useFavoriteStore((state) => state.pagination);
 
   // Listen for locale changes
   useEffect(() => {
@@ -34,82 +37,93 @@ const ImagePageSidebar = () => {
     return () => window.removeEventListener('localeChange', handleLocaleChange);
   }, []);
 
-  // Fetch favorite thumbnail and total count
-  const fetchFavoriteThumbnail = useCallback(async () => {
-    if (!accessToken) {
-      setFavoriteThumbnail(null);
-      setFavoriteTotal(0);
-      return;
-    }
 
-    try {
-      // Fetch first page to get thumbnail and total count
-      // Note: Backend filters out images with inactive categories, so we fetch limit: 5
-      // to increase chance of finding at least one valid image
-      const response = await favoriteService.getFavorites({ page: 1, limit: 5 });
-      if (response.success) {
-        const total = response.pagination?.total || 0;
-        setFavoriteTotal(total);
-        
-        // Use the first available image as thumbnail (most recent)
-        if (response.images && response.images.length > 0 && total > 0) {
-          setFavoriteThumbnail(response.images[0]);
-        } else {
-          setFavoriteThumbnail(null);
-        }
-      } else {
-        setFavoriteThumbnail(null);
-        setFavoriteTotal(0);
-      }
-    } catch (error) {
-      console.error('Failed to fetch favorite thumbnail:', error);
-      setFavoriteThumbnail(null);
-      setFavoriteTotal(0);
-    }
-  }, [accessToken]);
-
-  // Listen for favorites updates to update thumbnail and count immediately
+  // Listen for favorites updates to update thumbnail immediately (optimistic updates)
+  // Count is handled by store subscription below (more reliable)
   useEffect(() => {
     if (!accessToken) return;
 
     const handleFavoritesUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<{ 
-        thumbnailImage: Image | null; 
-        total: number;
-      }>;
-      const { thumbnailImage, total } = customEvent.detail || {};
-      
-      setFavoriteThumbnail(thumbnailImage || null);
-      setFavoriteTotal(total || 0);
+      const customEvent = event as CustomEvent<{ thumbnailImage: Image | null }>;
+      const thumbnailImage = customEvent.detail?.thumbnailImage;
+      setFavoriteThumbnail(thumbnailImage ?? null);
     };
 
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
-    return () => {
-      window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
-    };
+    return () => window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
   }, [accessToken]);
 
-  // Fetch when user logs in/out
+  // Clear state when logged out (consolidated logic)
   useEffect(() => {
-    fetchFavoriteThumbnail();
-  }, [fetchFavoriteThumbnail]);
+    if (!accessToken) {
+      setFavoriteThumbnail(null);
+      setFavoriteTotal(0);
+    }
+  }, [accessToken]);
 
-  // Refresh thumbnail when navigating to/from favorites page (user might have added/removed favorites)
+  // Fetch thumbnail on initial load (for new sessions/refresh) - like Unsplash
+  // Only runs if store has no data yet
+  const fetchInitialThumbnail = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const response = await favoriteService.getFavorites({ page: 1, limit: 1 }, signal);
+      if (signal?.aborted) return;
+      
+      if (response.success && response.pagination) {
+        const total = response.pagination.total || 0;
+        setFavoriteTotal(total);
+        setFavoriteThumbnail(total > 0 && response.images?.[0] ? response.images[0] : null);
+      }
+    } catch (error) {
+      // Ignore abort errors
+      if (error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) {
+        return;
+      }
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ERR_CANCELED') {
+        return;
+      }
+      if (signal?.aborted) return;
+      
+      console.error('Failed to fetch initial favorite thumbnail:', error);
+    }
+  }, []);
+
+  // Fetch on mount if store is empty (initial load/refresh)
   useEffect(() => {
     if (!accessToken) return;
     
-    const prevPathname = prevPathnameRef.current;
-    const isFavoritesPage = location.pathname === '/favorites';
-    const wasFavoritesPage = prevPathname === '/favorites';
+    const abortController = new AbortController();
     
-    // Refresh if navigating to/from favorites page
-    if (isFavoritesPage || wasFavoritesPage) {
-      fetchFavoriteThumbnail();
+    // Check store state at mount time - if empty, fetch thumbnail
+    const hasStoreData = favoritePagination || favoriteImages.length > 0;
+    if (!hasStoreData) {
+      fetchInitialThumbnail(abortController.signal);
     }
     
-    // Update previous pathname
-    prevPathnameRef.current = location.pathname;
-  }, [location.pathname, accessToken, fetchFavoriteThumbnail]);
+    return () => {
+      abortController.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken]); // Only run on mount/accessToken change, intentionally not including store values
+
+  // Sync thumbnail and count from store (PRIMARY SOURCE OF TRUTH)
+  // Takes over once store has data (e.g., after visiting favorites page)
+  useEffect(() => {
+    if (!accessToken) return;
+    
+    // Skip if store is empty (initial fetch handles it)
+    if (!favoritePagination && favoriteImages.length === 0) return;
+    
+    // Update count from pagination (most reliable)
+    if (favoritePagination?.total !== undefined) {
+      setFavoriteTotal(favoritePagination.total);
+    } else if (favoriteImages.length > 0) {
+      setFavoriteTotal(favoriteImages.length); // Fallback
+    }
+    
+    // Update thumbnail from store (always more accurate than initial fetch)
+    setFavoriteThumbnail(favoriteImages.length > 0 && favoriteImages[0] ? favoriteImages[0] : null);
+  }, [favoriteImages, favoritePagination, accessToken]);
+
 
   const isActive = (path: string) => {
     if (path === '/') {
