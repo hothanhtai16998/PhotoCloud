@@ -7,53 +7,25 @@
   "background_color": "#ffffff",
   "theme_color": "#667eea",
   "orientation": "any",
-  "icons": [
-    {
-      "src": "/vite.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ],
+  "icons": [],
   "shortcuts": [
     {
       "name": "Upload Photo",
       "short_name": "Upload",
       "description": "Upload a new photo",
       "url": "/upload",
-      "icons": [
-        {
-          "src": "/vite.svg",
-          "sizes": "any",
-          "type": "image/svg+xml"
-        }
-      ]
     },
     {
       "name": "Search",
       "short_name": "Search",
       "description": "Search photos",
       "url": "/",
-      "icons": [
-        {
-          "src": "/vite.svg",
-          "sizes": "any",
-          "type": "image/svg+xml"
-        }
-      ]
     },
     {
       "name": "Favorites",
       "short_name": "Favorites",
       "description": "View your favorite photos",
       "url": "/favorites",
-      "icons": [
-        {
-          "src": "/vite.svg",
-          "sizes": "any",
-          "type": "image/svg+xml"
-        }
-      ]
     }
   ],
   "categories": ["photography", "social", "entertainment"],

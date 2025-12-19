@@ -73,9 +73,11 @@ export default defineConfig({
               return 'vendor-radix';
             }
             // Chart libraries - only used in admin (lazy load)
-            if (id.includes('recharts')) {
-              return 'vendor-charts';
-            }
+            // Don't chunk recharts separately - let it bundle with admin pages
+            // This prevents it from loading until admin pages are accessed
+            // if (id.includes('recharts')) {
+            //   return 'vendor-charts';
+            // }
             // State management - split zustand and immer
             if (id.includes('zustand')) {
               return 'vendor-zustand';
@@ -140,7 +142,8 @@ export default defineConfig({
       'axios',
       'zustand',
       'immer',
-      'recharts',
+      // Don't pre-bundle recharts - let it load lazily only when admin/profile pages are accessed
+      // This prevents the initialization error from breaking the main app
     ],
     // Don't force re-optimization - let Vite handle it naturally
     force: false,
