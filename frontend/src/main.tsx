@@ -10,9 +10,34 @@ import AuthInitializer from './components/auth/AuthInitializer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 // Import verification utility (makes it available globally in dev mode)
 import './utils/verifyAppearanceSettings';
+// Initialize Unsplash-style refresh handler
+import { initRefreshHandler } from './utils/refreshHandler';
+// Import test utility (dev mode only)
+if (import.meta.env.DEV) {
+  import('./utils/testRefreshHandler');
+}
 
 // Enable Immer MapSet plugin for Map and Set support in Zustand stores
 enableMapSet();
+
+// Initialize refresh handler (debouncing, visual feedback, request cancellation)
+// Wait for DOM to be ready before initializing
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initRefreshHandler();
+      if (import.meta.env.DEV) {
+        console.log('[RefreshHandler] Initialized');
+      }
+    });
+  } else {
+    // DOM already ready
+    initRefreshHandler();
+    if (import.meta.env.DEV) {
+      console.log('[RefreshHandler] Initialized (DOM already ready)');
+    }
+  }
+}
 
 // Register Service Worker for image caching and offline support
 if ('serviceWorker' in navigator) {

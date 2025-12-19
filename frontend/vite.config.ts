@@ -73,8 +73,8 @@ export default defineConfig({
               return 'vendor-radix';
             }
             // Chart libraries - only used in admin (lazy load)
-            // Don't chunk recharts separately - let it bundle with admin pages
-            // This prevents it from loading until admin pages are accessed
+            // Keep recharts in vendor-misc to avoid initialization error
+            // We split other libraries to keep vendor-misc under 500KB
             // if (id.includes('recharts')) {
             //   return 'vendor-charts';
             // }
@@ -96,6 +96,14 @@ export default defineConfig({
             // Toast/notification - only used when needed
             if (id.includes('sonner')) {
               return 'vendor-toast';
+            }
+            // Image compression - only used when uploading
+            if (id.includes('browser-image-compression')) {
+              return 'vendor-image';
+            }
+            // Socket.io - only used for real-time features
+            if (id.includes('socket.io')) {
+              return 'vendor-socket';
             }
             // Other vendor code - split further if possible
             return 'vendor-misc';

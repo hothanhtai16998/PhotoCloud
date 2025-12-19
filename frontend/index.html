@@ -84,18 +84,111 @@
         position: relative;
       }
       
-      @keyframes spinner-rotate {
-        0% {
-          transform: translate(-50%, -50%) rotate(0deg);
-        }
-        100% {
-          transform: translate(-50%, -50%) rotate(360deg);
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+             @keyframes spinner-rotate {
+               0% {
+                 transform: translate(-50%, -50%) rotate(0deg);
+               }
+               100% {
+                 transform: translate(-50%, -50%) rotate(360deg);
+               }
+             }
+             
+             /* Refresh progress bar - shows immediately on beforeunload */
+             body::before {
+               content: '';
+               position: fixed;
+               top: 0;
+               left: 0;
+               width: 0%;
+               height: 5px;
+               background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+               background-size: 200% 100%;
+               z-index: 999999;
+               opacity: 0;
+               transition: width 0.3s ease, opacity 0.1s ease;
+               pointer-events: none;
+               box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+             }
+             
+             body.refreshing::before {
+               width: 100% !important;
+               opacity: 1 !important;
+               animation: refreshProgress 0.6s linear infinite;
+               transition: none !important;
+             }
+             
+             @keyframes refreshProgress {
+               0% {
+                 background-position: -200% 0%;
+               }
+               100% {
+                 background-position: 200% 0%;
+               }
+             }
+             
+             /* Make sure body.refreshing is visible */
+             body.refreshing {
+               cursor: wait !important;
+             }
+           </style>
+         </head>
+         <body>
+           <div id="root"></div>
+           <script type="module" src="/src/main.tsx"></script>
+           <script>
+             // Immediate refresh handler - runs before React loads
+             (function() {
+               if (typeof window === 'undefined') return;
+               
+               let isRefreshing = false;
+               
+               // Catch F5/Ctrl+R early
+               function handleKeyDown(e) {
+                 var isRefreshKey = 
+                   e.key === 'F5' || 
+                   e.code === 'F5' ||
+                   e.keyCode === 116 ||
+                   (e.key === 'r' && (e.ctrlKey || e.metaKey)) ||
+                   (e.key === 'R' && (e.ctrlKey || e.metaKey));
+                 
+                 if (isRefreshKey) {
+                   console.log('[RefreshHandler] F5 detected in HTML!');
+                   if (document.body) {
+                     document.body.classList.add('refreshing');
+                     // Force multiple repaints to ensure visibility
+                     void document.body.offsetHeight;
+                     requestAnimationFrame(function() {
+                       void document.body.offsetHeight;
+                     });
+                   }
+                 }
+               }
+               
+               // Listen for keydown
+               window.addEventListener('keydown', handleKeyDown, true);
+               document.addEventListener('keydown', handleKeyDown, true);
+               
+               // Also catch beforeunload
+               window.addEventListener('beforeunload', function(e) {
+                 if (isRefreshing) return;
+                 isRefreshing = true;
+                 
+                 console.log('[RefreshHandler] ⚡ Page refreshing - cancelling requests...');
+                 
+                 // Add refreshing class immediately
+                 if (document.body) {
+                   document.body.classList.add('refreshing');
+                   // Force multiple repaints
+                   void document.body.offsetHeight;
+                   requestAnimationFrame(function() {
+                     void document.body.offsetHeight;
+                   });
+                 }
+                 
+                 // Note: We can't prevent the refresh, but we can cancel requests
+                 // The axios.ts handler will also cancel requests
+               });
+             })();
+           </script>
+         </body>
+       </html>
