@@ -265,11 +265,17 @@ api.interceptors.response.use(
 
             return newAccessToken;
           } catch (refreshError: any) {
-            // Don't sign out user on rate limit (429) - just wait and retry later
+            // Don't sign out user on rate limit (429) or cancelled requests
             // Only clear auth for actual auth failures (401, 403, etc.)
             const status = refreshError?.response?.status;
-            if (status === 429) {
-              // Rate limited - don't clear auth, just throw error
+            const isCancelled = 
+              refreshError?.name === 'CanceledError' || 
+              refreshError?.code === 'ERR_CANCELED' ||
+              refreshError?.message === 'canceled' ||
+              axios.isCancel(refreshError);
+            
+            if (status === 429 || isCancelled) {
+              // Rate limited or cancelled - don't clear auth, just throw error
               // The request will fail but user stays logged in
               throw refreshError;
             }
@@ -296,10 +302,17 @@ api.interceptors.response.use(
 
           return api(originalRequest);
         } catch (refreshError: any) {
-          // If refresh failed due to rate limit (429), don't sign user out
+          // If refresh failed due to rate limit (429) or was cancelled, don't sign user out
           // Just fail the request - user stays logged in and can retry later
-          if (refreshError?.response?.status === 429) {
-            // Return original 401 error instead of 429 to avoid confusion
+          const isCancelled = 
+            refreshError?.name === 'CanceledError' || 
+            refreshError?.code === 'ERR_CANCELED' ||
+            refreshError?.message === 'canceled' ||
+            axios.isCancel(refreshError);
+          
+          if (refreshError?.response?.status === 429 || isCancelled) {
+            // Return original 401 error instead of 429/cancelled to avoid confusion
+            // User stays logged in
             return Promise.reject(error);
           }
           // For other refresh errors (auth failures), reject normally

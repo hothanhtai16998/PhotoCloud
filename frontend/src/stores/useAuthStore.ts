@@ -132,12 +132,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 				// Dispatch event to let user store handle fetching user data
 				dispatchLoginSuccess();
 			} catch (error: unknown) {
-				const errorStatus = (error as HttpErrorResponse)?.response?.status;
+				const errorResponse = error as HttpErrorResponse;
+				const errorStatus = errorResponse?.response?.status;
+				
+				// Check if request was cancelled (e.g., during rapid refresh)
+				const isCancelled = 
+					(error as any)?.name === 'CanceledError' || 
+					(error as any)?.code === 'ERR_CANCELED' ||
+					(error as any)?.message === 'canceled';
+				
+				// Don't sign out if request was cancelled or rate limited
+				// Only sign out on actual auth failures
+				if (isCancelled || errorStatus === 429) {
+					// Request was cancelled or rate limited - don't sign out
+					// User stays logged in
+					return;
+				}
+				
 				// Only show error if it's not a 401/403 (expected when not logged in)
 				if (errorStatus !== 401 && errorStatus !== 403) {
 					toast.error(t('auth.sessionExpired'));
 				}
-				get().clearAuth();
+				
+				// Only clear auth on actual auth failures (401, 403)
+				if (errorStatus === 401 || errorStatus === 403) {
+					get().clearAuth();
+				}
 			}
 		},
 
