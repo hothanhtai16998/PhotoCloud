@@ -45,10 +45,8 @@ export const useSliderStore = create(
 		fetchSlides: async (signal?: AbortSignal) => {
 			const currentState = get();
 			
-			// Only set loading if we don't have data yet (prevents flash when navigating)
-			const shouldShowLoading = !currentState.hasLoaded && currentState.slides.length === 0;
-			
-			if (shouldShowLoading) {
+			// Set loading if we have no slides (simple - same as NoFlashGrid pattern)
+			if (currentState.slides.length === 0) {
 				set((state) => {
 					state.loading = true;
 				});
@@ -59,6 +57,11 @@ export const useSliderStore = create(
 					limit: 10, // Fetch 10 images for the slider
 					_refresh: true 
 				}, signal);
+				
+				// Check if request was aborted after fetch completes
+				if (signal?.aborted) {
+					return;
+				}
 				
 				const images = response.images || [];
 				
@@ -104,6 +107,11 @@ export const useSliderStore = create(
 					};
 				});
 				
+				// Check again if aborted before updating state
+				if (signal?.aborted) {
+					return;
+				}
+				
 				set((state) => {
 					state.slides = slideData;
 					state.hasLoaded = true;
@@ -117,6 +125,11 @@ export const useSliderStore = create(
 					(error && typeof error === 'object' && 'code' in error && error.code === 'ERR_CANCELED') ||
 					(signal?.aborted)
 				) {
+					// Always reset loading state on abort to prevent stuck spinner
+					// This is critical for rapid refresh scenarios
+					set((state) => {
+						state.loading = false;
+					});
 					return;
 				}
 				console.error('Error fetching images for slider:', error);
@@ -131,7 +144,7 @@ export const useSliderStore = create(
 
 		resetLoading: () => {
 			set((state) => {
-				// If we have slides, ensure loading is false
+				// Only reset loading if we have slides (simple - same as NoFlashGrid pattern)
 				if (state.slides.length > 0) {
 					state.loading = false;
 				}

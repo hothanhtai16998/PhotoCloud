@@ -6,9 +6,10 @@
 }
 
 .favorites-container {
-  max-width: min(1400px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 24px;
+  width: 100%;
 }
 
 .favorites-header {
@@ -223,7 +224,7 @@
 
 @media (max-width: 1024px) {
   .favorites-container {
-    padding: 32px 16px;
+    padding: 32px 24px;
   }
 
   .favorites-grid {
@@ -246,7 +247,7 @@
   }
 
   .favorites-container {
-    padding: 24px 12px;
+    padding: 24px 16px;
   }
 
   .favorites-header {
@@ -285,7 +286,7 @@
 
 @media (max-width: 480px) {
   .favorites-container {
-    padding: 20px 8px;
+    padding: 20px 12px;
   }
 
   .favorites-header {

@@ -83,7 +83,8 @@ export function VisualArtFormsSlider() {
     const abortController = new AbortController();
     let isMounted = true;
     
-    // On mount, if we have slides, ensure loading is false
+    // On mount, if we have slides, ensure loading is false (handles rapid refresh)
+    // This prevents spinner from showing when we already have cached data
     if (slides.length > 0 && isMounted) {
       resetLoading();
       // Initialize previous slide ref
@@ -100,15 +101,13 @@ export function VisualArtFormsSlider() {
       }
     }
     
-    // Always fetch on mount to ensure fresh data (handles rapid refresh)
-    // The store will handle caching and prevent duplicate requests
-    if (!hasLoaded || slides.length === 0) {
+    // Simple: if no slides, fetch. If we have slides, check if stale.
+    if (slides.length === 0) {
       fetchSlides(abortController.signal).catch(() => {
         // Ignore errors - already handled in store
       });
     } else {
-      // If we have data, still check if stale and refresh in background
-      // This ensures data is fresh even on rapid refresh
+      // If we have slides, check if stale and refresh in background
       checkAndRefreshIfStale(abortController.signal).catch(() => {
         // Ignore errors - already handled in store
       });
@@ -439,8 +438,7 @@ export function VisualArtFormsSlider() {
     // Note: Resume is handled in handleImageClick and handleCloseZoom with delay
   }, [isZoomed, isZoomingOut]);
 
-  // Only show loading if we're actively loading AND have no slides
-  // This prevents showing loading when navigating with existing slides
+  // Only show loading state if we have no slides - same pattern as NoFlashGrid
   if (loading && slides.length === 0) {
     return (
       <div className="visual-art-slider">
@@ -453,6 +451,7 @@ export function VisualArtFormsSlider() {
     );
   }
 
+  // Show empty state if we have no slides (and not loading)
   if (slides.length === 0) {
     return (
       <div className="visual-art-slider">
