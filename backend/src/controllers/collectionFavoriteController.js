@@ -121,20 +121,38 @@ export const getFavoriteCollections = asyncHandler(async (req, res) => {
     const total = favoriteIds.length;
 
     // Get favorite collections with pagination
+    // IMPORTANT: Sort by the order in user.favoriteCollections array (most recently favorited first)
+    // The favoriteCollections array maintains insertion order, so reverse it to get newest first
+    const reversedFavoriteIds = [...favoriteIds].reverse();
+    
     const collections = await Collection.find({
         _id: { $in: favoriteIds },
     })
         .populate('createdBy', 'username displayName avatarUrl')
         .populate('coverImage', 'imageUrl regularUrl smallUrl')
         .populate('images', 'imageUrl regularUrl smallUrl')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
         .lean();
+    
+    // Sort collections by their position in the reversed favorites array (most recent first)
+    // Create a map for O(1) lookup
+    const idToIndex = new Map();
+    reversedFavoriteIds.forEach((id, index) => {
+        idToIndex.set(id.toString(), index);
+    });
+    
+    // Sort collections by their position in the favorites array
+    const sortedCollections = collections.sort((a, b) => {
+        const indexA = idToIndex.get(a._id.toString()) ?? Infinity;
+        const indexB = idToIndex.get(b._id.toString()) ?? Infinity;
+        return indexA - indexB;
+    });
+    
+    // Apply pagination after sorting
+    const paginatedCollections = sortedCollections.slice(skip, skip + limit);
 
     res.status(200).json({
         success: true,
-        collections,
+        collections: paginatedCollections,
         pagination: {
             page,
             limit,

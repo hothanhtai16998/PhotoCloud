@@ -7,11 +7,12 @@ import { generateImageSlug, slugify } from '@/lib/utils';
 import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { saveScrollPosition, prepareModalNavigationState, setModalActive } from '@/utils/modalNavigation';
+import { saveScrollPosition, prepareModalNavigationState, setModalActive, isPageRefresh } from '@/utils/modalNavigation';
 import { ActualLocationContext } from '@/contexts/ActualLocationContext';
 import { useContext } from 'react';
 import type { Image } from '@/types/image';
 import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
+import { useAuthStore } from '@/stores/useAuthStore';
 import type { DownloadHistoryItem } from '@/services/downloadHistoryService';
 import emptyImage from '@/assets/empty.avif';
 import './DownloadHistory.css';
@@ -29,6 +30,9 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
     const location = useLocation();
     const actualLocation = useContext(ActualLocationContext);
     const isMobile = useIsMobile();
+    
+    // Auth store - need to check if auth is initialized before fetching
+    const { isInitializing, accessToken } = useAuthStore();
     
     const {
         downloads,
@@ -48,20 +52,41 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
             return;
         }
 
-        // CRITICAL: Ensure loading is false if we have loaded data (even if empty)
-        // This prevents flash when navigating with cached data
-        if (hasLoaded) {
-            resetLoading();
+        // CRITICAL: Wait for auth initialization before fetching download history
+        // On refresh, auth store needs to initialize (load token) before we can make authenticated requests
+        if (isInitializing) {
+            // Auth is still initializing, wait for it to complete
+            return;
         }
 
-        // Only fetch if we haven't loaded yet
-        // Don't check for stale data on mount - use cached data immediately
-        // Stale data will be refreshed via periodic checks
-        if (!hasLoaded) {
+        // If no access token after initialization, user is not authenticated
+        // ProtectedRoute should handle redirect, but don't try to fetch downloads
+        if (!accessToken) {
+            return;
+        }
+
+        // On page refresh, always fetch fresh data to ensure we have the latest downloads
+        const isRefresh = isPageRefresh();
+        
+        if (isRefresh) {
+            // On refresh, always fetch fresh data (don't use cached store data)
             fetchDownloads(1, false);
+        } else {
+            // CRITICAL: Ensure loading is false if we have loaded data (even if empty)
+            // This prevents flash when navigating with cached data
+            if (hasLoaded) {
+                resetLoading();
+            }
+
+            // Only fetch if we haven't loaded yet
+            // Don't check for stale data on mount - use cached data immediately
+            // Stale data will be refreshed via periodic checks
+            if (!hasLoaded) {
+                fetchDownloads(1, false);
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.pathname]);
+    }, [location.pathname, isInitializing, accessToken]);
 
     // Unsplash-style: Periodic check for stale data (every minute)
     useEffect(() => {

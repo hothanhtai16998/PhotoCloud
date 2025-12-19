@@ -1052,6 +1052,11 @@ function ImagePage() {
         const { addDownloadToHistory } = useDownloadHistoryStore.getState();
         if (accessToken && image) {
           addDownloadToHistory(image);
+          
+          // Dispatch event for global download history update
+          window.dispatchEvent(new CustomEvent('downloadCompleted', {
+            detail: { image }
+          }));
         }
       } catch (error) {
         // Silently fail - download still succeeded

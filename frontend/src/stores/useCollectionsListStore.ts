@@ -240,8 +240,41 @@ export const useCollectionsListStore = create(
 				console.error('Background refresh failed:', error);
 			}
 		},
+
+		// Optimistic update: Add collection to list immediately
+		addCollection: (collection: Collection) => {
+			set((state) => {
+				// Check if already exists (prevent duplicates)
+				const exists = state.collections.some(c => c._id === collection._id);
+				if (exists) {
+					return; // Already in list
+				}
+
+				// Add to beginning (most recent first)
+				state.collections = [collection, ...state.collections];
+				
+				// Reapply filters to include new collection
+				get().applyFilters(state.collections);
+			});
+		},
 	}))
 );
+
+// Listen to collection creation events globally (even when CollectionsPage is not mounted)
+// This ensures optimistic updates work from anywhere in the app
+if (typeof window !== 'undefined') {
+	window.addEventListener('collectionCreated', ((event: CustomEvent<{ 
+		collection: Collection;
+	}>) => {
+		const { collection } = event.detail || {};
+		if (!collection?._id) return;
+
+		const store = useCollectionsListStore.getState();
+		
+		// Add collection to list
+		store.addCollection(collection);
+	}) as EventListener);
+}
 
 
 

@@ -31,9 +31,9 @@ export const setCacheHeaders = (req, res, next) => {
         path.includes('/follow') ||
         path.includes('/users/') ||
         path.includes('/profile')) {
-        // For favorites, prevent browser caching entirely since they change frequently
+        // For favorites, download-history, and collections, prevent browser caching entirely since they change frequently
         // Server-side cache is still used for performance, but browser always fetches fresh
-        if (path.includes('/favorites')) {
+        if (path.includes('/favorites') || path.includes('/download-history') || path.includes('/collections')) {
             res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');

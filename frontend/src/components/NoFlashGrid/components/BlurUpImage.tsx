@@ -361,6 +361,11 @@ export function BlurUpImage({
             // Optimistic update: Add to download history immediately (if authenticated)
             if (accessToken && image) {
                 addDownloadToHistory(image);
+                
+                // Dispatch event for global download history update
+                window.dispatchEvent(new CustomEvent('downloadCompleted', {
+                    detail: { image }
+                }));
             }
 
             toast.success(t('image.downloadSuccess'));
@@ -368,7 +373,7 @@ export function BlurUpImage({
             console.error('Download failed:', error);
             toast.error(t('image.downloadFailed'));
         }
-    }, [image]);
+    }, [image, accessToken, addDownloadToHistory]);
 
     // Handle author info click - navigate to profile
     const handleAuthorClick = useCallback((e: React.MouseEvent) => {

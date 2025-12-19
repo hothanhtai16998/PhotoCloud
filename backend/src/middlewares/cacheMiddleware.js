@@ -169,6 +169,56 @@ export const clearFavoritesCache = (userId) => {
 };
 
 /**
+ * Clear all download history cache entries for a specific user
+ * This ensures fresh data is returned after downloading
+ * @param {string} userId - User ID to clear download history cache for
+ */
+export const clearDownloadHistoryCache = (userId) => {
+    if (!userId) return;
+    
+    const userIdStr = String(userId);
+    let cleared = 0;
+    
+    // Iterate through all cache keys and delete any that match download history for this user
+    for (const key of cache.keys()) {
+        // Match keys that contain download-history path
+        // Cache key format: path:userId:queryJSON or path:queryJSON
+        if (key.includes('/download-history') || key.includes('download-history')) {
+            cache.delete(key);
+            cleared++;
+        }
+    }
+    
+    return cleared;
+};
+
+/**
+ * Clear all collections cache entries for a specific user
+ * This ensures fresh data is returned after creating/updating/deleting collections
+ * @param {string} userId - User ID to clear collections cache for
+ */
+export const clearCollectionsCache = (userId) => {
+    if (!userId) return;
+    
+    const userIdStr = String(userId);
+    let cleared = 0;
+    
+    // Iterate through all cache keys and delete any that match collections for this user
+    for (const key of cache.keys()) {
+        // Match keys that contain collections path and this user ID
+        // Cache key format: path:userId:queryJSON
+        // Examples: /api/collections:userId:{} or /collections:userId:{}
+        if ((key.includes('/api/collections') || key.includes('/collections')) 
+            && key.includes(`:${userIdStr}:`)) {
+            cache.delete(key);
+            cleared++;
+        }
+    }
+    
+    return cleared;
+};
+
+/**
  * Cleanup expired cache entries periodically
  * More aggressive cleanup to prevent memory leaks
  */

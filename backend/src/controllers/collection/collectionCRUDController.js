@@ -283,8 +283,23 @@ export const createCollection = async (req, res) => {
         await collection.save();
 
         // Create initial version
-        // Invalidate cache for this user's collections
+        // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)
         deleteCache(generateCacheKey('userCollections', { userId: userId.toString() }));
+        
+        // Also clear cacheMiddleware cache
+        try {
+            const { clearCollectionsCache } = await import('../../middlewares/cacheMiddleware.js');
+            const cleared = clearCollectionsCache(userId);
+            if (cleared > 0) {
+                logger.info('Cleared collections cache', { 
+                    userId: userId.toString(), 
+                    entriesCleared: cleared 
+                });
+            }
+        } catch (cacheError) {
+            logger.error('Failed to clear collections cache:', cacheError);
+            // Don't fail the request if cache clear fails
+        }
         
         await createCollectionVersion(
             collection._id,
@@ -423,8 +438,23 @@ export const updateCollection = async (req, res) => {
 
         await collection.save();
 
-        // Invalidate cache for this user's collections
+        // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)
         deleteCache(generateCacheKey('userCollections', { userId: userId.toString() }));
+        
+        // Also clear cacheMiddleware cache
+        try {
+            const { clearCollectionsCache } = await import('../../middlewares/cacheMiddleware.js');
+            const cleared = clearCollectionsCache(userId);
+            if (cleared > 0) {
+                logger.info('Cleared collections cache', { 
+                    userId: userId.toString(), 
+                    entriesCleared: cleared 
+                });
+            }
+        } catch (cacheError) {
+            logger.error('Failed to clear collections cache:', cacheError);
+            // Don't fail the request if cache clear fails
+        }
 
         // Create version for each change
         if (changes.length > 0) {
@@ -606,8 +636,23 @@ export const deleteCollection = async (req, res) => {
 
         await Collection.findByIdAndDelete(collectionId);
 
-        // Invalidate cache for this user's collections
+        // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)
         deleteCache(generateCacheKey('userCollections', { userId: userId.toString() }));
+        
+        // Also clear cacheMiddleware cache
+        try {
+            const { clearCollectionsCache } = await import('../../middlewares/cacheMiddleware.js');
+            const cleared = clearCollectionsCache(userId);
+            if (cleared > 0) {
+                logger.info('Cleared collections cache', { 
+                    userId: userId.toString(), 
+                    entriesCleared: cleared 
+                });
+            }
+        } catch (cacheError) {
+            logger.error('Failed to clear collections cache:', cacheError);
+            // Don't fail the request if cache clear fails
+        }
 
         res.json({
             success: true,

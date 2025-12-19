@@ -19,7 +19,7 @@ import './CollectionsPage.css';
 const CollectionModal = lazy(() => import('@/components/collection/CollectionModal'));
 
 export default function CollectionsPage() {
-	const { accessToken } = useAuthStore();
+	const { accessToken, isInitializing } = useAuthStore();
 	const { user } = useUserStore();
 	const navigate = useNavigate();
 
@@ -65,6 +65,11 @@ export default function CollectionsPage() {
 	}, [collections.length]); // Run when collections change
 
 	useEffect(() => {
+		// CRITICAL: Wait for auth initialization before fetching collections
+		if (isInitializing) {
+			return;
+		}
+
 		if (!accessToken) {
 			toast.info(t('collections.loginRequired'));
 			navigate('/');
@@ -92,7 +97,7 @@ export default function CollectionsPage() {
 			checkAndRefreshIfStale();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [accessToken]);
+	}, [accessToken, isInitializing]);
 
 	// Unsplash-style: Periodic check for stale data (every 2 minutes)
 	useEffect(() => {

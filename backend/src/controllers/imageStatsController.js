@@ -5,6 +5,7 @@ import UserActivity from '../models/UserActivity.js';
 import AnonymousActivity from '../models/AnonymousActivity.js';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import { getClientIp } from '../utils/auditLogger.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Get or create session ID from cookies
@@ -622,6 +623,24 @@ export const incrementDownload = asyncHandler(async (req, res) => {
     } catch (wsError) {
         console.error('Failed to emit download count update via WebSocket:', wsError);
         // Don't fail the request if WebSocket fails
+    }
+
+    // Clear download history cache for user to ensure fresh data on next fetch
+    // This prevents stale cached data from being returned after downloading
+    if (userId) {
+        try {
+            const { clearDownloadHistoryCache } = await import('../middlewares/cacheMiddleware.js');
+            const cleared = clearDownloadHistoryCache(userId);
+            if (cleared > 0) {
+                logger.info('Cleared download history cache', { 
+                    userId: userId.toString(), 
+                    entriesCleared: cleared 
+                });
+            }
+        } catch (cacheError) {
+            logger.error('Failed to clear download history cache:', cacheError);
+            // Don't fail the request if cache clear fails
+        }
     }
 
     res.status(200).json({

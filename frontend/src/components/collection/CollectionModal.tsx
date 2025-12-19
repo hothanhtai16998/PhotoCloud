@@ -422,6 +422,11 @@ export default function CollectionModal({
 			setShowTemplates(false);
 			setSelectedImageIds(new Set());
 
+			// Dispatch event for global collections list update
+			window.dispatchEvent(new CustomEvent('collectionCreated', {
+				detail: { collection: newCollection }
+			}));
+
 			const imageCount = (imageId ? 1 : 0) + selectedImageIds.size;
 			if (imageCount > 0) {
 				toast.success(t('collections.createdWithImages', { count: imageCount }));

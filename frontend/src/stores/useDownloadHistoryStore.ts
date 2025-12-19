@@ -178,3 +178,19 @@ export const useDownloadHistoryStore = create(
 	}))
 );
 
+// Listen to download events globally (even when DownloadHistoryPage is not mounted)
+// This ensures optimistic updates work from anywhere in the app
+if (typeof window !== 'undefined') {
+	window.addEventListener('downloadCompleted', ((event: CustomEvent<{ 
+		image: Image;
+	}>) => {
+		const { image } = event.detail || {};
+		if (!image?._id) return;
+
+		const store = useDownloadHistoryStore.getState();
+		
+		// Add image to download history
+		store.addDownloadToHistory(image);
+	}) as EventListener);
+}
+
