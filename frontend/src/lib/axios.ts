@@ -105,22 +105,74 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Handle 429 - rate limit with exponential backoff (Unsplash-style)
+    if (error.response?.status === 429) {
+      // Rate limited - respect Retry-After header if present
+      const retryAfter = error.response?.headers?.['retry-after'];
+      if (retryAfter && originalRequest._retryCount === undefined) {
+        // First 429 for this request - wait for Retry-After period
+        const delay = parseInt(retryAfter, 10) * 1000;
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            originalRequest._retryCount = 0;
+            resolve(api(originalRequest));
+          }, delay);
+        });
+      }
+      // Don't retry if already retried or no Retry-After header
+      // Silently fail to prevent console spam
+      return Promise.reject(error);
+    }
+
     // Handle 401 - access token expired, try to refresh
+    // Use a module-level promise to prevent multiple simultaneous refresh requests
     if (error.response?.status === 401) {
       originalRequest._retryCount = originalRequest._retryCount ?? 0;
 
       if (originalRequest._retryCount < 3) {
         originalRequest._retryCount += 1;
 
-        try {
-          const refreshResponse = await api.post(
-            '/auth/refresh',
-            {},
-            { withCredentials: true }
-          );
+        // Check if a refresh is already in progress (module-level variable)
+        if ((api as any)._refreshPromise) {
+          // Wait for the existing refresh to complete, then retry
+          return (api as any)._refreshPromise.then(() => {
+            if (originalRequest.headers) {
+              const currentToken = useAuthStore.getState().accessToken;
+              if (currentToken) {
+                originalRequest.headers.Authorization = `Bearer ${currentToken}`;
+              }
+            }
+            return api(originalRequest);
+          }).catch(() => Promise.reject(error));
+        }
 
-          const newAccessToken = refreshResponse.data.accessToken;
-          useAuthStore.getState().setAccessToken(newAccessToken);
+        // Create a new refresh promise
+        const refreshPromise = (async () => {
+          try {
+            const refreshResponse = await api.post(
+              '/auth/refresh',
+              {},
+              { withCredentials: true }
+            );
+
+            const newAccessToken = refreshResponse.data.accessToken;
+            useAuthStore.getState().setAccessToken(newAccessToken);
+
+            return newAccessToken;
+          } catch (refreshError) {
+            useAuthStore.getState().clearAuth();
+            throw refreshError;
+          } finally {
+            // Clear the refresh promise after completion
+            (api as any)._refreshPromise = null;
+          }
+        })();
+
+        // Store the promise so other requests can wait for it
+        (api as any)._refreshPromise = refreshPromise;
+
+        try {
+          const newAccessToken = await refreshPromise;
 
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -128,7 +180,6 @@ api.interceptors.response.use(
 
           return api(originalRequest);
         } catch (refreshError) {
-          useAuthStore.getState().clearAuth();
           return Promise.reject(refreshError);
         }
       }

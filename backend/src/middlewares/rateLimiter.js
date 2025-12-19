@@ -11,15 +11,29 @@ export const apiLimiter = rateLimit({
     max: env.NODE_ENV === 'development' ? 1000 : 100, // Much higher limit in development
     message: 'Too many requests from this IP, please try again later.',
     // Custom handler: try to enqueue GET requests instead of immediately rejecting
+    // Unsplash-style: Include Retry-After header for better client handling
     handler: (req, res, next, options) => {
         try {
             const enqueued = enqueueRequest(req, res, next);
             if (!enqueued) {
-                return res.status(429).json({ message: options.message || 'Too many requests' });
+                // Calculate retry after time (remaining window time in seconds)
+                const resetTime = res.get('X-RateLimit-Reset');
+                const retryAfter = resetTime 
+                    ? Math.ceil((new Date(resetTime).getTime() - Date.now()) / 1000)
+                    : Math.ceil(options.windowMs / 1000); // Fallback to full window
+                
+                // Set Retry-After header (Unsplash-style)
+                res.set('Retry-After', Math.max(1, retryAfter));
+                return res.status(429).json({ 
+                    message: options.message || 'Too many requests',
+                    retryAfter: retryAfter
+                });
             }
             // If enqueued or accepted, do nothing; the enqueueRequest either called next() or will process later
             return;
         } catch (err) {
+            // Fallback: set basic Retry-After header
+            res.set('Retry-After', Math.ceil(options.windowMs / 1000));
             return res.status(429).json({ message: options.message || 'Too many requests' });
         }
     },
