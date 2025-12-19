@@ -146,8 +146,33 @@ export const useImageStore = create(
     fetchImages: async (params?: FetchImagesParams, signal?: AbortSignal) => {
       const state = get();
 
-      // Prevent concurrent requests (unless refreshing)
+      // Prevent concurrent requests (unless refreshing or pagination)
+      // Allow pagination requests (page > 1) if:
+      // 1. We already have images (initial load completed), OR
+      // 2. We're not currently loading
+      // This enables infinite scroll to work smoothly while preventing race conditions
+      const isPaginationRequest = params?.page && params.page > 1;
+      const isSameQuery = 
+        params?.category === state.currentCategory &&
+        params?.search === state.currentSearch &&
+        params?.location === state.currentLocation;
+      
+      // Block pagination if initial load is in progress and we have no images yet
+      // This prevents race condition where pagination completes before initial load
       if (state.loading && !params?._refresh) {
+        if (isPaginationRequest && state.images.length === 0) {
+          // Don't allow pagination if initial load hasn't completed yet
+          return;
+        }
+        if (!isPaginationRequest) {
+          // Block non-pagination requests if already loading
+          return;
+        }
+      }
+      
+      // For pagination requests, ensure we're fetching the same query
+      // Don't allow pagination if query changed (should start from page 1)
+      if (isPaginationRequest && !isSameQuery) {
         return;
       }
 
