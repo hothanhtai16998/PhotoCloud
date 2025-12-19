@@ -17,15 +17,16 @@ export const useFavoriteStore = create(
 		hasLoaded: false,
 		lastFetchedAt: null,
 
-		fetchFavorites: async (page = 1) => {
+		fetchFavorites: async (page = 1, forceRefresh = false) => {
 			const currentState = get();
 			
 			// If we already have loaded data and this is page 1, refresh silently (no loading state)
 			// This prevents flash when navigating back to favorites page
-			const isSilentRefresh = page === 1 && currentState.hasLoaded;
+			// But if forceRefresh is true, always fetch fresh data
+			const isSilentRefresh = page === 1 && currentState.hasLoaded && !forceRefresh;
 			
 			// Only set loading if we don't have data yet (prevents flash when navigating)
-			const shouldShowLoading = page === 1 && !currentState.hasLoaded && currentState.images.length === 0;
+			const shouldShowLoading = page === 1 && (!currentState.hasLoaded || forceRefresh) && currentState.images.length === 0;
 			
 			if (shouldShowLoading && !isSilentRefresh) {
 				set((state) => {
@@ -37,6 +38,7 @@ export const useFavoriteStore = create(
 			const response = await favoriteService.getFavorites({
 				page,
 				limit: 20, // Load 20 images per page for better performance, infinite scroll will load more
+				_refresh: forceRefresh, // Pass refresh flag to bypass cache
 			});
 
 				set((state) => {

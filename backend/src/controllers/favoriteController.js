@@ -4,6 +4,7 @@ import Image from '../models/Image.js';
 import Notification from '../models/Notification.js';
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
+import { clearFavoritesCache } from '../middlewares/cacheMiddleware.js';
 
 /**
  * Toggle favorite status for an image
@@ -125,6 +126,22 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
         // Don't fail the request if WebSocket fails
     }
 
+    // Clear cache for user's favorites endpoint to ensure fresh data on next fetch
+    // This prevents stale cached data from being returned after toggling favorites
+    // Use dedicated function that clears all favorites cache entries for this user
+    try {
+        const cleared = clearFavoritesCache(userId);
+        if (cleared > 0) {
+            logger.info('Cleared favorites cache', { 
+                userId: userId.toString(), 
+                entriesCleared: cleared 
+            });
+        }
+    } catch (cacheError) {
+        logger.error('Failed to clear favorites cache:', cacheError);
+        // Don't fail the request if cache clear fails
+    }
+
     res.status(200).json({
         success: true,
         isFavorited: !isFavorited,
@@ -161,6 +178,10 @@ export const getFavorites = asyncHandler(async (req, res) => {
     // Get favorite images with pagination
     // For favorites page, show ALL favorites regardless of category status
     // Users should be able to see all their saved favorites
+    // IMPORTANT: Sort by the order in user.favorites array (most recently favorited first)
+    // The favorites array maintains insertion order, so reverse it to get newest first
+    const reversedFavoriteIds = [...favoriteIds].reverse();
+    
     const images = await Image.find({
         _id: { $in: favoriteIds },
     })
@@ -170,14 +191,28 @@ export const getFavorites = asyncHandler(async (req, res) => {
             select: 'name description isActive',
             // Don't filter by isActive - show all favorites even if category is inactive
         })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
         .lean();
+    
+    // Sort images by their position in the reversed favorites array (most recent first)
+    // Create a map for O(1) lookup
+    const idToIndex = new Map();
+    reversedFavoriteIds.forEach((id, index) => {
+        idToIndex.set(id.toString(), index);
+    });
+    
+    // Sort images by their position in the favorites array
+    const sortedImages = images.sort((a, b) => {
+        const indexA = idToIndex.get(a._id.toString()) ?? Infinity;
+        const indexB = idToIndex.get(b._id.toString()) ?? Infinity;
+        return indexA - indexB;
+    });
+    
+    // Apply pagination after sorting
+    const paginatedImages = sortedImages.slice(skip, skip + limit);
 
     res.status(200).json({
         success: true,
-        images,
+        images: paginatedImages,
         pagination: {
             page,
             limit,

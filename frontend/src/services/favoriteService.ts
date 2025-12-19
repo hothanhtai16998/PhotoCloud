@@ -34,6 +34,7 @@ export const favoriteService = {
     params?: {
       page?: number;
       limit?: number;
+      _refresh?: boolean; // Force refresh, bypass cache
     },
     signal?: AbortSignal
   ): Promise<FavoritesListResponse> => {
@@ -44,6 +45,10 @@ export const favoriteService = {
     if (params?.limit) {
       queryParams.append('limit', params.limit.toString());
     }
+    // Add cache-busting parameter on refresh to ensure fresh data
+    if (params?._refresh) {
+      queryParams.append('_t', Date.now().toString());
+    }
 
     const queryString = queryParams.toString();
     const url = queryString ? `/favorites?${queryString}` : '/favorites';
@@ -51,6 +56,12 @@ export const favoriteService = {
     const res = await api.get(url, {
       withCredentials: true,
       signal,
+      // Add cache-control headers on refresh to ensure browser doesn't use cached response
+      // Backend CORS now allows these headers
+      headers: params?._refresh ? {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      } : undefined,
     });
     return res.data;
   },

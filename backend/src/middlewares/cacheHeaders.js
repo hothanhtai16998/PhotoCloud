@@ -31,8 +31,16 @@ export const setCacheHeaders = (req, res, next) => {
         path.includes('/follow') ||
         path.includes('/users/') ||
         path.includes('/profile')) {
-        // Short cache for user data (5 minutes)
-        res.setHeader('Cache-Control', 'private, max-age=300, must-revalidate');
+        // For favorites, prevent browser caching entirely since they change frequently
+        // Server-side cache is still used for performance, but browser always fetches fresh
+        if (path.includes('/favorites')) {
+            res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        } else {
+            // Short cache for other user data (5 minutes)
+            res.setHeader('Cache-Control', 'private, max-age=300, must-revalidate');
+        }
         return next();
     }
 

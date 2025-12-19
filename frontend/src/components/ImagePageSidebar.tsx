@@ -144,9 +144,23 @@ const ImagePageSidebar = () => {
   }, []);
 
   // Fetch on mount if store is empty (initial load/refresh)
-  // Use showAuthIcons to check for refresh token cookie (optimistic rendering)
+  // CRITICAL: Wait for auth initialization before making authenticated requests
+  // showAuthIcons can be true optimistically, but we need actual token for API calls
   useEffect(() => {
-    if (!showAuthIcons) return;
+    // Don't fetch if auth is still initializing - wait for token to be available
+    if (isInitializing) {
+      return;
+    }
+    
+    // Don't fetch if user is not authenticated (no accessToken)
+    if (!accessToken) {
+      return;
+    }
+    
+    // Don't fetch if icons shouldn't be shown (user not authenticated)
+    if (!showAuthIcons) {
+      return;
+    }
     
     const abortController = new AbortController();
     
@@ -185,7 +199,7 @@ const ImagePageSidebar = () => {
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAuthIcons]); // Only run on mount/showAuthIcons change, intentionally not including store values
+  }, [isInitializing, accessToken, showAuthIcons, favoritePagination, favoriteImages.length, fetchInitialThumbnail]); // Wait for auth before fetching
 
   // Sync thumbnail and count from store (PRIMARY SOURCE OF TRUTH)
   // Takes over once store has data (e.g., after visiting favorites page)

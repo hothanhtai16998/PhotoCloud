@@ -6,6 +6,7 @@ import {
 } from '../controllers/favoriteController.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { validateCsrf } from '../middlewares/csrfMiddleware.js';
+import { cacheMiddleware } from '../middlewares/cacheMiddleware.js';
 
 const router = express.Router();
 
@@ -13,7 +14,9 @@ const router = express.Router();
 router.use(protectedRoute);
 
 // Get user's favorite images (must come before /:imageId)
-router.get('/', getFavorites);
+// Cache for 10 seconds - favorites change frequently but short cache helps with performance
+// Cache is cleared when favorites are toggled to ensure fresh data
+router.get('/', cacheMiddleware(10 * 1000), getFavorites);
 
 // Check if multiple images are favorited (must come before /:imageId to avoid "check" being treated as imageId)
 router.post('/check', validateCsrf, checkFavorites);

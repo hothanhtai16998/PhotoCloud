@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavoriteStore } from "@/stores/useFavoriteStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { Heart } from "lucide-react";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { generateImageSlug } from "@/lib/utils";
@@ -19,6 +20,9 @@ function FavoritesPage() {
     const actualLocation = useContext(ActualLocationContext);
     const isMobile = useIsMobile();
 
+    // Auth store - need to check if auth is initialized before fetching
+    const { isInitializing, accessToken } = useAuthStore();
+
     // Favorite store
     const {
         images,
@@ -35,38 +39,61 @@ function FavoritesPage() {
 
     useEffect(() => {
         // ProtectedRoute ensures user is authenticated
-        // Unsplash-style: Use cached data if available (no flash on navigation)
-        // CRITICAL: Ensure loading is false if we have loaded data (even if empty)
-        // This prevents flash when navigating with cached data
-        if (hasLoaded) {
-            resetLoading();
+        // CRITICAL: Wait for auth initialization before fetching favorites
+        // On refresh, auth store needs to initialize (load token) before we can make authenticated requests
+        if (isInitializing) {
+            // Auth is still initializing, wait for it to complete
+            return;
         }
 
-        // Only fetch if we haven't loaded yet
-        // Don't check for stale data on mount - use cached data immediately
-        // Stale data will be refreshed via visibility change or periodic checks
-        if (!hasLoaded) {
-            // Unsplash-style: Use requestIdleCallback to make requests after initial render
-            // This naturally keeps requests pending during page load phase (like Unsplash)
-            const scheduleFetch = () => {
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => {
-                        fetchFavorites(1);
-                    }, { timeout: 100 });
-                } else {
-                    // Fallback for browsers without requestIdleCallback
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
+        // If no access token after initialization, user is not authenticated
+        // ProtectedRoute should handle redirect, but don't try to fetch favorites
+        if (!accessToken) {
+            return;
+        }
+
+        // On page refresh, always fetch fresh data to ensure we have the latest favorites
+        const isRefresh = isPageRefresh();
+        
+        if (isRefresh) {
+            // On refresh, always fetch fresh data (don't use cached store data)
+            // This ensures we get the latest favorites from the server
+            // Pass _refresh flag to bypass cache
+            fetchFavorites(1, true);
+        } else {
+            // Normal navigation: Use cached data if available (no flash on navigation)
+            // CRITICAL: Ensure loading is false if we have loaded data (even if empty)
+            // This prevents flash when navigating with cached data
+            if (hasLoaded) {
+                resetLoading();
+            }
+
+            // Only fetch if we haven't loaded yet
+            // Don't check for stale data on mount - use cached data immediately
+            // Stale data will be refreshed via visibility change or periodic checks
+            if (!hasLoaded) {
+                // Unsplash-style: Use requestIdleCallback to make requests after initial render
+                // This naturally keeps requests pending during page load phase (like Unsplash)
+                const scheduleFetch = () => {
+                    if ('requestIdleCallback' in window) {
+                        requestIdleCallback(() => {
                             fetchFavorites(1);
+                        }, { timeout: 100 });
+                    } else {
+                        // Fallback for browsers without requestIdleCallback
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                fetchFavorites(1);
+                            });
                         });
-                    });
-                }
-            };
-            
-            scheduleFetch();
+                    }
+                };
+                
+                scheduleFetch();
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isInitializing, accessToken]); // Re-run when auth state changes
 
     // Unsplash-style: Refresh when tab becomes visible after being away for 1+ minute
     useEffect(() => {

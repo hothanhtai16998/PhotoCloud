@@ -143,6 +143,32 @@ export const clearCache = (pattern) => {
 };
 
 /**
+ * Clear all favorites cache entries for a specific user
+ * This is more thorough than pattern matching and ensures all variations are cleared
+ * @param {string} userId - User ID to clear favorites cache for
+ */
+export const clearFavoritesCache = (userId) => {
+    if (!userId) return;
+    
+    const userIdStr = String(userId);
+    let cleared = 0;
+    
+    // Iterate through all cache keys and delete any that match favorites for this user
+    for (const key of cache.keys()) {
+        // Match keys that contain favorites path and this user ID
+        // Cache key format: path:userId:queryJSON
+        // Examples: /api/favorites:userId:{"page":"1"} or /:userId:{"page":"1"}
+        if ((key.includes('/api/favorites') || key.includes('/favorites') || key.startsWith('/:')) 
+            && key.includes(`:${userIdStr}:`)) {
+            cache.delete(key);
+            cleared++;
+        }
+    }
+    
+    return cleared;
+};
+
+/**
  * Cleanup expired cache entries periodically
  * More aggressive cleanup to prevent memory leaks
  */

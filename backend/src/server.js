@@ -158,7 +158,14 @@ app.use(
         },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-XSRF-TOKEN', 'X-CSRF-Token'],
+        allowedHeaders: [
+            'Content-Type', 
+            'Authorization', 
+            'X-XSRF-TOKEN', 
+            'X-CSRF-Token',
+            'Cache-Control',  // Allow cache-control header for cache-busting requests
+            'Pragma'          // Allow pragma header for cache-busting requests
+        ],
         optionsSuccessStatus: 204,
     })
 );
