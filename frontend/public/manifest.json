@@ -13,19 +13,19 @@
       "name": "Upload Photo",
       "short_name": "Upload",
       "description": "Upload a new photo",
-      "url": "/upload",
+      "url": "/upload"
     },
     {
       "name": "Search",
       "short_name": "Search",
       "description": "Search photos",
-      "url": "/",
+      "url": "/"
     },
     {
       "name": "Favorites",
       "short_name": "Favorites",
       "description": "View your favorite photos",
-      "url": "/favorites",
+      "url": "/favorites"
     }
   ],
   "categories": ["photography", "social", "entertainment"],

@@ -53,11 +53,13 @@ export const cancelAllPendingRequests = () => {
 };
 
 // Listen for page unload events (refresh, navigation, close)
+// Use pagehide instead of unload (unload is deprecated and prevents bfcache)
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     cancelAllPendingRequests();
   });
-  window.addEventListener('unload', () => {
+  // Use pagehide instead of unload - works with bfcache
+  window.addEventListener('pagehide', () => {
     cancelAllPendingRequests();
   });
   // Also handle visibility change (tab switch) - cancel if page is being unloaded
@@ -154,6 +156,8 @@ api.interceptors.request.use(
       if (csrfToken && config.headers) {
         config.headers['X-XSRF-TOKEN'] = csrfToken;
       }
+      // If no CSRF token, the request will fail with 403 and the response interceptor
+      // will fetch the token and retry the request
     }
 
     return config;

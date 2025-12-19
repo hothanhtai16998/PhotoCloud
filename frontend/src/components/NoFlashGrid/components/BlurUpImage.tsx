@@ -513,6 +513,8 @@ export function BlurUpImage({
                         src={placeholderInitial}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
+                        width={image.width || undefined}
+                        height={image.height || undefined}
                         style={{
                             opacity: loaded ? 0 : 1,
                             /* Disable transition during initial load to prevent flashing */
@@ -522,7 +524,8 @@ export function BlurUpImage({
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
-                            objectPosition: 'center'
+                            objectPosition: 'center',
+                            aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined
                         }}
                     />
                 ) : (
@@ -553,6 +556,8 @@ export function BlurUpImage({
                         src={fullSrc}
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
+                        width={image.width || undefined}
+                        height={image.height || undefined}
                         // Don't use loading="lazy" - we handle lazy loading with IntersectionObserver
                         // This prevents browser's native lazy loading from conflicting
                         style={{ 
@@ -560,7 +565,8 @@ export function BlurUpImage({
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
-                            objectPosition: 'center'
+                            objectPosition: 'center',
+                            aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined
                         }}
                         onLoad={() => {
                             setLoaded(true);

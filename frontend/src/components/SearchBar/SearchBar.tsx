@@ -327,7 +327,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
                     className="search-input"
                     aria-label={t('search.label')}
                     aria-describedby="search-description"
-                    aria-expanded={showSuggestions}
+                    aria-haspopup="listbox"
                     aria-autocomplete="list"
                     autoComplete="off"
                 />

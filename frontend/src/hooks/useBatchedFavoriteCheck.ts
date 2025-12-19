@@ -144,10 +144,50 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
     }
 
     // Schedule batch check
-    checkTimeoutRef.current = setTimeout(() => {
+    checkTimeoutRef.current = setTimeout(async () => {
       const imageIds = Array.from(pendingChecks.keys());
       
       if (imageIds.length > 0) {
+        // Double-check authentication before making request
+        const { accessToken } = useAuthStore.getState();
+        if (!accessToken) {
+          // Not authenticated - clear pending checks and set all to false
+          for (const id of imageIds) {
+            const callbacks = pendingChecks.get(id);
+            if (callbacks) {
+              callbacks.forEach(cb => cb(false));
+              pendingChecks.delete(id);
+            }
+          }
+          return;
+        }
+
+        // Ensure CSRF token is available before making POST request
+        // This prevents critical request chaining
+        const getCsrfTokenFromCookie = (): string | null => {
+          if (typeof document === 'undefined') return null;
+          const cookies = document.cookie.split(';');
+          for (const cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'XSRF-TOKEN' && value) {
+              return decodeURIComponent(value);
+            }
+          }
+          return null;
+        };
+
+        let csrfToken = getCsrfTokenFromCookie();
+        if (!csrfToken) {
+          // Fetch CSRF token first to avoid chaining
+          try {
+            const { default: api } = await import('@/lib/axios');
+            const response = await api.get('/csrf-token');
+            csrfToken = response.data?.csrfToken || getCsrfTokenFromCookie();
+          } catch (error) {
+            // If CSRF fetch fails, still try the request (interceptor will handle retry)
+          }
+        }
+
         // Make batch request
         favoriteService.checkFavorites(imageIds)
           .then((response) => {
@@ -169,10 +209,31 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
               }
             }
           })
-          .catch((error) => {
-            console.error('Failed to check favorites:', error);
-            // Clear all pending checks on error
-            pendingChecks.clear();
+          .catch((error: any) => {
+            // Silently handle 403 errors (not authenticated or CSRF issues)
+            // Only log other errors in development
+            const is403 = error?.response?.status === 403;
+            const is401 = error?.response?.status === 401;
+            
+            if (!is403 && !is401 && import.meta.env.DEV) {
+              console.error('Failed to check favorites:', error);
+            }
+            
+            // For auth errors, set all to false and clear cache
+            if (is403 || is401) {
+              for (const id of imageIds) {
+                const callbacks = pendingChecks.get(id);
+                if (callbacks) {
+                  callbacks.forEach(cb => cb(false));
+                  pendingChecks.delete(id);
+                }
+                // Clear cache for these images
+                favoriteCache.delete(id);
+              }
+            } else {
+              // For other errors, just clear pending checks
+              pendingChecks.clear();
+            }
           });
       }
     }, BATCH_DELAY);

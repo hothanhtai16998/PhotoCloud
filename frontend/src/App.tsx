@@ -53,6 +53,19 @@ function App() {
   // Load site settings to update document title and meta tags
   const { settings } = useSiteSettings();
 
+  // Prefetch CSRF token early to avoid critical request chaining
+  useEffect(() => {
+    // Fetch CSRF token as early as possible to avoid chaining with other requests
+    const prefetchCsrfToken = async () => {
+      try {
+        await fetch('/api/csrf-token', { method: 'GET', credentials: 'include' });
+      } catch (error) {
+        // Silently fail - will be retried on first POST request
+      }
+    };
+    prefetchCsrfToken();
+  }, []);
+
   // Check if this is a refresh - do this synchronously before render logic
   // Cache the result so we only check once per actual page load
   const isRefresh = useMemo(() => {

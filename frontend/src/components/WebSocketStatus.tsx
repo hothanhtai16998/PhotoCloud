@@ -65,9 +65,11 @@ export function WebSocketStatus() {
 		<div 
 			className={`websocket-status websocket-status-${status.className}`}
 			title={status.tooltip}
+			role="status"
+			aria-live="polite"
 			aria-label={status.tooltip}
 		>
-			<Icon size={20} color={status.color} />
+			<Icon size={20} color={status.color} aria-hidden="true" />
 		</div>
 	);
 }
