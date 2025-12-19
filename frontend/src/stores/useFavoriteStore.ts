@@ -4,8 +4,8 @@ import { favoriteService } from '@/services/favoriteService';
 import type { FavoriteState } from '@/types/store';
 import type { Image } from '@/types/image';
 
-// Unsplash-style: 5 minutes stale threshold
-const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+// Unsplash-style: 1 minute stale threshold (matches Unsplash behavior)
+const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
 
 export const useFavoriteStore = create(
 	immer<FavoriteState>((set, get) => ({
@@ -19,10 +19,15 @@ export const useFavoriteStore = create(
 
 		fetchFavorites: async (page = 1) => {
 			const currentState = get();
+			
+			// If we already have loaded data and this is page 1, refresh silently (no loading state)
+			// This prevents flash when navigating back to favorites page
+			const isSilentRefresh = page === 1 && currentState.hasLoaded;
+			
 			// Only set loading if we don't have data yet (prevents flash when navigating)
 			const shouldShowLoading = page === 1 && !currentState.hasLoaded && currentState.images.length === 0;
 			
-			if (shouldShowLoading) {
+			if (shouldShowLoading && !isSilentRefresh) {
 				set((state) => {
 					state.loading = true;
 				});
@@ -104,7 +109,7 @@ export const useFavoriteStore = create(
 				return;
 			}
 			
-			// Check if data is stale (>5 minutes old)
+			// Check if data is stale (>1 minute old)
 			const age = Date.now() - currentState.lastFetchedAt;
 			if (age <= STALE_THRESHOLD) {
 				return;

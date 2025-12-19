@@ -52,8 +52,8 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
             resetLoading();
         }
 
-        // Only fetch if we haven't loaded yet or if data is empty
-        if (!hasLoaded || downloads.length === 0) {
+        // Only fetch if we haven't loaded yet
+        if (!hasLoaded) {
             fetchDownloads(1, false);
         } else {
             // Unsplash-style: Silent background refresh if stale
@@ -62,13 +62,13 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname]);
 
-    // Unsplash-style: Periodic check for stale data (every 2 minutes)
+    // Unsplash-style: Periodic check for stale data (every minute)
     useEffect(() => {
         if (!hasLoaded || location.pathname !== '/downloads') return;
         
         const interval = setInterval(() => {
             checkAndRefreshIfStale();
-        }, 2 * 60 * 1000); // Check every 2 minutes
+        }, 1 * 60 * 1000); // Check every 1 minute (matches stale threshold)
         
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -210,10 +210,6 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
                                         key={item._id}
                                         className="download-history-item"
                                         onClick={() => handleImageClick(image)}
-                                        style={{
-                                            animationDelay: `${index * 0.05}s`,
-                                            animation: 'fadeInUp 0.4s ease both'
-                                        }}
                                     >
                                         <div className="download-history-item-thumbnail-wrapper">
                                             <div className="download-history-item-thumbnail">

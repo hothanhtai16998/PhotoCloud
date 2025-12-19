@@ -13,7 +13,6 @@
 
 .download-history-page-header {
     margin-bottom: 48px;
-    animation: fadeInDown 0.5s ease;
 }
 
 @keyframes fadeInDown {

@@ -35,24 +35,32 @@ function FavoritesPage() {
     useEffect(() => {
         // ProtectedRoute ensures user is authenticated
         // Unsplash-style: Use cached data if available (no flash on navigation)
-        // Only fetch if we don't have cached data
-        if (!hasLoaded || images.length === 0) {
+        // On mount, if we have cached data, ensure loading is false
+        if (images.length > 0) {
+            resetLoading();
+        }
+
+        // Only fetch if we haven't loaded yet
+        if (!hasLoaded) {
             fetchFavorites(1);
+        } else {
+            // Unsplash-style: Silent background refresh if stale
+            checkAndRefreshIfStale();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Unsplash-style: Refresh when tab becomes visible after being away for 2+ minutes
+    // Unsplash-style: Refresh when tab becomes visible after being away for 1+ minute
     useEffect(() => {
         if (!hasLoaded) return;
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                // Check if data is stale (2+ minutes old)
+                // Check if data is stale (1+ minute old, matches store threshold)
                 const lastFetched = useFavoriteStore.getState().lastFetchedAt;
                 if (lastFetched) {
                     const age = Date.now() - lastFetched;
-                    const STALE_THRESHOLD = 2 * 60 * 1000; // 2 minutes
+                    const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
                     if (age > STALE_THRESHOLD) {
                         // Refresh silently in background
                         checkAndRefreshIfStale();

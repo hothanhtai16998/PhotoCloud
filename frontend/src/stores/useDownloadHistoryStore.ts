@@ -4,8 +4,8 @@ import { downloadHistoryService, type DownloadHistoryItem } from '@/services/dow
 import { toast } from 'sonner';
 import { t } from '@/i18n';
 
-// Unsplash-style: 5 minutes stale threshold
-const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+// Unsplash-style: 1 minute stale threshold (matches Unsplash behavior)
+const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
 
 export interface DownloadHistoryState {
 	downloads: DownloadHistoryItem[];
@@ -36,10 +36,14 @@ export const useDownloadHistoryStore = create(
 		fetchDownloads: async (pageNum: number = 1, append: boolean = false) => {
 			const currentState = get();
 			
+			// If we already have loaded data and this is page 1 without append, refresh silently (no loading state)
+			// This prevents flash when navigating back to downloads page
+			const isSilentRefresh = pageNum === 1 && !append && currentState.hasLoaded;
+			
 			// Only set loading if we don't have data yet (prevents flash when navigating)
 			const shouldShowLoading = pageNum === 1 && !append && !currentState.hasLoaded && currentState.downloads.length === 0;
 			
-			if (shouldShowLoading) {
+			if (shouldShowLoading && !isSilentRefresh) {
 				set((state) => {
 					state.loading = true;
 				});
@@ -107,7 +111,7 @@ export const useDownloadHistoryStore = create(
 				return;
 			}
 			
-			// Check if data is stale (>5 minutes old)
+			// Check if data is stale (>1 minute old)
 			const age = Date.now() - currentState.lastFetchedAt;
 			if (age <= STALE_THRESHOLD) {
 				return;
