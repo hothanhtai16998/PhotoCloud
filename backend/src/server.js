@@ -35,6 +35,7 @@ import { startPreUploadCleanup, stopPreUploadCleanup } from './utils/preUploadCl
 import { checkSocialScraper } from './controllers/socialShareController.js';
 import { initializeSocketServer } from './utils/socketServer.js';
 import { createServer } from 'http';
+import { existsSync } from 'fs';
 import 'dotenv/config';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,8 +57,13 @@ if (env.NODE_ENV === 'production') {
             directives: {
                 defaultSrc: ["'self'"],
                 imgSrc: ["'self'", "data:", "https:", "blob:"],
-                // Production: use nonce for inline scripts instead of unsafe-inline
-                scriptSrc: ["'self'", "data:"],
+                // Production: use hash for specific inline scripts
+                // Hash for inline script in index.html (beforeunload handler)
+                scriptSrc: [
+                    "'self'", 
+                    "data:",
+                    "'sha256-kxfM00hyWDARO+NeM7fBuR0ZdYfZ9/P7HY9nLoN9XIM='"
+                ],
                 // Allow inline styles and event handlers (needed for some libraries)
                 styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
                 // Allow inline event handlers (needed for some libraries)
@@ -275,18 +281,34 @@ if (env.NODE_ENV === 'production') {
     // __dirname is backend/src, so go up two levels to root, then into frontend/dist
     const frontendDistPath = path.join(__dirname, '../../frontend/dist');
 
-    // Configure static file serving with proper MIME types for JavaScript modules
+    // Check if dist folder exists
+    if (!existsSync(frontendDistPath)) {
+        logger.warn(`⚠️  Frontend dist folder not found at ${frontendDistPath}`);
+        logger.warn('⚠️  Please run "npm run build" in the frontend directory');
+    }
+
+    // Configure static file serving with proper MIME types
     app.use(express.static(frontendDistPath, {
         setHeaders: (res, filePath) => {
             // Set correct MIME type for JavaScript modules
             if (filePath.endsWith('.js') || filePath.endsWith('.mjs')) {
                 res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
             }
+            // Set correct MIME type for CSS files
+            if (filePath.endsWith('.css')) {
+                res.setHeader('Content-Type', 'text/css; charset=utf-8');
+            }
+            // Set correct MIME type for SVG files
+            if (filePath.endsWith('.svg')) {
+                res.setHeader('Content-Type', 'image/svg+xml');
+            }
             // Set correct MIME type for TypeScript files (if any)
             if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
                 res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
             }
-        }
+        },
+        // Don't serve index.html for static file requests
+        index: false,
     }));
 
     app.get('*', (req, res) => {
@@ -294,6 +316,20 @@ if (env.NODE_ENV === 'production') {
         if (req.path.startsWith('/api')) {
             return res.status(404).json({ message: 'API route not found' });
         }
+        
+        // Don't serve index.html for static assets (CSS, JS, images, etc.)
+        // These should be handled by express.static middleware above
+        // If we reach here for a static asset, it means the file doesn't exist
+        const staticAssetExtensions = ['.js', '.mjs', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico', '.woff', '.woff2', '.ttf', '.eot', '.webp', '.avif'];
+        const isStaticAsset = staticAssetExtensions.some(ext => req.path.endsWith(ext)) || 
+                             req.path.startsWith('/assets/') ||
+                             req.path.startsWith('/vite.svg');
+        
+        if (isStaticAsset) {
+            return res.status(404).send('File not found');
+        }
+        
+        // For all other routes, serve index.html (SPA fallback)
         res.sendFile(path.join(frontendDistPath, 'index.html'));
     });
 }
