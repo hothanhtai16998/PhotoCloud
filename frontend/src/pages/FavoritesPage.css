@@ -8,7 +8,7 @@
 .favorites-container {
   max-width: 1296px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 40px 0;
   width: 100%;
 }
 
@@ -17,6 +17,10 @@
   align-items: center;
   gap: 20px;
   margin-bottom: 40px;
+  padding: 0 16px;
+  max-width: 1296px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .favorites-header-icon {
@@ -149,7 +153,9 @@
 
 .favorites-empty {
   text-align: center;
-  padding: 80px 20px;
+  padding: 80px 16px;
+  max-width: 1296px;
+  margin: 0 auto;
 }
 
 .empty-icon {
@@ -224,7 +230,15 @@
 
 @media (max-width: 1024px) {
   .favorites-container {
-    padding: 32px 24px;
+    padding: 32px 0;
+  }
+  
+  .favorites-header {
+    padding: 0 16px;
+  }
+  
+  .favorites-empty {
+    padding: 80px 16px;
   }
 
   .favorites-grid {
@@ -247,7 +261,15 @@
   }
 
   .favorites-container {
-    padding: 24px 16px;
+    padding: 24px 0;
+  }
+  
+  .favorites-header {
+    padding: 0 16px;
+  }
+  
+  .favorites-empty {
+    padding: 80px 16px;
   }
 
   .favorites-header {
@@ -286,7 +308,15 @@
 
 @media (max-width: 480px) {
   .favorites-container {
-    padding: 20px 12px;
+    padding: 20px 0;
+  }
+  
+  .favorites-header {
+    padding: 0 16px;
+  }
+  
+  .favorites-empty {
+    padding: 80px 16px;
   }
 
   .favorites-header {

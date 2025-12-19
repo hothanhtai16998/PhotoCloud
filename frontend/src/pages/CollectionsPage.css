@@ -35,7 +35,7 @@
   /* Allow the header to scale on smaller viewports */
   max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -47,7 +47,7 @@
   /* Keep filters aligned with the header container */
   max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 24px;
+  padding: 0 16px 24px;
   display: flex;
   gap: 16px;
   align-items: center;
@@ -230,7 +230,7 @@
 .collections-results-info {
   max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 16px;
+  padding: 0 16px 16px;
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
   font-weight: 500;
@@ -307,9 +307,9 @@
 .collections-grid {
   max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 32px;
   width: 100%;
 }
@@ -696,6 +696,18 @@
     align-items: flex-start;
     gap: 16px;
     padding: 0 16px 24px;
+  }
+  
+  .collections-filters {
+    padding: 0 16px 20px;
+  }
+  
+  .collections-results-info {
+    padding: 0 16px 12px;
+  }
+  
+  .collections-grid {
+    padding: 0 16px;
   }
 
   .collections-header h1 {

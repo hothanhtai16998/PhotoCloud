@@ -42,7 +42,6 @@ const anonymousActivitySchema = new mongoose.Schema(
         lastActivityAt: {
             type: Date,
             required: true,
-            index: true,
             default: Date.now,
         },
         // Count how many times this IP/session viewed/downloaded this image
