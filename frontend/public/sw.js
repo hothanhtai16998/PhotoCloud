@@ -29,13 +29,133 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim(); // Take control of all pages immediately
 });
 
-// Fetch event - aggressive caching strategy for images
+// Track refresh requests to delay them
+const REFRESH_DELAY_MS = 2500; // 2.5 seconds - matches Unsplash behavior
+const refreshDelays = new Map(); // URL -> timeout
+
+// Fetch event - aggressive caching strategy for images + refresh delay
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
   // Only handle requests from same origin
   if (url.origin !== self.location.origin) {
     return; // Let browser handle cross-origin requests
+  }
+
+  // Intercept navigation requests (page refreshes)
+  // Service Workers CAN intercept navigation and delay them!
+  // This is how Unsplash delays the refresh button - the page stays visible!
+  // CRITICAL: Must check for navigate mode FIRST before other checks
+  const isNavigation = event.request.mode === 'navigate' || 
+                       event.request.destination === 'document' ||
+                       (event.request.headers.get('accept')?.includes('text/html'));
+  
+  if (isNavigation) {
+    // Log all navigation requests for debugging
+    console.log('[SW] Navigation request detected:', {
+      url: url.href,
+      mode: event.request.mode,
+      destination: event.request.destination,
+      referrer: event.request.referrer,
+      cacheControl: event.request.headers.get('cache-control'),
+      pragma: event.request.headers.get('pragma'),
+    });
+    
+    // Check if this is a refresh (reload) request
+    // Multiple detection methods for reliability
+    const referrer = event.request.referrer;
+    const cacheControl = event.request.headers.get('cache-control');
+    const pragma = event.request.headers.get('pragma');
+    
+    // Check if referrer matches current URL (same page refresh)
+    let referrerMatches = false;
+    if (referrer) {
+      try {
+        const referrerUrl = new URL(referrer);
+        referrerMatches = referrerUrl.pathname === url.pathname && 
+                         referrerUrl.origin === url.origin;
+      } catch (e) {
+        // Invalid referrer URL
+      }
+    }
+    
+    // For navigation requests, if referrer is empty or same origin, it's likely a refresh
+    // The browser refresh button often sends empty referrer or same-origin referrer
+    const isRefresh = 
+      // Method 1: Referrer matches current URL exactly (same page refresh)
+      referrerMatches ||
+      // Method 2: Cache-control header indicates refresh
+      (cacheControl && (cacheControl.includes('no-cache') || cacheControl.includes('no-store'))) ||
+      // Method 3: Pragma header (older browsers)
+      (pragma && pragma.includes('no-cache')) ||
+      // Method 4: Empty referrer on navigation often means refresh (browser refresh button)
+      // OR same-origin referrer (user refreshed the page)
+      (event.request.mode === 'navigate' && (
+        !referrer || // Empty referrer = likely refresh
+        (referrer && new URL(referrer).origin === url.origin) // Same origin = likely refresh
+      ));
+    
+    console.log('[SW] Refresh check:', {
+      isRefresh,
+      referrerMatches,
+      hasCacheControl: !!cacheControl,
+      hasPragma: !!pragma,
+    });
+    
+    if (isRefresh) {
+      console.log('[SW] 🔄 Refresh detected, delaying navigation by', REFRESH_DELAY_MS, 'ms');
+      console.log('[SW] Page will stay visible during delay (like Unsplash)');
+      
+      // CRITICAL: Must call respondWith to intercept the navigation
+      // Delay the navigation response - this keeps the page visible!
+      // The browser's X icon will show because the request is pending
+      event.respondWith(
+        new Promise((resolve) => {
+          console.log('[SW] Starting delay timer...');
+          
+          // Wait for the delay period
+          // During this time, the page stays visible and X icon shows
+          const timeoutId = setTimeout(() => {
+            console.log('[SW] Delay complete, fetching page...');
+            
+            // After delay, fetch the page normally
+            fetch(event.request, {
+              cache: 'no-cache', // Ensure fresh fetch
+            })
+              .then((response) => {
+                console.log('[SW] Page fetched successfully');
+                // Clone response for potential caching
+                if (response.ok) {
+                  const responseToCache = response.clone();
+                  caches.open(STATIC_CACHE).then((cache) => {
+                    cache.put(event.request, responseToCache);
+                  });
+                }
+                resolve(response);
+              })
+              .catch((error) => {
+                console.error('[SW] Fetch failed, trying cache:', error);
+                // If fetch fails, try cache
+                caches.match(event.request).then((cached) => {
+                  if (cached) {
+                    console.log('[SW] Using cached response');
+                    resolve(cached);
+                  } else {
+                    console.error('[SW] No cache available, returning error');
+                    resolve(new Response('Navigation failed', { status: 503 }));
+                  }
+                });
+              });
+          }, REFRESH_DELAY_MS);
+          
+          // Store timeout for potential cleanup
+          refreshDelays.set(event.request.url, timeoutId);
+        })
+      );
+      return;
+    } else {
+      console.log('[SW] Not a refresh, allowing normal navigation');
+    }
   }
 
   // Priority order: API > Images > Static assets
