@@ -156,6 +156,13 @@
   padding: 80px 16px;
   max-width: 1296px;
   margin: 0 auto;
+  min-height: calc(100vh - var(--header-height, 65px) - 200px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Prevent layout shift */
+  box-sizing: border-box;
 }
 
 .empty-icon {

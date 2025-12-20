@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSliderStore } from '@/stores/useSliderStore';
 import { t } from '@/i18n';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import './VisualArtFormsSlider.css';
 import { timingConfig } from '@/config/timingConfig';
 
@@ -463,14 +462,17 @@ export function VisualArtFormsSlider() {
     // Note: Resume is handled in handleImageClick and handleCloseZoom with delay
   }, [isZoomed, isZoomingOut]);
 
-  // Only show loading state if we have no slides - same pattern as NoFlashGrid
+  // Reserve space for slider to prevent layout shift when loading
+  // Always render container, but show content only when we have slides
+  // This prevents the grid from jumping when slider finishes loading
   if (loading && slides.length === 0) {
+    // Render placeholder container to reserve space
+    // Uses same classes and structure as actual slider to ensure exact same dimensions
     return (
       <div className="visual-art-slider">
-        <div className="slider-loading-message">
-          <div className="flex items-center justify-center py-12">
-            <LoadingSpinner size="large" />
-          </div>
+        <div className="slider-main" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+          {/* Placeholder to reserve space - prevents layout shift */}
+          {/* This ensures grid stays in correct position while slider loads */}
         </div>
       </div>
     );

@@ -11,6 +11,9 @@
   -moz-osx-font-smoothing: grayscale;
   contain: strict;
   box-sizing: border-box;
+  /* Prevent layout shift by ensuring fixed dimensions */
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .loading-spinner-small {

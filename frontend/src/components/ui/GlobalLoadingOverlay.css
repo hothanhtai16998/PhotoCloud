@@ -1,0 +1,39 @@
+/* Global Loading Overlay - Single spinner for entire app */
+.global-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+  /* Prevent layout shifts */
+  will-change: opacity;
+}
+
+.global-loading-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Dark mode support - no background needed */
+
+.global-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Ensure spinner is centered and doesn't shift */
+.global-loading-content .loading-spinner-optimized {
+  flex-shrink: 0;
+}
+

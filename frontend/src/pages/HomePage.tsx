@@ -1,6 +1,7 @@
-import { useEffect, useContext, useCallback, useRef } from "react";
+import { useEffect, useContext, useCallback, useRef, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useImageStore } from "@/stores/useImageStore";
+import { useSliderStore } from "@/stores/useSliderStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
@@ -12,16 +13,78 @@ import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModalActive } from "@/utils/modalNavigation";
 import { imageService } from "@/services/imageService";
+import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import { timingConfig } from '@/config/timingConfig';
 
 function HomePage() {
     const { currentSearch, images, loading, pagination, fetchImages } = useImageStore();
+    const { loading: sliderLoading, slides } = useSliderStore();
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
     const navigate = useNavigate();
     const prevCategoryRef = useRef<string | null>(null);
     const isInitialMountRef = useRef(true);
     const isMobile = useIsMobile();
+    const [gridHasLoaded, setGridHasLoaded] = useState(false);
+    const [sliderHasLoaded, setSliderHasLoaded] = useState(false);
+    const initialLoadCompleteRef = useRef(false);
+    
+    // Track when each component finishes initial load (regardless of cache)
+    // This ensures spinner stays until BOTH are done, even if one loads from cache instantly
+    useEffect(() => {
+        // Grid finished: not loading anymore (regardless of whether it has data or not)
+        if (!loading && !gridHasLoaded) {
+            setGridHasLoaded(true);
+        }
+    }, [loading, gridHasLoaded]);
+    
+    useEffect(() => {
+        // Slider finished: not loading anymore (regardless of whether it has data or not)
+        if (!sliderLoading && !sliderHasLoaded) {
+            setSliderHasLoaded(true);
+        }
+    }, [sliderLoading, sliderHasLoaded]);
+    
+    // Mark initial load as complete when both have finished
+    useEffect(() => {
+        if (gridHasLoaded && sliderHasLoaded && !initialLoadCompleteRef.current) {
+            initialLoadCompleteRef.current = true;
+        }
+    }, [gridHasLoaded, sliderHasLoaded]);
+    
+    // Sync combined loading state to global loading store
+    // On initial page load (refresh), show spinner until BOTH grid AND slider finish their initial fetch
+    // After initial load, only show when either is loading (normal behavior)
+    const isHomePageLoading = useMemo(() => {
+        const gridLoading = loading && images.length === 0;
+        const sliderIsLoading = sliderLoading && slides.length === 0;
+        
+        // On initial load (refresh), keep spinner until BOTH finish their initial fetch
+        // This prevents flashing even if one loads from cache instantly
+        if (!initialLoadCompleteRef.current) {
+            // Show spinner until both have confirmed they're done loading
+            return !gridHasLoaded || !sliderHasLoaded;
+        }
+        
+        // After initial load, normal behavior: show if either is loading
+        return gridLoading || sliderIsLoading;
+    }, [loading, images.length, sliderLoading, slides.length, gridHasLoaded, sliderHasLoaded]);
+    
+    // Use ref to track previous state and prevent rapid toggling
+    const prevLoadingRef = useRef(isHomePageLoading);
+    
+    useEffect(() => {
+        // Only sync if state actually changed (prevents rapid toggling)
+        if (prevLoadingRef.current !== isHomePageLoading) {
+            prevLoadingRef.current = isHomePageLoading;
+            syncGlobalLoading('homePage', isHomePageLoading);
+        }
+        
+        return () => {
+            syncGlobalLoading('homePage', false);
+            prevLoadingRef.current = false;
+        };
+    }, [isHomePageLoading]);
     
     // Prefetch first slider image URL as early as possible for better LCP
     // This runs in parallel with other initialization, before slider component mounts

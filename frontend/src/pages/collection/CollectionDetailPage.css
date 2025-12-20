@@ -18,8 +18,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: calc(100vh - var(--header-height, 65px) - 48px);
   padding: 80px 20px;
   color: hsl(var(--muted-foreground));
+  position: relative;
+  /* Prevent layout shift by reserving space */
+  box-sizing: border-box;
 }
 
 .collection-detail-loading .loading-spinner {

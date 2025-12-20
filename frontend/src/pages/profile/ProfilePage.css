@@ -517,8 +517,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 400px;
   padding: 80px 20px;
   text-align: center;
+  /* Prevent layout shift */
+  box-sizing: border-box;
 }
 
 .loading-state p,

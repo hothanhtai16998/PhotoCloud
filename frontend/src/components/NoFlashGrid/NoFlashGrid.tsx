@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback, useLayoutEffect } from 'react';
 import type { Image } from '@/types/image';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { useGlobalLoadingStore } from '@/stores/useGlobalLoadingStore';
 import { t } from '@/i18n';
 import './NoFlashGrid.css';
 
@@ -416,17 +417,14 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         onLoadMore: onLoadMore || (async () => {}),
     });
 
+    // Global spinner handles all loading states - no need for local spinner
+    // This prevents duplicate spinners and provides consistent UX
+
     return (
         <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
-            {/* Only show loading state if we have no images - keep grid visible during category change */}
-            {isLoading && filteredImages.length === 0 ? (
-                <div className="loading-state">
-                    <div className="flex items-center justify-center py-12">
-                        <LoadingSpinner size="large" />
-                    </div>
-                </div>
-            ) : (
-                <>
+            {/* Global spinner handles all loading states - no local spinner needed */}
+            {/* Always render grid (global spinner shows as overlay when loading) */}
+            <>
                     <div
                         ref={gridRef}
                         className="no-flash-grid"
@@ -513,7 +511,6 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                         </div>
                     )}
                 </>
-            )}
         </div>
     );
 }

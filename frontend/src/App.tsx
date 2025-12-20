@@ -11,6 +11,8 @@ import { ContactButton } from "./components/ContactButton";
 import ImagePageSidebar from "./components/ImagePageSidebar";
 import Header from "./components/Header";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
+import { GlobalLoadingOverlay } from "./components/ui/GlobalLoadingOverlay";
+import { syncGlobalLoading } from "./stores/helpers/syncGlobalLoading";
 import {
   isPageRefresh,
   clearModalStateOnRefresh,
@@ -40,12 +42,29 @@ const AboutPage = lazy(() => import("./pages/AboutPage"));
 
 
 // Loading animation fallback for lazy-loaded routes
-// Unsplash-style: Show layout structure (header/sidebar) immediately, spinner only in content area
-const PageLoader = () => (
-  <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
-    <LoadingSpinner size="large" />
-  </div>
-);
+// Syncs with global loading so GlobalLoadingOverlay shows the spinner (prevents duplicate)
+const PageLoader = () => {
+  const hasSyncedRef = useRef(false);
+  
+  useEffect(() => {
+    // Only sync once when component mounts (Suspense is loading)
+    if (!hasSyncedRef.current) {
+      hasSyncedRef.current = true;
+      syncGlobalLoading('suspense', true);
+    }
+    
+    return () => {
+      // Clear when component unmounts (route loaded)
+      if (hasSyncedRef.current) {
+        hasSyncedRef.current = false;
+        syncGlobalLoading('suspense', false);
+      }
+    };
+  }, []);
+  
+  // Return null - GlobalLoadingOverlay will show the spinner
+  return null;
+};
 
 
 function App() {
@@ -221,6 +240,9 @@ function App() {
 
       {/* Floating Contact Button - Always visible */}
       <ContactButton />
+
+      {/* Global Loading Overlay - Single spinner for all loading states */}
+      <GlobalLoadingOverlay />
 
       <Suspense fallback={<PageLoader />}>
         <PageViewTracker />

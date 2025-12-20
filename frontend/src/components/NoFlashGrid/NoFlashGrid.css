@@ -40,6 +40,12 @@
   padding: 40px;
   text-align: center;
   color: #666;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Prevent layout shift */
+  box-sizing: border-box;
 }
 
 /* Responsive: Mobile Layout */

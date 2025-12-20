@@ -33,26 +33,24 @@
 
 .collections-header {
   /* Allow the header to scale on smaller viewports */
-  max-width: 1296px;
+  max-width: min(1200px, 96%);
   margin: 0 auto;
-  padding: 0 16px 32px;
+  padding: 0 24px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
 }
 
 /* Search and Filter Bar */
 .collections-filters {
   /* Keep filters aligned with the header container */
-  max-width: 1296px;
+  max-width: min(1200px, 96%);
   margin: 0 auto;
-  padding: 0 16px 24px;
+  padding: 0 24px 24px;
   display: flex;
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
-  width: 100%;
 }
 
 .collections-search-wrapper {
@@ -69,43 +67,25 @@
   top: 50%;
   transform: translateY(-50%);
   color: hsl(var(--muted-foreground));
-  opacity: 0.6;
   pointer-events: none;
   z-index: 1;
-  transition: opacity 0.2s ease;
-}
-
-.collections-search-wrapper:focus-within .collections-search-icon {
-  color: hsl(var(--foreground));
-  opacity: 0.7;
 }
 
 .collections-search-input {
   width: 100%;
   padding: 12px 16px 12px 48px;
-  border: 1.5px solid hsl(var(--border));
-  border-radius: 10px;
+  border: 2px solid hsl(var(--border));
+  border-radius: 12px;
   font-size: 0.9375rem;
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: hsl(var(--card));
   transition: all 0.2s ease;
   font-family: inherit;
 }
 
-.collections-search-input::placeholder {
-  color: hsl(var(--muted-foreground));
-  opacity: 0.7;
-}
-
-.collections-search-input:hover {
-  border-color: hsl(var(--border) / 0.8);
-}
-
 .collections-search-input:focus {
   outline: none;
-  border-color: hsl(var(--foreground) / 0.3);
-  box-shadow: 0 0 0 2px hsl(var(--foreground) / 0.05);
-  background: hsl(var(--background));
+  border-color: hsl(var(--foreground));
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .collections-search-clear {
@@ -140,19 +120,19 @@
 
 .collections-tag-filter-btn {
   padding: 8px 16px;
-  background: hsl(var(--background));
-  border: 1.5px solid hsl(var(--border));
+  background: hsl(var(--card));
+  border: 2px solid hsl(var(--border));
   border-radius: 20px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: hsl(var(--foreground));
+  color: hsl(var(--muted-foreground));
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .collections-tag-filter-btn:hover {
-  border-color: hsl(var(--foreground) / 0.2);
+  border-color: #d0d0d0;
   background: hsl(var(--muted));
   color: hsl(var(--foreground));
 }
@@ -161,7 +141,6 @@
   background: hsl(var(--foreground));
   border-color: hsl(var(--foreground));
   color: hsl(var(--background));
-  font-weight: 600;
 }
 
 .collections-filter-controls {
@@ -175,8 +154,8 @@
   align-items: center;
   gap: 6px;
   padding: 10px 16px;
-  background: hsl(var(--background));
-  border: 1.5px solid hsl(var(--border));
+  background: hsl(var(--muted));
+  border: 2px solid transparent;
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
@@ -186,55 +165,41 @@
 }
 
 .collections-filter-btn:hover {
-  border-color: hsl(var(--foreground) / 0.2);
   background: hsl(var(--muted));
-  color: hsl(var(--foreground));
 }
 
 .collections-filter-btn.active {
   background: hsl(var(--foreground));
-  border-color: hsl(var(--foreground));
   color: hsl(var(--background));
-  font-weight: 600;
+  border-color: hsl(var(--foreground));
 }
 
 .collections-sort-select {
   padding: 10px 16px;
-  border: 1.5px solid hsl(var(--border));
+  border: 2px solid hsl(var(--border));
   border-radius: 10px;
   font-size: 0.875rem;
   font-weight: 500;
-  background: hsl(var(--background));
+  background: hsl(var(--card));
   color: hsl(var(--foreground));
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-
-.collections-sort-select:hover {
-  border-color: hsl(var(--foreground) / 0.2);
-  background-color: hsl(var(--muted));
 }
 
 .collections-sort-select:focus {
   outline: none;
-  border-color: hsl(var(--foreground) / 0.3);
-  box-shadow: 0 0 0 2px hsl(var(--foreground) / 0.05);
+  border-color: hsl(var(--foreground));
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .collections-results-info {
-  max-width: 1296px;
+  max-width: min(1200px, 96%);
   margin: 0 auto;
-  padding: 0 16px 16px;
+  padding: 0 24px 16px;
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
   font-weight: 500;
-  width: 100%;
 }
 
 .collections-header h1 {
@@ -305,13 +270,12 @@
 }
 
 .collections-grid {
-  max-width: 1296px;
+  max-width: min(1400px, 96%);
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 24px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
   gap: 32px;
-  width: 100%;
 }
 
 .collection-card {
@@ -334,28 +298,21 @@
 .collection-card-cover {
   position: relative;
   width: 100%;
-  /* Use padding-bottom to maintain 4:3 aspect ratio - this ensures height is calculated immediately */
-  height: 0;
-  padding-bottom: 75%; /* 3/4 = 0.75 = 75% */
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: hsl(var(--muted));
   border-radius: 12px 12px 0 0;
-  /* Prevent children from affecting container size */
-  isolation: isolate;
 }
 
+/* Unsplash-style layout: main image on left, thumbnails on right (if 2+ images) */
 .collection-card-images {
   display: flex;
   width: 100%;
   height: 100%;
   gap: 2px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
+/* When no thumbnails, main image takes full width */
 .collection-card-images.no-thumbnails .collection-card-main-image {
   width: 100%;
   flex: none;
@@ -367,30 +324,27 @@
   overflow: hidden;
   background: hsl(var(--muted));
   position: relative;
-  height: 100%;
 }
 
 .collection-card-main-image .blur-up-image-container {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  position: relative !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
 }
 
 .collection-card-main-image .blur-up-image-image-wrapper {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .collection-card-main-image img,
+.collection-card-main-image .progressive-image-wrapper,
 .collection-card-main-image .blur-up-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  display: block;
 }
 
 .collection-card-thumbnails {
@@ -399,7 +353,6 @@
   width: 120px;
   gap: 2px;
   flex-shrink: 0;
-  height: 100%;
 }
 
 .collection-card-thumbnail {
@@ -408,31 +361,31 @@
   overflow: hidden;
   background: hsl(var(--muted));
   position: relative;
-  height: 100%;
 }
 
 .collection-card-thumbnail .blur-up-image-container {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  position: relative !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
 }
 
 .collection-card-thumbnail .blur-up-image-image-wrapper {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .collection-card-thumbnail img,
+.collection-card-thumbnail .progressive-image-wrapper,
 .collection-card-thumbnail .blur-up-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  display: block;
 }
+
+/* Remove this - it's too broad and conflicts with the flex layout */
+/* Images are now handled by specific selectors below */
 
 .collection-card-placeholder {
   width: 100%;
@@ -679,18 +632,6 @@
     align-items: flex-start;
     gap: 16px;
     padding: 0 16px 24px;
-  }
-  
-  .collections-filters {
-    padding: 0 16px 20px;
-  }
-  
-  .collections-results-info {
-    padding: 0 16px 12px;
-  }
-  
-  .collections-grid {
-    padding: 0 16px;
   }
 
   .collections-header h1 {
