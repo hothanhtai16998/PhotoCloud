@@ -4,14 +4,50 @@
  * 
  * Strategy:
  * 1. Intercept refresh button click (using MutationObserver)
- * 2. Use Navigation API if available (experimental)
+ * 2. Use Navigation API if available (experimental, Chrome/Edge only)
  * 3. Intercept F5/Ctrl+R keyboard shortcuts
  * 4. Delay reload by 2.5 seconds, show X icon, then reload
+ * 
+ * Browser Support:
+ * - Chrome/Edge: Full support via Navigation API
+ * - Firefox/Safari: Partial support via Service Worker + keyboard shortcuts
  */
 
 import { cancelAllPendingRequests } from '@/lib/axios';
+import type { NavigateEvent } from '@/types/navigation-api';
+import { appConfig } from '@/config/appConfig';
 
-const REFRESH_DELAY_MS = 2500; // 2.5 seconds - matches Unsplash behavior
+/**
+ * Get refresh delay time
+ * Uses config value, with safety bounds
+ * 
+ * Industry Standard:
+ * - Unsplash: ~2.5 seconds (fixed)
+ * - Gmail: ~2-3 seconds (fixed)
+ * - X (Twitter): ~2-3 seconds (fixed)
+ * - Facebook: ~2-3 seconds (fixed)
+ * 
+ * Why Fixed Delay (not dynamic):
+ * 1. Predictable UX - users know how long to wait
+ * 2. Prevents rapid refresh spam (main goal)
+ * 3. Gives users time to cancel (X icon)
+ * 4. Works regardless of network conditions
+ * 5. Simple to implement and maintain
+ * 
+ * Note: The delay is NOT about network optimization.
+ * It's about UX and preventing 429 errors from rapid refreshes.
+ * The actual data fetching happens AFTER the delay anyway.
+ */
+const getRefreshDelay = (): number => {
+  const delay = appConfig.refresh.delayMs;
+  const min = appConfig.refresh.minDelayMs;
+  const max = appConfig.refresh.maxDelayMs;
+  
+  // Clamp to safety bounds
+  return Math.max(min, Math.min(max, delay));
+};
+
+const REFRESH_DELAY_MS = getRefreshDelay();
 const REFRESH_DELAY_FLAG = '_refreshDelayActive';
 const isDev = import.meta.env.DEV;
 
@@ -100,6 +136,9 @@ const startPendingRequest = (): Promise<void> => {
         pendingRequestController = null;
         // Reject to indicate delay completed (not cancelled)
         reject(new Error('Delay completed'));
+      } else {
+        // Request was already aborted (user clicked X), resolve to cancel
+        resolve();
       }
     }, REFRESH_DELAY_MS);
   });
@@ -107,6 +146,7 @@ const startPendingRequest = (): Promise<void> => {
 
 /**
  * Handle refresh with delay
+ * Used for keyboard shortcuts (F5, Ctrl+R) when Navigation API is not available
  */
 const handleRefreshWithDelay = (): void => {
   if (isInRefreshDelay) {
@@ -115,25 +155,33 @@ const handleRefreshWithDelay = (): void => {
   }
   
   isInRefreshDelay = true;
+  sessionStorage.setItem(REFRESH_DELAY_FLAG, 'true');
+  sessionStorage.setItem(REFRESH_DELAY_FLAG + '_ts', Date.now().toString());
   
   // Cancel all pending requests
   cancelAllPendingRequests();
   
   // Start pending request to show X icon
-  startPendingRequest();
-  
-  if (isDev) {
-    console.log('[RefreshHandler] ⏳ Refresh delayed - page will reload in', REFRESH_DELAY_MS, 'ms');
-  }
-  
-  // After delay, reload
-  refreshTimeout = setTimeout(() => {
+  startPendingRequest().then(() => {
+    // User clicked X - cancelled
+    if (isDev) {
+      console.log('[RefreshHandler] Refresh cancelled by user (keyboard shortcut)');
+    }
+    cancelRefreshDelay();
+  }).catch(() => {
+    // Delay completed - reload
     if (isDev) {
       console.log('[RefreshHandler] ✅ Delay complete, reloading page');
     }
     isInRefreshDelay = false;
+    sessionStorage.removeItem(REFRESH_DELAY_FLAG);
+    sessionStorage.removeItem(REFRESH_DELAY_FLAG + '_ts');
     window.location.reload();
-  }, REFRESH_DELAY_MS);
+  });
+  
+  if (isDev) {
+    console.log('[RefreshHandler] ⏳ Refresh delayed - page will reload in', REFRESH_DELAY_MS, 'ms');
+  }
 };
 
 /**
@@ -181,12 +229,18 @@ const interceptRefreshButton = (): (() => void) => {
 };
 
 /**
+ * Check if Navigation API is supported
+ */
+const isNavigationAPISupported = (): boolean => {
+  return typeof window !== 'undefined' && 'navigation' in window && typeof window.navigation !== 'undefined';
+};
+
+/**
  * Use Navigation API if available (experimental, Chrome only)
  * This is the BEST way to intercept refresh - it actually works!
  */
 const setupNavigationAPI = (): (() => void) => {
-  // @ts-ignore - Navigation API is experimental
-  if (typeof window.navigation === 'undefined') {
+  if (!isNavigationAPISupported()) {
     if (isDev) {
       console.log('[RefreshHandler] Navigation API not available');
     }
@@ -194,10 +248,9 @@ const setupNavigationAPI = (): (() => void) => {
   }
   
   try {
-    // @ts-ignore
-    const navigation = window.navigation;
+    const navigation = window.navigation!;
     
-    const handleNavigate = (event: any) => {
+    const handleNavigate = (event: NavigateEvent) => {
       if (isDev) {
         console.log('[RefreshHandler] Navigation event:', {
           type: event.navigationType,
@@ -315,13 +368,12 @@ const setupNavigationAPI = (): (() => void) => {
       }
     };
     
-    // @ts-ignore
     navigation.addEventListener('navigate', handleNavigate);
     
-    // Also listen to ALL navigation events to debug
+    // Also listen to ALL navigation events to debug (dev only)
+    let debugHandler: ((e: NavigateEvent) => void) | null = null;
     if (isDev) {
-      // @ts-ignore
-      navigation.addEventListener('navigate', (e: any) => {
+      debugHandler = (e: NavigateEvent) => {
         console.log('[RefreshHandler] 🔍 ALL navigation events:', {
           type: e.navigationType,
           destination: e.destination?.url,
@@ -332,18 +384,20 @@ const setupNavigationAPI = (): (() => void) => {
           info: e.info,
           signal: e.signal,
         });
-      });
+      };
+      navigation.addEventListener('navigate', debugHandler);
     }
     
     if (isDev) {
       console.log('[RefreshHandler] ✅ Navigation API listener registered');
-      // @ts-ignore
-      console.log('[RefreshHandler] Navigation API available:', !!window.navigation);
+      console.log('[RefreshHandler] Navigation API available:', isNavigationAPISupported());
     }
     
     return () => {
-      // @ts-ignore
       navigation.removeEventListener('navigate', handleNavigate);
+      if (debugHandler) {
+        navigation.removeEventListener('navigate', debugHandler);
+      }
     };
   } catch (error) {
     if (isDev) {
@@ -432,6 +486,42 @@ const interceptBeforeUnload = (): (() => void) => {
 };
 
 /**
+ * Show browser compatibility notice (subtle, non-intrusive)
+ * Only shown once per session for non-Chrome browsers
+ */
+const showBrowserCompatibilityNotice = (): void => {
+  if (typeof window === 'undefined') return;
+  
+  // Only show for non-Chrome browsers and if Navigation API is not supported
+  const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+  const isEdge = /Edg/.test(navigator.userAgent);
+  
+  if ((isChrome || isEdge) && isNavigationAPISupported()) {
+    return; // Full support, no notice needed
+  }
+  
+  // Check if we've already shown the notice this session
+  const noticeShown = sessionStorage.getItem('_refreshNoticeShown');
+  if (noticeShown) {
+    return; // Already shown
+  }
+  
+  // Show subtle notice (only in dev mode or first time)
+  if (isDev) {
+    console.log(
+      '%c[RefreshHandler] Browser Compatibility',
+      'color: #ffa500; font-weight: bold;',
+      '\nNavigation API is not fully supported in this browser.\n' +
+      'Refresh behavior may differ from Chrome/Edge.\n' +
+      'Service Worker fallback is active.'
+    );
+  }
+  
+  // Mark as shown
+  sessionStorage.setItem('_refreshNoticeShown', 'true');
+};
+
+/**
  * Initialize refresh handler
  * Sets up all interception methods
  */
@@ -459,19 +549,29 @@ export const initRefreshHandler = (): (() => void) => {
     }
   }
 
+  // Show browser compatibility notice (subtle, non-intrusive)
+  showBrowserCompatibilityNotice();
+
   const cleanups: (() => void)[] = [];
   
-  // Try Navigation API first (best method, but experimental)
+  // Try Navigation API first (best method, but experimental - Chrome/Edge only)
   cleanups.push(setupNavigationAPI());
   
-  // Intercept keyboard shortcuts (F5, Ctrl+R)
+  // Intercept keyboard shortcuts (F5, Ctrl+R) - works in all browsers
   cleanups.push(interceptKeyboardShortcuts());
   
-  // Intercept beforeunload (for browser refresh button)
+  // Intercept beforeunload (for browser refresh button) - works in all browsers
   cleanups.push(interceptBeforeUnload());
   
-  // Try to intercept refresh button clicks (fallback)
+  // Try to intercept refresh button clicks (fallback) - limited support
   cleanups.push(interceptRefreshButton());
+  
+  if (isDev) {
+    console.log('[RefreshHandler] ✅ Refresh handler initialized', {
+      navigationAPI: isNavigationAPISupported(),
+      serviceWorker: 'serviceWorker' in navigator,
+    });
+  }
   
   // Cleanup function
   return () => {

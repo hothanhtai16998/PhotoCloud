@@ -38,5 +38,20 @@ export const appConfig = {
         // Profile view tracking (sessionStorage) - format: `profile_view_${userId}_${viewerId}`
         profileViewKeyPrefix: 'profile_view_',
     },
+    
+    // Refresh behavior configuration
+    refresh: {
+        // Delay before refresh (in milliseconds)
+        // Fixed delay used by Unsplash, Gmail, X, Facebook (2-3 seconds)
+        // This is NOT dynamic based on network speed - it's a UX feature
+        // Purpose: Give users time to cancel + prevent rapid refresh spam
+        delayMs: 2500, // 2.5 seconds - matches industry standard
+        
+        // Minimum delay (safety net)
+        minDelayMs: 1500, // 1.5 seconds minimum
+        
+        // Maximum delay (safety net)
+        maxDelayMs: 5000, // 5 seconds maximum
+    },
 } as const;
 

@@ -150,6 +150,23 @@ self.addEventListener('fetch', (event) => {
           
           // Store timeout for potential cleanup
           refreshDelays.set(event.request.url, timeoutId);
+          
+          // Clean up on client disconnect (user closes tab/navigates away)
+          // Note: Request.signal may not be available in all browsers
+          if (event.request.signal) {
+            event.request.signal.addEventListener('abort', () => {
+              clearTimeout(timeoutId);
+              refreshDelays.delete(event.request.url);
+              console.log('[SW] Refresh delay cancelled (client disconnected)');
+            });
+          }
+          
+          // Also clean up on request close (alternative method)
+          if (event.request.body && typeof event.request.body.cancel === 'function') {
+            // Request was cancelled
+            clearTimeout(timeoutId);
+            refreshDelays.delete(event.request.url);
+          }
         })
       );
       return;
