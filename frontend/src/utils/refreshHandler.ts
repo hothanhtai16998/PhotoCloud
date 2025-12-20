@@ -20,36 +20,89 @@ let refreshTimeout: NodeJS.Timeout | null = null;
 let pendingRequestController: AbortController | null = null;
 
 /**
- * Start a pending request to show browser's X icon
+ * Cancel the refresh delay
+ * Called when user clicks the X icon to cancel refresh
  */
-const startPendingRequest = (): void => {
-  if (pendingRequestController) {
-    pendingRequestController.abort();
+const cancelRefreshDelay = (): void => {
+  if (isDev) {
+    console.log('[RefreshHandler] ❌ Refresh cancelled by user (X icon clicked)');
   }
   
-  pendingRequestController = new AbortController();
+  // Clear flags
+  isInRefreshDelay = false;
+  sessionStorage.removeItem(REFRESH_DELAY_FLAG);
+  sessionStorage.removeItem(REFRESH_DELAY_FLAG + '_ts');
   
-  // Start a request that stays pending to show X icon
-  fetch('/api/csrf-token', {
-    method: 'GET',
-    credentials: 'include',
-    signal: pendingRequestController.signal,
-    cache: 'no-cache'
-  }).catch(() => {
-    // Ignore errors - this is just to show the X icon
-  });
-  
-  // Abort after delay
+  // Cancel timeout
   if (refreshTimeout) {
     clearTimeout(refreshTimeout);
+    refreshTimeout = null;
   }
   
-  refreshTimeout = setTimeout(() => {
+  // Abort pending request (X icon will disappear)
+  if (pendingRequestController) {
+    pendingRequestController.abort();
+    pendingRequestController = null;
+  }
+  
+  // Cancel all pending requests
+  cancelAllPendingRequests();
+};
+
+/**
+ * Start a pending request to show browser's X icon
+ * The X icon can be clicked to cancel the refresh
+ * Returns a promise that resolves if cancelled, rejects if completed
+ */
+const startPendingRequest = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
     if (pendingRequestController) {
       pendingRequestController.abort();
-      pendingRequestController = null;
     }
-  }, REFRESH_DELAY_MS);
+    
+    pendingRequestController = new AbortController();
+    
+    // Listen for abort signal (when user clicks X icon)
+    pendingRequestController.signal.addEventListener('abort', () => {
+      if (isDev) {
+        console.log('[RefreshHandler] Pending request aborted (X icon clicked)');
+      }
+      // Cancel the refresh delay when X is clicked
+      cancelRefreshDelay();
+      // Resolve to indicate cancellation
+      resolve();
+    });
+    
+    // Start a request that stays pending to show X icon
+    fetch('/api/csrf-token', {
+      method: 'GET',
+      credentials: 'include',
+      signal: pendingRequestController.signal,
+      cache: 'no-cache'
+    }).catch((error) => {
+      // If aborted, it means user clicked X - that's expected
+      if (error.name === 'AbortError') {
+        if (isDev) {
+          console.log('[RefreshHandler] Request aborted - refresh cancelled');
+        }
+      }
+    });
+    
+    // Abort after delay (if user didn't click X)
+    if (refreshTimeout) {
+      clearTimeout(refreshTimeout);
+    }
+    
+    refreshTimeout = setTimeout(() => {
+      if (pendingRequestController && !pendingRequestController.signal.aborted) {
+        // Only abort if not already aborted (user might have clicked X)
+        pendingRequestController.abort();
+        pendingRequestController = null;
+        // Reject to indicate delay completed (not cancelled)
+        reject(new Error('Delay completed'));
+      }
+    }, REFRESH_DELAY_MS);
+  });
 };
 
 /**
@@ -213,35 +266,38 @@ const setupNavigationAPI = (): (() => void) => {
               cancelAllPendingRequests();
               
               // Start pending request to show X icon
-              startPendingRequest();
-              
-              // Wait for delay
-              await new Promise((resolve) => {
-                setTimeout(() => {
-                  if (isDev) {
-                    console.log('[RefreshHandler] Delay complete, preparing reload...');
-                  }
-                  
-                  // Abort the pending request (X icon will disappear)
-                  if (pendingRequestController) {
-                    pendingRequestController.abort();
-                    pendingRequestController = null;
-                  }
-                  
-                  // Clear the in-memory flag, but KEEP sessionStorage flag
-                  // The sessionStorage flag will prevent re-interception on the next reload
-                  isInRefreshDelay = false;
-                  
-                  if (isDev) {
-                    console.log('[RefreshHandler] Reloading page (flag will prevent re-interception)...');
-                  }
-                  
-                  // Now reload - the sessionStorage flag will prevent this from being intercepted again
-                  window.location.reload();
-                  
-                  resolve(undefined);
-                }, REFRESH_DELAY_MS);
-              });
+              // If user clicks X, this promise resolves and we cancel
+              // If delay completes, this promise rejects and we reload
+              try {
+                await startPendingRequest();
+                // If we get here, user clicked X - refresh is cancelled
+                if (isDev) {
+                  console.log('[RefreshHandler] Refresh cancelled by user, staying on page');
+                }
+                return; // Don't reload
+              } catch (error) {
+                // Delay completed (not cancelled)
+                if (isDev) {
+                  console.log('[RefreshHandler] Delay complete, preparing reload...');
+                }
+                
+                // Abort the pending request (X icon will disappear)
+                if (pendingRequestController) {
+                  pendingRequestController.abort();
+                  pendingRequestController = null;
+                }
+                
+                // Clear the in-memory flag, but KEEP sessionStorage flag
+                // The sessionStorage flag will prevent re-interception on the next reload
+                isInRefreshDelay = false;
+                
+                if (isDev) {
+                  console.log('[RefreshHandler] Reloading page (flag will prevent re-interception)...');
+                }
+                
+                // Now reload - the sessionStorage flag will prevent this from being intercepted again
+                window.location.reload();
+              }
             },
             commit: 'immediate' // Commit immediately but delay handler
           });
