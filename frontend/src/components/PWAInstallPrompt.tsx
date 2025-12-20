@@ -66,8 +66,7 @@ export function PWAInstallPrompt() {
             // Clear the deferred prompt
             setDeferredPrompt(null);
             setShowPrompt(false);
-        } catch (error) {
-            console.error('Install prompt error:', error);
+        } catch {
             toast.error('Failed to install app');
         }
     };

@@ -117,9 +117,8 @@ export default function CollectionModal({
 			try {
 				const templatesData = await collectionTemplateService.getTemplates();
 				setTemplates(templatesData);
-			} catch (error: unknown) {
-				console.error('Failed to load templates:', error);
-				// Don't show error toast for templates, it's optional
+			} catch {
+				// Silently fail - templates are optional
 			}
 		};
 
@@ -156,8 +155,7 @@ export default function CollectionModal({
 					containingCollections.map((c) => c._id)
 				);
 				setCollectionsContainingImage(containingIds);
-			} catch (error: unknown) {
-				console.error('Failed to load collections:', error);
+			} catch {
 				toast.error(t('collections.loadFailed'));
 			} finally {
 				setLoading(false);
@@ -180,9 +178,8 @@ export default function CollectionModal({
 					limit: 50, // Load first 50 images
 				});
 				setAvailableImages(response.images || []);
-			} catch (error: unknown) {
-				console.error('Failed to load user images:', error);
-				// Don't show error toast - image picker is optional
+			} catch {
+				// Silently fail - image picker is optional
 			} finally {
 				setLoadingImages(false);
 			}
@@ -323,25 +320,15 @@ export default function CollectionModal({
 					if (typeof window !== 'undefined') {
 						const currentPath = window.location.pathname;
 						
-						console.log('[CollectionModal] Image added, dispatching update event', {
-							collectionId,
-							currentPath,
-							currentCollectionId: currentCollection?._id,
-							matchesPath: currentPath === `/collections/${collectionId}`,
-							matchesStore: currentCollection && currentCollection._id === collectionId,
-						});
-						
 						// Always dispatch event - let the detail page decide if it needs to refresh
 						const event = new CustomEvent('collectionUpdated', { 
 							detail: { collectionId, collection: updatedCollection } 
 						});
 						window.dispatchEvent(event);
-						console.log('[CollectionModal] Event dispatched:', event);
 						
 						// Also refresh directly if we're on that collection's page OR if the current collection matches
 						if (currentPath === `/collections/${collectionId}` || 
 						    (currentCollection && currentCollection._id === collectionId)) {
-							console.log('[CollectionModal] Directly refreshing collection store...');
 							// Refresh the collection to get full image data
 							fetchCollection(collectionId);
 						}
@@ -349,7 +336,6 @@ export default function CollectionModal({
 				}
 				onCollectionUpdate?.();
 			} catch (error: unknown) {
-				console.error('Failed to toggle collection:', error);
 				toast.error(
 					getErrorMessage(error, t('collections.updateFailed'))
 				);
@@ -438,7 +424,6 @@ export default function CollectionModal({
 			// Close the modal after successful creation
 			onClose();
 		} catch (error: unknown) {
-			console.error('Failed to create collection:', error);
 			toast.error(
 				getErrorMessage(error, t('collections.createFailed'))
 			);
@@ -476,7 +461,6 @@ export default function CollectionModal({
 			onCollectionUpdate?.();
 			onClose();
 		} catch (error: unknown) {
-			console.error('Failed to update collection:', error);
 			toast.error(
 				getErrorMessage(error, t('collections.updateFailed'))
 			);

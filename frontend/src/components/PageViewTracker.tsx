@@ -84,10 +84,7 @@ export function PageViewTracker() {
                     return;
                 }
                 
-                // Only log other errors in development
-                if (import.meta.env.DEV) {
-                    console.warn('Failed to track page view:', error);
-                }
+                // Silently fail - page view tracking is non-critical
             }
         };
 

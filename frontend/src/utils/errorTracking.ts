@@ -32,59 +32,37 @@ class ErrorTracker {
   /**
    * Capture an exception
    */
-  captureException(error: Error, context?: ErrorContext): void {
-    if (!this.enabled) {
-      console.error('Error:', error, context);
-      return;
-    }
-
-    // In production with Sentry:
+  captureException(_error: Error, _context?: ErrorContext): void {
+    // Error tracking disabled - logs removed
+    // In production with Sentry, uncomment and use:
     // Sentry.captureException(error, {
     //   contexts: {
     //     additional: context,
     //   },
     // });
-
-    console.error('Error (tracked):', error, context);
   }
 
   /**
    * Capture a message
    */
-  captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info', context?: ErrorContext): void {
-    if (!this.enabled) {
-      if (level === 'error') {
-        console.error(`[${level.toUpperCase()}]`, message, context);
-      } else if (level === 'warning') {
-        console.warn(`[${level.toUpperCase()}]`, message, context);
-      }
-      return;
-    }
-
-    // In production with Sentry:
+  captureMessage(_message: string, _level: 'info' | 'warning' | 'error' = 'info', _context?: ErrorContext): void {
+    // Error tracking disabled - logs removed
+    // In production with Sentry, uncomment and use:
     // Sentry.captureMessage(message, level, {
     //   contexts: {
     //     additional: context,
     //   },
     // });
-
-    if (level === 'error') {
-      console.error(`[${level.toUpperCase()}]`, message, context);
-    } else if (level === 'warning') {
-      console.warn(`[${level.toUpperCase()}]`, message, context);
-    }
   }
 
   /**
    * Set user context for error tracking
    */
-  setUser(user: { id: string; username?: string; email?: string }): void {
+  setUser(_user: { id: string; username?: string; email?: string }): void {
     if (!this.enabled) return;
 
     // In production with Sentry:
     // Sentry.setUser(user);
-
-    console.warn('Error tracking user set:', user);
   }
 
   /**
@@ -95,20 +73,13 @@ class ErrorTracker {
 
     // In production with Sentry:
     // Sentry.setUser(null);
-
-    console.warn('Error tracking user cleared');
   }
 
   /**
    * Add breadcrumb for debugging
    */
-  addBreadcrumb(message: string, category: string = 'default', _level: 'info' | 'warning' | 'error' = 'info', data?: Record<string, unknown>): void {
-    // _level parameter is kept for API compatibility but not currently used
-    void _level;
-    if (!this.enabled) {
-      console.warn(`[Breadcrumb] [${category}]`, message, data);
-      return;
-    }
+  addBreadcrumb(_message: string, _category: string = 'default', _level: 'info' | 'warning' | 'error' = 'info', _data?: Record<string, unknown>): void {
+    if (!this.enabled) return;
 
     // In production with Sentry:
     // Sentry.addBreadcrumb({

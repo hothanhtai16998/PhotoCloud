@@ -43,11 +43,6 @@ export const cancelAllPendingRequests = () => {
       }
     });
     pendingRequests.clear();
-    
-    // Log in dev mode so user can see it's working
-    if (import.meta.env.DEV) {
-      console.log(`[Axios] Cancelled ${count} pending request(s) on refresh`);
-    }
   }
   return count; // Return count for debugging
 };
@@ -173,12 +168,8 @@ api.interceptors.request.use(
             const data = await response.json();
             csrfToken = data.csrfToken || getCsrfTokenFromCookie();
           }
-        } catch (error) {
+        } catch {
           // If fetch fails, continue without token - response interceptor will handle retry
-          // Don't log in production to avoid console spam
-          if (import.meta.env.DEV) {
-            console.warn('Failed to fetch CSRF token:', error);
-          }
         }
       }
       

@@ -58,7 +58,6 @@ export const useFavoriteStore = create(
 					state.loading = false;
 				});
 			} catch (error) {
-				console.error('Failed to fetch favorites:', error);
 				set((state) => {
 					state.loading = false;
 				});
@@ -131,9 +130,8 @@ export const useFavoriteStore = create(
 					state.lastFetchedAt = Date.now();
 					// Don't set loading - this is a silent background refresh
 				});
-			} catch (error) {
+			} catch {
 				// Silent fail - keep showing cached data
-				console.error('Background refresh failed:', error);
 			}
 		},
 
@@ -145,19 +143,13 @@ export const useFavoriteStore = create(
 				if (!exists) {
 					// Add to beginning (most recent first)
 					state.images = [image, ...state.images];
-					// Update pagination total
+					// Update pagination total ONLY if we already have pagination (don't guess on new sessions)
 					if (state.pagination) {
 						state.pagination.total = (state.pagination.total || 0) + 1;
 						state.pagination.pages = Math.ceil(state.pagination.total / (state.pagination.limit || 20));
-					} else {
-						// Initialize pagination if it doesn't exist
-						state.pagination = {
-							page: 1,
-							limit: 20,
-							total: state.images.length,
-							pages: Math.ceil(state.images.length / 20),
-						};
 					}
+					// Don't initialize pagination if it doesn't exist - wait for actual fetch
+					// This prevents showing incorrect total (1) on new sessions
 				}
 			});
 		},
@@ -177,7 +169,7 @@ export const useFavoriteStore = create(
 				
 				const removed = beforeCount - state.images.length;
 				
-				// Update pagination if image was removed
+				// Update pagination ONLY if we already have pagination (don't guess on new sessions)
 				if (removed > 0 && state.pagination) {
 					state.pagination.total = Math.max(0, state.pagination.total - removed);
 					state.pagination.pages = Math.ceil(state.pagination.total / state.pagination.limit);
@@ -205,11 +197,15 @@ if (typeof window !== 'undefined') {
 			store.addImageToFavorites(image);
 			const updatedStore = useFavoriteStore.getState();
 			
+			// Only send total if we have pagination (actual data from server)
+			// Don't use images.length as fallback - it's incorrect on new sessions
+			const total = updatedStore.pagination?.total;
+			
 			// Update sidebar thumbnail with the newly favorited image
 			window.dispatchEvent(new CustomEvent('favoritesUpdated', {
 				detail: { 
 					thumbnailImage: image,
-					total: updatedStore.pagination?.total || updatedStore.images.length
+					total: total !== undefined ? total : null // null means "unknown, don't update"
 				}
 			}));
 		} else {
@@ -217,11 +213,15 @@ if (typeof window !== 'undefined') {
 			store.removeImageFromFavorites(String(imageId).trim());
 			const updatedStore = useFavoriteStore.getState();
 			
+			// Only send total if we have pagination (actual data from server)
+			// Don't use images.length as fallback - it's incorrect on new sessions
+			const total = updatedStore.pagination?.total;
+			
 			// Update sidebar thumbnail with first remaining image or null
 			window.dispatchEvent(new CustomEvent('favoritesUpdated', {
 				detail: { 
 					thumbnailImage: updatedStore.images[0] || null,
-					total: updatedStore.pagination?.total || updatedStore.images.length
+					total: total !== undefined ? total : null // null means "unknown, don't update"
 				}
 			}));
 		}

@@ -7,30 +7,6 @@
   "background_color": "#ffffff",
   "theme_color": "#667eea",
   "orientation": "any",
-  "icons": [],
-  "shortcuts": [
-    {
-      "name": "Upload Photo",
-      "short_name": "Upload",
-      "description": "Upload a new photo",
-      "url": "/upload"
-    },
-    {
-      "name": "Search",
-      "short_name": "Search",
-      "description": "Search photos",
-      "url": "/"
-    },
-    {
-      "name": "Favorites",
-      "short_name": "Favorites",
-      "description": "View your favorite photos",
-      "url": "/favorites"
-    }
-  ],
-  "categories": ["photography", "social", "entertainment"],
-  "screenshots": [],
-  "related_applications": [],
-  "prefer_related_applications": false
+  "icons": []
 }
 

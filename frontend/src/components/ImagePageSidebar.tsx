@@ -63,15 +63,6 @@ const ImagePageSidebar = () => {
     // During initialization, optimistically show icons (user likely logged in)
     // After initialization, only show if we have accessToken or had it before
     const result = accessToken || (isInitializing && stableHasAuth) || stableHasAuth;
-    // Debug: Log in dev mode to verify calculation
-    if (import.meta.env.DEV) {
-      console.log('[Sidebar] showAuthIcons calculation:', {
-        accessToken: Boolean(accessToken),
-        isInitializing,
-        stableHasAuth,
-        result
-      });
-    }
     return Boolean(result);
   }, [accessToken, isInitializing, stableHasAuth]);
   
@@ -139,7 +130,7 @@ const ImagePageSidebar = () => {
       }
       if (signal?.aborted) return;
       
-      console.error('Failed to fetch initial favorite thumbnail:', error);
+      // Silently fail - favorite thumbnail is optional
     }
   }, []);
 

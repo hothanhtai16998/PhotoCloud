@@ -26,16 +26,10 @@ if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       initRefreshHandler();
-      if (import.meta.env.DEV) {
-        console.log('[RefreshHandler] Initialized');
-      }
     });
   } else {
     // DOM already ready
     initRefreshHandler();
-    if (import.meta.env.DEV) {
-      console.log('[RefreshHandler] Initialized (DOM already ready)');
-    }
   }
 }
 
@@ -62,8 +56,8 @@ if ('serviceWorker' in navigator) {
 					}
 				});
 			})
-			.catch((error) => {
-				console.error('[SW] Service Worker registration failed:', error);
+			.catch(() => {
+				// Silently fail - service worker is optional
 			});
 
 		// Handle service worker controller changes

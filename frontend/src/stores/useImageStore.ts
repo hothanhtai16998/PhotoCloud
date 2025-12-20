@@ -19,6 +19,7 @@ import {
   filterDeletedImages,
   trimDeletedIds,
 } from './helpers/imageStoreHelpers';
+import { useImageFavoriteCountStore } from './useImageFavoriteCountStore';
 
 // Category cache: Map<categoryKey, { images: Image[], pagination: Pagination | null }>
 // categoryKey format: "category:search:location" or "all" for no filters
@@ -295,6 +296,22 @@ export const useImageStore = create(
             rawImages,
             draft.deletedImageIds
           );
+
+          // Initialize favorite count store with image data (important for new sessions)
+          // This ensures the count is available when user clicks save
+          if (newImages.length > 0) {
+            const store = useImageFavoriteCountStore.getState();
+            newImages.forEach((img) => {
+              if (img._id && img.favoriteCount !== undefined) {
+                // Always initialize with image's favoriteCount (even if 0)
+                // This ensures we have the correct baseline
+                const currentCount = store.getFavoriteCount(img._id);
+                if (currentCount === 0) {
+                  store.updateFavoriteCount(img._id, img.favoriteCount);
+                }
+              }
+            });
+          }
 
           // Update current filters
           if (isNewQuery(params)) {

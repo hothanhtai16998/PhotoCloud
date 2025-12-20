@@ -47,8 +47,8 @@ function loadFiltersFromStorage(): SearchFiltersType {
     if (stored) {
       return JSON.parse(stored);
     }
-  } catch (error) {
-    console.error('Failed to load filters:', error);
+  } catch {
+    // Silently fail - use default filters
   }
   return DEFAULT_FILTERS;
 }
@@ -70,8 +70,8 @@ export function useSearchFilters(): UseSearchFiltersReturn {
       );
       // Dispatch custom event to notify other components
       window.dispatchEvent(new Event('filterChange'));
-    } catch (error) {
-      console.error('Failed to save filters:', error);
+    } catch {
+      // Silently fail - filters will be lost on refresh
     }
   }, []);
 
@@ -80,8 +80,8 @@ export function useSearchFilters(): UseSearchFiltersReturn {
     try {
       localStorage.removeItem(searchConfig.filtersStorageKey);
       window.dispatchEvent(new Event('filterChange'));
-    } catch (error) {
-      console.error('Failed to clear filters:', error);
+    } catch {
+      // Silently fail - filters already cleared from state
     }
   }, []);
 

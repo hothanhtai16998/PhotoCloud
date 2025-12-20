@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
 		});
 
 		if (import.meta.env.MODE === 'development') {
-			console.error('ErrorBoundary caught an error:', error, errorInfo);
+			// Error logged to error tracking service
 		}
 		toast.error('An unexpected error occurred. Please refresh the page.');
 	}

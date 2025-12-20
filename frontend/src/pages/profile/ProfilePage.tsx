@@ -564,9 +564,8 @@ function ProfilePage() {
         if (!isOwnProfile) {
             const hasTrackedView = sessionStorage.getItem(`${appConfig.storage.profileViewKeyPrefix}${displayUserId}_${currentUser._id}`);
             if (!hasTrackedView) {
-                userStatsService.trackProfileView(displayUserId).catch(err => {
-                    console.error('Failed to track profile view:', err);
-                    // Don't show error to user - this is background tracking
+                userStatsService.trackProfileView(displayUserId).catch(() => {
+                    // Silently fail - background tracking is non-critical
                 });
                 sessionStorage.setItem(`${appConfig.storage.profileViewKeyPrefix}${displayUserId}_${currentUser._id}`, 'true');
             }
@@ -600,10 +599,7 @@ function ProfilePage() {
             fetchFollowStatsWrapper(cancelSignal),
         ]).catch((error) => {
             // Ignore cancellation errors - these are expected when navigating away
-            const isCanceled = axios.isCancel(error) || (error as { code?: string })?.code === 'ERR_CANCELED';
-            if (!isCanceled) {
-                console.error('Error fetching profile data:', error);
-            }
+            // Silently handle cancellation errors - these are expected when navigating away
         });
 
         return undefined;
@@ -767,8 +763,6 @@ function ProfilePage() {
             // Always refresh follow stats to get accurate counts and state from server
             await fetchFollowStatsWrapper(cancelSignal);
         } catch (error: any) {
-            console.error('Failed to toggle follow:', error);
-            
             // Extract error message and error code from API response
             const errorCode = error?.response?.data?.errorCode;
             const errorMessage = error?.response?.data?.message || error?.message;

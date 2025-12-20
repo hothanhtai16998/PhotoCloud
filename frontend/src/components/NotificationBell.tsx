@@ -68,8 +68,8 @@ export default function NotificationBell() {
 		onDisconnect: () => {
 			setWebSocketConnected(false);
 		},
-		onError: (error) => {
-			console.error('WebSocket error:', error);
+		onError: () => {
+			// Silently handle WebSocket errors
 		},
 	});
 	

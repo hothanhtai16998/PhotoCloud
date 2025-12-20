@@ -40,8 +40,7 @@ export default function FavoriteCollectionsPage() {
 			setCollections(response.collections || []);
 			setPagination(response.pagination || null);
 			setCurrentPage(page);
-		} catch (error) {
-			console.error('Failed to fetch favorite collections:', error);
+		} catch {
 			toast.error(t('favorites.loadFailed'));
 		} finally {
 			setLoading(false);

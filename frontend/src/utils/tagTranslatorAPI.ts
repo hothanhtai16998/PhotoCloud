@@ -33,9 +33,8 @@ export async function translateTagsAPI(tags: string[], locale: string): Promise<
 
     // Fallback to dictionary
     return translateTagsDict(tags, locale);
-  } catch (error) {
+  } catch {
     // Fallback to dictionary on error
-    console.warn('[Tag Translator API] Translation failed, using dictionary:', error);
     return translateTagsDict(tags, locale);
   }
 }

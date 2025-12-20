@@ -3,10 +3,8 @@ import { immer } from 'zustand/middleware/immer';
 import { notificationService, type Notification } from '@/services/notificationService';
 
 // Simple logger for polling (avoid circular dependency)
-const logPolling = (message: string) => {
-	if (typeof window !== 'undefined' && import.meta.env.MODE === 'development') {
-		console.log(`[Notification Polling] ${message}`);
-	}
+const logPolling = (_message: string) => {
+	// Logging removed for production
 };
 
 interface NotificationState {
@@ -74,8 +72,7 @@ export const useNotificationStore = create(
 					state.loading = false;
 					state.refreshing = false;
 				});
-			} catch (error) {
-				console.error('Failed to fetch notifications:', error);
+			} catch {
 				set((state) => {
 					state.loading = false;
 					state.refreshing = false;
@@ -97,8 +94,8 @@ export const useNotificationStore = create(
 						get().fetchNotifications(false);
 					}
 				});
-			} catch (error) {
-				console.error('Failed to fetch unread count:', error);
+			} catch {
+				// Silently fail - unread count is non-critical
 			}
 		},
 
@@ -115,7 +112,6 @@ export const useNotificationStore = create(
 					);
 				});
 			} catch (error) {
-				console.error('Failed to mark notification as read:', error);
 				throw error;
 			}
 		},
@@ -133,7 +129,6 @@ export const useNotificationStore = create(
 					}));
 				});
 			} catch (error) {
-				console.error('Failed to mark all as read:', error);
 				throw error;
 			}
 		},
@@ -147,7 +142,6 @@ export const useNotificationStore = create(
 					state.notifications = state.notifications.filter(notif => notif._id !== notificationId);
 				});
 			} catch (error) {
-				console.error('Failed to delete notification:', error);
 				throw error;
 			}
 		},

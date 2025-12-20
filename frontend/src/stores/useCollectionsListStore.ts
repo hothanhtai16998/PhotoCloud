@@ -47,7 +47,6 @@ export const useCollectionsListStore = create(
 				// Then apply filters (outside of set to avoid nested updates)
 				get().applyFilters(data);
 			} catch (error: unknown) {
-				console.error('Failed to load collections:', error);
 				set((state) => {
 					state.loading = false;
 				});
@@ -71,7 +70,6 @@ export const useCollectionsListStore = create(
 				});
 				toast.success('Đã xóa bộ sưu tập');
 			} catch (error: unknown) {
-				console.error('Failed to delete collection:', error);
 				set((state) => {
 					state.deletingId = null;
 				});
@@ -94,7 +92,6 @@ export const useCollectionsListStore = create(
 					get().applyFilters(state.collections);
 				});
 			} catch (error: unknown) {
-				console.error('Failed to update collection:', error);
 				const message =
 					(error as ApiErrorResponse)?.response?.data?.message ||
 					'Không thể cập nhật. Vui lòng thử lại.';
@@ -235,9 +232,8 @@ export const useCollectionsListStore = create(
 				
 				// Apply filters after update
 				get().applyFilters(data);
-			} catch (error) {
+			} catch {
 				// Silent fail - keep showing cached data
-				console.error('Background refresh failed:', error);
 			}
 		},
 

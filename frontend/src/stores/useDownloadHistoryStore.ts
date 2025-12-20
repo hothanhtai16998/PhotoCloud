@@ -72,8 +72,7 @@ export const useDownloadHistoryStore = create(
 					state.loading = false;
 					state.loadingMore = false;
 				});
-			} catch (error) {
-				console.error('Failed to fetch download history:', error);
+			} catch {
 				toast.error(t('profile.downloadHistorySection.loadFailed') || 'Failed to load download history');
 				set((state) => {
 					state.loading = false;
@@ -132,9 +131,8 @@ export const useDownloadHistoryStore = create(
 					state.lastFetchedAt = Date.now();
 					// Don't set loading - this is a silent background refresh
 				});
-			} catch (error) {
+			} catch {
 				// Silent fail - keep showing cached data
-				console.error('Background refresh failed:', error);
 			}
 		},
 

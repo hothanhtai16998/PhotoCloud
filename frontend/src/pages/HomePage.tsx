@@ -53,7 +53,7 @@ function HomePage() {
             } catch (error) {
                 // Silently fail - don't block page load
                 if (import.meta.env.DEV) {
-                    console.warn('Failed to prefetch first slider image:', error);
+                    // Silently fail - prefetch is optional
                 }
             }
         };

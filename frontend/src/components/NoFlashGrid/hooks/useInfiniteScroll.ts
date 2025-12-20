@@ -67,7 +67,7 @@ export const useInfiniteScroll = ({
             await onLoadMore();
           } catch (error) {
             // Silently handle errors - let the component handle error states
-            console.error('Error loading more:', error);
+            // Silently handle errors - component will retry
           } finally {
             // Reset loading state after a brief delay to prevent flickering
             setTimeout(() => {

@@ -74,8 +74,8 @@ function UploadPage() {
             try {
                 // Fetch all images first
                 await fetchImages({ limit: 50 });
-            } catch (error) {
-                console.error('Failed to fetch images:', error);
+            } catch {
+                // Silently fail - category images are optional
             }
         };
 
@@ -124,7 +124,6 @@ function UploadPage() {
                 setIsUploading(false);
                 toast.success(t('upload.uploadedSuccess'));
             } catch (error: unknown) {
-                console.error('Upload error:', error);
                 const errorMessage = getErrorMessage(error, 'Failed to upload image. Please try again.');
                 setUploadError(errorMessage);
                 setIsUploading(false);
@@ -171,7 +170,6 @@ function UploadPage() {
             toast.success(t('upload.finalizeSuccess'));
             navigate('/');
         } catch (error: unknown) {
-            console.error('Finalize error:', error);
             const errorMessage = getErrorMessage(error, 'Failed to finalize upload. Please try again.');
             toast.error(errorMessage);
         } finally {

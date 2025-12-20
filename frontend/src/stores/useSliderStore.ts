@@ -132,7 +132,6 @@ export const useSliderStore = create(
 					});
 					return;
 				}
-				console.error('Error fetching images for slider:', error);
 				if (!signal?.aborted) {
 					set((state) => {
 						state.slides = [];
@@ -232,7 +231,6 @@ export const useSliderStore = create(
 					return;
 				}
 				// Silent fail - keep showing cached data
-				console.error('Background refresh failed:', error);
 			}
 		},
 	}))

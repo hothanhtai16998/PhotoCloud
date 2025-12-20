@@ -34,7 +34,7 @@ export function updateFavoriteCache(imageId: string, isFavorited: boolean) {
       try {
         cb(isFavorited);
       } catch (error) {
-        console.error('Error in favorite callback:', error);
+        // Silently handle callback errors
       }
     });
   }
@@ -178,12 +178,23 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
 
         let csrfToken = getCsrfTokenFromCookie();
         if (!csrfToken) {
-          // Fetch CSRF token first to avoid chaining
+          // Fetch CSRF token first to avoid chaining and 403 errors
           try {
-            const { default: api } = await import('@/lib/axios');
-            const response = await api.get('/csrf-token');
-            csrfToken = response.data?.csrfToken || getCsrfTokenFromCookie();
-          } catch (error) {
+            const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+            const url = baseURL.startsWith('http') 
+              ? `${baseURL}/csrf-token`
+              : `${window.location.origin}${baseURL}/csrf-token`;
+            
+            const response = await fetch(url, {
+              method: 'GET',
+              credentials: 'include',
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              csrfToken = data.csrfToken || getCsrfTokenFromCookie();
+            }
+          } catch {
             // If CSRF fetch fails, still try the request (interceptor will handle retry)
           }
         }
@@ -215,9 +226,7 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
             const is403 = error?.response?.status === 403;
             const is401 = error?.response?.status === 401;
             
-            if (!is403 && !is401 && import.meta.env.DEV) {
-              console.error('Failed to check favorites:', error);
-            }
+            // Silently handle auth errors (403/401)
             
             // For auth errors, set all to false and clear cache
             if (is403 || is401) {

@@ -138,8 +138,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         try {
             await downloadImage(image, 'medium');
             toast.success(t('image.downloadSuccess') || 'Downloaded successfully');
-        } catch (error) {
-            console.error('Failed to download image:', error);
+        } catch {
             toast.error(t('image.downloadFailed') || 'Failed to download image');
         }
     }, []);

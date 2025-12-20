@@ -32,11 +32,7 @@ export const initRefreshHandler = () => {
   // Handle beforeunload - cancel all pending requests when refresh happens
   // This is the key to preventing 429 errors (like Unsplash)
   const handleBeforeUnload = () => {
-    const cancelledCount = cancelPendingRequests();
-    
-    if (isDev && cancelledCount > 0) {
-      console.log(`[RefreshHandler] Page refreshing - cancelled ${cancelledCount} pending request(s)`);
-    }
+    cancelPendingRequests();
   };
 
   // Listen for beforeunload (fires on refresh, navigation, close)

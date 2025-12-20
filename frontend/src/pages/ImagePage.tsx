@@ -402,7 +402,7 @@ function ImagePage() {
           setError('Image not found');
         }
       } catch (err: unknown) {
-        console.error('[ImagePage] 🟢 fetchImage ERROR:', err);
+        // Error handled by error boundary
         const axiosError = err as { response?: { data?: { message?: string } } };
         setError(axiosError.response?.data?.message || 'Failed to load image');
       } finally {
@@ -536,7 +536,7 @@ function ImagePage() {
               apiStatsCache.set(imageId, stats);
             }
           } else {
-            console.error('Failed to increment view:', error);
+            // Silently fail - view tracking is non-critical
             incrementedViewIds.current.delete(imageId);
           }
         });
@@ -984,21 +984,29 @@ function ImagePage() {
 
   const handleDownload = useCallback(async (size: 'small' | 'medium' | 'large' | 'original') => {
     if (!image?._id) return;
-    try {
-      // Increment download count first
-      try {
-        const statsResponse = await imageStatsService.incrementDownload(image._id);
+    
+    // Start download immediately (don't wait for increment API call)
+    // Download image with selected size
+    const downloadPromise = api.get(`/images/${image._id}/download?size=${size}`, {
+      responseType: 'blob',
+      withCredentials: true,
+    });
+    
+    // Increment download count in background (fire and forget - don't block download)
+    imageStatsService.incrementDownload(image._id)
+      .then((statsResponse) => {
         setDownloads(statsResponse.downloads);
         const stats = apiStatsCache.get(image._id) || {};
         stats.downloads = statsResponse.downloads;
         apiStatsCache.set(image._id, stats);
         
-        // Update stats store (optimistic update)
+        // Update stats store
         updateStats(image._id, {
           downloads: statsResponse.downloads,
           dailyDownloads: statsResponse.dailyDownloads,
         });
-      } catch (error: any) {
+      })
+      .catch((error: any) => {
         if (error.response?.status === 429) {
           const rateLimitData = error.response.data;
           if (rateLimitData.downloads !== undefined) {
@@ -1013,15 +1021,15 @@ function ImagePage() {
             });
           }
         } else {
-          console.error('Failed to increment download count:', error);
+          // Silently fail - download already started, don't interrupt user
+          if (import.meta.env.DEV) {
+            // Silently fail - download already started
+          }
         }
-      }
-
-      // Download image with selected size
-      const response = await api.get(`/images/${image._id}/download?size=${size}`, {
-        responseType: 'blob',
-        withCredentials: true,
       });
+
+    try {
+      const response = await downloadPromise;
 
       const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/webp' });
       const blobUrl = URL.createObjectURL(blob);
@@ -1060,51 +1068,157 @@ function ImagePage() {
         }
       } catch (error) {
         // Silently fail - download still succeeded
-        console.error('Failed to update download history:', error);
+        // Silently fail - download already completed
       }
 
       toast.success(t('image.downloadSuccess'));
       setShowDownloadMenu(false);
     } catch (error) {
-      console.error('Download failed:', error);
+      // Error handled by toast
       toast.error(t('image.downloadFailed'));
     }
   }, [image]);
 
+  // Helper to ensure CSRF token is ready
+  const ensureCsrfToken = useCallback(async (): Promise<boolean> => {
+    const getCsrfTokenFromCookie = (): string | null => {
+      if (typeof document === 'undefined') return null;
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'XSRF-TOKEN' && value) {
+          return decodeURIComponent(value);
+        }
+      }
+      return null;
+    };
+
+    // Check if token already exists
+    if (getCsrfTokenFromCookie()) {
+      return true;
+    }
+
+    // Fetch CSRF token if missing
+    try {
+      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
+      const url = baseURL.startsWith('http') 
+        ? `${baseURL}/csrf-token`
+        : `${window.location.origin}${baseURL}/csrf-token`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return !!(data.csrfToken || getCsrfTokenFromCookie());
+      }
+    } catch {
+      // Will retry in API call
+    }
+    return false;
+  }, []);
+
   const handleToggleFavorite = useCallback(async () => {
     if (!user || !image?._id || isTogglingFavorite) return;
+    
+    // Ensure CSRF token is ready before making request (critical for new sessions)
+    await ensureCsrfToken();
+    
+    // Optimistic update: Update UI immediately before API call
+    const imageId = String(image._id);
+    const previousState = isFavorited;
+    const newState = !previousState;
+    
+    // Update cache and UI immediately (like Unsplash)
+    updateFavoriteCache(imageId, newState);
     setIsTogglingFavorite(true);
-    try {
-      const imageId = String(image._id);
-      const response = await favoriteService.toggleFavorite(imageId);
-      updateFavoriteCache(imageId, response.isFavorited);
-      
-      // Update favorite count from response (optimistic update)
-      if (response.favoriteCount !== undefined) {
-        updateFavoriteCount(imageId, response.favoriteCount);
+    
+    // Don't do optimistic count update - wait for server response
+    // This prevents incorrect counts when we don't have a reliable baseline
+    // The server response will update the count correctly
+    
+    // Dispatch event immediately for instant UI updates
+    window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+      detail: { 
+        imageId: imageId.trim(),
+        isFavorited: newState,
+        image: newState ? image : undefined
       }
-      
-      // Dispatch event for optimistic favorites list update
-      window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-        detail: { 
-          imageId: String(imageId).trim(),
-          isFavorited: response.isFavorited,
-          image: response.isFavorited ? image : undefined
+    }));
+
+    // Make API call in background (non-blocking)
+    // Retry once if CSRF error occurs
+    let retryCount = 0;
+    const makeRequest = async (): Promise<void> => {
+      try {
+        const response = await favoriteService.toggleFavorite(imageId);
+        
+        // Update with actual server response
+        updateFavoriteCache(imageId, response.isFavorited);
+        
+        // Update favorite count with actual value from server
+        if (response.favoriteCount !== undefined) {
+          updateFavoriteCount(imageId, response.favoriteCount);
         }
-      }));
-      
-      if (response.isFavorited) {
-        toast.success(t('favorites.added'));
-      } else {
-        toast.success(t('favorites.removed'));
+        
+        // If favorites store is empty (new session), fetch actual total to update sidebar badge
+        const { useFavoriteStore } = await import('@/stores/useFavoriteStore');
+        const favoriteStore = useFavoriteStore.getState();
+        if (!favoriteStore.pagination && favoriteStore.images.length === 0) {
+          // Store is empty - fetch actual favorites to get correct total
+          favoriteStore.fetchFavorites(1, true).catch(() => {
+            // Silently fail - will be corrected when user visits favorites page
+          });
+        }
+        
+        // Dispatch event with actual server state
+        window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+          detail: { 
+            imageId: imageId.trim(),
+            isFavorited: response.isFavorited,
+            image: response.isFavorited ? image : undefined
+          }
+        }));
+        
+        if (response.isFavorited) {
+          toast.success(t('favorites.added'));
+        } else {
+          toast.success(t('favorites.removed'));
+        }
+      } catch (error: any) {
+        // If CSRF error and we haven't retried, fetch token and retry once
+        if (error?.response?.status === 403 && retryCount === 0) {
+          retryCount++;
+          await ensureCsrfToken();
+          return makeRequest(); // Retry once
+        }
+        
+        // Revert optimistic update on error
+        updateFavoriteCache(imageId, previousState);
+        
+        // No need to revert count - we didn't do optimistic update
+        
+        // Dispatch event to revert UI
+        window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+          detail: { 
+            imageId: imageId.trim(),
+            isFavorited: previousState,
+            image: previousState ? image : undefined
+          }
+        }));
+        
+        // Error handled by toast
+        toast.error(t('favorites.updateFailed'));
       }
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
-      toast.error(t('favorites.updateFailed'));
-    } finally {
-      setIsTogglingFavorite(false);
-    }
-  }, [user, image, isTogglingFavorite, updateFavoriteCount]);
+    };
+
+    makeRequest()
+      .finally(() => {
+        setIsTogglingFavorite(false);
+      });
+  }, [user, image, isTogglingFavorite, updateFavoriteCount, isFavorited, ensureCsrfToken]);
 
   const handleShare = useCallback(() => {
     if (!image?._id) return;
@@ -1455,7 +1569,7 @@ function ImagePage() {
                   const response = await imageFetchService.fetchUserImages(userId, { page: 1, limit: 3 });
                   setAuthorImages(response.images || []);
                 } catch (error) {
-                  console.error('Failed to fetch author images:', error);
+                  // Silently fail - author images are optional
                   setAuthorImages([]);
                 } finally {
                   setLoadingAuthorImages(false);
@@ -1913,7 +2027,7 @@ function ImagePage() {
                     }
                   }}
                   onError={(e) => {
-                    console.error('[ImagePage] Image error:', e.currentTarget.src);
+                    // Image failed to load - handled by fallback
                     if (isCurrentImage) {
                       setImageLoaded(false);
                     }

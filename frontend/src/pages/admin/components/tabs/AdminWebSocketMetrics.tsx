@@ -75,16 +75,13 @@ export const AdminWebSocketMetrics = memo(function AdminWebSocketMetrics() {
     const fetchMetrics = async () => {
         try {
             const response = await adminService.getWebSocketMetrics();
-            console.log('WebSocket metrics response:', response);
             if (response.success && response.metrics) {
                 setMetrics(response.metrics);
                 setError(null);
             } else {
-                console.warn('WebSocket metrics response:', response);
                 setError('Invalid response format');
             }
         } catch (error: any) {
-            console.error('Error fetching WebSocket metrics:', error);
             setError(error?.message || 'Failed to fetch metrics');
             // Don't show toast on every error to avoid spamming
             if (!metrics) {
