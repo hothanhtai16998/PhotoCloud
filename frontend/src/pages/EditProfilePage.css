@@ -11,6 +11,13 @@
   box-sizing: border-box;
 }
 
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+  .profile-settings-page {
+    margin-left: 64px; /* Sidebar width */
+  }
+}
+
 .profile-settings-page *,
 .profile-settings-page *::before,
 .profile-settings-page *::after {

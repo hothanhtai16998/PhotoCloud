@@ -6,6 +6,13 @@
   margin-top: 0;
 }
 
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+  .favorite-collections-page {
+    margin-left: 64px; /* Sidebar width */
+  }
+}
+
 .favorite-collections-loading {
   display: flex;
   flex-direction: column;

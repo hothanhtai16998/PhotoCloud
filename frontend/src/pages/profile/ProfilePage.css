@@ -8,6 +8,13 @@
   position: relative;
 }
 
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+  .profile-page {
+    margin-left: 64px; /* Sidebar width */
+  }
+}
+
 /* Profile Switch Loading Overlay */
 .profile-switch-overlay {
   position: absolute;

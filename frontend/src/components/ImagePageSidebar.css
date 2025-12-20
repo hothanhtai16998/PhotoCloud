@@ -17,10 +17,10 @@
     display: flex;
     position: fixed; /* Fixed to viewport */
     left: 0;
-    top: 100px; /* Below header (66px) + category navigation (34px) = 100px */
+    top: 0; /* Start from top - Unsplash style */
     bottom: 0;
-    height: calc(100vh - 100px); /* Full viewport height minus header and category nav */
-    min-height: calc(100vh - 100px);
+    height: 100vh; /* Full viewport height */
+    min-height: 100vh;
     align-self: stretch;
   }
 }

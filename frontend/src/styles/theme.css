@@ -131,6 +131,13 @@
   background: var(--bg-secondary);
 }
 
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+  main.homepage {
+    margin-left: 64px; /* Sidebar width */
+  }
+}
+
 .dark-theme .hero-title {
   color: var(--text-primary);
 }

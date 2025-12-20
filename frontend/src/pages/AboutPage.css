@@ -6,6 +6,13 @@
   margin-top: 0;
 }
 
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+  .about-page {
+    margin-left: 64px; /* Sidebar width */
+  }
+}
+
 .about-container {
   max-width: min(1200px, 96%);
   margin: 0 auto;

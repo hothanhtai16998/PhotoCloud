@@ -5,6 +5,13 @@
     padding-top: calc(var(--header-height, 65px) + 40px);
 }
 
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+    .download-history-page {
+        margin-left: 64px; /* Sidebar width */
+    }
+}
+
 .download-history-page-container {
     max-width: 1296px;
     margin: 0 auto;

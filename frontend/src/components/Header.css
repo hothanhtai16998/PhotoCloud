@@ -5,10 +5,10 @@
   background: var(--color-bg-primary, #fff);
   position: fixed;
   top: 0;
-  left: 0;
+  left: 64px; /* Start after sidebar */
   right: 0;
   z-index: var(--z-header, 1500);
-  width: 100%;
+  width: calc(100% - 64px); /* Full width minus sidebar */
   box-sizing: border-box;
   /* transition: background 0.3s ease; */
   display: flex;
@@ -801,6 +801,12 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 }
 
 @media (max-width: 768px) {
+  /* Mobile: Header should be full width (no sidebar visible) */
+  .unsplash-header {
+    left: 0;
+    width: 100%;
+  }
+
   /* Mobile header: top (58px) + category nav (34px) = 92px total */
   .header-top {
     height: 58px; /* Mobile: 10px padding + 48px container = 58px */

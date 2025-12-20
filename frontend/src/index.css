@@ -163,6 +163,9 @@
 		--color-text-secondary: #767676;
 		--color-border: #e5e5e5;
 		--color-border-hover: #999;
+		
+		/* Sidebar width - used for layout calculations */
+		--sidebar-width: 64px;
 
 		/* Base colors - soft pastels */
 		--background: 0 0% 100%; /*violet-50*/
