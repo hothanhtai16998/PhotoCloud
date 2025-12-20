@@ -14,6 +14,28 @@ export async function loadImageDimensions(
   });
 }
 
+// Check if image dimensions are available synchronously (for cached images)
+// Returns dimensions if image is cached, null otherwise
+export function getCachedImageDimensions(
+  src: string
+): { width: number; height: number } | null {
+  if (!src) return null;
+  
+  try {
+    const img = new Image();
+    img.src = src;
+    
+    // If image is cached, it will be complete immediately
+    if (img.complete && img.naturalWidth > 0 && img.naturalHeight > 0) {
+      return { width: img.naturalWidth, height: img.naturalHeight };
+    }
+  } catch {
+    // Ignore errors
+  }
+  
+  return null;
+}
+
 
 
 

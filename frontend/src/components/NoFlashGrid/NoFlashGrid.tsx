@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback, useLayoutEffect } from 'react';
 import type { Image } from '@/types/image';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { t } from '@/i18n';
@@ -7,7 +7,7 @@ import './NoFlashGrid.css';
 // Import extracted modules
 import { GRID_CONFIG } from './constants/gridConfig';
 import { preloadImage, preloadImages } from './utils/imagePreloader';
-import { loadImageDimensions } from './utils/imageDimensions';
+import { loadImageDimensions, getCachedImageDimensions } from './utils/imageDimensions';
 import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -39,11 +39,12 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
         return getColumnCount(window.innerWidth);
     });
-    const [containerWidth, setContainerWidth] = useState(1400); // Default, will be updated
+    const [containerWidth, setContainerWidth] = useState(0); // Start at 0, will be updated after mount to prevent initial render with wrong dimensions
 
     // Store image dimensions as they load
     const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
     const loadingDimensionsRef = useRef<Set<string>>(new Set()); // Track which images we're currently loading
+    const stableDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map()); // Stable ref for dimensions to prevent unnecessary recalculations
 
     // Load data using provided callback
     const loadData = useCallback(async () => {
@@ -96,8 +97,40 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         preloadImages(thumbnails, true);
     }, [images]);
 
-    // Load dimensions for images that don't have them
-    // Throttled to prevent excessive loading on rapid image changes
+    // Check cached images synchronously before render to prevent layout shift
+    useLayoutEffect(() => {
+        if (filteredImages.length === 0) return;
+
+        const cachedDimensionsMap = new Map<string, { width: number; height: number }>();
+        
+        for (const image of filteredImages.slice(0, 50)) {
+            if (imageDimensions.has(image._id) || (image.width && image.height)) continue;
+
+            const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+            if (imageUrl) {
+                const cachedDims = getCachedImageDimensions(imageUrl);
+                if (cachedDims) {
+                    cachedDimensionsMap.set(image._id, cachedDims);
+                }
+            }
+        }
+
+        if (cachedDimensionsMap.size > 0) {
+            cachedDimensionsMap.forEach((value, key) => {
+                stableDimensionsRef.current.set(key, value);
+            });
+            
+            setImageDimensions(prev => {
+                const merged = new Map(prev);
+                cachedDimensionsMap.forEach((value, key) => {
+                    merged.set(key, value);
+                });
+                return merged;
+            });
+        }
+    }, [filteredImages, imageDimensions]);
+
+    // Load dimensions asynchronously for non-cached images
     useEffect(() => {
         let timeoutId: NodeJS.Timeout | null = null;
         let isMounted = true;
@@ -108,39 +141,46 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             const dimensionsMap = new Map<string, { width: number; height: number }>();
             const imagesToLoad: Array<{ image: ExtendedImage; url: string }> = [];
 
-            // First pass: collect images that need dimensions loaded
-            // Limit to first 50 images to prevent excessive loading
             const imagesToProcess = filteredImages.slice(0, 50);
             
             for (const image of imagesToProcess) {
-                // Skip if already has dimensions in state
                 if (imageDimensions.has(image._id)) {
-                    dimensionsMap.set(image._id, imageDimensions.get(image._id)!);
+                    const existingDims = imageDimensions.get(image._id)!;
+                    if (existingDims.width > 0 && existingDims.height > 0) {
+                        dimensionsMap.set(image._id, existingDims);
+                        stableDimensionsRef.current.set(image._id, existingDims);
+                    }
                     continue;
                 }
 
-                // Skip if already has dimensions in image object
-                if (image.width && image.height) {
-                    dimensionsMap.set(image._id, { width: image.width, height: image.height });
+                if (image.width && image.height && image.width > 0 && image.height > 0) {
+                    const imgDims = { width: image.width, height: image.height };
+                    dimensionsMap.set(image._id, imgDims);
+                    stableDimensionsRef.current.set(image._id, imgDims);
                     continue;
                 }
 
-                // Skip if already loading
-                if (loadingDimensionsRef.current.has(image._id)) {
-                    continue;
-                }
+                if (loadingDimensionsRef.current.has(image._id)) continue;
 
-                // Try to load dimensions from image URL
-                // Use regularUrl or imageUrl for accurate dimensions (aspect ratio is what matters)
                 const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
                 if (imageUrl) {
+                    const cachedDims = getCachedImageDimensions(imageUrl);
+                    if (cachedDims && cachedDims.width > 0 && cachedDims.height > 0) {
+                        dimensionsMap.set(image._id, cachedDims);
+                        stableDimensionsRef.current.set(image._id, cachedDims);
+                        continue;
+                    }
+                    
                     imagesToLoad.push({ image, url: imageUrl });
                     loadingDimensionsRef.current.add(image._id);
                 }
             }
 
-            // If we have dimensions from state/image, update immediately
             if (dimensionsMap.size > 0) {
+                dimensionsMap.forEach((value, key) => {
+                    stableDimensionsRef.current.set(key, value);
+                });
+                
                 setImageDimensions(prev => {
                     const merged = new Map(prev);
                     dimensionsMap.forEach((value, key) => {
@@ -150,16 +190,13 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 });
             }
 
-            // Load dimensions for images that need it (prioritize first 15 for faster initial render)
             if (imagesToLoad.length > 0 && isMounted) {
-                // Split into priority (first 15) and non-priority
                 const priority = imagesToLoad.slice(0, 15);
                 const rest = imagesToLoad.slice(15);
 
                 const loadBatch = async (batch: typeof imagesToLoad) => {
                     if (!isMounted) return;
                     
-                    // Process in smaller concurrent batches to avoid overwhelming browser
                     const batchSize = 5;
                     for (let i = 0; i < batch.length; i += batchSize) {
                         if (!isMounted) break;
@@ -183,6 +220,10 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                         const validResults = results.filter((r): r is { id: string; dims: { width: number; height: number } } => r !== null);
 
                         if (validResults.length > 0 && isMounted) {
+                            validResults.forEach(result => {
+                                stableDimensionsRef.current.set(result.id, result.dims);
+                            });
+                            
                             setImageDimensions(prev => {
                                 const merged = new Map(prev);
                                 validResults.forEach(result => {
@@ -192,17 +233,14 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                             });
                         }
                         
-                        // Small delay between batches to prevent blocking
                         if (i + batchSize < batch.length) {
                             await new Promise(resolve => setTimeout(resolve, 50));
                         }
                     }
                 };
 
-                // Load priority batch first (non-blocking)
                 loadBatch(priority).catch(() => {});
 
-                // Load rest with delay to not block
                 if (rest.length > 0) {
                     setTimeout(() => {
                         if (isMounted) {
@@ -213,7 +251,6 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             }
         };
 
-        // Debounce dimension loading to prevent excessive calls
         timeoutId = setTimeout(() => {
             loadDimensions();
         }, 100);
@@ -224,11 +261,45 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 clearTimeout(timeoutId);
             }
         };
-    }, [filteredImages]); // Only depend on filteredImages, not imageDimensions
+    }, [filteredImages]);
+
+    // Pre-calculate dimensions synchronously during render to prevent layout shift
+    // Uses stable ref to persist dimensions across renders without triggering grid recalculation
+    const precalculatedDimensionsMap = useMemo(() => {
+        const dims = new Map<string, { width: number; height: number }>();
+        
+        stableDimensionsRef.current.forEach((value, key) => {
+            dims.set(key, value);
+        });
+        
+        for (const image of filteredImages.slice(0, 50)) {
+            if (dims.has(image._id)) continue;
+            
+            if (image.width && image.height && image.width > 0 && image.height > 0) {
+                const imgDims = { width: image.width, height: image.height };
+                dims.set(image._id, imgDims);
+                stableDimensionsRef.current.set(image._id, imgDims);
+                continue;
+            }
+            
+            const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+            if (imageUrl) {
+                const cachedDims = getCachedImageDimensions(imageUrl);
+                if (cachedDims && cachedDims.width > 0 && cachedDims.height > 0) {
+                    dims.set(image._id, cachedDims);
+                    stableDimensionsRef.current.set(image._id, cachedDims);
+                }
+            }
+        }
+        
+        return dims;
+    }, [filteredImages]);
 
     // Calculate grid layout for each image (row spans and columns)
     const gridLayout = useMemo(() => {
-        if (filteredImages.length === 0 || containerWidth === 0) return [];
+        if (filteredImages.length === 0) return [];
+        if (containerWidth === 0 || !isFinite(containerWidth) || containerWidth < 300) return [];
+        if (columnCount < 1 || !isFinite(columnCount)) return [];
 
         // Check if we're on mobile (1 column)
         const isMobileLayout = columnCount === 1;
@@ -250,8 +321,12 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         const columnHeights = new Array(columnCount).fill(0); // Start at 0px for each column
 
         return filteredImages.map((image) => {
-            // Get dimensions (from state or image properties)
-            const dimensions = imageDimensions.get(image._id) || null;
+            let dimensions = precalculatedDimensionsMap.get(image._id) || null;
+            
+            if (!dimensions && image.width && image.height && image.width > 0 && image.height > 0) {
+                dimensions = { width: image.width, height: image.height };
+                stableDimensionsRef.current.set(image._id, dimensions);
+            }
 
             // Calculate row span based on aspect ratio
             const layout = calculateImageLayout(
@@ -281,15 +356,10 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             // Place image in the shortest column
             const column = shortestColumnIndex + 1; // CSS Grid columns are 1-indexed
 
-            // Convert pixel position to grid row using full row unit (height + gap)
             const rowStart = Math.max(1, Math.floor(shortestHeight / rowUnit) + 1);
-            // Use rowStart only, let grid-row-end: span X handle the rest
-            // This ensures CSS Grid handles gaps correctly
+            const exactHeight = finalRowSpan * GRID_CONFIG.baseRowHeight + (finalRowSpan - 1) * GRID_CONFIG.gap;
 
-            // Update the column's height for the next item
-            // Move by an exact number of full row units to the next top line
-            columnHeights[shortestColumnIndex] =
-                shortestHeight + finalRowSpan * rowUnit;
+            columnHeights[shortestColumnIndex] = shortestHeight + finalRowSpan * rowUnit;
 
             return {
                 image,
@@ -297,9 +367,10 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 rowSpan: finalRowSpan,
                 rowStart,
                 columnWidth,
+                exactHeight,
             };
         });
-    }, [filteredImages, columnCount, containerWidth, imageDimensions]);
+    }, [filteredImages, columnCount, containerWidth, precalculatedDimensionsMap]);
 
     // Update column count and container width on resize
     useEffect(() => {
@@ -369,7 +440,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                         }}
                     >
                         {gridLayout.map((layout, idx) => {
-                            const { image, column, rowSpan, rowStart } = layout;
+                            const { image, column, rowSpan, rowStart, exactHeight } = layout;
                             // Priority loading for first 12 images (above the fold)
                             const isPriority = idx < 12;
 
@@ -380,14 +451,12 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                     data-pinned={(image as any).isPinned ? 'true' : 'false'}
                                     data-image-id={image._id}
                                     style={{
-                                        // Explicit column and row start, use span for row end
-                                        // This lets CSS Grid handle gaps automatically
                                         gridColumn: column,
                                         gridRowStart: rowStart,
                                         gridRowEnd: `span ${rowSpan}`,
-                                        // Let the grid area determine height (includes internal row gaps)
-                                        // to avoid mismatch and sticking
-                                        height: 'auto',
+                                        height: `${exactHeight}px`,
+                                        minHeight: `${exactHeight}px`,
+                                        maxHeight: `${exactHeight}px`,
                                     }}
                                 >
                                     <div

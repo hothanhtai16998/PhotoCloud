@@ -28,13 +28,8 @@
   width: 100%;
   min-height: 0;
   overflow: hidden;
-  /* Grid will automatically size this based on gridRowEnd span */
-  /* Don't set height: 100% as it can interfere with grid row spanning */
-  height: auto;
-  
-  /* Optimize for scroll performance */
   will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
+  transform: translateZ(0);
   contain: layout style paint;
 }
 

@@ -65,17 +65,53 @@ export function BlurUpImage({
     }, [image]);
     
     // Check cache synchronously on mount to initialize loaded state
-    // This prevents blur-up flash for cached images when navigating between tabs
+    // Check both AVIF and non-AVIF URLs since browser might have cached either
     const fullImageUrl = getFullImageUrl(initialAvifSupport);
-    // Compute cache check once for both states
+    const nonAvifUrl = getFullImageUrl(false);
+    const avifUrl = getFullImageUrl(true);
+    
     const isCachedOnMount = (() => {
-        if (!fullImageUrl) return false;
-        // Check preloader cache first (fastest)
-        if (isImageLoaded(fullImageUrl)) return true;
-        // Also check browser cache synchronously
-        const testImg = new Image();
-        testImg.src = fullImageUrl;
-        return testImg.complete && testImg.naturalWidth > 0;
+        // Check all possible URLs (AVIF and non-AVIF) since browser might have cached either
+        const urlsToCheck = [fullImageUrl, avifUrl, nonAvifUrl].filter(Boolean);
+        
+        for (const url of urlsToCheck) {
+            if (!url) continue;
+            
+            // Check preloader cache first (fastest)
+            if (isImageLoaded(url)) return true;
+            
+            // More reliable cache check: try to load and see if it's already cached
+            // Cached images will have complete=true immediately or within a few ms
+            try {
+                const testImg = new Image();
+                let isCached = false;
+                
+                // Set up load handler before setting src
+                testImg.onload = () => {
+                    if (testImg.complete && testImg.naturalWidth > 0) {
+                        isCached = true;
+                    }
+                };
+                
+                testImg.src = url;
+                
+                // If already complete, it's cached
+                if (testImg.complete && testImg.naturalWidth > 0) {
+                    return true;
+                }
+                
+                // For cross-origin images, complete might be false even if cached
+                // Check if naturalWidth is available (indicates it's loading from cache)
+                // This is a heuristic but works for most cases
+                if (testImg.naturalWidth > 0) {
+                    return true;
+                }
+            } catch {
+                // Ignore errors
+            }
+        }
+        
+        return false;
     })();
     
     // If image is cached, set fullSrc immediately to prevent placeholder flash
@@ -152,20 +188,38 @@ export function BlurUpImage({
         // If already using this image, no need to reload
         if (fullSrc === full) return;
 
-        // If image is cached, set it immediately (skip async preload)
-        if (isImageLoaded(full)) {
-            setFullSrc(full);
-            setLoaded(true);
-            return;
-        }
-
-        // Check browser cache synchronously
-        const testImg = new Image();
-        testImg.src = full;
-        if (testImg.complete && testImg.naturalWidth > 0) {
-            setFullSrc(full);
-            setLoaded(true);
-            return;
+        // Check both AVIF and non-AVIF URLs since browser might have cached either
+        const nonAvifUrl = getFullImageUrl(false);
+        const avifUrl = getFullImageUrl(true);
+        const urlsToCheck = [full, avifUrl, nonAvifUrl].filter(Boolean) as string[];
+        
+        // Check if any URL is cached
+        for (const url of urlsToCheck) {
+            if (isImageLoaded(url)) {
+                setFullSrc(url);
+                setLoaded(true);
+                return;
+            }
+            
+            try {
+                const testImg = new Image();
+                testImg.src = url;
+                
+                if (testImg.complete && testImg.naturalWidth > 0) {
+                    setFullSrc(url);
+                    setLoaded(true);
+                    return;
+                }
+                
+                // Heuristic: if naturalWidth is available, image might be cached
+                if (testImg.naturalWidth > 0) {
+                    setFullSrc(url);
+                    setLoaded(true);
+                    return;
+                }
+            } catch {
+                // Ignore errors
+            }
         }
 
         loadingRef.current = true;
@@ -196,44 +250,57 @@ export function BlurUpImage({
         }
     }, [isInView, image, fullSrc, supportsAvif, priority, getFullImageUrl]);
 
-    // Check if image is cached SYNCHRONOUSLY when fullSrc or supportsAvif changes
-    // This prevents blur-up flash for cached images when navigating between tabs
+    // Check if image is cached when fullSrc is set or when component mounts
+    // Use multiple strategies to detect cached images
     useLayoutEffect(() => {
-        if (loaded) return;
+        if (loaded || !isInView) return;
         
-        // Get current full URL (may have changed if AVIF support was detected)
         const currentFullUrl = getFullImageUrl(supportsAvif);
-        if (!currentFullUrl) return;
+        const nonAvifUrl = getFullImageUrl(false);
+        const avifUrl = getFullImageUrl(true);
         
-        // If fullSrc is set, use it; otherwise check the URL we would use
-        const urlToCheck = fullSrc || currentFullUrl;
-
-        // First check the preloader's cache (fastest check - synchronous)
-        // The preloader tracks images that have been loaded in this session
-        if (isImageLoaded(urlToCheck)) {
-            setLoaded(true);
-            // Also set fullSrc if not already set (for cached images)
-            if (!fullSrc) {
-                setFullSrc(urlToCheck);
+        const urlsToCheck = [fullSrc, currentFullUrl, avifUrl, nonAvifUrl].filter(Boolean) as string[];
+        
+        for (const url of urlsToCheck) {
+            if (isImageLoaded(url)) {
+                setLoaded(true);
+                if (!fullSrc) {
+                    setFullSrc(url);
+                }
+                return;
             }
+        }
+        
+        // Also check the actual rendered image element if it exists
+        if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+            setLoaded(true);
             return;
         }
-
-        // Also check browser cache synchronously
-        // Create test image and check if it's already loaded in browser cache
-        const testImg = new Image();
-        testImg.src = urlToCheck;
+    }, [fullSrc, loaded, supportsAvif, isInView, getFullImageUrl]);
+    
+    // Additional check after image element is rendered
+    useEffect(() => {
+        if (loaded || !fullSrc) return;
         
-        // If image is already cached (complete immediately), set loaded to true
-        // This happens synchronously before React paints, preventing flash
-        if (testImg.complete && testImg.naturalWidth > 0) {
-            setLoaded(true);
-            // Also set fullSrc if not already set (for cached images)
-            if (!fullSrc) {
-                setFullSrc(urlToCheck);
+        // Check the actual image element after a brief delay
+        // This catches images that load from cache very quickly
+        const checkImage = () => {
+            if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+                setLoaded(true);
             }
-        }
-    }, [fullSrc, loaded, supportsAvif, getFullImageUrl]);
+        };
+        
+        // Check immediately
+        checkImage();
+        
+        // Check again in next frame (for cached images)
+        requestAnimationFrame(checkImage);
+        
+        // Check after a very short delay (cached images load within 1-2ms)
+        const timeoutId = setTimeout(checkImage, 5);
+        
+        return () => clearTimeout(timeoutId);
+    }, [fullSrc, loaded]);
 
     // Tooltip state
     const [showTooltip, setShowTooltip] = useState(false);
@@ -579,8 +646,8 @@ export function BlurUpImage({
                         src={placeholderInitial}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
-                        width={image.width || undefined}
-                        height={image.height || undefined}
+                        width={minimal ? undefined : (image.width || undefined)}
+                        height={minimal ? undefined : (image.height || undefined)}
                         style={{
                             opacity: loaded ? 0 : 1,
                             /* Disable transition during initial load to prevent flashing */
@@ -591,7 +658,8 @@ export function BlurUpImage({
                             height: '100%',
                             objectFit: 'cover',
                             objectPosition: 'center',
-                            aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined
+                            // Don't set aspectRatio when minimal=true (used in collection cards) to prevent layout shifts
+                            aspectRatio: minimal ? undefined : (image.width && image.height ? `${image.width} / ${image.height}` : undefined)
                         }}
                     />
                 ) : !loaded ? (
@@ -615,31 +683,41 @@ export function BlurUpImage({
                         ref={(el) => {
                             imgRef.current = el;
                             // Check if image is already loaded (cached) to prevent flash
-                            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
-                                setLoaded(true);
+                            // Use multiple checks to catch cached images
+                            if (el) {
+                                // Immediate check
+                                if (el.complete && el.naturalWidth > 0 && !loaded) {
+                                    setLoaded(true);
+                                } else {
+                                    // Check again in next frame (for cached images that load instantly)
+                                    requestAnimationFrame(() => {
+                                        if (el.complete && el.naturalWidth > 0 && !loaded) {
+                                            setLoaded(true);
+                                        }
+                                    });
+                                }
                             }
                         }}
                         src={fullSrc}
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
-                        width={image.width || undefined}
-                        height={image.height || undefined}
-                        // Don't use loading="lazy" - we handle lazy loading with IntersectionObserver
-                        // This prevents browser's native lazy loading from conflicting
+                        width={minimal ? undefined : (image.width || undefined)}
+                        height={minimal ? undefined : (image.height || undefined)}
+                        loading="eager"
                         style={{ 
-                            pointerEvents: 'none', // Let wrapper handle clicks
+                            pointerEvents: 'none',
                             width: '100%',
                             height: '100%',
                             objectFit: 'cover',
                             objectPosition: 'center',
-                            aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined
+                            // Don't set aspectRatio when minimal=true (used in collection cards) to prevent layout shifts
+                            aspectRatio: minimal ? undefined : (image.width && image.height ? `${image.width} / ${image.height}` : undefined)
                         }}
                         onLoad={() => {
                             setLoaded(true);
                             onLoadComplete?.();
                         }}
                         onError={() => {
-                            // If image fails to load, still show placeholder
                             setLoaded(false);
                         }}
                     />
