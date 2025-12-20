@@ -2,8 +2,8 @@
 .profile-page {
   min-height: 100vh;
   background: hsl(var(--background));
-  padding: 40px 20px;
-  padding-top: calc(var(--header-height, 56px) + 40px);
+  padding: 0;
+  padding-top: calc(var(--header-height, 65px) + 40px);
   margin-top: 0;
   position: relative;
 }
@@ -31,8 +31,9 @@
 }
 
 .profile-container {
-  max-width: min(1400px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
+  padding: 0 16px;
 }
 
 /* Profile Header */

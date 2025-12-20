@@ -298,3 +298,100 @@ export const checkFavorites = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * Delete all favorites for the current user
+ * DELETE /api/favorites/all
+ */
+export const deleteAllFavorites = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    // Get user with favorites
+    const user = await User.findById(userId).select('favorites');
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'User not found',
+            errorCode: 'USER_NOT_FOUND',
+        });
+    }
+
+    const favoriteIds = user.favorites || [];
+    const favoriteCount = favoriteIds.length;
+
+    if (favoriteCount === 0) {
+        return res.status(200).json({
+            success: true,
+            message: 'No favorites to delete',
+            deletedCount: 0,
+        });
+    }
+
+    // Decrement favorite count on all images
+    await Image.updateMany(
+        { _id: { $in: favoriteIds } },
+        { $inc: { favoriteCount: -1 } }
+    );
+
+    // Clear all favorites from user
+    await User.findByIdAndUpdate(
+        userId,
+        { $set: { favorites: [] } },
+        { new: true }
+    );
+
+    // Emit WebSocket events for real-time favorite count updates
+    try {
+        const { emitImageFavoriteUpdate } = await import('../utils/socketServer.js');
+        // Emit updates for all images (in batches to avoid overwhelming)
+        const batchSize = 50;
+        for (let i = 0; i < favoriteIds.length; i += batchSize) {
+            const batch = favoriteIds.slice(i, i + batchSize);
+            await Promise.all(
+                batch.map(async (imageId) => {
+                    try {
+                        const image = await Image.findById(imageId).select('favoriteCount');
+                        if (image) {
+                            emitImageFavoriteUpdate(imageId.toString(), {
+                                imageId: imageId.toString(),
+                                favoriteCount: image.favoriteCount || 0,
+                                actorId: userId.toString(),
+                                action: 'unfavorited',
+                            });
+                        }
+                    } catch (err) {
+                        logger.error('Failed to emit favorite update for image:', err);
+                    }
+                })
+            );
+        }
+    } catch (wsError) {
+        logger.error('Failed to emit favorite count updates via WebSocket:', wsError);
+        // Don't fail the request if WebSocket fails
+    }
+
+    // Clear cache for user's favorites endpoint
+    try {
+        const cleared = clearFavoritesCache(userId);
+        if (cleared > 0) {
+            logger.info('Cleared favorites cache', { 
+                userId: userId.toString(), 
+                entriesCleared: cleared 
+            });
+        }
+    } catch (cacheError) {
+        logger.error('Failed to clear favorites cache:', cacheError);
+        // Don't fail the request if cache clear fails
+    }
+
+    logger.info('All favorites deleted', {
+        userId,
+        deletedCount: favoriteCount,
+    });
+
+    res.status(200).json({
+        success: true,
+        message: `Đã xóa ${favoriteCount} ảnh khỏi yêu thích`,
+        deletedCount: favoriteCount,
+    });
+});
+

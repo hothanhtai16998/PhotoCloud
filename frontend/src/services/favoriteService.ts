@@ -98,4 +98,14 @@ export const favoriteService = {
     const res = await api.post('/favorites/check', { imageIds: stringIds });
     return res.data;
   },
+
+  /**
+   * Delete all favorites for the current user
+   */
+  deleteAllFavorites: async (): Promise<{ success: boolean; message: string; deletedCount: number }> => {
+    const res = await api.delete('/favorites/all', {
+      withCredentials: true,
+    });
+    return res.data;
+  },
 };

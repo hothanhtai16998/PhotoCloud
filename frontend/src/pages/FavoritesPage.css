@@ -1,6 +1,7 @@
 .favorites-page {
   min-height: 100vh;
   background: hsl(var(--background));
+  padding: 0;
   padding-top: calc(var(--header-height, 65px) + 40px);
   margin-top: 0;
 }
@@ -8,7 +9,7 @@
 .favorites-container {
   max-width: 1296px;
   margin: 0 auto;
-  padding: 40px 0;
+  padding: 0;
   width: 100%;
 }
 
@@ -21,6 +22,7 @@
   max-width: 1296px;
   margin-left: auto;
   margin-right: auto;
+  position: relative;
 }
 
 .favorites-header-icon {
@@ -50,6 +52,68 @@
   font-size: 1rem;
   color: hsl(var(--muted-foreground));
   margin: 0;
+}
+
+.favorites-delete-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #fff;
+  color: #dc2626;
+  border: 1px solid #d1d1d1;
+  border-radius: 20px;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.favorites-delete-all-btn:hover:not(:disabled) {
+  border-color: #111;
+}
+
+.favorites-delete-all-btn:active:not(:disabled) {
+  border-color: #111;
+}
+
+.favorites-delete-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #fff;
+}
+
+.favorites-delete-all-btn svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #dc2626;
+}
+
+/* Dark mode support */
+.dark-theme .favorites-delete-all-btn {
+  background: hsl(var(--card));
+  color: #dc2626;
+  border-color: hsl(var(--border));
+}
+
+.dark-theme .favorites-delete-all-btn:hover:not(:disabled) {
+  border-color: #111;
+}
+
+.dark-theme .favorites-delete-all-btn:active:not(:disabled) {
+  border-color: #111;
+}
+
+.dark-theme .favorites-delete-all-btn:disabled {
+  background: hsl(var(--card));
+  opacity: 0.5;
+}
+
+.dark-theme .favorites-delete-all-btn svg {
+  color: #dc2626;
 }
 
 .favorites-grid {
@@ -284,6 +348,12 @@
     align-items: flex-start;
     gap: 16px;
     margin-bottom: 32px;
+  }
+
+  .favorites-delete-all-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
   }
 
   .favorites-header-icon {

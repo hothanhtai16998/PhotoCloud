@@ -1,8 +1,8 @@
 .collections-page {
   min-height: 100vh;
   background: hsl(var(--background));
-  padding: 24px 0;
-  padding-top: calc(var(--header-height, 65px) + 24px);
+  padding: 0;
+  padding-top: calc(var(--header-height, 65px) + 40px);
   margin-top: 0;
 }
 
@@ -32,10 +32,9 @@
 }
 
 .collections-header {
-  /* Allow the header to scale on smaller viewports */
-  max-width: min(1200px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -43,10 +42,9 @@
 
 /* Search and Filter Bar */
 .collections-filters {
-  /* Keep filters aligned with the header container */
-  max-width: min(1200px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 24px;
+  padding: 0 16px 24px;
   display: flex;
   gap: 16px;
   align-items: center;
@@ -194,9 +192,9 @@
 }
 
 .collections-results-info {
-  max-width: min(1200px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 16px;
+  padding: 0 16px 16px;
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
   font-weight: 500;
@@ -270,9 +268,9 @@
 }
 
 .collections-grid {
-  max-width: min(1400px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
   gap: 32px;

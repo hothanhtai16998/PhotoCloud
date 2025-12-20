@@ -204,6 +204,48 @@ export const useFavoriteStore = create(
 				}
 			});
 		},
+
+		// Delete all favorites
+		deleteAllFavorites: async () => {
+			set((state) => {
+				state.loading = true;
+			});
+
+			try {
+				const response = await favoriteService.deleteAllFavorites();
+				
+				// Clear all favorites from store
+				set((state) => {
+					state.images = [];
+					state.pagination = {
+						page: 1,
+						limit: 20,
+						total: 0,
+						pages: 0,
+					};
+					state.currentPage = 1;
+					state.imageTypes.clear();
+					state.hasLoaded = true;
+					state.lastFetchedAt = Date.now();
+					state.loading = false;
+				});
+
+				// Dispatch event to update sidebar
+				window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+					detail: { 
+						thumbnailImage: null,
+						total: 0
+					}
+				}));
+
+				return response;
+			} catch (error) {
+				set((state) => {
+					state.loading = false;
+				});
+				throw error;
+			}
+		},
 	}))
 );
 

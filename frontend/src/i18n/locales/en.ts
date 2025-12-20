@@ -93,6 +93,10 @@ export const en = {
     downloadFailed: 'Download failed. Please try again.',
     listLabel: 'Favorite photos list',
     imageLabel: 'Favorite photo: {title}',
+    deleteAll: 'Delete All',
+    deleteAllConfirm: 'Are you sure you want to delete all {count} favorite photos? This action cannot be undone.',
+    deleteAllSuccess: 'All favorite photos deleted successfully',
+    deleteAllFailed: 'Failed to delete all favorite photos. Please try again.',
     // Favorite Collections
     favoriteCollections: 'Favorite Collections',
     favoriteCollectionsCount: '{count} collections',

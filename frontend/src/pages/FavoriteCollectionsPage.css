@@ -1,8 +1,8 @@
 .favorite-collections-page {
   min-height: 100vh;
-  background: #fafafa;
-  padding: 24px 0;
-  padding-top: calc(var(--header-height, 65px) + 24px);
+  background: hsl(var(--background));
+  padding: 0;
+  padding-top: calc(var(--header-height, 65px) + 40px);
   margin-top: 0;
 }
 
@@ -36,9 +36,9 @@
 }
 
 .favorite-collections-header {
-  max-width: min(1200px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -110,9 +110,9 @@
 }
 
 .favorite-collections-grid {
-  max-width: min(1200px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
@@ -196,9 +196,9 @@
 }
 
 .favorite-collections-pagination {
-  max-width: min(1200px, 96%);
+  max-width: 1296px;
   margin: 40px auto 0;
-  padding: 0 24px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: center;

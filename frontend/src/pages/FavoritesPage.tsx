@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useContext } from "react";
+import { useEffect, useCallback, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavoriteStore } from "@/stores/useFavoriteStore";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { Heart } from "lucide-react";
+import { Heart, Trash2 } from "lucide-react";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { generateImageSlug } from "@/lib/utils";
 import { saveScrollPosition, prepareModalNavigationState, setModalActive, isPageRefresh } from "@/utils/modalNavigation";
@@ -11,6 +11,8 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import type { Image } from "@/types/image";
 import { t } from "@/i18n";
 import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
+import { ConfirmModal } from "@/pages/admin/components/modals";
+import { toast } from "sonner";
 import "./FavoritesPage.css";
 import { timingConfig } from '@/config/timingConfig';
 
@@ -35,7 +37,11 @@ function FavoritesPage() {
         checkAndRefreshIfStale,
         addImageToFavorites,
         removeImageFromFavorites,
+        deleteAllFavorites,
     } = useFavoriteStore();
+
+    const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
 
     useEffect(() => {
         // ProtectedRoute ensures user is authenticated
@@ -183,6 +189,22 @@ function FavoritesPage() {
         });
     }, [navigate, images, actualLocation, isMobile]);
 
+    // Handle delete all favorites
+    const handleDeleteAll = useCallback(async () => {
+        if (images.length === 0) return;
+        
+        setIsDeletingAll(true);
+        try {
+            const response = await deleteAllFavorites();
+            toast.success(response.message || t('favorites.deleteAllSuccess'));
+            setShowDeleteAllModal(false);
+        } catch (error) {
+            console.error('Failed to delete all favorites:', error);
+            toast.error(t('favorites.deleteAllFailed'));
+        } finally {
+            setIsDeletingAll(false);
+        }
+    }, [images.length, deleteAllFavorites, t]);
 
     return (
         <>
@@ -201,6 +223,18 @@ function FavoritesPage() {
                                     : t('favorites.noFavorites')}
                             </p>
                         </div>
+                        {images.length > 0 && (
+                            <button
+                                className="favorites-delete-all-btn"
+                                onClick={() => setShowDeleteAllModal(true)}
+                                disabled={isDeletingAll}
+                                title={t('favorites.deleteAll')}
+                                aria-label={t('favorites.deleteAll')}
+                            >
+                                <Trash2 size={18} />
+                                <span>{t('favorites.deleteAll')}</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Favorites Content */}
@@ -231,6 +265,17 @@ function FavoritesPage() {
                 </div>
             </main>
 
+            {/* Delete All Confirmation Modal */}
+            <ConfirmModal
+                isOpen={showDeleteAllModal}
+                onClose={() => setShowDeleteAllModal(false)}
+                onConfirm={handleDeleteAll}
+                title={t('favorites.deleteAll')}
+                message={t('favorites.deleteAllConfirm', { count: images.length })}
+                confirmText={t('favorites.deleteAll')}
+                cancelText={t('common.cancel')}
+                variant="danger"
+            />
         </>
     );
 }

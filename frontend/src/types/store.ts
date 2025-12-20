@@ -188,7 +188,7 @@ export interface FavoriteState {
 	imageTypes: Map<string, 'portrait' | 'landscape'>;
 	hasLoaded: boolean;
 	lastFetchedAt: number | null;
-	fetchFavorites: (page?: number) => Promise<void>;
+	fetchFavorites: (page?: number, forceRefresh?: boolean) => Promise<void>;
 	setImageType: (imageId: string, type: 'portrait' | 'landscape') => void;
 	updateImage: (imageId: string, updatedImage: Image) => void;
 	clearFavorites: () => void;
@@ -196,4 +196,5 @@ export interface FavoriteState {
 	checkAndRefreshIfStale: () => Promise<void>;
 	addImageToFavorites: (image: Image) => void;
 	removeImageFromFavorites: (imageId: string) => void;
+	deleteAllFavorites: () => Promise<{ success: boolean; message: string; deletedCount: number }>;
 }

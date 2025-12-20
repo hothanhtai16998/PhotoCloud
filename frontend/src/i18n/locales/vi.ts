@@ -95,6 +95,10 @@ export const vi = {
     downloadFailed: 'Tải ảnh thất bại. Vui lòng thử lại.',
     listLabel: 'Danh sách ảnh yêu thích',
     imageLabel: 'Ảnh yêu thích: {title}',
+    deleteAll: 'Xóa tất cả',
+    deleteAllConfirm: 'Bạn có chắc muốn xóa tất cả {count} ảnh yêu thích? Hành động này không thể hoàn tác.',
+    deleteAllSuccess: 'Đã xóa tất cả ảnh yêu thích',
+    deleteAllFailed: 'Không thể xóa tất cả ảnh yêu thích. Vui lòng thử lại.',
     // Favorite Collections
     favoriteCollections: 'Bộ sưu tập yêu thích',
     favoriteCollectionsCount: '{count} bộ sưu tập',

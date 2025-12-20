@@ -1,14 +1,15 @@
 .collection-detail-page {
   min-height: 100vh;
   background: hsl(var(--background));
-  padding-top: var(--header-height, 65px);
+  padding: 0;
+  padding-top: calc(var(--header-height, 65px) + 40px);
   margin-top: 0;
 }
 
 .collection-detail-versions-wrapper {
-  max-width: min(1400px, 96%);
-  margin: 32px auto 48px;
-  padding: 0 24px;
+  max-width: 1296px;
+  margin: 0 auto 48px;
+  padding: 0 16px;
 }
 
 
@@ -53,9 +54,9 @@
 }
 
 .collection-detail-header {
-  max-width: min(1400px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 80px 32px 48px;
+  padding: 80px 16px 48px;
   border-bottom: 1px solid hsl(var(--border) / 0.2);
   background: hsl(var(--background));
 }
@@ -317,9 +318,9 @@
 }
 
 .collection-detail-images {
-  max-width: min(1400px, 96%);
+  max-width: 1296px;
   margin: 0 auto;
-  padding: 0 24px 48px;
+  padding: 0 16px 48px;
 }
 
 /* OLD STYLES - No longer used since we switched to NoFlashGrid */
