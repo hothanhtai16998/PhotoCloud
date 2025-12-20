@@ -24,6 +24,22 @@ export function GlobalLoadingOverlay() {
   const minDisplayTimeRef = useRef<number | null>(null);
   const hasShownRef = useRef(false);
 
+  // Track when spinner is fully hidden to control content visibility
+  useEffect(() => {
+    // Add/remove class to body to hide content while spinner is visible
+    if (showSpinner && isVisible) {
+      document.body.classList.add('global-loading-active');
+    } else if (!showSpinner) {
+      // Only remove class after spinner is completely hidden
+      document.body.classList.remove('global-loading-active');
+    }
+    
+    return () => {
+      // Cleanup on unmount
+      document.body.classList.remove('global-loading-active');
+    };
+  }, [showSpinner, isVisible]);
+
   // Prevent flashing by using stable state management
   useEffect(() => {
     // Clear any pending timers

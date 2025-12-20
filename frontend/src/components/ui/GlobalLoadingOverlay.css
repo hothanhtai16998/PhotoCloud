@@ -22,6 +22,25 @@
   pointer-events: auto;
 }
 
+/* Hide content while spinner is visible or fading out */
+/* Content stays hidden until spinner is completely gone */
+body.global-loading-active main.homepage {
+  visibility: hidden;
+  opacity: 0;
+  /* No transition delay - hide immediately when spinner shows */
+  transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  /* Preserve layout space to prevent shifts */
+  position: relative;
+}
+
+/* Show content only after spinner is fully hidden */
+body:not(.global-loading-active) main.homepage {
+  visibility: visible;
+  opacity: 1;
+  /* Smooth fade in after spinner is gone */
+  transition: opacity 0.2s ease-in-out 0.1s, visibility 0.2s ease-in-out 0.1s;
+}
+
 /* Dark mode support - no background needed */
 
 .global-loading-content {
