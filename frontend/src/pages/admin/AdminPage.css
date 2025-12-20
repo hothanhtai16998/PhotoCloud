@@ -5626,6 +5626,14 @@ button[type='button'] {
 button:not(:disabled):not([type='submit']):not([type='reset']):hover,
 button[type='button']:not(:disabled):hover {
   /* No transform on hover - prevent movement */
+  border-color: #111 !important;
+}
+
+/* Dark mode button hover */
+.dark-theme [data-slot='button']:not(:disabled):hover,
+.dark-theme button:not(:disabled):not([type='submit']):not([type='reset']):hover,
+.dark-theme button[type='button']:not(:disabled):hover {
+  border-color: #fff !important;
 }
 
 [data-slot='button']:not(:disabled):active,

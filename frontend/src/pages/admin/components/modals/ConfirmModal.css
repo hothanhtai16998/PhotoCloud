@@ -8,7 +8,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: var(--z-modal-overlay, 2000); /* Higher than header (1500) */
     animation: fadeIn 0.2s ease-out;
 }
 
@@ -94,6 +94,41 @@
     justify-content: flex-end;
     padding: 20px 24px;
     border-top: 1px solid #e5e5e5;
+}
+
+/* Cancel button - Unsplash style */
+.confirm-modal-actions button[data-slot="button"][class*="outline"] {
+    background: #fff !important;
+    border: 1px solid #d1d1d1 !important;
+    color: #111 !important;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Cancel button hover - Unsplash style with higher specificity to override global styles */
+.confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover,
+.confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover:not([disabled]),
+.confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover[class*="border-ring"],
+.confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover[style*="border-color"] {
+    background: #fff !important;
+    border-color: #999 !important;
+    color: #111 !important;
+}
+
+/* Dark mode support */
+.dark-theme .confirm-modal-actions button[data-slot="button"][class*="outline"] {
+    background: hsl(var(--card)) !important;
+    border-color: hsl(var(--border)) !important;
+    color: hsl(var(--foreground)) !important;
+}
+
+.dark-theme .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover {
+    background: hsl(var(--card)) !important;
+    border-color: #fff !important;
+    color: hsl(var(--foreground)) !important;
 }
 
 .confirm-btn-danger {

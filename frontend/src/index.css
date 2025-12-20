@@ -78,6 +78,17 @@
 
 	button:not([disabled]):hover {
 		/* No transform on hover - prevent movement */
+		border-color: #111 !important;
+	}
+	
+	/* Dark mode button hover */
+	.dark-theme button:not([disabled]):hover {
+		border-color: #fff !important;
+	}
+	
+	/* Ensure all buttons have a border for hover effect */
+	button:not([disabled]):not([class*="border-none"]):not([class*="border-0"]) {
+		border: 1px solid transparent;
 	}
 
 	button:not([disabled]):active {
@@ -107,13 +118,12 @@
 	}
 
 	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):hover {
-		background-color: #1a1a1a !important;
-		color: #ffffff !important;
+		border-color: #111 !important;
 	}
 
-	/* Cancel button styling - light gray hover (variant="outline") - excluding admin */
+	/* Cancel button styling - border hover (variant="outline") - excluding admin */
 	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover {
-		background-color: #f5f5f5 !important;
+		border-color: #111 !important;
 	}
 
 	/* Override for admin pages - restore original styles */
