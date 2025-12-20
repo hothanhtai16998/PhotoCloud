@@ -4,6 +4,27 @@ import LoadingSpinner from './LoadingSpinner';
 import './GlobalLoadingOverlay.css';
 
 /**
+ * Check if we're currently in a refresh delay period
+ * During refresh delay, we should NOT show the loading overlay
+ * because the page should stay visible (Unsplash behavior)
+ */
+const isInRefreshDelay = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const delayActive = sessionStorage.getItem('_refreshDelayActive') === 'true';
+  const timestamp = sessionStorage.getItem('_refreshDelayActive_ts');
+  
+  if (delayActive && timestamp) {
+    const now = Date.now();
+    const delayStart = parseInt(timestamp, 10);
+    const elapsed = now - delayStart;
+    // Refresh delay is 2.5 seconds (2500ms)
+    return elapsed < 2500;
+  }
+  
+  return false;
+};
+
+/**
  * GlobalLoadingOverlay
  * 
  * Shows a single loading spinner overlay when ANY store/component is loading.
@@ -23,6 +44,11 @@ export function GlobalLoadingOverlay() {
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const minDisplayTimeRef = useRef<number | null>(null);
   const hasShownRef = useRef(false);
+  
+  // Check if we're in refresh delay - if so, don't show overlay
+  // During refresh delay, page should stay visible (Unsplash behavior)
+  const inRefreshDelay = isInRefreshDelay();
+  const shouldShowLoading = isLoading && !inRefreshDelay;
 
   // Track when spinner is fully hidden to control content visibility
   useEffect(() => {
@@ -52,7 +78,7 @@ export function GlobalLoadingOverlay() {
       hideTimerRef.current = null;
     }
 
-    if (isLoading) {
+    if (shouldShowLoading) {
       // If we've shown before and it's been less than 300ms, keep showing (prevent flash)
       const now = Date.now();
       if (hasShownRef.current && minDisplayTimeRef.current && (now - minDisplayTimeRef.current) < 300) {

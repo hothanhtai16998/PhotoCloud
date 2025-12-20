@@ -53,6 +53,47 @@
 	font-display: swap;
 }
 
+/* TT Backwards Script - Pexels-style logo font */
+@font-face {
+	font-family: 'TT Backwards Script';
+	src: url('./assets/fonts/TT Backwards Script/TT Backwards Script Trial Thin.otf') format('opentype');
+	font-weight: 100;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'TT Backwards Script';
+	src: url('./assets/fonts/TT Backwards Script/TT Backwards Script Trial Light.otf') format('opentype');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'TT Backwards Script';
+	src: url('./assets/fonts/TT Backwards Script/TT Backwards Script Trial Regular.otf') format('opentype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'TT Backwards Script';
+	src: url('./assets/fonts/TT Backwards Script/TT Backwards Script Trial Bold.otf') format('opentype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'TT Backwards Script';
+	src: url('./assets/fonts/TT Backwards Script/TT Backwards Script Trial Black.otf') format('opentype');
+	font-weight: 900;
+	font-style: normal;
+	font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 @config "../tailwind.config.ts";
 

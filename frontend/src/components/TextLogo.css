@@ -1,0 +1,55 @@
+/**
+ * TextLogo Styles
+ * Pexels-style text logo with TT Backwards Script font
+ */
+
+.text-logo {
+  font-family: 'TT Backwards Script', 'Dancing Script', 'Pacifico', 'Urbanist', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.2px;
+  color: #000;
+  text-transform: lowercase;
+  user-select: none;
+  display: inline-block;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  
+  /* Add subtle script-like appearance with CSS */
+  font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
+  
+  /* Smooth, flowing appearance */
+  transform: translateY(0);
+}
+
+/* Dark mode support */
+.dark-theme .text-logo {
+  color: #fff;
+}
+
+/* Hover effect */
+.text-logo:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+/* Active state */
+.text-logo:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}
+
+/* Responsive sizing */
+@media (max-width: 768px) {
+  .text-logo {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .text-logo {
+    font-size: 20px;
+  }
+}

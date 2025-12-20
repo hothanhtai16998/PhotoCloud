@@ -61,6 +61,24 @@
   opacity: 0.85;
 }
 
+/* Text logo styling in header */
+.header-text-logo {
+  font-size: 28px;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .header-text-logo {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-text-logo {
+    font-size: 20px;
+  }
+}
+
 
 .header-logo-container:hover .header-logo-selector-btn {
   opacity: 1;

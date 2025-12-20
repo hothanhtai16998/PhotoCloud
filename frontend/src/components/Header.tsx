@@ -12,6 +12,7 @@ import { updateFaviconWithImage } from "@/utils/faviconUpdater"
 import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
 import CategoryNavigation from "./CategoryNavigation"
+import { TextLogo } from "./TextLogo"
 import './Header.css'
 
 // Lazy load UploadModal to improve initial page load
@@ -85,14 +86,22 @@ export const Header = memo(function Header() {
           {/* Logo */}
           <div className="header-logo-container">
             <Link to="/" className="header-logo" onClick={handleLogoClick}>
-              <img
-                src={LOGO_CONFIG.mainLogo}
-                alt={LOGO_CONFIG.altText}
-                className="header-logo-image"
-                width={LOGO_CONFIG.headerWidth || 120}
-                height={LOGO_CONFIG.headerHeight}
-                style={{ height: `${LOGO_CONFIG.headerHeight}px`, width: 'auto' }}
-              />
+              {LOGO_CONFIG.type === 'text' ? (
+                <TextLogo 
+                  text={LOGO_CONFIG.textLogo.text}
+                  fontWeight={LOGO_CONFIG.textLogo.fontWeight}
+                  className="header-text-logo"
+                />
+              ) : (
+                <img
+                  src={LOGO_CONFIG.mainLogo}
+                  alt={LOGO_CONFIG.altText}
+                  className="header-logo-image"
+                  width={LOGO_CONFIG.headerWidth || 120}
+                  height={LOGO_CONFIG.headerHeight}
+                  style={{ height: `${LOGO_CONFIG.headerHeight}px`, width: 'auto' }}
+                />
+              )}
             </Link>
           </div>
 
