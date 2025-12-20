@@ -148,8 +148,36 @@ export const useFavoriteStore = create(
 						state.pagination.total = (state.pagination.total || 0) + 1;
 						state.pagination.pages = Math.ceil(state.pagination.total / (state.pagination.limit || 20));
 					}
-					// Don't initialize pagination if it doesn't exist - wait for actual fetch
-					// This prevents showing incorrect total (1) on new sessions
+					// If pagination is null (new session), fetch actual total in background
+					// This ensures correct count without blocking UI
+					if (!state.pagination) {
+						// Fetch pagination info silently in background
+						favoriteService.getFavorites({ page: 1, limit: 1 })
+							.then((response) => {
+								if (response.success && response.pagination) {
+									set((state) => {
+										// Only update if pagination is still null (avoid race conditions)
+										if (!state.pagination) {
+											state.pagination = response.pagination;
+											state.hasLoaded = true;
+											state.lastFetchedAt = Date.now();
+										}
+									});
+									
+									// Dispatch event to update sidebar with correct total
+									const updatedStore = useFavoriteStore.getState();
+									window.dispatchEvent(new CustomEvent('favoritesUpdated', {
+										detail: { 
+											thumbnailImage: updatedStore.images[0] || null,
+											total: updatedStore.pagination?.total ?? null
+										}
+									}));
+								}
+							})
+							.catch(() => {
+								// Silently fail - count will be correct when user visits favorites page
+							});
+					}
 				}
 			});
 		},
@@ -208,6 +236,9 @@ if (typeof window !== 'undefined') {
 					total: total !== undefined ? total : null // null means "unknown, don't update"
 				}
 			}));
+			
+			// Note: If pagination was null, addImageToFavorites will fetch it in background
+			// The sidebar subscription will automatically update once pagination is fetched
 		} else {
 			// Remove image from favorites
 			store.removeImageFromFavorites(String(imageId).trim());

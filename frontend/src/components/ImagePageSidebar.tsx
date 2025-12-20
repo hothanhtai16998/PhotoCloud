@@ -201,11 +201,13 @@ const ImagePageSidebar = () => {
     if (!favoritePagination && favoriteImages.length === 0) return;
     
     // Update count from pagination (most reliable)
+    // CRITICAL: Only use pagination.total, never use images.length as fallback
+    // This prevents showing incorrect count (1) when pagination hasn't been fetched yet
     if (favoritePagination?.total !== undefined) {
       setFavoriteTotal(favoritePagination.total);
-    } else if (favoriteImages.length > 0) {
-      setFavoriteTotal(favoriteImages.length); // Fallback
     }
+    // Don't use images.length as fallback - wait for actual pagination data
+    // This ensures correct count even on new sessions before favorites page is visited
     
     // Update thumbnail from store (always more accurate than initial fetch)
     setFavoriteThumbnail(favoriteImages.length > 0 && favoriteImages[0] ? favoriteImages[0] : null);
