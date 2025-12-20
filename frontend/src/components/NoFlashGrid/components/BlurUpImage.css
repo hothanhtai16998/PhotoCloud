@@ -224,7 +224,7 @@
 
 .blur-up-image-action-btn:hover {
   background: #ffffff;
-  transform: scale(1.05);
+  /* No transform on hover - prevent movement */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 

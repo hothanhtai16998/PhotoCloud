@@ -728,7 +728,7 @@
 }
 
 .admin-actions button:hover {
-  transform: translateY(-2px);
+  /* No transform on hover - prevent movement */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -5625,7 +5625,7 @@ button[type='button'] {
 [data-slot='button']:not(:disabled):hover,
 button:not(:disabled):not([type='submit']):not([type='reset']):hover,
 button[type='button']:not(:disabled):hover {
-  transform: translateY(-1px);
+  /* No transform on hover - prevent movement */
 }
 
 [data-slot='button']:not(:disabled):active,

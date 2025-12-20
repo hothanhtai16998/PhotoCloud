@@ -252,7 +252,7 @@
 .social-link:hover {
   color: hsl(var(--foreground));
   background-color: hsl(var(--muted));
-  transform: translateY(-2px);
+  /* No transform on hover - prevent movement */
 }
 
 .social-link svg {

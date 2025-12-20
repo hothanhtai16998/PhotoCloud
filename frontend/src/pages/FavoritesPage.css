@@ -261,7 +261,7 @@
 
 .browse-button:hover {
   background: hsl(var(--foreground) / 0.8);
-  transform: translateY(-2px);
+  /* No transform on hover - prevent movement */
 }
 
 .favorites-pagination {
