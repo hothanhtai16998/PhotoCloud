@@ -91,9 +91,20 @@ const ImagePageSidebar = () => {
     if (!showAuthIcons) return;
 
     const handleFavoritesUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<{ thumbnailImage: Image | null }>;
+      const customEvent = event as CustomEvent<{ 
+        thumbnailImage: Image | null;
+        total?: number | null;
+      }>;
       const thumbnailImage = customEvent.detail?.thumbnailImage;
+      const total = customEvent.detail?.total;
+      
       setFavoriteThumbnail(thumbnailImage ?? null);
+      
+      // Update total if provided in event (fallback, but store subscription is primary)
+      // This ensures immediate update when pagination exists and is incremented
+      if (total !== undefined && total !== null) {
+        setFavoriteTotal(total);
+      }
     };
 
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
@@ -212,6 +223,24 @@ const ImagePageSidebar = () => {
     // Update thumbnail from store (always more accurate than initial fetch)
     setFavoriteThumbnail(favoriteImages.length > 0 && favoriteImages[0] ? favoriteImages[0] : null);
   }, [favoriteImages, favoritePagination, accessToken]);
+
+  // Scroll to top immediately when navigating via sidebar (not smooth scroll)
+  // Track previous pathname to detect route changes
+  const previousPathnameRef = useRef<string>(location.pathname);
+  useEffect(() => {
+    // Only scroll if pathname actually changed (not just a re-render)
+    if (previousPathnameRef.current !== location.pathname) {
+      // Don't scroll if this is modal navigation (ImagePage)
+      // Modal navigation has location.state with modal flag
+      const isModalNavigation = location.state && typeof location.state === 'object' && 'modal' in location.state;
+      
+      if (!isModalNavigation) {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+      
+      previousPathnameRef.current = location.pathname;
+    }
+  }, [location.pathname, location.state]);
 
 
   const isActive = (path: string) => {

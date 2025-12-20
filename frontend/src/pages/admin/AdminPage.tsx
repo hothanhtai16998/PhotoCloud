@@ -97,6 +97,11 @@ function AdminPage() {
         return () => window.removeEventListener('adminTabChange', handleTabChange as EventListener);
     }, []);
 
+    // Scroll to top immediately when tab changes (not smooth scroll)
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [activeTab]);
+
     // Use custom hooks for each domain
     const usersAdmin = useAdminUsers();
     const imagesAdmin = useAdminImages();

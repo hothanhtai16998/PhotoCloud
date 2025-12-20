@@ -297,6 +297,11 @@ function ProfilePage() {
         }
     }, [activeTab, isOwnProfile, usernameFromPath, navigate]);
 
+    // Scroll to top immediately when tab changes (not smooth scroll)
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [activeTab]);
+
     // Handler for tab changes that updates URL
     const handleTabChange = useCallback((tab: TabType) => {
         // Set flag to skip URL sync for this change

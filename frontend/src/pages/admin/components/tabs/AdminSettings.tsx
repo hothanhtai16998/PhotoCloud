@@ -24,6 +24,11 @@ export function AdminSettings() {
     const swipeStartY = useRef<number>(0);
     const swipeStartTime = useRef<number>(0);
 
+    // Scroll to top immediately when tab changes (not smooth scroll)
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [activeTab]);
+
     const [settings, setSettings] = useState({
         siteName: 'PhotoApp',
         siteDescription: '',

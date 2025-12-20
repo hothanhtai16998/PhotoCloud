@@ -176,6 +176,11 @@ export function AdminAnalytics() {
         setActiveTab(tab);
     }, []);
 
+    // Scroll to top immediately when tab changes (not smooth scroll)
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, [activeTab]);
+
     // Format chart data for the selected metric tab with profile page logic
     const formattedChartData = useMemo(() => {
         if (!chartData || chartData.length === 0) return { data: [], domain: ['auto', 'auto'] };
