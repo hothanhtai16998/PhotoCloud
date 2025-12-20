@@ -7,7 +7,7 @@ import { useWebSocket } from "@/hooks/useWebSocket";
 import { useUserFollowCountStore } from "@/stores/useUserFollowCountStore";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import type { Image } from "@/types/image";
 import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
 import axios from "axios";
@@ -853,7 +853,15 @@ function ProfilePage() {
         };
     }, [displayUserId]);
 
-
+    // Sync loading state to global loading store
+    // Include both profile user loading and photos tab loading
+    useEffect(() => {
+        const isPageLoading = profileUserLoading || (loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS));
+        syncGlobalLoading('profilePage', isPageLoading);
+        return () => {
+            syncGlobalLoading('profilePage', false);
+        };
+    }, [profileUserLoading, loading, displayImages.length]);
 
     if (profileUserLoading) {
         return (
@@ -935,13 +943,8 @@ function ProfilePage() {
                     <div className="profile-content">
                         {/* Photos Tab - Keep mounted to preserve state */}
                         <div style={{ display: activeTab === TABS.PHOTOS ? 'block' : 'none' }}>
-                            {loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS) ? (
-                                <div className="empty-state" role="status" aria-live="polite">
-                                    <div className="flex items-center justify-center py-12">
-                                        <LoadingSpinner size="large" />
-                                    </div>
-                                </div>
-                            ) : displayImages.length === 0 ? (
+                            {/* GlobalLoadingOverlay handles the spinner when loading */}
+                            {loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS) ? null : displayImages.length === 0 ? (
                                 <div className="empty-state" role="status" aria-live="polite">
                                     <p>{t('profile.noPhotos')}</p>
                                     {isOwnProfile && (

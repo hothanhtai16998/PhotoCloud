@@ -10,7 +10,7 @@ import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import type { Image } from "@/types/image";
 import { t } from "@/i18n";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import "./FavoritesPage.css";
 import { timingConfig } from '@/config/timingConfig';
 
@@ -121,6 +121,15 @@ function FavoritesPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hasLoaded]);
 
+    // Sync loading state to global loading store
+    useEffect(() => {
+        const isPageLoading = loading && images.length === 0;
+        syncGlobalLoading('favoritesPage', isPageLoading);
+        return () => {
+            syncGlobalLoading('favoritesPage', false);
+        };
+    }, [loading, images.length]);
+
     // Note: Optimistic updates are handled globally in the store
     // No need for local listener here - the store listens globally
 
@@ -195,13 +204,8 @@ function FavoritesPage() {
                     </div>
 
                     {/* Favorites Content */}
-                    {loading && images.length === 0 ? (
-                        <div className="favorites-empty" role="status" aria-live="polite">
-                            <div className="flex items-center justify-center py-12">
-                                <LoadingSpinner size="large" />
-                            </div>
-                        </div>
-                    ) : images.length === 0 ? (
+                    {/* GlobalLoadingOverlay handles the spinner when loading */}
+                    {loading && images.length === 0 ? null : images.length === 0 ? (
                         <div className="favorites-empty" role="status" aria-live="polite">
                             <Heart size={64} className="empty-icon" />
                             <h2>{t('favorites.empty')}</h2>

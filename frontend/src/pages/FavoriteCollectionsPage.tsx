@@ -8,7 +8,7 @@ import type { Collection } from '@/types/collection';
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { toast } from 'sonner';
 import { t } from '@/i18n';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import './FavoriteCollectionsPage.css';
 
 export default function FavoriteCollectionsPage() {
@@ -52,6 +52,14 @@ export default function FavoriteCollectionsPage() {
 		fetchFavoriteCollections(1);
 	}, [fetchFavoriteCollections]);
 
+	// Sync loading state to global loading store
+	useEffect(() => {
+		syncGlobalLoading('favoriteCollectionsPage', loading);
+		return () => {
+			syncGlobalLoading('favoriteCollectionsPage', false);
+		};
+	}, [loading]);
+
 	const handleCollectionClick = (collection: Collection) => {
 		navigate(`/collections/${collection._id}`);
 	};
@@ -60,11 +68,7 @@ export default function FavoriteCollectionsPage() {
 		return (
 			<>
 				<div className="favorite-collections-page">
-					<div className="favorite-collections-loading">
-						<div className="flex items-center justify-center py-12">
-							<LoadingSpinner size="large" />
-						</div>
-					</div>
+					{/* GlobalLoadingOverlay handles the spinner */}
 				</div>
 			</>
 		);

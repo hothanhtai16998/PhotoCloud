@@ -24,7 +24,15 @@
 
 /* Hide content while spinner is visible or fading out */
 /* Content stays hidden until spinner is completely gone */
-body.global-loading-active main.homepage {
+/* Apply to all main page containers */
+body.global-loading-active main.homepage,
+body.global-loading-active main.favorites-page,
+body.global-loading-active main.profile-page,
+body.global-loading-active main.download-history-page,
+body.global-loading-active div.collections-page,
+body.global-loading-active div.collection-detail-page,
+body.global-loading-active div.image-page,
+body.global-loading-active div.favorite-collections-page {
   visibility: hidden;
   opacity: 0;
   /* No transition delay - hide immediately when spinner shows */
@@ -34,7 +42,14 @@ body.global-loading-active main.homepage {
 }
 
 /* Show content only after spinner is fully hidden */
-body:not(.global-loading-active) main.homepage {
+body:not(.global-loading-active) main.homepage,
+body:not(.global-loading-active) main.favorites-page,
+body:not(.global-loading-active) main.profile-page,
+body:not(.global-loading-active) main.download-history-page,
+body:not(.global-loading-active) div.collections-page,
+body:not(.global-loading-active) div.collection-detail-page,
+body:not(.global-loading-active) div.image-page,
+body:not(.global-loading-active) div.favorite-collections-page {
   visibility: visible;
   opacity: 1;
   /* Smooth fade in after spinner is gone */

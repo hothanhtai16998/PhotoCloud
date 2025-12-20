@@ -2,7 +2,7 @@ import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useEffect, useState } from "react";
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 
 const ProtectedRoute = () => {
     const { isInitializing, accessToken } = useAuthStore();
@@ -39,14 +39,21 @@ const ProtectedRoute = () => {
         }
     }, [isInitializing, accessToken, user, userLoading]);
 
+    // Sync loading state to global loading store
+    const isAuthLoading = !hasTimedOut && (isInitializing || (accessToken && !user && !hasAttemptedFetch) || (accessToken && !user && userLoading));
+    
+    useEffect(() => {
+        syncGlobalLoading('protectedRoute', isAuthLoading);
+        return () => {
+            syncGlobalLoading('protectedRoute', false);
+        };
+    }, [isAuthLoading]);
+
     // Show loading animation while auth is initializing or while fetching user data
     // BUT: Don't wait forever - timeout after 15s for poor connections
+    // GlobalLoadingOverlay handles the spinner, so we return null to prevent duplicate
     if (!hasTimedOut && (isInitializing || (accessToken && !user && !hasAttemptedFetch) || (accessToken && !user && userLoading))) {
-        return (
-            <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
-                <LoadingSpinner size="large" />
-            </div>
-        );
+        return null; // GlobalLoadingOverlay handles the spinner
     }
 
     // Only redirect to signin if:

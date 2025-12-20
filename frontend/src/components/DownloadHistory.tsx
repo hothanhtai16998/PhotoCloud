@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Download } from 'lucide-react';
 import { downloadImage } from '@/utils/downloadService';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import { generateImageSlug, slugify } from '@/lib/utils';
 import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
@@ -100,6 +100,15 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hasLoaded, location.pathname]);
 
+    // Sync loading state to global loading store
+    useEffect(() => {
+        const isPageLoading = loading && downloads.length === 0;
+        syncGlobalLoading('downloadHistory', isPageLoading);
+        return () => {
+            syncGlobalLoading('downloadHistory', false);
+        };
+    }, [loading, downloads.length]);
+
     const handleLoadMore = useCallback(() => {
         if (!loadingMore && hasMore) {
             fetchDownloads(page + 1, true);
@@ -194,14 +203,11 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         return new Date(b).getTime() - new Date(a).getTime();
     });
 
+    // GlobalLoadingOverlay handles the spinner when loading
     if (loading && downloads.length === 0) {
         return (
             <div className={`download-history ${className}`}>
-                <div className="download-history-loading">
-                    <div className="flex items-center justify-center py-12">
-                        <LoadingSpinner size="large" />
-                    </div>
-                </div>
+                {/* GlobalLoadingOverlay handles the spinner */}
             </div>
         );
     }

@@ -14,7 +14,7 @@ import { appConfig } from '@/config/appConfig';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useUserStore } from '@/stores/useUserStore';
 import type { Collection } from '@/types/collection';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import './CollectionDetailPage.css';
 
 export default function CollectionDetailPage() {
@@ -235,15 +235,19 @@ export default function CollectionDetailPage() {
 		}
 	}, [collectionId, collection, images.length]);
 
+	// Sync loading state to global loading store
+	useEffect(() => {
+		syncGlobalLoading('collectionDetailPage', loading);
+		return () => {
+			syncGlobalLoading('collectionDetailPage', false);
+		};
+	}, [loading]);
+
 	if (loading) {
 		return (
 			<>
 				<div className="collection-detail-page">
-					<div className="collection-detail-loading">
-						<div className="flex items-center justify-center py-12">
-							<LoadingSpinner size="large" />
-						</div>
-					</div>
+					{/* GlobalLoadingOverlay handles the spinner */}
 				</div>
 			</>
 		);

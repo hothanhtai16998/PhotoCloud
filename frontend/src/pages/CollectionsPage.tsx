@@ -12,7 +12,7 @@ import { Folder, Plus, Trash2, Edit2, Lock, Search, X, Filter } from 'lucide-rea
 import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { ConfirmModal } from '@/pages/admin/components/modals';
 import { t } from '@/i18n';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import './CollectionsPage.css';
 
 // Lazy load CollectionModal - only shown when editing
@@ -63,6 +63,15 @@ export default function CollectionsPage() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [collections.length]); // Run when collections change
+
+	// Sync loading state to global loading store
+	useEffect(() => {
+		const isPageLoading = loading && collections.length === 0;
+		syncGlobalLoading('collectionsPage', isPageLoading);
+		return () => {
+			syncGlobalLoading('collectionsPage', false);
+		};
+	}, [loading, collections.length]);
 
 	useEffect(() => {
 		// CRITICAL: Wait for auth initialization before fetching collections
@@ -159,15 +168,12 @@ export default function CollectionsPage() {
 
 	// Only show loading if we're actually loading AND have no data
 	// This prevents showing loading placeholder when navigating with existing data
+	// GlobalLoadingOverlay handles the spinner, so we return null to prevent duplicate
 	if (loading && collections.length === 0) {
 		return (
 			<>
 				<div className="collections-page">
-					<div className="collections-loading">
-						<div className="flex items-center justify-center py-12">
-							<LoadingSpinner size="large" />
-						</div>
-					</div>
+					{/* GlobalLoadingOverlay handles the spinner */}
 				</div>
 			</>
 		);

@@ -26,7 +26,7 @@ import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalIn
 import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
 import { detectAvifSupport } from '@/utils/avifSupport';
 import leftArrowIcon from '@/assets/left-arrow.svg';
@@ -1485,15 +1485,21 @@ function ImagePage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showCollectionModal]);
 
+  // Sync loading state to global loading store
+  useEffect(() => {
+    syncGlobalLoading('imagePage', loading);
+    return () => {
+      syncGlobalLoading('imagePage', false);
+    };
+  }, [loading]);
 
   // Loading state - check AFTER all hooks are called
+  // GlobalLoadingOverlay handles the spinner, so we return null to prevent duplicate
   if (loading) {
     return (
       <>
-        <div className="image-page-loading">
-          <div className="flex items-center justify-center py-12">
-            <LoadingSpinner size="large" />
-          </div>
+        <div className="image-page">
+          {/* GlobalLoadingOverlay handles the spinner */}
         </div>
       </>
     );
