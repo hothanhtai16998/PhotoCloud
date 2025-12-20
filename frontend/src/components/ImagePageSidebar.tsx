@@ -234,8 +234,22 @@ const ImagePageSidebar = () => {
       // Modal navigation has location.state with modal flag
       const isModalNavigation = location.state && typeof location.state === 'object' && 'modal' in location.state;
       
-      if (!isModalNavigation) {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+      // Don't scroll if scroll restoration is in progress (when closing ImagePage modal)
+      const scrollRestoreInProgress = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
+      
+      // Don't scroll if there's a saved scroll position (modal was just closed)
+      const hasSavedScroll = sessionStorage.getItem('imageGridScrollPosition') !== null;
+      
+      if (!isModalNavigation && !scrollRestoreInProgress && !hasSavedScroll) {
+        // Use requestAnimationFrame to ensure it happens after scroll restoration
+        requestAnimationFrame(() => {
+          // Double-check scroll restoration didn't just complete
+          const stillRestoring = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
+          const stillHasScroll = sessionStorage.getItem('imageGridScrollPosition') !== null;
+          if (!stillRestoring && !stillHasScroll) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }
+        });
       }
       
       previousPathnameRef.current = location.pathname;

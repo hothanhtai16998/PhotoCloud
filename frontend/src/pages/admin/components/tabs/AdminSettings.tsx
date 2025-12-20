@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -25,8 +25,13 @@ export function AdminSettings() {
     const swipeStartTime = useRef<number>(0);
 
     // Scroll to top immediately when tab changes (not smooth scroll)
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+    // Use useLayoutEffect to ensure scroll happens after DOM updates but before paint
+    // This prevents flash by scrolling synchronously before browser paints
+    useLayoutEffect(() => {
+        // Use requestAnimationFrame to ensure scroll happens after layout but before paint
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        });
     }, [activeTab]);
 
     const [settings, setSettings] = useState({

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { useUserStore } from '@/stores/useUserStore';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -98,8 +98,13 @@ function AdminPage() {
     }, []);
 
     // Scroll to top immediately when tab changes (not smooth scroll)
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+    // Use useLayoutEffect to ensure scroll happens after DOM updates but before paint
+    // This prevents flash by scrolling synchronously before browser paints
+    useLayoutEffect(() => {
+        // Use requestAnimationFrame to ensure scroll happens after layout but before paint
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        });
     }, [activeTab]);
 
     // Use custom hooks for each domain

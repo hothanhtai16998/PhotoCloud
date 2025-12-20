@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
-import { preloadImage } from '../utils/imagePreloader';
+import { preloadImage, isImageLoaded } from '../utils/imagePreloader';
 import { Heart, Download, Bookmark } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
@@ -42,8 +42,45 @@ export function BlurUpImage({
     const base64Placeholder = image.base64Thumbnail || null;
     const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
     const placeholderInitial = base64Placeholder || networkPlaceholder;
-    const [loaded, setLoaded] = useState(false);
-    const [fullSrc, setFullSrc] = useState<string | null>(null);
+    
+    // Determine full image URL synchronously to check cache immediately
+    // Check AVIF support synchronously (from window or default to false)
+    const initialAvifSupport = typeof window !== 'undefined' ? ((window as any).avifSupport ?? false) : false;
+    const getFullImageUrl = useCallback((avifSupported: boolean) => {
+        return avifSupported
+            ? image.regularAvifUrl ||
+              image.imageAvifUrl ||
+              image.regularUrl ||
+              image.imageUrl ||
+              image.smallAvifUrl ||
+              image.smallUrl ||
+              image.thumbnailAvifUrl ||
+              image.thumbnailUrl ||
+              ''
+            : image.regularUrl ||
+              image.imageUrl ||
+              image.smallUrl ||
+              image.thumbnailUrl ||
+              '';
+    }, [image]);
+    
+    // Check cache synchronously on mount to initialize loaded state
+    // This prevents blur-up flash for cached images when navigating between tabs
+    const fullImageUrl = getFullImageUrl(initialAvifSupport);
+    // Compute cache check once for both states
+    const isCachedOnMount = (() => {
+        if (!fullImageUrl) return false;
+        // Check preloader cache first (fastest)
+        if (isImageLoaded(fullImageUrl)) return true;
+        // Also check browser cache synchronously
+        const testImg = new Image();
+        testImg.src = fullImageUrl;
+        return testImg.complete && testImg.naturalWidth > 0;
+    })();
+    
+    // If image is cached, set fullSrc immediately to prevent placeholder flash
+    const [fullSrc, setFullSrc] = useState<string | null>(isCachedOnMount ? fullImageUrl : null);
+    const [loaded, setLoaded] = useState(isCachedOnMount);
     const [supportsAvif, setSupportsAvif] = useState<boolean>(() => {
         if (typeof window === 'undefined') return false;
         return (window as any).avifSupport ?? false;
@@ -108,28 +145,28 @@ export function BlurUpImage({
     useEffect(() => {
         if (!isInView || loadingRef.current) return;
 
-        // Prefer AVIF when supported, otherwise fall back to WebP/original
-        const full =
-            supportsAvif
-                ? image.regularAvifUrl ||
-                  image.imageAvifUrl ||
-                  image.regularUrl ||
-                  image.imageUrl ||
-                  image.smallAvifUrl ||
-                  image.smallUrl ||
-                  image.thumbnailAvifUrl ||
-                  image.thumbnailUrl ||
-                  ''
-                : image.regularUrl ||
-                  image.imageUrl ||
-                  image.smallUrl ||
-                  image.thumbnailUrl ||
-                  '';
+        const full = getFullImageUrl(supportsAvif);
 
         if (!full) return;
 
         // If already using this image, no need to reload
         if (fullSrc === full) return;
+
+        // If image is cached, set it immediately (skip async preload)
+        if (isImageLoaded(full)) {
+            setFullSrc(full);
+            setLoaded(true);
+            return;
+        }
+
+        // Check browser cache synchronously
+        const testImg = new Image();
+        testImg.src = full;
+        if (testImg.complete && testImg.naturalWidth > 0) {
+            setFullSrc(full);
+            setLoaded(true);
+            return;
+        }
 
         loadingRef.current = true;
         // Skip decode for grid images to load faster (like admin page)
@@ -138,16 +175,6 @@ export function BlurUpImage({
             preloadImage(full, true)
                 .then((src) => {
                     setFullSrc(src);
-                    // Check if image is already cached by creating a test image
-                    const testImg = new Image();
-                    testImg.onload = () => {
-                        // Image is cached - set loaded immediately to prevent flash
-                        setLoaded(true);
-                    };
-                    testImg.onerror = () => {
-                        // Image not cached - will load normally
-                    };
-                    testImg.src = src;
                 })
                 .catch(() => {
                     // Keep placeholder on error
@@ -167,7 +194,46 @@ export function BlurUpImage({
             // Fallback for browsers without requestIdleCallback
             setTimeout(loadImage, 0);
         }
-    }, [isInView, image, fullSrc, supportsAvif, priority]);
+    }, [isInView, image, fullSrc, supportsAvif, priority, getFullImageUrl]);
+
+    // Check if image is cached SYNCHRONOUSLY when fullSrc or supportsAvif changes
+    // This prevents blur-up flash for cached images when navigating between tabs
+    useLayoutEffect(() => {
+        if (loaded) return;
+        
+        // Get current full URL (may have changed if AVIF support was detected)
+        const currentFullUrl = getFullImageUrl(supportsAvif);
+        if (!currentFullUrl) return;
+        
+        // If fullSrc is set, use it; otherwise check the URL we would use
+        const urlToCheck = fullSrc || currentFullUrl;
+
+        // First check the preloader's cache (fastest check - synchronous)
+        // The preloader tracks images that have been loaded in this session
+        if (isImageLoaded(urlToCheck)) {
+            setLoaded(true);
+            // Also set fullSrc if not already set (for cached images)
+            if (!fullSrc) {
+                setFullSrc(urlToCheck);
+            }
+            return;
+        }
+
+        // Also check browser cache synchronously
+        // Create test image and check if it's already loaded in browser cache
+        const testImg = new Image();
+        testImg.src = urlToCheck;
+        
+        // If image is already cached (complete immediately), set loaded to true
+        // This happens synchronously before React paints, preventing flash
+        if (testImg.complete && testImg.naturalWidth > 0) {
+            setLoaded(true);
+            // Also set fullSrc if not already set (for cached images)
+            if (!fullSrc) {
+                setFullSrc(urlToCheck);
+            }
+        }
+    }, [fullSrc, loaded, supportsAvif, getFullImageUrl]);
 
     // Tooltip state
     const [showTooltip, setShowTooltip] = useState(false);
@@ -507,8 +573,8 @@ export function BlurUpImage({
                 } : undefined}
                 style={isMobile ? { cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' } : undefined}
             >
-                {/* Placeholder Image (Low Quality) - Always show to prevent blank spaces */}
-                {placeholderInitial ? (
+                {/* Placeholder Image (Low Quality) - Hide immediately if image is cached to prevent flash */}
+                {placeholderInitial && !loaded ? (
                     <img
                         src={placeholderInitial}
                         alt={image.imageTitle || 'photo'}
@@ -528,8 +594,8 @@ export function BlurUpImage({
                             aspectRatio: image.width && image.height ? `${image.width} / ${image.height}` : undefined
                         }}
                     />
-                ) : (
-                    /* Fallback placeholder if no thumbnail available */
+                ) : !loaded ? (
+                    /* Fallback placeholder if no thumbnail available - only show if not loaded */
                     <div
                         className="blur-up-image placeholder-fallback"
                         style={{
@@ -541,7 +607,7 @@ export function BlurUpImage({
                             pointerEvents: 'none'
                         }}
                     />
-                )}
+                ) : null}
 
                 {/* Full Image (High Quality) */}
                 {fullSrc && (

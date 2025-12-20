@@ -91,6 +91,10 @@ export function restoreScrollPosition(): void {
   const savedScroll = sessionStorage.getItem(GRID_SCROLL_POSITION_KEY);
   if (savedScroll) {
     const scrollY = parseInt(savedScroll, 10);
+    const restoreFlagKey = 'scrollRestoreInProgress';
+    
+    // Set flag to prevent sidebar from scrolling to top during restoration
+    sessionStorage.setItem(restoreFlagKey, 'true');
     
     // Use requestAnimationFrame for smooth restoration
     requestAnimationFrame(() => {
@@ -99,6 +103,10 @@ export function restoreScrollPosition(): void {
         behavior: 'instant' as ScrollBehavior, // Use instant to avoid animation conflicts
       });
       sessionStorage.removeItem(GRID_SCROLL_POSITION_KEY);
+      // Clear flag after a short delay to allow scroll to complete
+      setTimeout(() => {
+        sessionStorage.removeItem(restoreFlagKey);
+      }, 100);
     });
   }
 }

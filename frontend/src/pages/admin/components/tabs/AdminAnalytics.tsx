@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useCallback, memo } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -177,8 +177,13 @@ export function AdminAnalytics() {
     }, []);
 
     // Scroll to top immediately when tab changes (not smooth scroll)
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+    // Use useLayoutEffect to ensure scroll happens after DOM updates but before paint
+    // This prevents flash by scrolling synchronously before browser paints
+    useLayoutEffect(() => {
+        // Use requestAnimationFrame to ensure scroll happens after layout but before paint
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        });
     }, [activeTab]);
 
     // Format chart data for the selected metric tab with profile page logic

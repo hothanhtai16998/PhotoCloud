@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef, lazy, Suspense, useContext } from "react";
+import { useEffect, useLayoutEffect, useState, useCallback, useMemo, useRef, lazy, Suspense, useContext } from "react";
 import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
 import { useUserStore } from "@/stores/useUserStore";
 import { useProfileStore } from "@/stores/useProfileStore";
@@ -298,8 +298,13 @@ function ProfilePage() {
     }, [activeTab, isOwnProfile, usernameFromPath, navigate]);
 
     // Scroll to top immediately when tab changes (not smooth scroll)
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+    // Use useLayoutEffect to ensure scroll happens after DOM updates but before paint
+    // This prevents flash by scrolling synchronously before browser paints
+    useLayoutEffect(() => {
+        // Use requestAnimationFrame to ensure scroll happens after layout but before paint
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+        });
     }, [activeTab]);
 
     // Handler for tab changes that updates URL
