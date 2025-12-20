@@ -3,7 +3,7 @@
   min-height: 100vh;
   background: hsl(var(--background));
   padding: 0;
-  padding-top: calc(var(--header-height, 65px) + 40px);
+  padding-top: calc(var(--header-height, 65px) + 80px);
   margin-top: 0;
   position: relative;
 }
