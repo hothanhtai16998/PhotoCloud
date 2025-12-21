@@ -7,6 +7,14 @@
 body.search-filters-open {
   overflow: hidden;
   /* html already has scrollbar-gutter: stable which prevents layout shift */
+  position: relative;
+}
+
+/* Improve panel visibility and positioning */
+.search-filters-container {
+  position: relative;
+  display: inline-block;
+  z-index: 1500;
 }
 
 .search-filters-toggle {
@@ -57,15 +65,23 @@ body.search-filters-open {
 
 .search-filters-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  inset: 0;
+  background: transparent;
   z-index: 1499;
-  animation: fadeIn 0.2s ease;
-  /* Prevent body scrollbar when overlay is open */
-  overflow: hidden;
+  /* No visible overlay - just for click outside detection */
+  pointer-events: auto;
+  /* Remove any visual effects */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Note: Body scroll prevention should be handled via JavaScript
@@ -75,28 +91,34 @@ body.search-filters-open {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 680px;
-  max-width: min(680px, calc(100vw - 32px));
+  /* Match search-bar-container width - use fixed width that matches common search bar widths */
+  width: 600px;
+  max-width: min(600px, calc(100vw - 32px));
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
   z-index: 1501;
-  animation: slideDown 0.2s ease;
+  animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   /* Prevent horizontal overflow but allow vertical scrolling in content */
-  overflow: visible;
+  overflow: hidden;
+  /* Smooth rendering */
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* Prevent layout shifts */
+  contain: layout style paint;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -104,8 +126,13 @@ body.search-filters-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid #e5e5e5;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .search-filters-header h3 {
@@ -140,7 +167,7 @@ body.search-filters-open {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
   /* Ensure scrollbar is always visible when content overflows */
   scrollbar-width: thin;
   scrollbar-color: #d1d1d1 #f5f5f5;
@@ -148,6 +175,8 @@ body.search-filters-open {
   -webkit-overflow-scrolling: touch;
   /* Reduce gap when content fits without scroll */
   min-height: 0;
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
 }
 
 .search-filters-content::-webkit-scrollbar {
@@ -302,8 +331,13 @@ body.search-filters-open {
 .search-filters-footer {
   display: flex;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 20px 24px;
   border-top: 1px solid #e5e5e5;
+  background: #fff;
+  border-radius: 0 0 12px 12px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
 }
 
 .filter-reset-btn,
@@ -335,10 +369,16 @@ body.search-filters-open {
 .filter-apply-btn {
   background: #111;
   color: #fff;
+  font-weight: 600;
 }
 
 .filter-apply-btn:hover {
   background: #333;
+}
+
+.filter-apply-btn:active {
+  background: #1a1a1a;
+  transform: scale(0.98);
 }
 
 /* Missing CSS classes for filter inputs */
@@ -507,15 +547,6 @@ body.search-filters-open {
   background: #1d4ed8;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /* Advanced filters two-column layout */
 .filter-advanced-filters {
   display: grid;
@@ -541,14 +572,37 @@ body.search-filters-open {
     bottom: 0;
     left: 0;
     right: 0;
-    width: 100%;
-    max-width: 100%;
-    border-radius: 16px 16px 0 0;
-    max-height: 80vh;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0;
+    max-height: 85vh;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .search-filters-header {
+    border-radius: 20px 20px 0 0;
+    padding: 18px 20px;
+  }
+
+  .search-filters-footer {
+    border-radius: 0 0 20px 20px;
+    padding: 18px 20px;
   }
 
   .search-filters-content {
-    padding: 16px;
+    padding: 20px;
+    gap: 20px;
   }
 
   .filter-color-options {
