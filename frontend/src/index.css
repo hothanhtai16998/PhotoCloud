@@ -153,13 +153,13 @@
 	}
 
 	/* Button styling - consistent border radius for all buttons */
-	button,
-	button[data-slot="button"],
-	button[data-slot="button"].rounded-md,
-	button[data-slot="button"].rounded-lg,
-	button[data-slot="button"].rounded-xl,
-	button[data-slot="button"][class*="rounded"],
-	button:not([class*="rounded-none"]):not([class*="rounded-full"]) {
+	button:not(.contact-button),
+	button[data-slot="button"]:not(.contact-button),
+	button[data-slot="button"].rounded-md:not(.contact-button),
+	button[data-slot="button"].rounded-lg:not(.contact-button),
+	button[data-slot="button"].rounded-xl:not(.contact-button),
+	button[data-slot="button"][class*="rounded"]:not(.contact-button),
+	button:not([class*="rounded-none"]):not([class*="rounded-full"]):not(.contact-button) {
 		border-radius: 8px !important;
 	}
 

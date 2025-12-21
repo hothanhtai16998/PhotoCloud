@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { User } from '@/types/user';
 
 interface AvatarProps {
-  user: User | { username?: string; displayName?: string; avatarUrl?: string };
+  user: User | { username?: string; displayName?: string; avatarUrl?: string } | null | undefined;
   size?: number | string;
   className?: string;
   fallbackClassName?: string;
@@ -16,9 +16,11 @@ export function Avatar({
   fallbackClassName = '',
   showName = false,
 }: AvatarProps) {
-  const displayName = 'displayName' in user ? user.displayName : undefined;
-  const username = 'username' in user ? user.username : undefined;
-  const avatarUrl = 'avatarUrl' in user ? user.avatarUrl : undefined;
+  // Handle null/undefined user
+  const userObj = user || {};
+  const displayName = 'displayName' in userObj ? userObj.displayName : undefined;
+  const username = 'username' in userObj ? userObj.username : undefined;
+  const avatarUrl = 'avatarUrl' in userObj ? userObj.avatarUrl : undefined;
 
   const initials = (
     displayName?.trim() || username || 'U'

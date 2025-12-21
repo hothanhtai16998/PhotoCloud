@@ -128,33 +128,12 @@ export const Header = memo(function Header() {
                   onSignOut={handleSignOut}
                   align="start"
                   trigger={
-                    user ? (
-                      <Avatar
-                        user={user}
-                        size={32}
-                        className="mobile-header-avatar"
-                        fallbackClassName="mobile-header-avatar-placeholder"
-                      />
-                    ) : (
-                      // Show placeholder avatar when user data is loading (prevents flash)
-                      <div 
-                        className="mobile-header-avatar-placeholder"
-                        style={{ 
-                          width: '32px', 
-                          height: '32px', 
-                          borderRadius: '50%',
-                          backgroundColor: '#e5e7eb',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#6b7280',
-                          fontSize: '14px',
-                          fontWeight: 500
-                        }}
-                      >
-                        <User size={20} />
-                      </div>
-                    )
+                    <Avatar
+                      user={user}
+                      size={32}
+                      className="mobile-header-avatar"
+                      fallbackClassName="mobile-header-avatar-placeholder"
+                    />
                   }
                 />
               </div>
@@ -213,33 +192,12 @@ export const Header = memo(function Header() {
                   onSignOut={handleSignOut}
                   align="end"
                   trigger={
-                    user ? (
-                      <Avatar
-                        user={user}
-                        size={50}
-                        className="header-user-avatar"
-                        fallbackClassName="header-user-avatar-placeholder"
-                      />
-                    ) : (
-                      // Show placeholder avatar when user data is loading (prevents flash)
-                      <div 
-                        className="header-user-avatar-placeholder"
-                        style={{ 
-                          width: '50px', 
-                          height: '50px', 
-                          borderRadius: '50%',
-                          backgroundColor: '#e5e7eb',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#6b7280',
-                          fontSize: '18px',
-                          fontWeight: 500
-                        }}
-                      >
-                        <User size={18} />
-                      </div>
-                    )
+                    <Avatar
+                      user={user}
+                      size={50}
+                      className="header-user-avatar"
+                      fallbackClassName="header-user-avatar-placeholder"
+                    />
                   }
                 />
               </div>
