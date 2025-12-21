@@ -59,8 +59,13 @@ export const Header = memo(function Header() {
   const showPlaceholder = isInitializing && !accessToken && !stableHasAuth;
   
   useEffect(() => {
-    // Update favicon with configured logo on initial load
-    updateFaviconWithImage(LOGO_CONFIG.faviconLogo)
+    // Defer favicon update to avoid blocking initial page load
+    // This reduces initial payload when logo type is 'text' (logo image won't load)
+    const timeoutId = setTimeout(() => {
+      updateFaviconWithImage(LOGO_CONFIG.faviconLogo)
+    }, 500); // Defer by 500ms to let critical resources load first
+    
+    return () => clearTimeout(timeoutId);
   }, [])
 
 

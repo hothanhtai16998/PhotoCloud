@@ -434,6 +434,43 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 		}
 	}, [accessToken, connect, disconnect]);
 
+	// Handle page visibility/navigation events for bfcache support
+	// Close WebSocket on pagehide to allow back/forward cache
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+
+		const handlePageHide = (event: PageTransitionEvent) => {
+			// Close WebSocket when page is being cached (bfcache)
+			// This allows the page to enter bfcache for faster back/forward navigation
+			if (globalSocket?.connected) {
+				logger.info('Page hiding, closing WebSocket for bfcache support');
+				// Disconnect but keep the socket instance so we can reconnect
+				globalSocket.disconnect();
+			}
+		};
+
+		const handlePageShow = (event: PageTransitionEvent) => {
+			// Reconnect WebSocket when page is restored from bfcache
+			if (event.persisted && accessToken && globalSocket && !globalSocket.connected) {
+				logger.info('Page restored from bfcache, reconnecting WebSocket');
+				// Small delay to ensure page is fully restored
+				setTimeout(() => {
+					if (accessToken && globalSocket && !globalSocket.connected) {
+						globalSocket.connect();
+					}
+				}, 100);
+			}
+		};
+
+		window.addEventListener('pagehide', handlePageHide);
+		window.addEventListener('pageshow', handlePageShow);
+
+		return () => {
+			window.removeEventListener('pagehide', handlePageHide);
+			window.removeEventListener('pageshow', handlePageShow);
+		};
+	}, [accessToken]);
+
 	// Proactive token refresh before expiration
 	useEffect(() => {
 		if (!accessToken || !globalSocket?.connected) return;

@@ -30,7 +30,7 @@ self.addEventListener('activate', (event) => {
 });
 
 // Track refresh requests to delay them
-const REFRESH_DELAY_MS = 2500; // 2.5 seconds - matches Unsplash behavior
+const REFRESH_DELAY_MS = 1500; // 1.5 seconds - faster UX while still allowing cancellation
 const refreshDelays = new Map(); // URL -> timeout
 
 // Fetch event - aggressive caching strategy for images + refresh delay

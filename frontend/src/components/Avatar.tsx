@@ -26,6 +26,11 @@ export function Avatar({
   const sizeStyle =
     typeof size === 'number' ? { width: size, height: size } : {};
 
+  // Avatar images are stored at 200x200 but displayed at smaller sizes
+  // Add explicit width/height to prevent layout shift (CLS)
+  const numericSize = typeof size === 'number' ? size : (typeof size === 'string' ? parseInt(size, 10) : undefined);
+  const displaySize = numericSize || 32;
+  
   return (
     <div className={`avatar-container ${className}`}>
       {avatarUrl ? (
@@ -33,6 +38,8 @@ export function Avatar({
           src={avatarUrl}
           alt={displayName || username || 'User'}
           className={`avatar-image ${className}`}
+          width={displaySize}
+          height={displaySize}
           style={sizeStyle}
           onError={(e) => {
             // Hide avatar if it fails to load

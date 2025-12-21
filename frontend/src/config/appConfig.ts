@@ -42,10 +42,10 @@ export const appConfig = {
     // Refresh behavior configuration
     refresh: {
         // Delay before refresh (in milliseconds)
-        // Fixed delay used by Unsplash, Gmail, X, Facebook (2-3 seconds)
+        // Fixed delay used by Unsplash, Gmail, X, Facebook (1-3 seconds)
         // This is NOT dynamic based on network speed - it's a UX feature
         // Purpose: Give users time to cancel + prevent rapid refresh spam
-        delayMs: 2500, // 2.5 seconds - matches industry standard
+        delayMs: 1500, // 1.5 seconds - faster UX while still allowing cancellation
         
         // Minimum delay (safety net)
         minDelayMs: 1500, // 1.5 seconds minimum

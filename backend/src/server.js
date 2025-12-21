@@ -57,12 +57,10 @@ if (env.NODE_ENV === 'production') {
             directives: {
                 defaultSrc: ["'self'"],
                 imgSrc: ["'self'", "data:", "https:", "blob:"],
-                // Production: use hash for specific inline scripts
-                // Hash for inline script in index.html (beforeunload handler)
+                // Production: no inline scripts - all scripts are external modules
                 scriptSrc: [
                     "'self'", 
-                    "data:",
-                    "'sha256-kxfM00hyWDARO+NeM7fBuR0ZdYfZ9/P7HY9nLoN9XIM='"
+                    "data:"
                 ],
                 // Allow inline styles and event handlers (needed for some libraries)
                 styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],

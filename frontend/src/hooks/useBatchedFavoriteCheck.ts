@@ -13,6 +13,28 @@ const pendingChecks = new Map<string, Set<(result: boolean) => void>>();
 const checkTimeoutRef: { current: ReturnType<typeof setTimeout> | null } = { current: null };
 const BATCH_DELAY = 100; // Wait 100ms to collect all requests
 
+// Track initial page load to defer favorite checks during critical path
+// This prevents favorite checks from blocking the critical rendering path
+let initialLoadComplete = false;
+
+// Mark initial load as complete after page becomes interactive
+if (typeof window !== 'undefined') {
+  const markLoadComplete = () => {
+    // Small delay to ensure critical resources are loaded first
+    setTimeout(() => {
+      initialLoadComplete = true;
+    }, 500);
+  };
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    // Page already loaded, mark as complete after a short delay
+    markLoadComplete();
+  } else {
+    // Wait for page load event
+    window.addEventListener('load', markLoadComplete, { once: true });
+  }
+}
+
 // Cache for favorite status to allow immediate updates
 // Uses LRU cache to prevent memory leaks from unbounded growth
 const MAX_CACHE_SIZE = 1000;
@@ -138,13 +160,19 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
     }
     pendingChecks.get(validImageId)!.add(callback);
 
-    // Clear existing timeout
-    if (checkTimeoutRef.current) {
-      clearTimeout(checkTimeoutRef.current);
+    // Clear existing idle callback if any
+    if (checkTimeoutRef.current && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+      try {
+        cancelIdleCallback(checkTimeoutRef.current as number);
+      } catch {
+        // Ignore - callback may have already executed
+      }
     }
 
-    // Schedule batch check
-    checkTimeoutRef.current = setTimeout(async () => {
+    // Defer favorite checks during initial page load to avoid blocking critical path
+    // This improves LCP and reduces critical request chain length
+    const scheduleBatchCheck = () => {
+      checkTimeoutRef.current = setTimeout(async () => {
       const imageIds = Array.from(pendingChecks.keys());
       
       if (imageIds.length > 0) {
@@ -246,6 +274,37 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
           });
       }
     }, BATCH_DELAY);
+    };
+
+    // Unsplash-style: Use requestIdleCallback to defer favorite checks after initial render
+    // This removes them from the critical request chain, improving LCP
+    // The short timeout (100ms) ensures checks happen quickly but not during critical path
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleCallbackId = requestIdleCallback(
+        () => {
+          // Mark initial load as complete after first idle callback
+          if (!initialLoadComplete) {
+            initialLoadComplete = true;
+          }
+          scheduleBatchCheck();
+        },
+        { timeout: 100 } // Short timeout - matches Unsplash pattern (100ms max wait)
+      );
+      
+      // Store callback ID for cleanup
+      checkTimeoutRef.current = idleCallbackId as any;
+    } else {
+      // Fallback: use double requestAnimationFrame (matches Unsplash fallback pattern)
+      // This defers until after paint but doesn't block critical path
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (!initialLoadComplete) {
+            initialLoadComplete = true;
+          }
+          scheduleBatchCheck();
+        });
+      });
+    }
 
     // Cleanup
     return () => {
@@ -257,6 +316,15 @@ export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
         }
       }
       validImageIdRef.current = null;
+      
+      // Cancel scheduled idle callback if component unmounts before it executes
+      if (checkTimeoutRef.current && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        try {
+          cancelIdleCallback(checkTimeoutRef.current as number);
+        } catch {
+          // Ignore - callback may have already executed
+        }
+      }
     };
   }, [imageId, accessToken]);
 

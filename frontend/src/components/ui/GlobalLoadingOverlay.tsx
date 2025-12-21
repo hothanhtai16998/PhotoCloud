@@ -17,8 +17,8 @@ const isInRefreshDelay = (): boolean => {
     const now = Date.now();
     const delayStart = parseInt(timestamp, 10);
     const elapsed = now - delayStart;
-    // Refresh delay is 2.5 seconds (2500ms)
-    return elapsed < 2500;
+    // Refresh delay is 1.5 seconds (1500ms)
+    return elapsed < 1500;
   }
   
   return false;

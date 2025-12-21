@@ -96,20 +96,7 @@
          </head>
          <body>
            <div id="root"></div>
-           <script type="module" src="/src/main.tsx"></script>
-           <script>
-             // Unsplash-style: Cancel requests on refresh (runs before React loads)
-             // The browser's refresh button automatically changes to "X" during loading
-             // We just need to cancel pending requests to prevent 429 errors
-             (function() {
-               if (typeof window === 'undefined') return;
-               
-               // Requests will be cancelled by axios.ts beforeunload handler
-               // This is just a placeholder - the real work happens in axios.ts
-               window.addEventListener('beforeunload', function() {
-                 // axios.ts will handle request cancellation
-               });
-             })();
-           </script>
+          <script type="module" src="/src/main.tsx"></script>
+          <!-- Request cancellation is handled by axios.ts, no inline script needed -->
          </body>
        </html>

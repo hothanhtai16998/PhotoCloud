@@ -334,6 +334,8 @@ const ImagePageSidebar = () => {
                     src={favoriteThumbnail.thumbnailUrl || favoriteThumbnail.smallUrl || favoriteThumbnail.imageUrl}
                     alt={favoriteThumbnail.imageTitle || 'Favorite'}
                     className="sidebar-favorite-thumbnail-img"
+                    width={40}
+                    height={40}
                   />
                   {favoriteTotal > 0 && (
                     <span className="sidebar-favorite-count">{favoriteTotal}</span>

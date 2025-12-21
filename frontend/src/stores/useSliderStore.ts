@@ -84,8 +84,10 @@ export const useSliderStore = create(
 						? img.imageCategory 
 						: img.imageCategory?.name || 'Photography';
 					
-				const imageUrl = img.regularUrl || img.imageUrl || '';
-				const fullImageUrl = img.imageUrl || img.regularUrl || imageUrl;
+				// Use smallUrl for slider display - regularUrl is too large for displayed dimensions
+				// Slider images are displayed at ~387x581, so smallUrl (400-600px) is more appropriate
+				const imageUrl = img.smallAvifUrl || img.smallUrl || img.regularAvifUrl || img.regularUrl || img.imageUrl || '';
+				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || imageUrl;
 				const title = img.imageTitle || categoryName || 'Image';
 				
 				return {
@@ -193,8 +195,10 @@ export const useSliderStore = create(
 					const categoryName = typeof img.imageCategory === 'string' 
 						? img.imageCategory 
 						: img.imageCategory?.name || 'Photography';
-				const imageUrl = img.regularUrl || img.imageUrl || '';
-				const fullImageUrl = img.imageUrl || img.regularUrl || imageUrl;
+				// Use smallUrl for slider display - regularUrl is too large for displayed dimensions
+				// Slider images are displayed at ~387x581, so smallUrl (400-600px) is more appropriate
+				const imageUrl = img.smallAvifUrl || img.smallUrl || img.regularAvifUrl || img.regularUrl || img.imageUrl || '';
+				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || imageUrl;
 				const title = img.imageTitle || categoryName || 'Image';
 				
 				return {

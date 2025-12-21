@@ -3,6 +3,9 @@
 @import './styles/visualPolish.css';
 
 /* Self-hosted fonts to avoid render-blocking Google Fonts CSS */
+/* Note: Proxima Nova and Urbanist font files are not present - commented out to remove build warnings */
+/* These fonts will fall back to system fonts or Roboto */
+/*
 @font-face {
 	font-family: 'Proxima Nova';
 	src: url('./assets/fonts/Proxima Nova/Proxima Nova Regular/Proxima Nova Regular.ttf')
@@ -36,24 +39,31 @@
 	font-style: italic;
 	font-display: swap;
 }
+*/
 
 @font-face {
 	font-family: 'Roboto';
 	src: url('./assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf') format('truetype');
 	font-weight: 100 900;
 	font-style: normal;
-	font-display: swap;
+	/* Use optional to reduce initial payload - browser can skip if slow connection */
+	font-display: optional;
 }
 
+/* Defer italic font loading - less critical for initial render */
 @font-face {
 	font-family: 'Roboto';
 	src: url('./assets/fonts/Roboto/Roboto-Italic-VariableFont_wdth,wght.ttf') format('truetype');
 	font-weight: 100 900;
 	font-style: italic;
-	font-display: swap;
+	/* Defer italic font - it's less commonly used and can load later */
+	font-display: optional;
 }
 
 /* TT Backwards Script - Pexels-style logo font */
+/* Note: TT Backwards Script font files are not present - commented out to remove build warnings */
+/* TextLogo component will use fallback fonts (Dancing Script, Pacifico, Urbanist, Roboto, etc.) */
+/*
 @font-face {
 	font-family: 'TT Backwards Script';
 	src: url('./assets/fonts/TT Backwards Script/TT Backwards Script Trial Thin.otf') format('opentype');
@@ -93,6 +103,7 @@
 	font-style: normal;
 	font-display: swap;
 }
+*/
 
 @custom-variant dark (&:is(.dark *));
 @config "../tailwind.config.ts";

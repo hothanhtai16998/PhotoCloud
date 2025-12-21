@@ -10,6 +10,12 @@ export const timingConfig = {
     // Delay after image upload before refreshing (to ensure backend processing)
     // Reduced from 500ms to 150ms for faster response (backend is fast enough)
     afterUploadMs: 150,
+
+    // Small delay (50-100ms) to keep requests pending during page load
+    // This ensures the stop button (X) appears even on fast connections
+    // This keeps requests "pending" long enough for the browser's stop button (X) to appear
+    // The delay is short enough to not feel slow, but long enough to keep requests pending during load
+    requestDelayMs: 50, // 50ms delay - short enough to feel instant, long enough for stop button
   },
 
   // Resource cleanup delays
@@ -66,13 +72,4 @@ export const timingConfig = {
     debounceMs: 300,
   },
 
-  // Refresh behavior (Unsplash-style)
-  // Small delay to ensure requests are made during page load phase
-  // This keeps requests "pending" long enough for the browser's stop button (X) to appear
-  // The delay is short enough to not feel slow, but long enough to keep requests pending during load
-  refresh: {
-    // Small delay (50-100ms) to keep requests pending during page load
-    // This ensures the stop button (X) appears even on fast connections
-    requestDelayMs: 50, // 50ms delay - short enough to feel instant, long enough for stop button
-  },
 } as const;
