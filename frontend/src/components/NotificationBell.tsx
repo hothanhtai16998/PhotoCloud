@@ -11,9 +11,19 @@ import { t, getLocale } from '@/i18n';
 import './NotificationBell.css';
 
 export default function NotificationBell() {
-	const { accessToken } = useAuthStore();
+	const { accessToken, isInitializing } = useAuthStore();
 	const { user } = useUserStore();
 	const navigate = useNavigate();
+	
+	// Use same optimistic logic as Header to prevent layout shift on refresh
+	// Check sessionStorage to see if user was authenticated before refresh
+	const getInitialHasAuth = (): boolean => {
+		if (typeof window === 'undefined') return false;
+		const persisted = sessionStorage.getItem('hasAuth');
+		return persisted === 'true';
+	};
+	const stableHasAuthRef = useRef(getInitialHasAuth());
+	const stableHasAuth = stableHasAuthRef.current;
 	
 	// Use shared notification store
 	const {
@@ -478,7 +488,21 @@ export default function NotificationBell() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	if (!accessToken || !user) return null;
+	// Update stableHasAuth when accessToken changes (same logic as Header)
+	useEffect(() => {
+		if (accessToken) {
+			stableHasAuthRef.current = true;
+			sessionStorage.setItem('hasAuth', 'true');
+		} else if (!isInitializing) {
+			// Only clear on logout (when not initializing), not on initial load
+			stableHasAuthRef.current = false;
+			sessionStorage.removeItem('hasAuth');
+		}
+	}, [accessToken, isInitializing]);
+
+	// Show bell if we have accessToken OR were authenticated before refresh (optimistic rendering)
+	// This prevents layout shift during refresh - bell will appear but notifications won't load until user is available
+	if (!accessToken && !stableHasAuth) return null;
 
 	return (
 		<div className="notification-bell-wrapper" ref={dropdownRef}>

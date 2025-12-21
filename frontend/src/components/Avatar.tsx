@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { User } from '@/types/user';
 
 interface AvatarProps {
@@ -31,9 +32,19 @@ export function Avatar({
   const numericSize = typeof size === 'number' ? size : (typeof size === 'string' ? parseInt(size, 10) : undefined);
   const displaySize = numericSize || 32;
   
+  // Use state to handle image load errors and fallback to placeholder
+  const [imageError, setImageError] = useState(false);
+
+  // Reset error state when avatarUrl changes
+  useEffect(() => {
+    if (avatarUrl) {
+      setImageError(false);
+    }
+  }, [avatarUrl]);
+
   return (
     <div className={`avatar-container ${className}`}>
-      {avatarUrl ? (
+      {avatarUrl && !imageError ? (
         <img
           src={avatarUrl}
           alt={displayName || username || 'User'}
@@ -41,9 +52,9 @@ export function Avatar({
           width={displaySize}
           height={displaySize}
           style={sizeStyle}
-          onError={(e) => {
-            // Hide avatar if it fails to load
-            e.currentTarget.style.display = 'none';
+          onError={() => {
+            // Fallback to placeholder if image fails to load
+            setImageError(true);
           }}
         />
       ) : (
