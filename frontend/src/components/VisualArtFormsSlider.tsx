@@ -91,6 +91,11 @@ export function VisualArtFormsSlider() {
       prevSlideIndexRef.current = 0;
       
       // Preload the first slide image for better LCP discovery
+      // Note: HomePage also preloads, but this ensures it's done when slider component mounts
+      // Remove any existing preload to avoid duplicates
+      const existing = document.querySelector('link[rel="preload"][as="image"][fetchpriority="high"]');
+      if (existing) existing.remove();
+      
       if (slides.length > 0 && slides[0]?.image) {
         const preloadLink = document.createElement('link');
         preloadLink.rel = 'preload';
