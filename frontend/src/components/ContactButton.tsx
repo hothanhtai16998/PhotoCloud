@@ -1,9 +1,12 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Facebook, Twitter, Instagram } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { t } from '@/i18n';
 import "./ContactButton.css";
+import facebookIcon from '@/assets/social-icon/facebook.svg?url';
+import twitterIcon from '@/assets/social-icon/twitter.svg?url';
+import instagramIcon from '@/assets/social-icon/instagram.svg?url';
+import tiktokIcon from '@/assets/social-icon/tiktok.svg?url';
 
 interface AuthorInfo {
     social: {
@@ -68,7 +71,7 @@ export const ContactButton = () => {
                             className="contact-social-icon facebook"
                             aria-label="Facebook"
                         >
-                            <Facebook size={24} />
+                            <img src={facebookIcon} alt="Facebook" />
                         </a>
                     )}
                     {authorInfo.social.twitter && (
@@ -79,7 +82,7 @@ export const ContactButton = () => {
                             className="contact-social-icon twitter"
                             aria-label="Twitter"
                         >
-                            <Twitter size={24} />
+                            <img src={twitterIcon} alt="Twitter" />
                         </a>
                     )}
                     {authorInfo.social.instagram && (
@@ -90,7 +93,7 @@ export const ContactButton = () => {
                             className="contact-social-icon instagram"
                             aria-label="Instagram"
                         >
-                            <Instagram size={24} />
+                            <img src={instagramIcon} alt="Instagram" />
                         </a>
                     )}
                     {authorInfo.social.tiktok && (
@@ -101,7 +104,7 @@ export const ContactButton = () => {
                             className="contact-social-icon tiktok"
                             aria-label="TikTok"
                         >
-                            <TikTokIcon size={24} />
+                            <img src={tiktokIcon} alt="TikTok" />
                         </a>
                     )}
                 </div>
@@ -109,17 +112,5 @@ export const ContactButton = () => {
         </>
     );
 };
-
-const TikTokIcon = ({ size = 24 }: { size?: number }) => (
-    <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.68v13.7a2.85 2.85 0 1 1-5.92-2.46 2.88 2.88 0 0 1 2.31 1.39V9.4a6.53 6.53 0 1 0 5.63 6.51V8.07a8.62 8.62 0 0 0 5.43 1.94v-3.32z" />
-    </svg>
-);
 
 export default ContactButton;

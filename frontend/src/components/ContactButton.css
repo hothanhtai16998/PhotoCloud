@@ -116,48 +116,79 @@ button.contact-button {
 .contact-social-menu {
   position: absolute;
   bottom: 80px;
-  right: 0;
+  right: 50%;
+  transform: translateX(50%) translateY(10px);
   display: none;
   flex-direction: column;
+  align-items: center;
   gap: 12px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  transform: translateY(10px);
 }
 
 .contact-button-container:hover .contact-social-menu {
   display: flex;
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: translateX(50%) translateY(0);
   animation: slideUp 0.3s ease;
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateX(50%) translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(50%) translateY(0);
   }
 }
 
 .contact-social-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-  background: white;
-  border: 2px solid #e5e7eb;
-  border-radius: 50%;
+  display: inline-block;
+  line-height: 0;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
   color: #111;
   text-decoration: none;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: none !important;
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  outline: none;
+  overflow: visible;
+}
+
+.contact-social-icon:focus {
+  outline: none;
+}
+
+.contact-social-icon:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+.contact-social-icon img {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  vertical-align: top;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
 }
 
 .contact-social-icon:hover {
@@ -165,25 +196,6 @@ button.contact-button {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.contact-social-icon.facebook:hover {
-  color: #1877f2;
-  border-color: #1877f2;
-}
-
-.contact-social-icon.twitter:hover {
-  color: #000;
-  border-color: #000;
-}
-
-.contact-social-icon.instagram:hover {
-  color: #e4405f;
-  border-color: #e4405f;
-}
-
-.contact-social-icon.tiktok:hover {
-  color: #000;
-  border-color: #000;
-}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -204,8 +216,17 @@ button.contact-button {
   }
 
   .contact-social-icon {
-    width: 45px;
-    height: 45px;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  .contact-social-icon img {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
   }
   
   .contact-social-menu {
