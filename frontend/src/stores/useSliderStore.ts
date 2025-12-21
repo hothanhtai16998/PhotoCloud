@@ -6,8 +6,9 @@ import type { Image } from '@/types/image';
 export interface SlideData {
 	id: string;
 	title: string;
-	image: string;
-	fullImage: string;
+	image: string; // Low quality for initial display
+	fullImage: string; // High quality for upgrade
+	highQualityUrl: string; // Full resolution URL
 	width: number;
 	height: number;
 	imageInfo?: {
@@ -65,17 +66,18 @@ export const useSliderStore = create(
 				
 				const images = response.images || [];
 				
-				// Filter out images with 21:9 aspect ratio (too wide)
+				// Filter to only show landscape images (width > height)
 				const filteredImages = images.filter((img: Image) => {
 					const width = img.width || 0;
 					const height = img.height || 0;
 					
 					if (width === 0 || height === 0) {
-						return true;
+						return false; // Skip images without dimensions
 					}
 					
 					const aspectRatio = width / height;
-					return aspectRatio < 2.3;
+					// Only include landscape images (aspect ratio > 1)
+					return aspectRatio > 1;
 				});
 				
 				// Convert images to slide format
@@ -84,9 +86,9 @@ export const useSliderStore = create(
 						? img.imageCategory 
 						: img.imageCategory?.name || 'Photography';
 					
-				// Use smallUrl for slider display - regularUrl is too large for displayed dimensions
-				// Slider images are displayed at ~387x581, so smallUrl (400-600px) is more appropriate
-				const imageUrl = img.smallAvifUrl || img.smallUrl || img.regularAvifUrl || img.regularUrl || img.imageUrl || '';
+				// Use full resolution imageUrl for slider to ensure highest quality at full viewport
+				// Slider images fill full viewport, so we need the best quality available
+				const imageUrl = img.imageAvifUrl || img.imageUrl || img.regularAvifUrl || img.regularUrl || img.smallAvifUrl || img.smallUrl || '';
 				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || imageUrl;
 				const title = img.imageTitle || categoryName || 'Image';
 				
@@ -186,26 +188,28 @@ export const useSliderStore = create(
 				const filteredImages = images.filter((img: Image) => {
 					const width = img.width || 0;
 					const height = img.height || 0;
-					if (width === 0 || height === 0) return true;
+					if (width === 0 || height === 0) return false; // Skip images without dimensions
 					const aspectRatio = width / height;
-					return aspectRatio < 2.3;
+					// Only include landscape images (aspect ratio > 1)
+					return aspectRatio > 1;
 				});
 				
 				const slideData: SlideData[] = filteredImages.map((img: Image) => {
 					const categoryName = typeof img.imageCategory === 'string' 
 						? img.imageCategory 
 						: img.imageCategory?.name || 'Photography';
-				// Use smallUrl for slider display - regularUrl is too large for displayed dimensions
-				// Slider images are displayed at ~387x581, so smallUrl (400-600px) is more appropriate
-				const imageUrl = img.smallAvifUrl || img.smallUrl || img.regularAvifUrl || img.regularUrl || img.imageUrl || '';
-				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || imageUrl;
+				// Use regularUrl for initial display (faster load), then upgrade to full resolution
+				const lowQualityUrl = img.regularAvifUrl || img.regularUrl || img.smallAvifUrl || img.smallUrl || '';
+				const highQualityUrl = img.imageAvifUrl || img.imageUrl || img.regularAvifUrl || img.regularUrl || '';
+				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || lowQualityUrl;
 				const title = img.imageTitle || categoryName || 'Image';
 				
 				return {
 					id: img._id,
 					title: title,
-					image: imageUrl,
+					image: lowQualityUrl, // Start with lower quality
 					fullImage: fullImageUrl,
+					highQualityUrl: highQualityUrl, // Full resolution for upgrade
 						width: img.width,
 						height: img.height,
 						imageInfo: {

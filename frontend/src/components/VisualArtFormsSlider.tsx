@@ -2,13 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSliderStore } from '@/stores/useSliderStore';
 import { t } from '@/i18n';
 import './VisualArtFormsSlider.css';
-import { timingConfig } from '@/config/timingConfig';
-
-// Timing Constants
-const OPEN_ANIMATION_DURATION = 800;   // 800ms - Open animation
-const SLIDE_VISIBLE_TIME = 8000;      // 8000ms - Time slide is fully visible
-const CLOSE_ANIMATION_DURATION = 800; // 800ms - Close animation
-const PROGRESS_DURATION = OPEN_ANIMATION_DURATION + SLIDE_VISIBLE_TIME + CLOSE_ANIMATION_DURATION; // 9600ms total
 
 export function VisualArtFormsSlider() {
   const {
@@ -21,78 +14,27 @@ export function VisualArtFormsSlider() {
   } = useSliderStore();
   
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [pendingSlideIndex, setPendingSlideIndex] = useState<number | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [wipeProgress, setWipeProgress] = useState(1);
-  const [countdownSeconds, setCountdownSeconds] = useState(10);
-  const slideIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isAutoPlayChangeRef = useRef<boolean>(false);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const preloadedImagesRef = useRef<Set<string>>(new Set());
-  const prevSlideIndexRef = useRef<number>(0);
-  const [isLoopingFromFirst, setIsLoopingFromFirst] = useState<boolean>(false);
-  const [isLooping, setIsLooping] = useState<boolean>(false);
   const [isZoomed, setIsZoomed] = useState<boolean>(false);
   const [isZoomingOut, setIsZoomingOut] = useState<boolean>(false);
-  const zoomOutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  const startCountdown = useCallback(() => {
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
-    
-    if (!isAnimating) {
-      const interval = Math.floor((PROGRESS_DURATION - 300) / 9);
-      countdownIntervalRef.current = setInterval(() => {
-        setCountdownSeconds((prev) => {
-          if (prev <= 1) {
-            if (countdownIntervalRef.current) {
-              clearInterval(countdownIntervalRef.current);
-              countdownIntervalRef.current = null;
-            }
-            return 1;
-          }
-          return prev - 1;
-        });
-      }, interval);
-    }
-  }, [isAnimating]);
-  
-  useEffect(() => {
-    if (isAnimating) {
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-        countdownIntervalRef.current = null;
-      }
-    } else {
-      setCountdownSeconds(10);
-      if (restartSlideIntervalRef.current) {
-        restartSlideIntervalRef.current();
-      }
-      startCountdown();
-    }
-  }, [isAnimating, startCountdown]);
-
-  const totalSlides = slides.length;
+  const [currentImageSrc, setCurrentImageSrc] = useState<string>('');
+  const [previousImageSrc, setPreviousImageSrc] = useState<string>('');
+  const [isImageReady, setIsImageReady] = useState<boolean>(false);
+  const [highQualityLoaded, setHighQualityLoaded] = useState<boolean>(false);
+  const [shouldFadeOutPrevious, setShouldFadeOutPrevious] = useState<boolean>(false);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const previousImageRef = useRef<HTMLImageElement>(null);
+  const preloadedImagesRef = useRef<Set<string>>(new Set());
+  const previousImageSrcRef = useRef<string>('');
+  const currentSlideRef = useRef<number>(0);
 
   // Fetch images from database
-  // CRITICAL: Start fetching immediately on mount for better LCP
   useEffect(() => {
     const abortController = new AbortController();
     let isMounted = true;
     
-    // On mount, if we have slides, ensure loading is false (handles rapid refresh)
-    // This prevents spinner from showing when we already have cached data
     if (slides.length > 0 && isMounted) {
       resetLoading();
-      // Initialize previous slide ref
-      prevSlideIndexRef.current = 0;
       
-      // Preload the first slide image for better LCP discovery
-      // Note: HomePage also preloads, but this ensures it's done when slider component mounts
-      // Remove any existing preload to avoid duplicates
       const existing = document.querySelector('link[rel="preload"][as="image"][fetchpriority="high"]');
       if (existing) existing.remove();
       
@@ -106,15 +48,12 @@ export function VisualArtFormsSlider() {
       }
     }
     
-    // Unsplash-style: Use requestIdleCallback to make requests after initial render
-    // This naturally keeps requests pending during page load phase (like Unsplash)
     const fetchData = () => {
       if (slides.length === 0) {
         fetchSlides(abortController.signal).catch(() => {
           // Ignore errors - already handled in store
         });
       } else {
-        // If we have slides, check if stale and refresh in background
         checkAndRefreshIfStale(abortController.signal).catch(() => {
           // Ignore errors - already handled in store
         });
@@ -129,7 +68,6 @@ export function VisualArtFormsSlider() {
           }
         }, { timeout: 100 });
       } else {
-        // Fallback for browsers without requestIdleCallback
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             if (!abortController.signal.aborted) {
@@ -149,14 +87,14 @@ export function VisualArtFormsSlider() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Unsplash-style: Periodic check for stale data (every 5 minutes for slider)
+  // Periodic check for stale data
   useEffect(() => {
     if (!hasLoaded) return;
     
     const abortController = new AbortController();
     const interval = setInterval(() => {
       checkAndRefreshIfStale(abortController.signal);
-    }, 5 * 60 * 1000); // Check every 5 minutes (slider changes less frequently)
+    }, 5 * 60 * 1000);
     
     return () => {
       clearInterval(interval);
@@ -196,50 +134,100 @@ export function VisualArtFormsSlider() {
     
     const nextIndex = (currentSlide + 1) % slides.length;
     const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+    const currentImage = slides[currentSlide]?.image;
     
-    preloadImage(slides[currentSlide]?.image || '');
+    if (currentImage) {
+      preloadImage(currentImage);
+    }
     preloadImage(slides[nextIndex]?.image || '');
     preloadImage(slides[prevIndex]?.image || '');
   }, [currentSlide, slides, preloadImage]);
 
-
+  // Progressive loading: start with low quality, upgrade to high quality
   useEffect(() => {
-    if (isAnimating && wipeProgress === 1 && pendingSlideIndex !== null) {
-      const timer = setTimeout(() => {
-        setCurrentSlide(pendingSlideIndex);
-        setPendingSlideIndex(null);
-        setIsAnimating(false);
-        setWipeProgress(1);
-      }, 850);
-      return () => clearTimeout(timer);
-    }
-    // No cleanup needed when condition is false
-    return () => {};
-  }, [isAnimating, wipeProgress, pendingSlideIndex]);
-
-  // Track previous slide to detect looping
-  useEffect(() => {
-    const prevSlide = prevSlideIndexRef.current;
-    const isLoopingFromFirstToLast = currentSlide === totalSlides - 1 && prevSlide === 0 && totalSlides > 0;
-    const isLoopingFromLastToFirst = currentSlide === 0 && prevSlide === totalSlides - 1 && totalSlides > 0;
+    if (slides.length === 0 || currentSlide >= slides.length) return;
     
-    if (isLoopingFromFirstToLast || isLoopingFromLastToFirst) {
-      setIsLoopingFromFirst(isLoopingFromFirstToLast);
-      setIsLooping(true);
-      setTimeout(() => setIsLooping(false), 100);
+    const currentSlideData = slides[currentSlide];
+    if (!currentSlideData) {
+      setCurrentImageSrc('');
+      setPreviousImageSrc('');
+      setIsImageReady(false);
+      setHighQualityLoaded(false);
+      previousImageSrcRef.current = '';
+      return;
+    }
+    
+    const lowQualityUrl = currentSlideData.image;
+    const highQualityUrl = currentSlideData.highQualityUrl || currentSlideData.image;
+    
+    currentSlideRef.current = currentSlide;
+    
+    // Reset high quality state
+    setHighQualityLoaded(false);
+    
+    // Load high quality image in background
+    const loadHighQuality = () => {
+      if (highQualityUrl === lowQualityUrl || highQualityLoaded) return;
+      
+      const highQualityImg = new Image();
+      highQualityImg.src = highQualityUrl;
+      
+      if (highQualityImg.complete && highQualityImg.naturalWidth > 0) {
+        // Already cached, switch immediately
+        setCurrentImageSrc(highQualityUrl);
+        setHighQualityLoaded(true);
+      } else {
+        highQualityImg.onload = () => {
+          // High quality loaded, switch to it
+          setCurrentImageSrc(highQualityUrl);
+          setHighQualityLoaded(true);
+        };
+        highQualityImg.onerror = () => {
+          // If high quality fails, keep using low quality
+          console.warn('Failed to load high quality image, using low quality');
+        };
+      }
+    };
+    
+    // Check if low quality image is already loaded/cached
+    const img = new Image();
+    img.src = lowQualityUrl;
+    
+    if (img.complete && img.naturalWidth > 0) {
+      // Already cached, show immediately (no flash since it's already loaded)
+      setCurrentImageSrc(lowQualityUrl);
+      setIsImageReady(true);
+      // Start fading out previous image now that new one is ready
+      setShouldFadeOutPrevious(true);
+      // Start loading high quality immediately
+      if (highQualityUrl !== lowQualityUrl) {
+        loadHighQuality();
+      }
     } else {
-      setIsLoopingFromFirst(false);
-      setIsLooping(false);
+      // Image needs to load - set src but keep it hidden until loaded
+      setCurrentImageSrc(lowQualityUrl);
+      setIsImageReady(false);
+      setShouldFadeOutPrevious(false);
+      // Wait for image to load before showing it
+      img.onload = () => {
+        setIsImageReady(true);
+        // Start fading out previous image now that new one is ready
+        setShouldFadeOutPrevious(true);
+        // Once low quality is loaded, start loading high quality
+        if (highQualityUrl !== lowQualityUrl) {
+          loadHighQuality();
+        }
+      };
+      img.onerror = () => {
+        setIsImageReady(false);
+      };
     }
-    
-    prevSlideIndexRef.current = currentSlide;
-  }, [currentSlide, totalSlides]);
+  }, [currentSlide, slides]);
 
-  // Ref to store restartSlideInterval function
-  const restartSlideIntervalRef = useRef<(() => void) | null>(null);
+  const totalSlides = slides.length;
 
   const goToSlide = useCallback((index: number) => {
-    if (slides.length === 0 || index === currentSlide || isAnimating) {
+    if (slides.length === 0 || index === currentSlide) {
       return;
     }
     if (index < 0 || index >= slides.length) return;
@@ -247,136 +235,50 @@ export function VisualArtFormsSlider() {
     const nextSlideData = slides[index];
     if (!nextSlideData?.image) return;
     
-    // Only reset countdown and interval when manually changing slide (not auto-play)
-    if (!isAutoPlayChangeRef.current) {
-      // Reset countdown
-      startCountdown();
-      
-      // Restart slide interval for the new slide (full 6850ms)
-      if (restartSlideIntervalRef.current) {
-        restartSlideIntervalRef.current();
-      }
+    // Save current image as previous before changing
+    if (currentImageSrc) {
+      previousImageSrcRef.current = currentImageSrc;
+      setPreviousImageSrc(currentImageSrc);
+      setShouldFadeOutPrevious(false);
     }
     
-    // Preload image first, then start animation
-    preloadImage(nextSlideData.image).then(() => {
-      // Prepare next slide
-      setPendingSlideIndex(index);
-      setIsAnimating(true);
-      
-      setWipeProgress(0);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setWipeProgress(1);
-        });
-      });
-    });
-  }, [currentSlide, slides, isAnimating, preloadImage, startCountdown]);
+    // Preload the low-quality image first, then switch slides once it's ready
+    const lowQualityUrl = nextSlideData.image;
+    const img = new Image();
+    
+    // If image is already cached, switch immediately
+    img.src = lowQualityUrl;
+    if (img.complete && img.naturalWidth > 0) {
+      setCurrentSlide(index);
+    } else {
+      // Wait for image to load before switching
+      img.onload = () => {
+        setCurrentSlide(index);
+      };
+      img.onerror = () => {
+        // Still switch even if load fails (might be a network issue)
+        setCurrentSlide(index);
+      };
+    }
+  }, [currentSlide, slides, currentImageSrc]);
 
-  const nextSlideRef = useRef<(() => void) | undefined>(undefined);
-  
   const nextSlide = useCallback(() => {
     goToSlide((currentSlide + 1) % totalSlides);
   }, [currentSlide, totalSlides, goToSlide]);
-  
-  // Update ref whenever nextSlide changes
-  useEffect(() => {
-    nextSlideRef.current = nextSlide;
-  }, [nextSlide]);
 
   const goToPrevSlide = useCallback(() => {
     goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
   }, [currentSlide, totalSlides, goToSlide]);
 
-  // Helper functions for iris animation
-  const getOldImageClipPath = (progress: number): string => {
-    if (progress <= 0.4) {
-      const closePercentage = (progress / 0.4) * 100;
-      return `inset(0 ${closePercentage}% 0 ${closePercentage}%)`;
-    } else {
-      return `inset(0 100% 0 100%)`;
-    }
-  };
-
-
-  const getNewImageClipPath = (progress: number): string => {
-    if (progress <= 0.6) {
-      return `inset(0 100% 0 100%)`;
-    } else {
-      const openProgress = (progress - 0.6) / 0.4;
-      const openPercentage = 100 - (openProgress * 100);
-      return `inset(0 ${openPercentage}% 0 ${openPercentage}%)`;
-    }
-  };
-
-  const getNewImageOpacity = (progress: number): number => {
-    return progress <= 0.6 ? 0 : 1;
-  };
-
-  // navBottom measurement removed; nav now uses fixed CSS offset
-
-  useEffect(() => {
-    if (slides.length === 0) return;
-    // Don't start interval if zoomed or zooming out
-    if (isZoomed || isZoomingOut) return;
-    
-    const restartSlideInterval = () => {
-      if (slideIntervalRef.current) {
-        clearInterval(slideIntervalRef.current);
-        slideIntervalRef.current = null;
-      }
-      
-      const scheduleNextSlide = () => {
-        isAutoPlayChangeRef.current = true;
-        if (nextSlideRef.current) {
-          nextSlideRef.current();
-        }
-        setTimeout(() => {
-          isAutoPlayChangeRef.current = false;
-        }, 100);
-      };
-      
-      slideIntervalRef.current = setInterval(scheduleNextSlide, PROGRESS_DURATION);
-    };
-    
-    restartSlideIntervalRef.current = restartSlideInterval;
-    restartSlideInterval();
-    
-    if (!isAnimating) {
-      startCountdown();
-    }
-
-    return () => {
-      if (slideIntervalRef.current) {
-        clearInterval(slideIntervalRef.current);
-      }
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-      }
-      if (zoomOutTimeoutRef.current) {
-        clearTimeout(zoomOutTimeoutRef.current);
-      }
-    };
-  }, [slides.length, isAnimating, startCountdown, isZoomed, isZoomingOut]);
-
-
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (isZoomed && e.key === 'Escape') {
         setIsZoomingOut(true);
-        // Wait for zoom out animation (0.4s) before actually closing
         setTimeout(() => {
           setIsZoomed(false);
           setIsZoomingOut(false);
           document.body.style.overflow = '';
-          // Resume slide after zoom out animation completes
-          if (slides.length > 0 && restartSlideIntervalRef.current) {
-            restartSlideIntervalRef.current();
-            if (!isAnimating) {
-              startCountdown();
-            }
-          }
-        }, 400); // Match zoom animation duration
+        }, 400);
         return;
       }
       if (e.key === 'ArrowLeft') {
@@ -389,51 +291,33 @@ export function VisualArtFormsSlider() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [nextSlide, goToPrevSlide, isZoomed, slides.length, isAnimating, startCountdown]);
+  }, [nextSlide, goToPrevSlide, isZoomed]);
 
   const handleImageClick = useCallback(() => {
     if (isZoomed) {
-      // If already zoomed, zoom out
       setIsZoomingOut(true);
-      // Wait for zoom out animation (0.4s) before actually closing
       setTimeout(() => {
         setIsZoomed(false);
         setIsZoomingOut(false);
         document.body.style.overflow = '';
-        // Resume slide after zoom out animation completes
-        if (slides.length > 0 && restartSlideIntervalRef.current) {
-          restartSlideIntervalRef.current();
-          if (!isAnimating) {
-            startCountdown();
-          }
-        }
-      }, 400); // Match zoom animation duration
+      }, 400);
     } else {
-      // Zoom in - pause immediately
       setIsZoomingOut(false);
       setIsZoomed(true);
       document.body.style.overflow = 'hidden';
     }
-  }, [isZoomed, slides.length, isAnimating, startCountdown]);
+  }, [isZoomed]);
 
   const handleCloseZoom = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       setIsZoomingOut(true);
-      // Wait for zoom out animation (0.4s) before actually closing
       setTimeout(() => {
         setIsZoomed(false);
         setIsZoomingOut(false);
         document.body.style.overflow = '';
-        // Resume slide after zoom out animation completes
-        if (slides.length > 0 && restartSlideIntervalRef.current) {
-          restartSlideIntervalRef.current();
-          if (!isAnimating) {
-            startCountdown();
-          }
-        }
-      }, 400); // Match zoom animation duration
+      }, 400);
     }
-  }, [slides.length, isAnimating, startCountdown]);
+  }, []);
 
   // Cleanup: restore body scroll when component unmounts or zoom closes
   useEffect(() => {
@@ -445,39 +329,12 @@ export function VisualArtFormsSlider() {
     };
   }, [isZoomed]);
 
-  // Pause slide interval when zoomed or zooming out
-  useEffect(() => {
-    if (isZoomed || isZoomingOut) {
-      // Pause: clear the slide interval immediately
-      if (slideIntervalRef.current) {
-        clearInterval(slideIntervalRef.current);
-        slideIntervalRef.current = null;
-      }
-      // Pause countdown
-      if (countdownIntervalRef.current) {
-        clearInterval(countdownIntervalRef.current);
-        countdownIntervalRef.current = null;
-      }
-      // Clear any pending zoom out timeout
-      if (zoomOutTimeoutRef.current) {
-        clearTimeout(zoomOutTimeoutRef.current);
-        zoomOutTimeoutRef.current = null;
-      }
-    }
-    // Note: Resume is handled in handleImageClick and handleCloseZoom with delay
-  }, [isZoomed, isZoomingOut]);
-
   // Reserve space for slider to prevent layout shift when loading
-  // Always render container, but show content only when we have slides
-  // This prevents the grid from jumping when slider finishes loading
   if (loading && slides.length === 0) {
-    // Render placeholder container to reserve space
-    // Uses same classes and structure as actual slider to ensure exact same dimensions
     return (
       <div className="visual-art-slider">
         <div className="slider-main" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
           {/* Placeholder to reserve space - prevents layout shift */}
-          {/* This ensures grid stays in correct position while slider loads */}
         </div>
       </div>
     );
@@ -489,7 +346,6 @@ export function VisualArtFormsSlider() {
   }
 
   const currentSlideData = slides[currentSlide];
-  const nextSlideData = pendingSlideIndex !== null ? slides[pendingSlideIndex] : null;
   
   if (!currentSlideData) {
     return (
@@ -501,112 +357,58 @@ export function VisualArtFormsSlider() {
     );
   }
 
+  // Calculate container height based on image aspect ratio to fill width without cropping
+  const containerStyle = currentSlideData && currentSlideData.width && currentSlideData.height
+    ? {
+        aspectRatio: `${currentSlideData.width} / ${currentSlideData.height}`,
+        height: 'auto',
+        maxHeight: '100%',
+      }
+    : {};
+
   return (
     <div className="visual-art-slider">
-      <div className="content-left">
-        <p className="subtitle">{t('visualArtSlider.subtitle')}</p>
-        <h1 className="main-title">{currentSlideData.title}</h1>
-        
-        {currentSlideData.imageInfo && (
-          <div className="image-info">
-            {currentSlideData.imageInfo.location && (
-              <div className="info-item">
-                <span className="info-label">Location:</span>
-                <span className="info-value">{currentSlideData.imageInfo.location}</span>
-              </div>
-            )}
-            {currentSlideData.imageInfo.cameraMake && currentSlideData.imageInfo.cameraModel && (
-              <div className="info-item">
-                <span className="info-label">Camera:</span>
-                <span className="info-value">
-                  {currentSlideData.imageInfo.cameraMake} {currentSlideData.imageInfo.cameraModel}
-                </span>
-              </div>
-            )}
-            {(currentSlideData.imageInfo.focalLength || currentSlideData.imageInfo.aperture || currentSlideData.imageInfo.shutterSpeed || currentSlideData.imageInfo.iso) && (
-              <div className="info-item">
-                <span className="info-label">Settings:</span>
-                <span className="info-value">
-                  {[
-                    currentSlideData.imageInfo.focalLength && `${currentSlideData.imageInfo.focalLength}mm`,
-                    currentSlideData.imageInfo.aperture && `f/${currentSlideData.imageInfo.aperture}`,
-                    currentSlideData.imageInfo.shutterSpeed && currentSlideData.imageInfo.shutterSpeed,
-                    currentSlideData.imageInfo.iso && `ISO ${currentSlideData.imageInfo.iso}`
-                  ].filter(Boolean).join(' • ')}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
       <main className="slider-main">
-        <div className="image-container">
-              {currentSlideData && (
-                <img
-                  ref={imageRef}
-                  src={currentSlideData.image}
-                  alt={currentSlideData.title}
-                  width={currentSlideData.width}
-                  height={currentSlideData.height}
-                  loading={currentSlide === 0 ? 'eager' : 'lazy'}
-                  // Give the first slide highest priority for better LCP, others default
-                  fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
-                  decoding="async"
-                  className={`slide-image slide-image-current slide-image-common slide-image-current-static ${
-                    isAnimating 
-                      ? 'slide-image-current-animating' 
-                      : 'slide-image-current-not-animating'
-                  } ${isZoomed ? 'slide-image-zoomed' : ''}`}
-                  style={{
-                    clipPath: isAnimating ? getOldImageClipPath(wipeProgress) : undefined,
-                  }}
-                  onClick={handleImageClick}
-                />
-              )}
-              
-              {nextSlideData && isAnimating && (
-                <img
-                  src={nextSlideData.image}
-                  alt={nextSlideData.title}
-                  width={nextSlideData.width}
-                  height={nextSlideData.height}
-                  loading="lazy"
-                  fetchPriority="low"
-                  decoding="async"
-                  className={`slide-image slide-image-current slide-image-common slide-image-next ${
-                    wipeProgress <= 0.6 ? 'slide-image-next-hidden' : 'slide-image-next-visible'
-                  }`}
-                  style={{
-                    clipPath: getNewImageClipPath(wipeProgress),
-                    opacity: getNewImageOpacity(wipeProgress),
-                  }}
-                />
-              )}
-              
-              <div className="circular-text">
-                <svg viewBox="0 0 200 200" className="circular-svg">
-                  <defs>
-                    <path
-                      id="circle-path"
-                      d="M 100, 100 m -60, 0 a 60,60 0 1,1 120,0 a 60,60 0 1,1 -120,0"
-                    />
-                  </defs>
-                  <text className="circular-text-path">
-                    <textPath href="#circle-path" startOffset="0%">
-                      {t('visualArtSlider.clickToSeeFullImage')}
-                    </textPath>
-                  </text>
-                </svg>
-              </div>
-
-              {/* Countdown Number */}
-              <div className={`countdown-number ${isAnimating ? 'countdown-hidden' : 'countdown-visible'}`}>
-                {countdownSeconds}
-              </div>
-
+        <div className="image-container" style={containerStyle}>
+          {/* Previous image for smooth transition */}
+          {previousImageSrc && (
+            <img
+              ref={previousImageRef}
+              src={previousImageSrc}
+              alt=""
+              className="slide-image slide-image-previous slide-image-common"
+              style={{
+                opacity: shouldFadeOutPrevious ? 0 : 1,
+                transition: 'opacity 0.3s ease-in-out',
+              }}
+              aria-hidden="true"
+              onTransitionEnd={() => {
+                // Remove previous image after fade out completes
+                if (shouldFadeOutPrevious) {
+                  setPreviousImageSrc('');
+                  setShouldFadeOutPrevious(false);
+                }
+              }}
+            />
+          )}
+          {/* Current image */}
+          {currentSlideData && currentImageSrc && (
+            <img
+              ref={imageRef}
+              src={currentImageSrc}
+              alt={currentSlideData.title}
+              loading={currentSlide === 0 ? 'eager' : 'lazy'}
+              fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
+              decoding="async"
+              className={`slide-image slide-image-current slide-image-common ${isZoomed ? 'slide-image-zoomed' : ''}`}
+              onClick={handleImageClick}
+              style={{
+                opacity: isImageReady ? 1 : 0,
+                transition: 'opacity 0.3s ease-in-out',
+              }}
+            />
+          )}
         </div>
-        
       </main>
 
       {/* Fullscreen Zoom Overlay */}
@@ -629,7 +431,6 @@ export function VisualArtFormsSlider() {
             loading="eager"
             decoding="sync"
             onClick={(e) => {
-              // Allow clicking the image itself to zoom out
               e.stopPropagation();
               handleImageClick();
             }}
@@ -637,10 +438,8 @@ export function VisualArtFormsSlider() {
         </div>
       )}
 
-      {/* Navigation and Progress Line - positioned at bottom */}
-      <div
-        className="left-navigation-bottom"
-      >
+      {/* Navigation */}
+      <div className="left-navigation-bottom">
         <button
           className="nav-arrow nav-arrow-left"
           onClick={goToPrevSlide}
@@ -667,21 +466,14 @@ export function VisualArtFormsSlider() {
             ))}
           </div>
           <div className="progress-line">
-            {isLoopingFromFirst ? (
-              // When fully filled, show as single continuous black line
-              <div className="progress-line-full-fill" />
-            ) : (
-              // When not fully filled, show connected segments
-              <div 
-                className="progress-segments-container"
-                style={{
-                  width: `${((currentSlide + 1) / totalSlides) * 100}%`,
-                  transition: isLooping ? 'none' : 'width 0.5s ease-out'
-                }}
-              >
-                <div className="progress-segment-fill filled" />
-              </div>
-            )}
+            <div 
+              className="progress-segments-container"
+              style={{
+                width: `${((currentSlide + 1) / totalSlides) * 100}%`
+              }}
+            >
+              <div className="progress-segment-fill filled" />
+            </div>
           </div>
         </div>
 
@@ -695,8 +487,6 @@ export function VisualArtFormsSlider() {
           </svg>
         </button>
       </div>
-
     </div>
   );
 }
-
