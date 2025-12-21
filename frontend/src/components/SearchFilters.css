@@ -3,6 +3,12 @@
   display: inline-block;
 }
 
+/* Prevent body scroll when filter is open - using class to avoid layout shifts */
+body.search-filters-open {
+  overflow: hidden;
+  /* html already has scrollbar-gutter: stable which prevents layout shift */
+}
+
 .search-filters-toggle {
   display: flex;
   align-items: center;
@@ -32,13 +38,21 @@
 
 .filter-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 8px;
-  height: 8px;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #ef4444;
-  border-radius: 50%;
+  border-radius: 9px;
   border: 2px solid #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
 }
 
 .search-filters-overlay {
@@ -61,14 +75,14 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 320px;
-  max-width: min(320px, calc(100vw - 32px));
+  width: 680px;
+  max-width: min(680px, calc(100vw - 32px));
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   z-index: 1501;
   animation: slideDown 0.2s ease;
-  max-height: calc(100vh - 100px);
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   /* Prevent horizontal overflow but allow vertical scrolling in content */
@@ -123,15 +137,17 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   /* Ensure scrollbar is always visible when content overflows */
   scrollbar-width: thin;
   scrollbar-color: #d1d1d1 #f5f5f5;
   /* Force scrollbar to show on webkit browsers */
   -webkit-overflow-scrolling: touch;
+  /* Reduce gap when content fits without scroll */
+  min-height: 0;
 }
 
 .search-filters-content::-webkit-scrollbar {
@@ -159,6 +175,14 @@
   gap: 12px;
 }
 
+/* Two-column layout for filter groups */
+.filter-group-two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
 .filter-label {
   display: flex;
   align-items: center;
@@ -172,6 +196,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
 }
 
 .filter-option {
@@ -199,7 +224,7 @@
 
 .filter-color-options {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -243,8 +268,8 @@
 }
 
 .filter-date-inputs {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
@@ -316,6 +341,198 @@
   background: #333;
 }
 
+/* Missing CSS classes for filter inputs */
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  background: #fff;
+  color: #111;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.filter-select:hover {
+  border-color: #d4d4d4;
+}
+
+.filter-sort-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.filter-sort-container .filter-select {
+  width: 100%;
+}
+
+.filter-input {
+  padding: 8px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.filter-input:hover {
+  border-color: #d4d4d4;
+}
+
+.filter-input-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.filter-range-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-range-group span {
+  color: #767676;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.filter-number-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+.filter-number-input:focus {
+  outline: none;
+  border-color: #111;
+}
+
+.filter-number-input:hover {
+  border-color: #d4d4d4;
+}
+
+.filter-advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.filter-advanced-toggle:hover {
+  background: #e5e5e5;
+  border-color: #d4d4d4;
+}
+
+.filter-advanced-toggle.active {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+/* Active filter chips (for showing active filters outside panel) */
+.filter-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0;
+  margin-top: 8px;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #111;
+}
+
+.filter-chip-remove {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: #767676;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.filter-chip-remove:hover {
+  color: #111;
+}
+
+/* Visual indicator for changed (unstaged) filters */
+.search-filters-panel.has-changes .filter-apply-btn {
+  background: #2563eb;
+}
+
+.search-filters-panel.has-changes .filter-apply-btn:hover {
+  background: #1d4ed8;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Advanced filters two-column layout */
+.filter-advanced-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.filter-advanced-filters > .filter-group {
+  grid-column: span 1;
+}
+
+/* Full-width advanced filter groups */
+.filter-advanced-filters > .filter-group-full-width {
+  grid-column: 1 / -1;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .search-filters-panel {
@@ -336,6 +553,33 @@
 
   .filter-color-options {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filter-sort-container {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-date-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-input-group {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-group-two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-advanced-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Medium screens - single column for advanced */
+@media (max-width: 900px) and (min-width: 769px) {
+  .filter-advanced-filters {
+    grid-template-columns: 1fr;
   }
 }
 

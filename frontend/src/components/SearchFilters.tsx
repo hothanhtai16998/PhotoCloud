@@ -16,6 +16,55 @@ interface SearchFiltersProps {
   onReset: () => void;
 }
 
+// Helper function to get default filter values
+const getDefaultFilters = (): SearchFilters => ({
+  orientation: 'all',
+  color: 'all',
+  dateFrom: '',
+  dateTo: '',
+  sortBy: 'date',
+  order: 'desc',
+  cameraMake: undefined,
+  cameraModel: undefined,
+  focalLengthMin: undefined,
+  focalLengthMax: undefined,
+  apertureMin: undefined,
+  apertureMax: undefined,
+  isoMin: undefined,
+  isoMax: undefined,
+  minWidth: undefined,
+  minHeight: undefined,
+  aspectRatio: undefined,
+});
+
+// Helper function to count active filters
+const countActiveFilters = (filterObj: SearchFilters): number => {
+  let count = 0;
+  if (filterObj.orientation !== 'all') count++;
+  if (filterObj.color !== 'all') count++;
+  if (filterObj.dateFrom) count++;
+  if (filterObj.dateTo) count++;
+  if (filterObj.sortBy && filterObj.sortBy !== 'date') count++;
+  if (filterObj.order && filterObj.order !== 'desc') count++;
+  if (filterObj.cameraMake) count++;
+  if (filterObj.cameraModel) count++;
+  if (filterObj.focalLengthMin !== undefined) count++;
+  if (filterObj.focalLengthMax !== undefined) count++;
+  if (filterObj.apertureMin !== undefined) count++;
+  if (filterObj.apertureMax !== undefined) count++;
+  if (filterObj.isoMin !== undefined) count++;
+  if (filterObj.isoMax !== undefined) count++;
+  if (filterObj.minWidth !== undefined) count++;
+  if (filterObj.minHeight !== undefined) count++;
+  if (filterObj.aspectRatio) count++;
+  return count;
+};
+
+// Helper function to check if filters are equal
+const areFiltersEqual = (a: SearchFilters, b: SearchFilters): boolean => {
+  return JSON.stringify(a) === JSON.stringify(b);
+};
+
 export default function SearchFiltersComponent({
   filters,
   onFiltersChange,
@@ -25,94 +74,70 @@ export default function SearchFiltersComponent({
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [localFilters, setLocalFilters] = useState<SearchFilters>(filters);
 
+  // Sync localFilters with props when panel opens
+  useEffect(() => {
+    if (isOpen) {
+      setLocalFilters(filters);
+    }
+  }, [isOpen, filters]);
+
+  // Handle filter changes (staged, not applied until Apply is clicked)
   const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | undefined) => {
-    const newFilters = { ...localFilters, [key]: value };
-    setLocalFilters(newFilters);
-    onFiltersChange(newFilters);
+    setLocalFilters(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  // Apply staged filters
+  const handleApply = useCallback(() => {
+    onFiltersChange(localFilters);
+    setIsOpen(false);
   }, [localFilters, onFiltersChange]);
 
+  // Reset all filters to defaults
   const handleReset = useCallback(() => {
-    const defaultFilters: SearchFilters = {
-      orientation: 'all',
-      color: 'all',
-      dateFrom: '',
-      dateTo: '',
-      sortBy: 'date',
-      order: 'desc',
-    };
+    const defaultFilters = getDefaultFilters();
     setLocalFilters(defaultFilters);
     onFiltersChange(defaultFilters);
     onReset();
   }, [onFiltersChange, onReset]);
 
-  const hasActiveFilters = filters.orientation !== 'all' || 
-    filters.color !== 'all' || 
-    filters.dateFrom || 
-    filters.dateTo ||
-    filters.sortBy !== 'date' ||
-    filters.order !== 'desc' ||
-    filters.cameraMake ||
-    filters.cameraModel ||
-    filters.focalLengthMin !== undefined ||
-    filters.focalLengthMax !== undefined ||
-    filters.apertureMin !== undefined ||
-    filters.apertureMax !== undefined ||
-    filters.isoMin !== undefined ||
-    filters.isoMax !== undefined ||
-    filters.minWidth !== undefined ||
-    filters.minHeight !== undefined ||
-    filters.aspectRatio !== undefined;
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = !areFiltersEqual(filters, localFilters);
+
+  // Count active filters
+  const activeFilterCount = countActiveFilters(filters);
+  const hasActiveFilters = activeFilterCount > 0;
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        // Revert to original filters (will be synced when panel reopens)
+        setLocalFilters(filters);
+      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        handleApply();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, filters, handleApply]);
 
   // Prevent body scroll when filter is open
+  // Using class-based approach to avoid layout shifts
   useEffect(() => {
     if (isOpen) {
-      // Calculate scrollbar width to prevent layout shift
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      // Save current scroll position and padding
-      const scrollY = window.scrollY;
-      const originalPaddingRight = document.body.style.paddingRight;
-      // Lock body scroll
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      // Add padding to compensate for scrollbar width to prevent layout shift
-      if (scrollbarWidth > 0) {
-        document.body.style.paddingRight = `${scrollbarWidth}px`;
-      }
-      
-      // Cleanup
-      return () => {
-        // Restore body scroll and padding
-        const savedScrollY = document.body.style.top;
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = originalPaddingRight || '';
-        if (savedScrollY) {
-          window.scrollTo(0, parseInt(savedScrollY || '0') * -1);
-        }
-      };
+      document.body.classList.add('search-filters-open');
     } else {
-      // Restore body scroll
-      const scrollY = document.body.style.top;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
+      document.body.classList.remove('search-filters-open');
     }
 
-    // Cleanup on unmount
+    // Cleanup
     return () => {
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
+      document.body.classList.remove('search-filters-open');
     };
   }, [isOpen]);
 
@@ -126,18 +151,40 @@ export default function SearchFiltersComponent({
       >
         <Filter size={18} />
         <span>{t('search.filter')}</span>
-        {hasActiveFilters && <span className="filter-badge" />}
+        {hasActiveFilters && (
+          <span className="filter-badge">
+            {activeFilterCount > 9 ? '9+' : activeFilterCount}
+          </span>
+        )}
       </button>
 
       {isOpen && (
         <>
-          <div className="search-filters-overlay" onClick={() => setIsOpen(false)} />
-          <div className="search-filters-panel" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="search-filters-overlay" 
+            onClick={() => {
+              setIsOpen(false);
+              // Revert to original filters if there are unsaved changes
+              if (hasUnsavedChanges) {
+                setLocalFilters(filters);
+              }
+            }} 
+          />
+          <div 
+            className={`search-filters-panel ${hasUnsavedChanges ? 'has-changes' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="search-filters-header">
               <h3>{t('search.filterTitle')}</h3>
               <button
                 className="search-filters-close"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  // Revert to original filters if there are unsaved changes
+                  if (hasUnsavedChanges) {
+                    setLocalFilters(filters);
+                  }
+                }}
                 aria-label={t('common.close')}
               >
                 <X size={20} />
@@ -268,7 +315,7 @@ export default function SearchFiltersComponent({
               <div className="filter-group">
                 <button
                   type="button"
-                  className="filter-advanced-toggle"
+                  className={`filter-advanced-toggle ${showAdvanced ? 'active' : ''}`}
                   onClick={() => setShowAdvanced(!showAdvanced)}
                 >
                   <Settings size={16} />
@@ -278,7 +325,7 @@ export default function SearchFiltersComponent({
 
               {/* Advanced Filters (EXIF & Dimensions) */}
               {showAdvanced && (
-                <>
+                <div className="filter-advanced-filters">
                   {/* Camera Filters */}
                   <div className="filter-group">
                     <label className="filter-label">
@@ -301,6 +348,25 @@ export default function SearchFiltersComponent({
                         className="filter-input"
                       />
                     </div>
+                  </div>
+
+                  {/* Aspect Ratio */}
+                  <div className="filter-group">
+                    <label className="filter-label">
+                      {t('search.aspectRatio') || 'Aspect Ratio'}
+                    </label>
+                    <select
+                      value={localFilters.aspectRatio || ''}
+                      onChange={(e) => handleFilterChange('aspectRatio', e.target.value || undefined)}
+                      className="filter-select"
+                    >
+                      <option value="">{t('common.all') || 'All'}</option>
+                      <option value="16:9">16:9</option>
+                      <option value="4:3">4:3</option>
+                      <option value="3:2">3:2</option>
+                      <option value="1:1">1:1</option>
+                      <option value="21:9">21:9</option>
+                    </select>
                   </div>
 
                   {/* Focal Length */}
@@ -408,40 +474,24 @@ export default function SearchFiltersComponent({
                       />
                     </div>
                   </div>
-
-                  {/* Aspect Ratio */}
-                  <div className="filter-group">
-                    <label className="filter-label">
-                      {t('search.aspectRatio') || 'Aspect Ratio'}
-                    </label>
-                    <select
-                      value={localFilters.aspectRatio || ''}
-                      onChange={(e) => handleFilterChange('aspectRatio', e.target.value || undefined)}
-                      className="filter-select"
-                    >
-                      <option value="">{t('common.all') || 'All'}</option>
-                      <option value="16:9">16:9</option>
-                      <option value="4:3">4:3</option>
-                      <option value="3:2">3:2</option>
-                      <option value="1:1">1:1</option>
-                      <option value="21:9">21:9</option>
-                    </select>
-                  </div>
-                </>
+                </div>
               )}
             </div>
 
             <div className="search-filters-footer">
               <button
                 className="filter-reset-btn"
-                onClick={handleReset}
-                disabled={!hasActiveFilters}
+                onClick={() => {
+                  const defaultFilters = getDefaultFilters();
+                  setLocalFilters(defaultFilters);
+                }}
+                disabled={areFiltersEqual(localFilters, getDefaultFilters())}
               >
                 {t('search.reset')}
               </button>
               <button
                 className="filter-apply-btn"
-                onClick={() => setIsOpen(false)}
+                onClick={handleApply}
               >
                 {t('search.apply')}
               </button>
