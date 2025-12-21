@@ -47,10 +47,24 @@ export const apiLimiter = rateLimit({
 
 /**
  * Strict rate limiter for auth endpoints (prevent brute force)
+ * 
+ * Rate limit: 15 attempts per 15 minutes (~1 per minute average)
+ * 
+ * Industry comparison:
+ * - Okta: 100-600 requests/min (enterprise auth provider)
+ * - Instagram: 200 attempts/min/IP (considered too lenient)
+ * - Common practices: 5-10 attempts per minute
+ * - Many sites: 72% don't implement effective rate limiting
+ * 
+ * Our limit is conservative but reasonable since:
+ * - Only failed attempts count (skipSuccessfulRequests: true)
+ * - Legitimate users with correct credentials won't hit the limit
+ * - Provides strong protection against brute force attacks
+ * - Refresh delays reduce request frequency naturally
  */
 export const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 requests per windowMs
+    max: 15, // Limit each IP to 15 requests per windowMs (increased from 5)
     message: 'Too many authentication attempts, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
