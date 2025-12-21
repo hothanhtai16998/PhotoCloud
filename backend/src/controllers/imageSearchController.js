@@ -120,7 +120,7 @@ export const getAllImages = asyncHandler(async (req, res) => {
     }
     if (color && color !== 'all') {
         // Filter by dominant color
-        // Check if the color exists in the dominantColors array
+        // For MongoDB array fields, assigning a value directly checks if it exists in the array
         query.dominantColors = color;
     }
     // Tag filtering - support both single tag (legacy) and multiple tags

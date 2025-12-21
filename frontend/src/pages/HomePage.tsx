@@ -15,16 +15,26 @@ import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModa
 import { imageService } from "@/services/imageService";
 import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import { timingConfig } from '@/config/timingConfig';
+import { useSearchFilters } from "@/components/SearchBar/hooks/useSearchFilters";
+import { buildFilterParams } from "@/utils/buildFilterParams";
+import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
 
 function HomePage() {
     const { currentSearch, images, loading, pagination, fetchImages } = useImageStore();
     const { loading: sliderLoading, slides } = useSliderStore();
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
+    const { filters } = useSearchFilters();
     const navigate = useNavigate();
     const prevCategoryRef = useRef<string | null>(null);
     const isInitialMountRef = useRef(true);
+    const filtersRef = useRef(filters);
     const isMobile = useIsMobile();
+    
+    // Keep filters ref updated so we always use latest filters in effects
+    useEffect(() => {
+        filtersRef.current = filters;
+    }, [filters]);
     const [gridHasLoaded, setGridHasLoaded] = useState(false);
     const [sliderHasLoaded, setSliderHasLoaded] = useState(false);
     const initialLoadCompleteRef = useRef(false);
@@ -244,43 +254,50 @@ function HomePage() {
     }, []);
 
     // Fetch images when category changes
-    // Memoize fetch call to prevent unnecessary re-renders
-    const fetchImagesMemo = useCallback(() => {
-        if (category === null) return;
-        fetchImages({ 
-            page: 1,
-            limit: 20, // Initial load: 20 images for better performance, infinite scroll will load more
-            category: getCategoryParam(category),
-            _refresh: false // Use cache for instant display
-        });
-    }, [category, fetchImages, getCategoryParam]);
-    
+    // CRITICAL: Only run when category changes, NOT when filters change
+    // Filter changes are handled by SearchBar.handleFiltersChange which already calls fetchImages with _refresh: true
+    // If we also fetch here when filters change, we get duplicate/conflicting calls
     useEffect(() => {
         // Wait for category to resolve (not null)
         if (category === null) {
             return;
         }
 
-        // Unsplash-style: Use requestIdleCallback to make requests after initial render
-        // This naturally keeps requests pending during page load phase (like Unsplash)
-        // The browser's stop button (X) appears because requests are pending during load
+        // Only fetch if category actually changed (not just filters)
+        const categoryChanged = prevCategoryRef.current !== category;
+        if (!categoryChanged && !isInitialMountRef.current) {
+            // Category didn't change - don't fetch (filter changes are handled by SearchBar)
+            return;
+        }
+
+        // Update prev category
+        prevCategoryRef.current = category;
+
         const scheduleFetch = () => {
+            // Always use current filters when category changes (from ref to avoid stale closure)
+            const fetchParams = buildFilterParams(filtersRef.current, {
+                page: 1,
+                limit: 20,
+                category: getCategoryParam(category),
+                _refresh: false // Use cache for instant display when category changes
+            });
+            
             if ('requestIdleCallback' in window) {
                 requestIdleCallback(() => {
-                    fetchImagesMemo();
-                }, { timeout: 100 }); // Fallback timeout to ensure it runs
+                    fetchImages(fetchParams);
+                }, { timeout: 100 });
             } else {
-                // Fallback for browsers without requestIdleCallback
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        fetchImagesMemo();
+                        fetchImages(fetchParams);
                     });
                 });
             }
         };
         
         scheduleFetch();
-    }, [category, fetchImagesMemo]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [category]); // Only depend on category, not filters - filter changes are handled by SearchBar
 
     // Scroll to NoFlashGrid when category changes (except on initial mount or when restoring scroll)
     useEffect(() => {
@@ -342,23 +359,25 @@ function HomePage() {
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
-        await fetchImages({ 
+        const fetchParams = buildFilterParams(filters, {
             page: 1,
             limit: 20, // Initial load: 20 images for better performance, infinite scroll will load more
             category: getCategoryParam(category),
             _refresh: true // Only refresh when explicitly loading data
         });
-    }, [fetchImages, category, getCategoryParam]);
+        await fetchImages(fetchParams);
+    }, [fetchImages, category, filters, getCategoryParam]);
 
     // Load more images (infinite scroll)
     const loadMore = useCallback(async () => {
         if (!pagination || pagination.page >= pagination.pages) return;
-        await fetchImages({
+        const fetchParams = buildFilterParams(filters, {
             page: pagination.page + 1,
             limit: 20, // Load 20 more images per page for better performance
             category: getCategoryParam(category),
         });
-    }, [fetchImages, pagination, category, getCategoryParam]);
+        await fetchImages(fetchParams);
+    }, [fetchImages, pagination, category, filters, getCategoryParam]);
 
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
@@ -405,6 +424,7 @@ function HomePage() {
                 {!currentSearch && (
                     <VisualArtFormsSlider />
                 )}
+                <ActiveFiltersIndicator filters={filters} />
                 <NoFlashGrid
                     images={images}
                     loading={loading}

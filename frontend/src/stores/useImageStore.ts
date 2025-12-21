@@ -147,35 +147,62 @@ export const useImageStore = create(
     fetchImages: async (params?: FetchImagesParams, signal?: AbortSignal) => {
       const state = get();
 
-      // Prevent concurrent requests (unless refreshing or pagination)
-      // Allow pagination requests (page > 1) if:
-      // 1. We already have images (initial load completed), OR
-      // 2. We're not currently loading
-      // This enables infinite scroll to work smoothly while preventing race conditions
+      // CRITICAL: If _refresh is true (always set for filter changes), skip ALL blocking immediately
+      // This ensures filter changes always work on first try
+      const isForcedRefresh = params?._refresh === true;
+
+      // Check if any filters are active FIRST - this determines if we can skip blocking logic
+      // IMPORTANT: sortBy='date' and order='desc' are defaults, so don't count as filters
+      const hasAnyFilters = !!(
+        params?.color || 
+        (params?.orientation && params.orientation !== 'all') ||
+        params?.dateFrom || 
+        params?.dateTo ||
+        params?.cameraMake ||
+        params?.cameraModel ||
+        params?.focalLengthMin !== undefined ||
+        params?.focalLengthMax !== undefined ||
+        params?.apertureMin !== undefined ||
+        params?.apertureMax !== undefined ||
+        params?.isoMin !== undefined ||
+        params?.isoMax !== undefined ||
+        params?.minWidth !== undefined ||
+        params?.minHeight !== undefined ||
+        params?.aspectRatio ||
+        (params?.sortBy && params.sortBy !== 'date') ||
+        (params?.order && params.order !== 'desc')
+      );
+      
+      
+      // Calculate these once for use in all logic paths
       const isPaginationRequest = params?.page && params.page > 1;
       const isSameQuery = 
         params?.category === state.currentCategory &&
         params?.search === state.currentSearch &&
         params?.location === state.currentLocation;
       
-      // Block pagination if initial load is in progress and we have no images yet
-      // This prevents race condition where pagination completes before initial load
-      if (state.loading && !params?._refresh) {
-        if (isPaginationRequest && state.images.length === 0) {
-          // Don't allow pagination if initial load hasn't completed yet
-          return;
+      // CRITICAL: If filters are present OR refresh is forced, ALWAYS fetch - skip ALL blocking logic
+      // This ensures filter changes work immediately on first try
+      // Also handles changing from one filter to another (e.g., red → green) correctly
+      // Since buildFetchParams always sets _refresh: true for filters, this should always bypass
+      if (!isForcedRefresh && !hasAnyFilters) {
+        // Only apply blocking logic when no forced refresh and no filters are present
+        // Block pagination if initial load is in progress and we have no images yet
+        if (state.loading) {
+          if (isPaginationRequest && state.images.length === 0) {
+            return;
+          }
+          if (!isPaginationRequest) {
+            return;
+          }
         }
-        if (!isPaginationRequest) {
-          // Block non-pagination requests if already loading
+        
+        // For pagination requests, ensure we're fetching the same query
+        if (isPaginationRequest && !isSameQuery) {
           return;
         }
       }
-      
-      // For pagination requests, ensure we're fetching the same query
-      // Don't allow pagination if query changed (should start from page 1)
-      if (isPaginationRequest && !isSameQuery) {
-        return;
-      }
+      // If isForcedRefresh || hasAnyFilters, we continue to fetch (no blocking)
 
       // Check for filter changes
       const { categoryChanged, searchChanged, locationChanged } =
@@ -186,25 +213,31 @@ export const useImageStore = create(
           state.currentLocation
         );
 
-      // Check if we're already showing the requested category (avoid unnecessary updates)
-      const isSameCategory = 
-        state.currentCategory === params?.category &&
-        state.currentSearch === params?.search &&
-        state.currentLocation === params?.location &&
-        !params?._refresh &&
-        (params?.page === 1 || !params?.page);
-      
-      if (isSameCategory && state.images.length > 0) {
-        // Already showing this category, no need to fetch
-        return;
-      }
-
       // Check cache FIRST, before any state changes (critical for zero-flash)
-      // BUT: if category changed, we should fetch fresh data even if cache exists
+      // BUT: Don't use cache if any filters are active
+      // because cache only stores unfiltered category data
       const cacheKey = getCategoryCacheKey(params);
-      const cached = cacheKey && !categoryChanged ? categoryCache.get(cacheKey) : null;
+      const cached = cacheKey && !categoryChanged && !hasAnyFilters ? categoryCache.get(cacheKey) : null;
+      
+      // IMPORTANT: If filters are present, ALWAYS fetch - never skip
+      // This ensures filter changes are always detected and applied immediately
+      if (hasAnyFilters) {
+        // Filters present - always proceed to fetch, skip all "already showing" checks
+      } else {
+        // No filters - can check if we're already showing this query
+        const isAlreadyShowingQuery = 
+          isSameQuery &&
+          !params?._refresh &&
+          (params?.page === 1 || !params?.page);
+        
+        if (isAlreadyShowingQuery && state.images.length > 0 && !cached) {
+          // Already showing this exact query with no filters, no need to fetch
+          return;
+        }
+      }
       
       // If we have cached data and not refreshing, use it IMMEDIATELY and synchronously
+      // Only use cache when no filters are active (cache stores unfiltered data)
       if (cached && !params?._refresh && (params?.page === 1 || !params?.page)) {
         // Filter out deleted images from cache
         const filteredCachedImages = filterDeletedImages(
@@ -239,23 +272,17 @@ export const useImageStore = create(
       }
 
       // Prepare state for new fetch
-      // For category changes, keep old images visible until new ones load (prevents flashing)
+      // For filter changes, ALWAYS clear images and set loading to show filter is being applied
       set((draft) => {
-        // CRITICAL: Only set loading if we don't have images to show
-        // If we have images from previous category, keep them visible (no loading state)
-        // This prevents flash - old images stay visible while new ones load
-        if (draft.images.length === 0) {
-          draft.loading = true;
-        } else {
-          // We have images to show - don't set loading to true
-          // This keeps the grid visible during category switch
-          draft.loading = false;
-        }
         draft.error = null;
-
-        // NEVER clear images on category/search/location changes
-        // Only clear on explicit refresh without filter changes
-        if (
+        
+        // For filter changes (any filter parameter), ALWAYS clear images and show loading
+        // This ensures users see that filters are being applied immediately
+        if (hasAnyFilters && (params?.page === 1 || !params?.page)) {
+          draft.images = [];
+          draft.pagination = null;
+          draft.loading = true; // Always show loading when applying filters
+        } else if (
           (params?.page === 1 || !params?.page) &&
           !categoryChanged &&
           !searchChanged &&
@@ -265,18 +292,30 @@ export const useImageStore = create(
           // Only clear on explicit refresh without filter changes
           draft.images = [];
           draft.pagination = null;
+          draft.loading = true;
+        } else {
+          // For category/search/location changes, keep old images visible until new ones load
+          // Only set loading if we don't have images to show
+          if (draft.images.length === 0) {
+            draft.loading = true;
+          } else {
+            // We have images to show - don't set loading to true
+            // This keeps the grid visible during category switch
+            draft.loading = false;
+          }
         }
-        // For filter changes, ALWAYS keep images visible - they'll be replaced after loading
       });
 
       try {
         // Determine if we should bust cache
+        // Always bust cache if filters are present or if it's a new query
         const shouldBustCache =
           !params?.page ||
           params.page === 1 ||
           params?._refresh ||
           categoryChanged ||
-          searchChanged;
+          searchChanged ||
+          hasAnyFilters; // Always bust cache when filters are present
 
         const fetchParams =
           shouldBustCache && !params?._refresh
@@ -314,14 +353,15 @@ export const useImageStore = create(
           }
 
           // Update current filters
-          if (isNewQuery(params)) {
+          // IMPORTANT: Always update state when filters are present OR when it's a new query
+          if (isNewQuery(params) || hasAnyFilters) {
             draft.currentSearch = params?.search;
             draft.currentCategory = params?.category;
             draft.currentLocation = params?.location;
 
-            // For category/search/location changes, replace images completely
+            // For category/search/location/filter changes, replace images completely
             // This happens after loading, so old images were visible during the transition
-            if (categoryChanged || searchChanged || locationChanged) {
+            if (categoryChanged || searchChanged || locationChanged || hasAnyFilters) {
               // Replace images completely for filter changes
               const recentUploads = filterRecentUploads(
                 [],

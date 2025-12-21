@@ -13,6 +13,7 @@ import {
     useSearchFilters,
     type SuggestionItem,
 } from './hooks';
+import { buildFilterParams } from '@/utils/buildFilterParams';
 import '../SearchBar.css';
 
 export interface SearchBarRef {
@@ -24,7 +25,7 @@ export interface SearchBarRef {
  * Refactored into smaller hooks for maintainability.
  */
 export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
-    const { fetchImages, currentSearch } = useImageStore();
+    const { fetchImages, currentSearch, currentCategory, images } = useImageStore();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -200,82 +201,49 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         }, 200);
     }, []);
 
+    // Helper function to build fetch params from filters
+    const buildFetchParams = useCallback((newFilters: typeof filters) => {
+        return buildFilterParams(newFilters, {
+            search: searchQuery.trim() || undefined,
+            category: currentCategory,
+            page: 1,
+            _refresh: true,
+        });
+    }, [searchQuery, currentCategory]);
+
     // Handle filter changes
     const handleFiltersChange = useCallback(
         (newFilters: typeof filters) => {
             setFilters(newFilters);
 
-            if (location.pathname === '/') {
-                const fetchParams: any = {
-                    search: searchQuery.trim() || undefined,
-                    color: newFilters.color !== 'all' ? newFilters.color : undefined,
-                    page: 1,
-                    _refresh: true,
-                };
-                
-                // Add date range filters
-                if (newFilters.dateFrom) {
-                    fetchParams.dateFrom = newFilters.dateFrom;
-                }
-                if (newFilters.dateTo) {
-                    fetchParams.dateTo = newFilters.dateTo;
-                }
-                
-                // Add orientation filter
-                if (newFilters.orientation && newFilters.orientation !== 'all') {
-                    fetchParams.orientation = newFilters.orientation;
-                }
-                
-                // Add sorting
-                if (newFilters.sortBy) {
-                    fetchParams.sortBy = newFilters.sortBy;
-                }
-                if (newFilters.order) {
-                    fetchParams.order = newFilters.order;
-                }
-                
-                // Add EXIF filters
-                if (newFilters.cameraMake) {
-                    fetchParams.cameraMake = newFilters.cameraMake;
-                }
-                if (newFilters.cameraModel) {
-                    fetchParams.cameraModel = newFilters.cameraModel;
-                }
-                if (newFilters.focalLengthMin !== undefined) {
-                    fetchParams.focalLengthMin = newFilters.focalLengthMin;
-                }
-                if (newFilters.focalLengthMax !== undefined) {
-                    fetchParams.focalLengthMax = newFilters.focalLengthMax;
-                }
-                if (newFilters.apertureMin !== undefined) {
-                    fetchParams.apertureMin = newFilters.apertureMin;
-                }
-                if (newFilters.apertureMax !== undefined) {
-                    fetchParams.apertureMax = newFilters.apertureMax;
-                }
-                if (newFilters.isoMin !== undefined) {
-                    fetchParams.isoMin = newFilters.isoMin;
-                }
-                if (newFilters.isoMax !== undefined) {
-                    fetchParams.isoMax = newFilters.isoMax;
-                }
-                
-                // Add dimension filters
-                if (newFilters.minWidth !== undefined) {
-                    fetchParams.minWidth = newFilters.minWidth;
-                }
-                if (newFilters.minHeight !== undefined) {
-                    fetchParams.minHeight = newFilters.minHeight;
-                }
-                if (newFilters.aspectRatio) {
-                    fetchParams.aspectRatio = newFilters.aspectRatio;
-                }
-                
+            // Apply filters on homepage and category pages
+            // NOTE: setFilters no longer dispatches filterChange event, so this is the only place
+            // that triggers the fetch for normal filter changes
+            if (location.pathname === '/' || location.pathname.startsWith('/t/')) {
+                const fetchParams = buildFetchParams(newFilters);
                 fetchImages(fetchParams);
             }
         },
-        [setFilters, location.pathname, searchQuery, fetchImages]
+        [setFilters, location.pathname, buildFetchParams, fetchImages]
     );
+
+    // Listen for filter reset events (when resetFilters is called directly from ActiveFiltersIndicator)
+    // NOTE: resetFilters dispatches filterChange event, but setFilters does not (to prevent duplicate fetches)
+    // This listener handles the case when resetFilters is called directly (e.g., from ActiveFiltersIndicator)
+    useEffect(() => {
+        const handleFilterReset = () => {
+            // Only trigger fetch if resetFilters was called directly (outside of handleFiltersChange)
+            // This happens when ActiveFiltersIndicator calls resetFilters directly
+            if (location.pathname === '/' || location.pathname.startsWith('/t/')) {
+                // Use current filters state (which should be default after reset)
+                const fetchParams = buildFetchParams(filters);
+                fetchImages(fetchParams);
+            }
+        };
+
+        window.addEventListener('filterChange', handleFilterReset);
+        return () => window.removeEventListener('filterChange', handleFilterReset);
+    }, [location.pathname, buildFetchParams, fetchImages, filters]);
 
     return (
         <div 
@@ -354,6 +322,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
                         }}
                         onFiltersChange={handleFiltersChange}
                         onReset={resetFilters}
+                        images={images}
                     />
                 </div>
             </form>

@@ -14,6 +14,7 @@ interface SearchFiltersProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   onReset: () => void;
+  images?: Array<{ dominantColors?: string[] }>; // Optional: for showing color counts
 }
 
 // Helper function to get default filter values
@@ -60,15 +61,41 @@ const countActiveFilters = (filterObj: SearchFilters): number => {
   return count;
 };
 
+// Helper function to normalize filters for comparison (handles undefined vs empty string)
+const normalizeFilter = (filter: SearchFilters): SearchFilters => {
+  return {
+    orientation: filter.orientation || 'all',
+    color: filter.color || 'all',
+    dateFrom: filter.dateFrom || '',
+    dateTo: filter.dateTo || '',
+    sortBy: filter.sortBy || 'date',
+    order: filter.order || 'desc',
+    cameraMake: filter.cameraMake || undefined,
+    cameraModel: filter.cameraModel || undefined,
+    focalLengthMin: filter.focalLengthMin !== undefined ? filter.focalLengthMin : undefined,
+    focalLengthMax: filter.focalLengthMax !== undefined ? filter.focalLengthMax : undefined,
+    apertureMin: filter.apertureMin !== undefined ? filter.apertureMin : undefined,
+    apertureMax: filter.apertureMax !== undefined ? filter.apertureMax : undefined,
+    isoMin: filter.isoMin !== undefined ? filter.isoMin : undefined,
+    isoMax: filter.isoMax !== undefined ? filter.isoMax : undefined,
+    minWidth: filter.minWidth !== undefined ? filter.minWidth : undefined,
+    minHeight: filter.minHeight !== undefined ? filter.minHeight : undefined,
+    aspectRatio: filter.aspectRatio || undefined,
+  };
+};
+
 // Helper function to check if filters are equal
 const areFiltersEqual = (a: SearchFilters, b: SearchFilters): boolean => {
-  return JSON.stringify(a) === JSON.stringify(b);
+  const normalizedA = normalizeFilter(a);
+  const normalizedB = normalizeFilter(b);
+  return JSON.stringify(normalizedA) === JSON.stringify(normalizedB);
 };
 
 export default function SearchFiltersComponent({
   filters,
   onFiltersChange,
   onReset,
+  images,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -96,9 +123,10 @@ export default function SearchFiltersComponent({
   const handleReset = useCallback(() => {
     const defaultFilters = getDefaultFilters();
     setLocalFilters(defaultFilters);
+    // Auto-apply reset immediately and close modal
     onFiltersChange(defaultFilters);
-    onReset();
-  }, [onFiltersChange, onReset]);
+    setIsOpen(false);
+  }, [onFiltersChange]);
 
   // Check if there are unsaved changes
   const hasUnsavedChanges = !areFiltersEqual(filters, localFilters);
@@ -233,23 +261,28 @@ export default function SearchFiltersComponent({
                     { value: 'black', label: t('search.black'), color: '#000000' },
                     { value: 'white', label: t('search.white'), color: '#ffffff' },
                     { value: 'gray', label: t('search.gray'), color: '#6b7280' },
-                  ] as { value: ColorFilter; label: string; color: string }[]).map((colorOption) => (
-                    <button
-                      key={colorOption.value}
-                      className={`filter-color-option ${localFilters.color === colorOption.value ? 'active' : ''}`}
-                      onClick={() => handleFilterChange('color', colorOption.value)}
-                      title={colorOption.label}
-                    >
-                      <span
-                        className="filter-color-swatch"
-                        style={{
-                          backgroundColor: colorOption.color,
-                          border: colorOption.value === 'white' ? '1px solid #e5e5e5' : 'none',
+                  ] as { value: ColorFilter; label: string; color: string }[]).map((colorOption) => {
+                    return (
+                      <button
+                        key={colorOption.value}
+                        className={`filter-color-option ${localFilters.color === colorOption.value ? 'active' : ''}`}
+                        onClick={() => {
+                          // Just update local state - user needs to click Apply to apply changes
+                          handleFilterChange('color', colorOption.value);
                         }}
-                      />
-                      <span className="filter-color-label">{colorOption.label}</span>
-                    </button>
-                  ))}
+                        title={colorOption.label}
+                      >
+                        <span
+                          className="filter-color-swatch"
+                          style={{
+                            backgroundColor: colorOption.color,
+                            border: colorOption.value === 'white' ? '1px solid #e5e5e5' : 'none',
+                          }}
+                        />
+                        <span className="filter-color-label">{colorOption.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -484,6 +517,9 @@ export default function SearchFiltersComponent({
                 onClick={() => {
                   const defaultFilters = getDefaultFilters();
                   setLocalFilters(defaultFilters);
+                  // Auto-apply reset immediately and close modal
+                  onFiltersChange(defaultFilters);
+                  setIsOpen(false);
                 }}
                 disabled={areFiltersEqual(localFilters, getDefaultFilters())}
               >
@@ -492,6 +528,7 @@ export default function SearchFiltersComponent({
               <button
                 className="filter-apply-btn"
                 onClick={handleApply}
+                disabled={!hasUnsavedChanges}
               >
                 {t('search.apply')}
               </button>

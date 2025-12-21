@@ -36,6 +36,18 @@ const DEFAULT_FILTERS: SearchFiltersType = {
   dateTo: '',
   sortBy: 'date',
   order: 'desc',
+  // Advanced filters - explicitly set to undefined for consistency
+  cameraMake: undefined,
+  cameraModel: undefined,
+  focalLengthMin: undefined,
+  focalLengthMax: undefined,
+  apertureMin: undefined,
+  apertureMax: undefined,
+  isoMin: undefined,
+  isoMax: undefined,
+  minWidth: undefined,
+  minHeight: undefined,
+  aspectRatio: undefined,
 };
 
 /**
@@ -68,8 +80,9 @@ export function useSearchFilters(): UseSearchFiltersReturn {
         searchConfig.filtersStorageKey,
         JSON.stringify(newFilters)
       );
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new Event('filterChange'));
+      // NOTE: We do NOT dispatch filterChange event here because handleFiltersChange
+      // already handles the fetch. The event is only needed for resetFilters when
+      // called directly from ActiveFiltersIndicator.
     } catch {
       // Silently fail - filters will be lost on refresh
     }

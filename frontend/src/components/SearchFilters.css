@@ -269,6 +269,8 @@ body.search-filters-open {
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;
+  outline: 1px solid transparent; /* Reserve space for active outline to prevent layout shift */
+  outline-offset: -1px;
 }
 
 .filter-color-option:hover {
@@ -279,7 +281,7 @@ body.search-filters-open {
 .filter-color-option.active {
   background: #f0f0f0;
   border-color: #111;
-  border-width: 2px;
+  outline-color: #111; /* Use outline instead of border width change to prevent layout shift */
 }
 
 .filter-color-swatch {
@@ -294,6 +296,22 @@ body.search-filters-open {
   flex: 1;
   font-weight: 500;
   color: #111;
+}
+
+.filter-color-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+  background: #e5e5e5;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.filter-color-option.active .filter-color-count {
+  background: #111;
+  color: #fff;
 }
 
 .filter-date-inputs {
@@ -370,20 +388,27 @@ body.search-filters-open {
   background: #111;
   color: #fff;
   font-weight: 600;
+  opacity: 0.5; /* Reduced opacity when no changes */
+  transition: opacity 0.2s ease, background 0.2s ease;
 }
 
-.filter-apply-btn:hover {
+.filter-apply-btn:hover:not(:disabled) {
   background: #333;
 }
 
-.filter-apply-btn:active {
+.filter-apply-btn:active:not(:disabled) {
   background: #1a1a1a;
   transform: scale(0.98);
 }
 
+.filter-apply-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 /* Missing CSS classes for filter inputs */
 .filter-select {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #e5e5e5;
   border-radius: 6px;
   font-size: 0.875rem;
@@ -393,6 +418,12 @@ body.search-filters-open {
   cursor: pointer;
   transition: border-color 0.2s ease;
   width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23767676' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 
 .filter-select:focus {
@@ -442,23 +473,29 @@ body.search-filters-open {
 .filter-range-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
 }
 
 .filter-range-group span {
   color: #767676;
   font-weight: 500;
   flex-shrink: 0;
+  min-width: 16px;
+  text-align: center;
 }
 
 .filter-number-input {
   flex: 1;
-  padding: 8px 12px;
+  min-width: 0;
+  padding: 10px 12px;
   border: 1px solid #e5e5e5;
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
   transition: border-color 0.2s ease;
+  background: #fff;
+  box-sizing: border-box;
 }
 
 .filter-number-input:focus {
@@ -468,6 +505,10 @@ body.search-filters-open {
 
 .filter-number-input:hover {
   border-color: #d4d4d4;
+}
+
+.filter-number-input::placeholder {
+  color: #999;
 }
 
 .filter-advanced-toggle {
@@ -540,28 +581,47 @@ body.search-filters-open {
 
 /* Visual indicator for changed (unstaged) filters */
 .search-filters-panel.has-changes .filter-apply-btn {
-  background: #2563eb;
+  background: #111;
+  opacity: 1; /* Full opacity when there are changes */
+  cursor: pointer;
 }
 
 .search-filters-panel.has-changes .filter-apply-btn:hover {
-  background: #1d4ed8;
+  background: #333;
 }
 
 /* Advanced filters two-column layout */
 .filter-advanced-filters {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
   align-items: start;
+  width: 100%;
 }
 
 .filter-advanced-filters > .filter-group {
   grid-column: span 1;
+  width: 100%;
+  min-width: 0; /* Prevent overflow */
 }
 
-/* Full-width advanced filter groups */
+/* Full-width advanced filter groups - for fields that need more space */
 .filter-advanced-filters > .filter-group-full-width {
   grid-column: 1 / -1;
+}
+
+/* Ensure all inputs in advanced filters have proper width */
+.filter-advanced-filters .filter-input,
+.filter-advanced-filters .filter-select,
+.filter-advanced-filters .filter-range-group {
+  width: 100%;
+}
+
+.filter-advanced-filters .filter-input-group {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 /* Responsive */
