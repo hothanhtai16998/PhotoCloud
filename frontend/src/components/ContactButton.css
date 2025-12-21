@@ -121,7 +121,7 @@ button.contact-button {
   display: none;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
