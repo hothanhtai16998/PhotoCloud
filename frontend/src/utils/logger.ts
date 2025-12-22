@@ -26,16 +26,18 @@ function formatMessage(message: string, prefix?: string): string {
 
 /**
  * Debug level logging - removed (no-op)
+ * @deprecated Use console.debug directly if needed
  */
 function debug(_message: string, _options?: LogOptions): void {
-  // Debug logging removed
+  // Debug logging removed - no-op for performance
 }
 
 /**
  * Info level logging - removed (no-op)
+ * @deprecated Use console.info directly if needed
  */
 function info(_message: string, _options?: LogOptions): void {
-  // Info logging removed
+  // Info logging removed - no-op for performance
 }
 
 /**
@@ -68,6 +70,7 @@ function error(message: string, options?: LogOptions): void {
 
 /**
  * Group related logs together - removed (no-op)
+ * @deprecated Use console.group directly if needed
  */
 function group(_label: string, fn: () => void): void {
   fn();
@@ -75,6 +78,7 @@ function group(_label: string, fn: () => void): void {
 
 /**
  * Log execution time of a function - removed (no-op)
+ * @deprecated Use console.time directly if needed
  */
 function time<T>(_label: string, fn: () => T): T {
   return fn();
@@ -82,6 +86,7 @@ function time<T>(_label: string, fn: () => T): T {
 
 /**
  * Async version of time() - removed (no-op)
+ * @deprecated Use console.time directly if needed
  */
 async function timeAsync<T>(_label: string, fn: () => Promise<T>): Promise<T> {
   return fn();
@@ -99,12 +104,15 @@ export const logger = {
 
 /**
  * Convenience exports for common prefixes
+ * Note: debug and info are no-ops for performance
  */
 export const imageLogger = {
-  debug: (message: string, data?: unknown) =>
-    debug(message, { prefix: 'Image', data }),
-  info: (message: string, data?: unknown) =>
-    info(message, { prefix: 'Image', data }),
+  debug: (_message: string, _data?: unknown) => {
+    // No-op for performance
+  },
+  info: (_message: string, _data?: unknown) => {
+    // No-op for performance
+  },
   warn: (message: string, data?: unknown) =>
     warn(message, { prefix: 'Image', data }),
   error: (message: string, data?: unknown) =>
@@ -112,10 +120,12 @@ export const imageLogger = {
 };
 
 export const authLogger = {
-  debug: (message: string, data?: unknown) =>
-    debug(message, { prefix: 'Auth', data }),
-  info: (message: string, data?: unknown) =>
-    info(message, { prefix: 'Auth', data }),
+  debug: (_message: string, _data?: unknown) => {
+    // No-op for performance
+  },
+  info: (_message: string, _data?: unknown) => {
+    // No-op for performance
+  },
   warn: (message: string, data?: unknown) =>
     warn(message, { prefix: 'Auth', data }),
   error: (message: string, data?: unknown) =>
@@ -123,10 +133,12 @@ export const authLogger = {
 };
 
 export const apiLogger = {
-  debug: (message: string, data?: unknown) =>
-    debug(message, { prefix: 'API', data }),
-  info: (message: string, data?: unknown) =>
-    info(message, { prefix: 'API', data }),
+  debug: (_message: string, _data?: unknown) => {
+    // No-op for performance
+  },
+  info: (_message: string, _data?: unknown) => {
+    // No-op for performance
+  },
   warn: (message: string, data?: unknown) =>
     warn(message, { prefix: 'API', data }),
   error: (message: string, data?: unknown) =>

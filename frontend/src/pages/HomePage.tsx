@@ -97,7 +97,7 @@ function HomePage() {
     }, [isHomePageLoading]);
     
     // Preload first slider image URL as early as possible for better LCP discovery
-    // CRITICAL: This must use the EXACT same URL that the slider uses (smallAvifUrl/smallUrl)
+    // CRITICAL: This must use the EXACT same URL priority as slider store (imageAvifUrl || imageUrl || regularAvifUrl || regularUrl || smallAvifUrl || smallUrl)
     // Use useLayoutEffect to add preload BEFORE React paints, making it discoverable earlier
     useLayoutEffect(() => {
         if (currentSearch) return; // Skip if search is active (no slider shown)
@@ -136,13 +136,15 @@ function HomePage() {
                 
                 const firstImage = response.images?.[0];
                 if (firstImage) {
-                    // CRITICAL: Use EXACT same URL priority as slider store (useSliderStore.ts line 89)
+                    // CRITICAL: Use EXACT same URL priority as slider store (useSliderStore.ts line 91)
+                    // Slider uses: imageAvifUrl || imageUrl || regularAvifUrl || regularUrl || smallAvifUrl || smallUrl
                     // This ensures the preload URL matches the actual LCP image URL
-                    const imageUrl = firstImage.smallAvifUrl || 
-                                   firstImage.smallUrl || 
+                    const imageUrl = firstImage.imageAvifUrl || 
+                                   firstImage.imageUrl || 
                                    firstImage.regularAvifUrl || 
                                    firstImage.regularUrl || 
-                                   firstImage.imageUrl || '';
+                                   firstImage.smallAvifUrl || 
+                                   firstImage.smallUrl || '';
                     
                     if (imageUrl) {
                         // Remove any existing preload to avoid duplicates

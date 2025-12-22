@@ -4,6 +4,7 @@ import { imageService } from "@/services/imageService";
 import type { Image } from "@/types/image";
 import { sliderConfig, type TransitionType } from "@/config/sliderConfig";
 import { detectAvifSupport } from "@/utils/avifSupport";
+import { getImageUrl, getThumbnailUrl } from "@/utils/imageUrlUtils";
 import "./Slider.css";
 
 // Date-based randomization: same images per day
@@ -380,30 +381,10 @@ function Slider() {
   }, [prevSlide, nextSlide, goToSlide, images.length]);
 
 
-  // Get best image URL - prefer AVIF when supported, then WebP/original as fallback
-  const getImageUrl = (image: Image | null): string | null => {
-    if (!image) return null;
-    if (supportsAvif) {
-      return (
-        image.imageAvifUrl ||
-        image.regularAvifUrl ||
-        image.regularUrl ||
-        image.imageUrl ||
-        image.smallAvifUrl ||
-        image.smallUrl ||
-        image.thumbnailAvifUrl ||
-        image.thumbnailUrl ||
-        null
-      );
-    }
-    return (
-      image.imageUrl ||
-      image.regularUrl ||
-      image.smallUrl ||
-      image.thumbnailUrl ||
-      null
-    );
-  };
+  // Use shared utility for image URLs
+  const getImageUrlForSlider = useCallback((image: Image | null): string | null => {
+    return getImageUrl(image, 'regular', supportsAvif);
+  }, [supportsAvif]);
 
   // Progressive image loading handler
   const handleImageLoad = useCallback((imageId: string, _imageUrl: string) => {
@@ -437,7 +418,7 @@ function Slider() {
         return; // Already marked as loaded
       }
       
-      const imageUrl = getImageUrl(image);
+      const imageUrl = getImageUrlForSlider(image);
       if (!imageUrl) return;
       
       // Check browser cache synchronously
@@ -486,7 +467,7 @@ function Slider() {
         return next;
       });
 
-      const imageUrl = getImageUrl(image);
+      const imageUrl = getImageUrlForSlider(image);
       if (!imageUrl) return;
 
       const img = new window.Image();
@@ -527,30 +508,10 @@ function Slider() {
   }, [images, currentSlide]);
 
 
-  // Get thumbnail URL for bottom carousel
-  const getThumbnailUrl = (image: Image | null): string | null => {
-    if (!image) return null;
-    if (supportsAvif) {
-      return (
-        image.thumbnailAvifUrl ||
-        image.smallAvifUrl ||
-        image.regularAvifUrl ||
-        image.imageAvifUrl ||
-        image.thumbnailUrl ||
-        image.smallUrl ||
-        image.regularUrl ||
-        image.imageUrl ||
-        null
-      );
-    }
-    return (
-      image.thumbnailUrl ||
-      image.smallUrl ||
-      image.regularUrl ||
-      image.imageUrl ||
-      null
-    );
-  };
+  // Use shared utility for thumbnail URLs
+  const getThumbnailUrlForSlider = useCallback((image: Image | null): string | null => {
+    return getThumbnailUrl(image, supportsAvif);
+  }, [supportsAvif]);
 
 
   // Touch gesture handlers for swipe
@@ -657,7 +618,7 @@ function Slider() {
       {/* Main Carousel */}
       <div className={`main-carousel-container transition-${transitionType} slide-direction-${slideDirection}`}>
         {images.map((image, index) => {
-          const imageUrl = getImageUrl(image);
+          const imageUrl = getImageUrlForSlider(image);
           // Use smallUrl for placeholder instead of tiny thumbnail to avoid 20x20 issue
           const placeholderUrl = image.smallAvifUrl || image.smallUrl || image.thumbnailAvifUrl || image.thumbnailUrl || null;
           const isActive = index === currentSlide;
@@ -728,7 +689,7 @@ function Slider() {
         <div className="bottom-carousel">
           {getBottomCarouselImages().map((image, index) => {
             if (!image) return null;
-            const thumbnailUrl = getThumbnailUrl(image);
+            const thumbnailUrl = getThumbnailUrlForSlider(image);
             const slideIndex = index === 0 ? currentSlide : (currentSlide + 1) % images.length;
             const isActive = index === 0; // First thumbnail is always the current slide
 

@@ -12,25 +12,26 @@
   z-index: 1;
 }
 
-/* Mobile: Search bar below header (like Unsplash) */
+/* Mobile: Search bar below header */
 @media (max-width: 768px) {
   .search-bar-container {
     position: fixed !important; /* Fixed below header */
-    top: 48px !important; /* Below fixed header - reduced to match header height */
+    top: 44px !important; /* Below header (44px - reduced from 52px) */
     left: 0 !important;
     right: 0 !important;
     transform: none !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: auto !important;
-    padding: 6px 12px !important; /* Reduced padding */
+    padding: 8px 12px !important; /* Increased padding for better spacing */
     background: #fff !important;
-    border-bottom: 1px solid #e5e5e5 !important;
-    z-index: 1499 !important; /* Below header (1500) */
+    border-bottom: none !important; /* Remove border between search bar and category nav */
+    z-index: 1499 !important; /* Below header (1500), above category nav (1498) */
     box-shadow: none !important;
     visibility: visible !important;
     margin-bottom: 0 !important;
-    height: 48px; /* Reduced height to match header */
+    height: auto !important; /* Auto height for better flexibility */
+    min-height: 48px; /* Minimum height */
     box-sizing: border-box;
     display: flex;
     align-items: center;

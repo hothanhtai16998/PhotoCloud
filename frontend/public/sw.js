@@ -10,13 +10,11 @@ const API_CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes for API responses
 
 // Install event - set up cache
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker');
   self.skipWaiting(); // Activate immediately
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -51,16 +49,6 @@ self.addEventListener('fetch', (event) => {
                        (event.request.headers.get('accept')?.includes('text/html'));
   
   if (isNavigation) {
-    // Log all navigation requests for debugging
-    console.log('[SW] Navigation request detected:', {
-      url: url.href,
-      mode: event.request.mode,
-      destination: event.request.destination,
-      referrer: event.request.referrer,
-      cacheControl: event.request.headers.get('cache-control'),
-      pragma: event.request.headers.get('pragma'),
-    });
-    
     // Check if this is a refresh (reload) request
     // Multiple detection methods for reliability
     const referrer = event.request.referrer;
@@ -95,35 +83,20 @@ self.addEventListener('fetch', (event) => {
         (referrer && new URL(referrer).origin === url.origin) // Same origin = likely refresh
       ));
     
-    console.log('[SW] Refresh check:', {
-      isRefresh,
-      referrerMatches,
-      hasCacheControl: !!cacheControl,
-      hasPragma: !!pragma,
-    });
-    
     if (isRefresh) {
-      console.log('[SW] 🔄 Refresh detected, delaying navigation by', REFRESH_DELAY_MS, 'ms');
-      console.log('[SW] Page will stay visible during delay (like Unsplash)');
-      
       // CRITICAL: Must call respondWith to intercept the navigation
       // Delay the navigation response - this keeps the page visible!
       // The browser's X icon will show because the request is pending
       event.respondWith(
         new Promise((resolve) => {
-          console.log('[SW] Starting delay timer...');
-          
           // Wait for the delay period
           // During this time, the page stays visible and X icon shows
           const timeoutId = setTimeout(() => {
-            console.log('[SW] Delay complete, fetching page...');
-            
             // After delay, fetch the page normally
             fetch(event.request, {
               cache: 'no-cache', // Ensure fresh fetch
             })
               .then((response) => {
-                console.log('[SW] Page fetched successfully');
                 // Clone response for potential caching
                 if (response.ok) {
                   const responseToCache = response.clone();
@@ -134,14 +107,11 @@ self.addEventListener('fetch', (event) => {
                 resolve(response);
               })
               .catch((error) => {
-                console.error('[SW] Fetch failed, trying cache:', error);
                 // If fetch fails, try cache
                 caches.match(event.request).then((cached) => {
                   if (cached) {
-                    console.log('[SW] Using cached response');
                     resolve(cached);
                   } else {
-                    console.error('[SW] No cache available, returning error');
                     resolve(new Response('Navigation failed', { status: 503 }));
                   }
                 });
@@ -157,7 +127,6 @@ self.addEventListener('fetch', (event) => {
             event.request.signal.addEventListener('abort', () => {
               clearTimeout(timeoutId);
               refreshDelays.delete(event.request.url);
-              console.log('[SW] Refresh delay cancelled (client disconnected)');
             });
           }
           
@@ -170,8 +139,6 @@ self.addEventListener('fetch', (event) => {
         })
       );
       return;
-    } else {
-      console.log('[SW] Not a refresh, allowing normal navigation');
     }
   }
 
@@ -302,7 +269,7 @@ async function cleanupCache(cache) {
       await Promise.all(toDelete.map(key => cache.delete(key)));
     }
   } catch (error) {
-    console.error('[SW] Cache cleanup failed:', error);
+    // Cache cleanup failed - silently continue
   }
 }
 
@@ -325,7 +292,7 @@ self.addEventListener('message', (event) => {
         event.ports[0]?.postMessage({ type: 'PRELOAD_COMPLETE', url });
       })
       .catch((error) => {
-        console.error('[SW] Preload failed:', error);
+        // Preload failed - notify main thread
         event.ports[0]?.postMessage({ type: 'PRELOAD_FAILED', url });
       });
   }

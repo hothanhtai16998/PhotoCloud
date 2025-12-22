@@ -49,7 +49,6 @@ const getRefreshDelay = (): number => {
 
 const REFRESH_DELAY_MS = getRefreshDelay();
 const REFRESH_DELAY_FLAG = '_refreshDelayActive';
-const isDev = import.meta.env.DEV;
 
 let isInRefreshDelay = false;
 let refreshTimeout: NodeJS.Timeout | null = null;
@@ -60,10 +59,6 @@ let pendingRequestController: AbortController | null = null;
  * Called when user clicks the X icon to cancel refresh
  */
 const cancelRefreshDelay = (): void => {
-  if (isDev) {
-    console.log('[RefreshHandler] ❌ Refresh cancelled by user (X icon clicked)');
-  }
-  
   // Clear flags
   isInRefreshDelay = false;
   sessionStorage.removeItem(REFRESH_DELAY_FLAG);
@@ -100,9 +95,6 @@ const startPendingRequest = (): Promise<void> => {
     
     // Listen for abort signal (when user clicks X icon)
     pendingRequestController.signal.addEventListener('abort', () => {
-      if (isDev) {
-        console.log('[RefreshHandler] Pending request aborted (X icon clicked)');
-      }
       // Cancel the refresh delay when X is clicked
       cancelRefreshDelay();
       // Resolve to indicate cancellation
@@ -117,11 +109,7 @@ const startPendingRequest = (): Promise<void> => {
       cache: 'no-cache'
     }).catch((error) => {
       // If aborted, it means user clicked X - that's expected
-      if (error.name === 'AbortError') {
-        if (isDev) {
-          console.log('[RefreshHandler] Request aborted - refresh cancelled');
-        }
-      }
+      // Error handled silently
     });
     
     // Abort after delay (if user didn't click X)
@@ -150,7 +138,6 @@ const startPendingRequest = (): Promise<void> => {
  */
 const handleRefreshWithDelay = (): void => {
   if (isInRefreshDelay) {
-    if (isDev) console.log('[RefreshHandler] Refresh already in progress');
     return;
   }
   
@@ -164,24 +151,14 @@ const handleRefreshWithDelay = (): void => {
   // Start pending request to show X icon
   startPendingRequest().then(() => {
     // User clicked X - cancelled
-    if (isDev) {
-      console.log('[RefreshHandler] Refresh cancelled by user (keyboard shortcut)');
-    }
     cancelRefreshDelay();
   }).catch(() => {
     // Delay completed - reload
-    if (isDev) {
-      console.log('[RefreshHandler] ✅ Delay complete, reloading page');
-    }
     isInRefreshDelay = false;
     sessionStorage.removeItem(REFRESH_DELAY_FLAG);
     sessionStorage.removeItem(REFRESH_DELAY_FLAG + '_ts');
     window.location.reload();
   });
-  
-  if (isDev) {
-    console.log('[RefreshHandler] ⏳ Refresh delayed - page will reload in', REFRESH_DELAY_MS, 'ms');
-  }
 };
 
 /**
@@ -241,9 +218,6 @@ const isNavigationAPISupported = (): boolean => {
  */
 const setupNavigationAPI = (): (() => void) => {
   if (!isNavigationAPISupported()) {
-    if (isDev) {
-      console.log('[RefreshHandler] Navigation API not available');
-    }
     return () => {};
   }
   
@@ -251,32 +225,13 @@ const setupNavigationAPI = (): (() => void) => {
     const navigation = window.navigation!;
     
     const handleNavigate = (event: NavigateEvent) => {
-      if (isDev) {
-        console.log('[RefreshHandler] Navigation event:', {
-          type: event.navigationType,
-          destination: event.destination?.url,
-          canIntercept: event.canIntercept,
-        });
-      }
-      
       // Check if this is a refresh (reload)
       if (event.navigationType === 'reload') {
         // Check if we're already in a delay (prevent loop)
         // Check BOTH the flag and the in-memory flag
         const delayActive = sessionStorage.getItem(REFRESH_DELAY_FLAG) === 'true';
         
-        if (isDev) {
-          console.log('[RefreshHandler] Reload detected, checking flags:', {
-            delayActive,
-            isInRefreshDelay,
-            flagValue: sessionStorage.getItem(REFRESH_DELAY_FLAG)
-          });
-        }
-        
         if (delayActive || isInRefreshDelay) {
-          if (isDev) {
-            console.log('[RefreshHandler] ⚠️ Already in delay, skipping interception to prevent loop');
-          }
           // Clear the flag - this reload is the delayed one
           sessionStorage.removeItem(REFRESH_DELAY_FLAG);
           sessionStorage.removeItem(REFRESH_DELAY_FLAG + '_ts');
@@ -284,15 +239,8 @@ const setupNavigationAPI = (): (() => void) => {
           return; // Don't intercept - let it proceed normally
         }
         
-        if (isDev) {
-          console.log('[RefreshHandler] 🎯 Navigation API: Refresh detected!');
-        }
-        
         // Check if we can intercept
         if (!event.canIntercept) {
-          if (isDev) {
-            console.warn('[RefreshHandler] Cannot intercept this navigation');
-          }
           return;
         }
         
@@ -305,16 +253,8 @@ const setupNavigationAPI = (): (() => void) => {
           sessionStorage.setItem(REFRESH_DELAY_FLAG, 'true');
           sessionStorage.setItem(REFRESH_DELAY_FLAG + '_ts', Date.now().toString());
           
-          if (isDev) {
-            console.log('[RefreshHandler] Setting delay flags before intercept');
-          }
-          
           event.intercept({
             handler: async () => {
-              if (isDev) {
-                console.log('[RefreshHandler] Navigation intercepted, starting delay...');
-              }
-              
               // Cancel all pending requests
               cancelAllPendingRequests();
               
@@ -324,16 +264,9 @@ const setupNavigationAPI = (): (() => void) => {
               try {
                 await startPendingRequest();
                 // If we get here, user clicked X - refresh is cancelled
-                if (isDev) {
-                  console.log('[RefreshHandler] Refresh cancelled by user, staying on page');
-                }
                 return; // Don't reload
               } catch (error) {
                 // Delay completed (not cancelled)
-                if (isDev) {
-                  console.log('[RefreshHandler] Delay complete, preparing reload...');
-                }
-                
                 // Abort the pending request (X icon will disappear)
                 if (pendingRequestController) {
                   pendingRequestController.abort();
@@ -344,24 +277,14 @@ const setupNavigationAPI = (): (() => void) => {
                 // The sessionStorage flag will prevent re-interception on the next reload
                 isInRefreshDelay = false;
                 
-                if (isDev) {
-                  console.log('[RefreshHandler] Reloading page (flag will prevent re-interception)...');
-                }
-                
                 // Now reload - the sessionStorage flag will prevent this from being intercepted again
                 window.location.reload();
               }
             },
             commit: 'immediate' // Commit immediately but delay handler
           });
-          
-          if (isDev) {
-            console.log('[RefreshHandler] ✅ Navigation intercept registered');
-          }
         } catch (error) {
-          if (isDev) {
-            console.error('[RefreshHandler] Failed to intercept navigation:', error);
-          }
+          // Failed to intercept navigation - continue normally
           isInRefreshDelay = false;
           sessionStorage.removeItem(REFRESH_DELAY_FLAG);
         }
@@ -370,39 +293,11 @@ const setupNavigationAPI = (): (() => void) => {
     
     navigation.addEventListener('navigate', handleNavigate);
     
-    // Also listen to ALL navigation events to debug (dev only)
-    let debugHandler: ((e: NavigateEvent) => void) | null = null;
-    if (isDev) {
-      debugHandler = (e: NavigateEvent) => {
-        console.log('[RefreshHandler] 🔍 ALL navigation events:', {
-          type: e.navigationType,
-          destination: e.destination?.url,
-          canIntercept: e.canIntercept,
-          hashChange: e.hashChange,
-          downloadRequest: e.downloadRequest,
-          formData: e.formData,
-          info: e.info,
-          signal: e.signal,
-        });
-      };
-      navigation.addEventListener('navigate', debugHandler);
-    }
-    
-    if (isDev) {
-      console.log('[RefreshHandler] ✅ Navigation API listener registered');
-      console.log('[RefreshHandler] Navigation API available:', isNavigationAPISupported());
-    }
-    
     return () => {
       navigation.removeEventListener('navigate', handleNavigate);
-      if (debugHandler) {
-        navigation.removeEventListener('navigate', debugHandler);
-      }
     };
   } catch (error) {
-    if (isDev) {
-      console.warn('[RefreshHandler] Navigation API error:', error);
-    }
+    // Navigation API error - return no-op cleanup
     return () => {};
   }
 };
@@ -424,10 +319,6 @@ const interceptKeyboardShortcuts = (): (() => void) => {
         e.stopPropagation();
         e.stopImmediatePropagation();
         return false;
-      }
-      
-      if (isDev) {
-        console.log('[RefreshHandler] 🔄 Refresh key pressed (F5/Ctrl+R)');
       }
       
       e.preventDefault();
@@ -461,16 +352,6 @@ const interceptBeforeUnload = (): (() => void) => {
     
     // Try to detect if this is a refresh
     // Note: We can't fully prevent beforeunload, but we can try
-    const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    const isRefresh = navEntry?.type === 'reload';
-    
-    if (isDev) {
-      console.log('[RefreshHandler] beforeunload event:', {
-        isRefresh,
-        navigationType: navEntry?.type,
-      });
-    }
-    
     // Cancel requests to prevent 429
     cancelAllPendingRequests();
     
@@ -506,17 +387,6 @@ const showBrowserCompatibilityNotice = (): void => {
     return; // Already shown
   }
   
-  // Show subtle notice (only in dev mode or first time)
-  if (isDev) {
-    console.log(
-      '%c[RefreshHandler] Browser Compatibility',
-      'color: #ffa500; font-weight: bold;',
-      '\nNavigation API is not fully supported in this browser.\n' +
-      'Refresh behavior may differ from Chrome/Edge.\n' +
-      'Service Worker fallback is active.'
-    );
-  }
-  
   // Mark as shown
   sessionStorage.setItem('_refreshNoticeShown', 'true');
 };
@@ -539,9 +409,6 @@ export const initRefreshHandler = (): (() => void) => {
       if (elapsed > 5000) {
         sessionStorage.removeItem(REFRESH_DELAY_FLAG);
         sessionStorage.removeItem(REFRESH_DELAY_FLAG + '_ts');
-        if (isDev) {
-          console.log('[RefreshHandler] Cleared stale refresh delay flag');
-        }
       }
     } else {
       // No timestamp, clear it
@@ -565,13 +432,6 @@ export const initRefreshHandler = (): (() => void) => {
   
   // Try to intercept refresh button clicks (fallback) - limited support
   cleanups.push(interceptRefreshButton());
-  
-  if (isDev) {
-    console.log('[RefreshHandler] ✅ Refresh handler initialized', {
-      navigationAPI: isNavigationAPISupported(),
-      serviceWorker: 'serviceWorker' in navigator,
-    });
-  }
   
   // Cleanup function
   return () => {

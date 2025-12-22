@@ -29,6 +29,7 @@ import { NoFlashGrid } from '@/components/NoFlashGrid';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
 import { detectAvifSupport } from '@/utils/avifSupport';
+import { getRegularDisplayUrl, getOriginalDisplayUrl } from '@/utils/imageUrlUtils';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
 import closeIcon from '@/assets/close.svg';
@@ -183,36 +184,13 @@ function ImagePage() {
   const [isImageChanging, setIsImageChanging] = useState(false);
 
   // Helpers to choose best display URLs (prefer AVIF when supported)
-  const getRegularDisplayUrl = useCallback((img: Image | null): string => {
-    if (!img) return '';
-    if (supportsAvif) {
-      // Prefer AVIF variants first, then fall back to WebP/JPEG sources.
-      return (
-        img.regularAvifUrl ||
-        img.imageAvifUrl ||
-        img.regularUrl ||
-        img.imageUrl ||
-        img.smallAvifUrl ||
-        img.smallUrl ||
-        ''
-      );
-    }
-    // Fallback when AVIF is not supported.
-    return img.regularUrl || img.imageUrl || img.smallUrl || '';
+  // Use shared utility functions with AVIF support
+  const getRegularUrl = useCallback((img: Image | null): string => {
+    return getRegularDisplayUrl(img, supportsAvif);
   }, [supportsAvif]);
 
-  const getOriginalDisplayUrl = useCallback((img: Image | null): string => {
-    if (!img) return '';
-    if (supportsAvif) {
-      return (
-        img.imageAvifUrl ||
-        img.regularAvifUrl ||
-        img.imageUrl ||
-        img.regularUrl ||
-        ''
-      );
-    }
-    return img.imageUrl || img.regularUrl || '';
+  const getOriginalUrl = useCallback((img: Image | null): string => {
+    return getOriginalDisplayUrl(img, supportsAvif);
   }, [supportsAvif]);
 
   // Simplified: Single image source and loaded state (like Unsplash)
@@ -285,8 +263,8 @@ function ImagePage() {
   // Helper function to set image source and loaded state
   // Avoids code duplication across multiple fetch paths
   const setImageSourceAndState = useCallback((img: Image) => {
-    const regular = getRegularDisplayUrl(img);
-    const original = getOriginalDisplayUrl(img);
+    const regular = getRegularUrl(img);
+    const original = getOriginalUrl(img);
     
     if (regular && loadedImages.has(regular)) {
       setImageSrc(regular);
@@ -316,7 +294,7 @@ function ImagePage() {
         }
       }
     }
-  }, [getRegularDisplayUrl, getOriginalDisplayUrl]);
+  }, [getRegularUrl, getOriginalUrl]);
 
   // Fetch image
   useEffect(() => {
@@ -550,8 +528,8 @@ function ImagePage() {
     }
     
     const currentImageId = image._id;
-    const regular = getRegularDisplayUrl(image);
-    const original = getOriginalDisplayUrl(image);
+    const regular = getRegularUrl(image);
+    const original = getOriginalUrl(image);
     const src = regular || original;
     
     if (!src) return;
@@ -777,7 +755,7 @@ function ImagePage() {
           });
       }
     }
-  }, [image, imageSrc, getRegularDisplayUrl, getOriginalDisplayUrl, calculateInitialHeight]);
+  }, [image, imageSrc, getRegularUrl, getOriginalUrl, calculateInitialHeight]);
 
   // Set initial container height when image changes (before images load)
   useEffect(() => {
@@ -817,7 +795,7 @@ function ImagePage() {
       // Stagger preload slightly to not block main thread
       setTimeout(() => {
         // Preload regular URL with decode (ensures image is ready for display)
-        const regular = getRegularDisplayUrl(relatedImg);
+        const regular = getRegularUrl(relatedImg);
         if (regular && !loadedImages.has(regular)) {
           preloadImage(regular, false).catch(() => {}); // skipDecode=false for modal
         }
@@ -828,7 +806,7 @@ function ImagePage() {
         }
       }, index * 50); // Stagger by 50ms to avoid overwhelming
     });
-  }, [relatedImages, getRegularDisplayUrl]);
+  }, [relatedImages, getRegularUrl]);
 
   // Load dimensions for related images
   // Update image container height if dimensions are available
@@ -1312,10 +1290,10 @@ function ImagePage() {
 
   // Handle related image hover - preload on hover for instant click
   // This is like Unsplash: preload when user hovers, so click is instant
-  // Preload AVIF URL (getRegularDisplayUrl already prefers AVIF)
+  // Preload AVIF URL (getRegularUrl already prefers AVIF)
   const handleRelatedImageHover = useCallback((relatedImage: Image) => {
-    // Get AVIF URL (getRegularDisplayUrl prefers AVIF when supported)
-    const regular = getRegularDisplayUrl(relatedImage);
+    // Get AVIF URL (getRegularUrl prefers AVIF when supported)
+    const regular = getRegularUrl(relatedImage);
     if (regular && !loadedImages.has(regular)) {
       // Preload with decode (skipDecode=false) to ensure it's ready
       // Don't await - just start loading in background
@@ -1323,7 +1301,7 @@ function ImagePage() {
     }
     
     // Note: Container height is calculated in handleRelatedImageClick when user actually clicks
-  }, [getRegularDisplayUrl]);
+  }, [getRegularUrl]);
 
   // Handle related image click
   //
@@ -1379,8 +1357,8 @@ function ImagePage() {
 
     // Check if image is already preloaded (from hover) FIRST
     // This determines whether we should save previous image or not
-    const regular = getRegularDisplayUrl(relatedImage);
-    const original = getOriginalDisplayUrl(relatedImage);
+    const regular = getRegularUrl(relatedImage);
+    const original = getOriginalUrl(relatedImage);
     const wasPreloaded = regular && (loadedImages.has(regular) || loadedImages.has(original) || imageLoadedMapRef.current.get(relatedImage._id) === true);
     
     if (wasPreloaded) {
@@ -1444,7 +1422,7 @@ function ImagePage() {
     setTimeout(() => {
       setIsClickingRelatedImage(false);
     }, 100);
-  }, [navigate, locationWithState, relatedImages, image, imageSrc, imageLoaded, getRegularDisplayUrl]);
+  }, [navigate, locationWithState, relatedImages, image, imageSrc, imageLoaded, getRegularUrl]);
 
   // Trigger animation when tooltip appears
   useEffect(() => {
@@ -1856,8 +1834,8 @@ function ImagePage() {
             {/* Render current image */}
             {/* Always render image directly from image object (like Unsplash) */}
             {image && (() => {
-              // Always use getRegularDisplayUrl directly, don't wait for imageSrc state
-              const src = getRegularDisplayUrl(image) || getOriginalDisplayUrl(image);
+              // Always use getRegularUrl directly, don't wait for imageSrc state
+              const src = getRegularUrl(image) || getOriginalUrl(image);
               
               // Only render if we have a valid src
               if (!src) return null;
@@ -1876,8 +1854,8 @@ function ImagePage() {
               
               // Use imageLoaded state for current image, or check map for others
               // Also check if image was preloaded (for instant display)
-              const regular = getRegularDisplayUrl(image);
-              const original = getOriginalDisplayUrl(image);
+              const regular = getRegularUrl(image);
+              const original = getOriginalUrl(image);
               // Check multiple sources: loadedImages set and imageLoadedMap
               const inLoadedSet = loadedImages.has(regular) || loadedImages.has(original);
               const inLoadedMap = imageLoadedMapRef.current.get(image._id) === true;

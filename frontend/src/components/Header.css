@@ -821,17 +821,18 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
     width: 100%;
   }
 
-  /* Mobile header: top (58px) + category nav (34px) = 92px total */
+  /* Mobile header: minimal padding for compact spacing */
   .header-top {
-    height: 58px; /* Mobile: 10px padding + 48px container = 58px */
-    min-height: 48px;
+    padding: 0; /* Remove top padding completely */
+    height: 44px; /* Mobile: 0px padding + 44px container = 44px (reduced from 52px) */
+    min-height: 44px;
   }
   
   .header-container {
     flex-wrap: nowrap; /* Don't wrap on mobile */
     padding: 0 12px;
     gap: 12px;
-    height: 48px; /* Match reduced header height */
+    height: 44px; /* Reduced from 48px for more compact header */
   }
 
   .header-logo {
@@ -845,9 +846,8 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   }
 
   .search-bar-container {
-    /* Search bar positioning handled by SearchBar.css - it's in normal flow on mobile */
-    /* Keep it visible, SearchBar.css will position it correctly */
-    top: 48px !important; /* Updated to match reduced header height */
+    /* Search bar positioning handled by SearchBar.css */
+    /* It's positioned at top: 58px (below header) */
   }
 
   .header-actions {
@@ -887,8 +887,13 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
     border: 0;
   }
   .header-top {
-    padding-top: 0;
+    padding-top: 0; /* No padding */
     border: 0;
+    height: 44px; /* Same compact height: 0px padding + 44px container = 44px */
+  }
+  
+  .header-container {
+    height: 44px; /* Match reduced header height */
   }
   .header-container {
     padding: 0 12px;

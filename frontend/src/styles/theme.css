@@ -81,9 +81,10 @@
 }
 
 .dark-theme .category-scroll-btn {
-  background: var(--bg-primary);
+  background: transparent !important; /* No background - only show arrow */
   color: var(--text-primary);
-  border-color: var(--border-color);
+  border: none !important; /* No border */
+  box-shadow: none !important; /* No shadow */
 }
 
 /* Search Bar */

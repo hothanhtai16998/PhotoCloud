@@ -9,7 +9,7 @@
  * - imageStatsService - stats operations
  */
 
-import api from '@/lib/axios';
+import { get } from '@/lib/api';
 import type { Image } from '@/types/image';
 import { imageUploadService } from './imageUploadService';
 import { imageFetchService } from './imageFetchService';
@@ -71,7 +71,9 @@ export const imageService = {
     if (sortBy) queryParams.append('sortBy', sortBy);
     if (order) queryParams.append('order', order);
 
-    const response = await api.get(`/images?${queryParams.toString()}`);
+    const response = await get(`/images?${queryParams.toString()}`, {
+      withCredentials: true,
+    });
     return response.data;
   },
 };

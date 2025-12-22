@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { authService } from '@/services/authService';
-import { logger } from '@/utils/logger';
+// Logger removed - info calls are no-ops, removed for performance
 import { toast } from 'sonner';
 
 interface UseWebSocketOptions {
@@ -124,7 +124,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			apiUrl = 'http://localhost:3000';
 		}
 
-		logger.info(`Connecting to WebSocket at: ${apiUrl}`);
+		// Connecting to WebSocket (// logger.info (removed - no-op) removed - no-op)
 
 		// Create socket connection with authentication (singleton)
 		const socket = io(apiUrl, {
@@ -153,7 +153,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 				setReconnectAttempts(0);
 				refreshAttempts = 0; // Reset refresh attempts on successful connection
 				isRefreshingToken = false;
-				logger.info('WebSocket connected');
+				// logger.info (removed - no-op)('WebSocket connected');
 				// Call all subscriber handlers
 				eventHandlers.get('connect')?.forEach(handler => handler());
 			});
@@ -186,7 +186,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 					error.message?.includes('Invalid token');
 
 				if (isAuthError && !isRefreshingToken && refreshAttempts < MAX_REFRESH_ATTEMPTS) {
-					logger.info('WebSocket auth error detected, attempting token refresh...');
+					// logger.info (removed - no-op)('WebSocket auth error detected, attempting token refresh...');
 					isRefreshingToken = true;
 					refreshAttempts++;
 
@@ -195,7 +195,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 						const newToken = await authService.refresh();
 						setAccessToken(newToken);
 						
-						logger.info('Token refreshed, reconnecting WebSocket...');
+						// logger.info (removed - no-op)('Token refreshed, reconnecting WebSocket...');
 						
 						// Disconnect old socket
 						if (globalSocket) {
@@ -243,36 +243,36 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
 			// Notification events (broadcast to all subscribers)
 			socket.on('notification', (notification) => {
-				logger.info('Received notification via WebSocket:', notification.type);
+				// logger.info (removed - no-op)('Received notification via WebSocket:', notification.type);
 				eventHandlers.get('notification')?.forEach(handler => handler(notification));
 			});
 
 			socket.on('unread-count', (data: { unreadCount: number }) => {
-				logger.info('Received unread count update:', data.unreadCount);
+				// logger.info (removed - no-op)('Received unread count update:', data.unreadCount);
 				eventHandlers.get('unread-count')?.forEach(handler => handler(data.unreadCount));
 			});
 
 			// Collection update events (broadcast to all subscribers)
 			socket.on('collection:updated', (update) => {
-				logger.info('Received collection update via WebSocket:', update.type);
+				// logger.info (removed - no-op)('Received collection update via WebSocket:', update.type);
 				eventHandlers.get('collection:updated')?.forEach(handler => handler(update));
 			});
 
 			// Image favorite update events (broadcast to all subscribers)
 			socket.on('image:favorite_updated', (update) => {
-				logger.info('Received image favorite update via WebSocket:', update.imageId);
+				// logger.info (removed - no-op)('Received image favorite update via WebSocket:', update.imageId);
 				eventHandlers.get('image:favorite_updated')?.forEach(handler => handler(update));
 			});
 
 			// User follow update events (broadcast to all subscribers)
 			socket.on('user:follow_updated', (update) => {
-				logger.info('Received user follow update via WebSocket:', update.userId);
+				// logger.info (removed - no-op)('Received user follow update via WebSocket:', update.userId);
 				eventHandlers.get('user:follow_updated')?.forEach(handler => handler(update));
 			});
 
 			// Image stats update events (broadcast to all subscribers)
 			socket.on('image:stats_updated', (update) => {
-				logger.info('Received image stats update via WebSocket:', update.imageId);
+				// logger.info (removed - no-op)('Received image stats update via WebSocket:', update.imageId);
 				eventHandlers.get('image:stats_updated')?.forEach(handler => handler(update));
 			});
 		}
@@ -318,12 +318,12 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 		// Reconnection events (only set up once)
 		if (!socket.io.hasListeners('reconnect_attempt')) {
 			socket.io.on('reconnect_attempt', (attemptNumber) => {
-				logger.info(`WebSocket reconnection attempt ${attemptNumber}`);
+				// logger.info (removed - no-op)(`WebSocket reconnection attempt ${attemptNumber}`);
 				setReconnectAttempts(attemptNumber);
 			});
 
 			socket.io.on('reconnect', (attemptNumber) => {
-				logger.info(`WebSocket reconnected after ${attemptNumber} attempts`);
+				// logger.info (removed - no-op)(`WebSocket reconnected after ${attemptNumber} attempts`);
 				setReconnectAttempts(0);
 			});
 
@@ -406,7 +406,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 
 		// If token changed and socket exists, reconnect with new token
 		if (globalSocket && (globalSocket as any).auth?.token !== accessToken) {
-			logger.info('Access token changed, reconnecting WebSocket...');
+			// logger.info (removed - no-op)('Access token changed, reconnecting WebSocket...');
 			
 			// Disconnect old connection
 			if (globalSocket.connected) {
@@ -443,7 +443,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			// Close WebSocket when page is being cached (bfcache)
 			// This allows the page to enter bfcache for faster back/forward navigation
 			if (globalSocket?.connected) {
-				logger.info('Page hiding, closing WebSocket for bfcache support');
+				// logger.info (removed - no-op)('Page hiding, closing WebSocket for bfcache support');
 				// Disconnect but keep the socket instance so we can reconnect
 				globalSocket.disconnect();
 			}
@@ -452,7 +452,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 		const handlePageShow = (event: PageTransitionEvent) => {
 			// Reconnect WebSocket when page is restored from bfcache
 			if (event.persisted && accessToken && globalSocket && !globalSocket.connected) {
-				logger.info('Page restored from bfcache, reconnecting WebSocket');
+				// logger.info (removed - no-op)('Page restored from bfcache, reconnecting WebSocket');
 				// Small delay to ensure page is fully restored
 				setTimeout(() => {
 					if (accessToken && globalSocket && !globalSocket.connected) {
@@ -498,12 +498,12 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			
 			const timeLeft = currentExpiry - Date.now();
 			if (timeLeft < refreshThreshold && timeLeft > 0) {
-				logger.info('Token expiring soon, refreshing proactively...');
+				// logger.info (removed - no-op)('Token expiring soon, refreshing proactively...');
 				
 				authService.refresh()
 					.then(newToken => {
 						setAccessToken(newToken);
-						logger.info('Token refreshed proactively');
+						// logger.info (removed - no-op)('Token refreshed proactively');
 					})
 					.catch(error => {
 						logger.error('Proactive token refresh failed:', error);
@@ -524,14 +524,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 	const joinCollectionRoom = useCallback((collectionId: string) => {
 		if (globalSocket?.connected && collectionId) {
 			globalSocket.emit('collection:join', collectionId);
-			logger.info(`Joined collection room: ${collectionId}`);
+			// logger.info (removed - no-op)(`Joined collection room: ${collectionId}`);
 		}
 	}, []);
 
 	const leaveCollectionRoom = useCallback((collectionId: string) => {
 		if (globalSocket?.connected && collectionId) {
 			globalSocket.emit('collection:leave', collectionId);
-			logger.info(`Left collection room: ${collectionId}`);
+			// logger.info (removed - no-op)(`Left collection room: ${collectionId}`);
 		}
 	}, []);
 
@@ -539,14 +539,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 	const joinImageRoom = useCallback((imageId: string) => {
 		if (globalSocket?.connected && imageId) {
 			globalSocket.emit('image:join', imageId);
-			logger.info(`Joined image room: ${imageId}`);
+			// logger.info (removed - no-op)(`Joined image room: ${imageId}`);
 		}
 	}, []);
 
 	const leaveImageRoom = useCallback((imageId: string) => {
 		if (globalSocket?.connected && imageId) {
 			globalSocket.emit('image:leave', imageId);
-			logger.info(`Left image room: ${imageId}`);
+			// logger.info (removed - no-op)(`Left image room: ${imageId}`);
 		}
 	}, []);
 
@@ -554,14 +554,14 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 	const joinProfileRoom = useCallback((userId: string) => {
 		if (globalSocket?.connected && userId) {
 			globalSocket.emit('profile:join', userId);
-			logger.info(`Joined profile room: ${userId}`);
+			// logger.info (removed - no-op)(`Joined profile room: ${userId}`);
 		}
 	}, []);
 
 	const leaveProfileRoom = useCallback((userId: string) => {
 		if (globalSocket?.connected && userId) {
 			globalSocket.emit('profile:leave', userId);
-			logger.info(`Left profile room: ${userId}`);
+			// logger.info (removed - no-op)(`Left profile room: ${userId}`);
 		}
 	}, []);
 

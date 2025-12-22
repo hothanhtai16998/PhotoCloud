@@ -6,11 +6,12 @@
   border-bottom: 1px solid var(--color-border, #e5e5e5);
   margin: 0;
   padding: 0;
+  padding-bottom: 2px; /* Add space for underline visibility */
   z-index: var(--z-category-nav, 1499);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
   height: 34px; /* Explicit height: 6px padding + ~22px content + 6px padding */
-  overflow: hidden;
+  overflow: visible; /* Allow underline to be visible below */
 }
 
 .category-navigation-wrapper {
@@ -19,13 +20,13 @@
   max-width: min(1600px, 96%); /* Match image-grid-container max-width */
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: center; /* Vertical centering */
   overflow: visible; /* Allow buttons to be visible outside */
 }
 
 .category-navigation {
   display: flex;
-  align-items: center;
+  align-items: center; /* Vertical centering */
   gap: 32px;
   padding: 6px 20px; /* Reduced padding for smaller size */
   overflow-x: auto;
@@ -36,6 +37,7 @@
   /* Add extra padding when scroll buttons are present */
   padding-left: 48px;
   padding-right: 48px;
+  height: 100%; /* Full height to ensure proper vertical alignment */
 }
 
 /* Desktop: Allow scrolling if needed and show buttons when needed */
@@ -57,36 +59,46 @@
 
 .category-nav-link {
   font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--color-text-secondary, #767676);
+  font-weight: 400; /* Normal weight for all categories */
+  color: var(--color-text-primary, #111); /* Same color for all */
+  opacity: 0.6; /* Low opacity for inactive (Unsplash style) */
   text-decoration: none;
-  background: transparent;
-  border: none;
+  background: transparent !important; /* Override any global button styles */
+  border: none !important; /* Override global button border */
   cursor: pointer;
-  padding: 0;
+  padding: 0 !important; /* Override any default padding */
+  margin: 0 !important; /* Remove default margin */
   white-space: nowrap;
-  transition: color 0.2s ease;
+  transition: opacity 0.2s ease, color 0.2s ease;
   position: relative;
   flex-shrink: 0;
+  line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
+  display: flex !important;
+  align-items: center !important; /* Ensure vertical centering */
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
 }
 
 .category-nav-link:hover {
+  opacity: 0.8; /* Slightly higher opacity on hover */
   color: var(--color-text-primary, #111);
 }
 
 .category-nav-link.active {
+  opacity: 1; /* Full opacity for active (Unsplash style) */
   color: var(--color-text-primary, #111);
-  font-weight: 500;
+  font-weight: 400; /* Same weight, not bold */
 }
 
 .category-nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: -6px; /* Adjusted for reduced padding */
+  bottom: -2px; /* Position just below the text for visibility */
   left: 0;
   right: 0;
-  height: 2px;
+  height: 2px; /* Make underline more visible (2px) */
   background: var(--color-text-primary, #111);
+  display: block;
 }
 
 /* Scroll buttons - visible when needed (both desktop and mobile) */
@@ -94,19 +106,22 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  display: flex; /* Show by default when conditionally rendered */
+  width: auto !important; /* Auto width to fit only the arrow */
+  height: auto !important; /* Auto height to fit only the arrow */
+  min-width: unset !important;
+  min-height: unset !important;
+  border-radius: 0 !important; /* No rounded corners */
+  background: transparent !important; /* No background */
+  border: none !important; /* No border */
+  padding: 0 !important; /* No padding */
+  margin: 0 !important; /* No margin */
+  display: flex !important; /* Show by default when conditionally rendered */
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
-    transform 0.15s ease;
+  box-shadow: none !important; /* No shadow */
+  transition: opacity 0.2s ease, transform 0.15s ease;
   flex-shrink: 0;
   opacity: 0.9;
   animation: fadeIn 0.2s ease-in;
@@ -122,15 +137,15 @@
 }
 
 .category-scroll-btn:hover {
-  background: #fff;
-  opacity: 1;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-  border-color: rgba(0, 0, 0, 0.15);
+  background: transparent !important; /* Keep transparent on hover */
+  opacity: 1 !important;
+  box-shadow: none !important; /* No shadow on hover */
+  border: none !important; /* No border on hover */
 }
 
 .category-scroll-btn:active {
   transform: translateY(-50%) scale(0.95);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none !important; /* No shadow on active */
 }
 
 .category-scroll-btn-left {
@@ -143,6 +158,10 @@
 
 .category-scroll-btn svg {
   color: #111;
+  display: block; /* Ensure SVG displays properly */
+  flex-shrink: 0; /* Prevent SVG from shrinking */
+  width: 24px !important; /* Bigger arrow icon */
+  height: 24px !important; /* Bigger arrow icon */
 }
 
 /* Responsive */
@@ -165,32 +184,112 @@
   }
 }
 
-/* Mobile - Using mobileBreakpoint (768px) */
+/* Mobile - Using mobileBreakpoint (768px) - Match Unsplash Design */
 @media (max-width: 768px) {
   .category-navigation-container {
-    z-index: var(--z-category-nav, 1499);
+    position: fixed !important; /* Fixed below search bar */
+    top: 92px !important; /* Header (44px) + Search bar (48px) = 92px */
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1498 !important; /* Below header (1500) and search bar (1499) */
+    height: 42px !important; /* Increased to accommodate 2px underline */
+    width: 100% !important;
+    overflow: visible !important; /* Allow underline to be visible below */
+    border-bottom: 1px solid var(--color-border, #e5e5e5) !important;
+    padding-bottom: 0 !important;
   }
 
   .category-navigation-wrapper {
     padding: 0 0; /* No padding, buttons positioned absolutely */
     width: 100%;
     max-width: 100%;
+    height: 100%; /* Full height of container */
+    display: flex; /* Enable flexbox for vertical centering */
+    align-items: center; /* Vertically center the navigation */
+    overflow: visible !important; /* Ensure underline is not clipped */
+    position: relative; /* For gradient overlay */
+  }
+
+  /* Gradient overlay to fade categories behind scroll buttons - only show when buttons are visible */
+  .category-navigation-wrapper:has(.category-scroll-btn-left)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 60px; /* Width of fade area on left */
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
+    pointer-events: none;
+    z-index: 9; /* Above categories but below scroll buttons */
+  }
+
+  .category-navigation-wrapper:has(.category-scroll-btn-right)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 60px; /* Width of fade area on right */
+    height: 100%;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    pointer-events: none;
+    z-index: 9; /* Above categories but below scroll buttons */
   }
 
   .category-navigation {
-    gap: 20px;
-    padding: 6px 48px; /* Reduced padding for smaller size */
+    gap: 24px; /* Match Unsplash spacing */
+    padding: 0 16px !important; /* Match Unsplash padding */
+    padding-left: 16px !important; /* Override global padding-left */
+    padding-right: 16px !important; /* Override global padding-right */
+    height: 100%; /* Full height for vertical centering */
     overflow-x: auto !important; /* Enable scrolling on mobile */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x; /* Allow horizontal scrolling */
     scroll-behavior: smooth;
     overscroll-behavior-x: contain;
+    position: relative;
+    z-index: 1; /* Below gradient overlays */
   }
 
   .category-nav-link {
-    font-size: 0.8125rem;
+    font-size: 0.875rem !important; /* 14px - Match Unsplash font size */
+    padding: 0 !important; /* No padding at all */
+    height: 100% !important; /* Full height for vertical centering */
+    min-height: 40px !important; /* Match container height */
+    display: flex !important;
+    align-items: center !important; /* Vertical centering */
+    justify-content: flex-start !important; /* Left align text like Unsplash */
     pointer-events: auto;
+    opacity: 0.6 !important; /* Low opacity for inactive (Unsplash style) */
+    font-weight: 400 !important; /* Normal weight - same for all */
+    color: #111 !important; /* Match Unsplash: #111 for all */
+    line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
+    transition: opacity 0.2s ease !important;
+    margin: 0 !important; /* Remove any default margin */
+    box-sizing: border-box !important;
+    background: transparent !important; /* Ensure no background */
+    border: none !important; /* Ensure no border */
+  }
+
+  .category-nav-link:hover {
+    opacity: 0.8 !important; /* Slightly higher opacity on hover */
+  }
+
+  .category-nav-link.active {
+    opacity: 1 !important; /* Full opacity for active (Unsplash style) */
+    font-weight: 400 !important; /* Same weight, not bold */
+  }
+
+  .category-nav-link.active::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -1px !important; /* Position just above the container border */
+    left: 0 !important; /* Full width underline */
+    right: 0 !important; /* Full width underline */
+    height: 2px !important; /* Make underline more visible (2px) */
+    background: #111 !important; /* Solid black underline */
+    display: block !important;
+    z-index: 2 !important; /* Ensure it's above border and other elements */
   }
 
   /* Scroll buttons already shown via conditional rendering */
@@ -198,40 +297,122 @@
 
 @media (max-width: 480px) {
   .category-navigation-container {
-    z-index: var(--z-category-nav, 1499);
+    position: fixed !important; /* Fixed below search bar */
+    top: 92px !important; /* Header (44px) + Search bar (48px) = 92px */
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1498 !important; /* Below header (1500) and search bar (1499) */
+    height: 42px !important; /* Increased to accommodate 2px underline */
+    width: 100% !important;
+    overflow: visible !important; /* Allow underline to be visible below */
+    border-bottom: 1px solid var(--color-border, #e5e5e5) !important;
+    padding-bottom: 0 !important;
   }
 
   .category-navigation-wrapper {
     padding: 0 0; /* No padding, buttons positioned absolutely */
     width: 100%;
+    height: 100%; /* Full height of container */
+    display: flex; /* Enable flexbox for vertical centering */
+    align-items: center; /* Vertically center the navigation */
+    overflow: visible !important; /* Ensure underline is not clipped */
+    position: relative; /* For gradient overlay */
+  }
+
+  /* Gradient overlay to fade categories behind scroll buttons - only show when buttons are visible */
+  .category-navigation-wrapper:has(.category-scroll-btn-left)::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 60px; /* Width of fade area on left */
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
+    pointer-events: none;
+    z-index: 9; /* Above categories but below scroll buttons */
+  }
+
+  .category-navigation-wrapper:has(.category-scroll-btn-right)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 60px; /* Width of fade area on right */
+    height: 100%;
+    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    pointer-events: none;
+    z-index: 9; /* Above categories but below scroll buttons */
   }
 
   .category-navigation {
-    gap: 16px;
-    padding: 6px 44px; /* Reduced padding for smaller size */
+    gap: 20px; /* Slightly smaller gap on very small screens */
+    padding: 0 12px !important; /* Match Unsplash padding on small screens */
+    padding-left: 12px !important; /* Override global padding-left */
+    padding-right: 12px !important; /* Override global padding-right */
+    height: 100%; /* Full height for vertical centering */
     overflow-x: auto !important; /* Enable scrolling on mobile */
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x; /* Allow horizontal scrolling */
     scroll-behavior: smooth;
     overscroll-behavior-x: contain;
+    position: relative;
+    z-index: 1; /* Below gradient overlays */
   }
 
   .category-nav-link {
-    font-size: 0.75rem;
-    padding: 8px 4px;
-    min-height: 44px; /* Better touch target */
-    display: flex;
-    align-items: center;
+    font-size: 0.875rem !important; /* 14px - Match Unsplash font size */
+    padding: 0 !important; /* No padding at all */
+    height: 100% !important; /* Full height for vertical centering */
+    min-height: 40px !important; /* Match container height */
+    display: flex !important;
+    align-items: center !important; /* Vertical centering */
+    justify-content: flex-start !important; /* Left align text like Unsplash */
+    opacity: 0.6 !important; /* Low opacity for inactive (Unsplash style) */
+    font-weight: 400 !important; /* Normal weight - same for all */
+    color: #111 !important; /* Match Unsplash: #111 for all */
+    line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
+    transition: opacity 0.2s ease !important;
+    margin: 0 !important; /* Remove any default margin */
+    box-sizing: border-box !important;
+    background: transparent !important; /* Ensure no background */
+    border: none !important; /* Ensure no border */
+  }
+
+  .category-nav-link:hover {
+    opacity: 0.8 !important; /* Slightly higher opacity on hover */
+  }
+
+  .category-nav-link.active {
+    opacity: 1 !important; /* Full opacity for active (Unsplash style) */
+    font-weight: 400 !important; /* Same weight, not bold */
+  }
+
+  .category-nav-link.active::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -1px !important; /* Position just above the container border */
+    left: 0 !important; /* Full width underline */
+    right: 0 !important; /* Full width underline */
+    height: 2px !important; /* Make underline more visible (2px) */
+    background: #111 !important; /* Solid black underline */
+    display: block !important;
+    z-index: 2 !important; /* Ensure it's above border and other elements */
   }
 
   .category-scroll-btn {
-    width: 28px;
-    height: 28px;
+    width: auto !important; /* Auto width to fit only the arrow */
+    height: auto !important; /* Auto height to fit only the arrow */
+    min-width: unset !important;
+    min-height: unset !important;
+    background: transparent !important; /* No background */
+    border: none !important; /* No border */
+    padding: 0 !important; /* No padding */
+    box-shadow: none !important; /* No shadow */
   }
 
   .category-scroll-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 24px !important; /* Bigger arrow icon on mobile */
+    height: 24px !important; /* Bigger arrow icon on mobile */
   }
 }

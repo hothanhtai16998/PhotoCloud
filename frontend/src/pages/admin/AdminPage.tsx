@@ -128,6 +128,7 @@ function AdminPage() {
     });
 
     // Keep refs in sync with latest functions
+    // Only update when the actual functions or data change, not on every render
     useEffect(() => {
         loadFunctionsRef.current = {
             loadUsers: usersAdmin.loadUsers,
@@ -136,7 +137,7 @@ function AdminPage() {
             loadAdminRoles: rolesAdmin.loadAdminRoles,
             getUsersLength: () => usersAdmin.users.length,
         };
-    });
+    }, [usersAdmin.loadUsers, usersAdmin.users.length, imagesAdmin.loadImages, categoriesAdmin.loadCategories, rolesAdmin.loadAdminRoles]);
 
     // Load data when tab changes
     useEffect(() => {

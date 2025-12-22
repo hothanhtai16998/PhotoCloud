@@ -5,6 +5,7 @@
   width: 100%;
   margin-left: 0;
   margin-top: 100px; /* Below header: 66px top + 34px category nav = 100px */
+  margin-bottom: 60px; /* Gap between slider and grid */
   height: calc(100vh - 100px); /* Full height minus header */
   overflow: hidden;
   font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -558,6 +559,7 @@
   .visual-art-slider {
     margin-left: 0;
     margin-top: 100px; /* Same as desktop */
+    margin-bottom: 50px; /* Gap between slider and grid */
     width: 100%;
     height: calc(100vh - 100px);
   }
@@ -663,103 +665,9 @@
 }
 
 @media (max-width: 768px) {
+  /* Hide slider on mobile devices (768px and below) */
   .visual-art-slider {
-    margin-left: 0; /* No sidebar on mobile */
-    margin-top: 92px; /* Mobile header: 58px + 34px category = 92px */
-    width: 100%; /* Full width on mobile */
-    height: calc(100vh - 92px); /* Full height minus mobile header */
-  }
-
-  .slider-main {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-  }
-
-  .image-container {
-    width: 100%;
-    height: 100%;
-  }
-
-  .content-left {
-    order: 0;
-    position: absolute;
-    top: 62%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 85vw;
-    max-width: 320px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.18rem;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.22);
-    padding: 0.35rem 0.6rem;
-    border-radius: 8px;
-    backdrop-filter: blur(2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
-    pointer-events: auto;
-  }
-
-  .subtitle,
-  .main-title,
-  .image-info {
-    grid-column: auto;
-    justify-self: center;
-    color: #ffffff;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  }
-
-
-  .main-title {
-    font-size: clamp(24px, 7vw, 32px);
-    letter-spacing: -1px;
-    margin: 0;
-    line-height: 1.1;
-  }
-
-  .subtitle {
-    font-size: 11px;
-    margin-bottom: 0.1rem;
-  }
-
-
-  .progress-line-container {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .social-links {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
-  }
-
-  .circular-text {
-    display: block;
-    width: 90px;
-    height: 90px;
-    top: 0.75rem;
-    right: 0.75rem;
-    z-index: 20;
-    pointer-events: none;
-  }
-
-  .circular-text-path {
-    font-size: 14px;
-  }
-
-  /* Center countdown in circular-text */
-  .countdown-number {
-    top: 28px;
-    right: 28px;
-    width: 34px;
-    height: 34px;
-    font-size: 18px;
+    display: none;
   }
 }
 

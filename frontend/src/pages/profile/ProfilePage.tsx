@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import type { Image } from "@/types/image";
 import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
-import axios from "axios";
+// axios import removed - not used in this file
 import { generateImageSlug } from "@/lib/utils";
 import { Folder, Eye, Lock } from "lucide-react";
 // Lazy load analytics dashboard - only needed when stats tab is active
