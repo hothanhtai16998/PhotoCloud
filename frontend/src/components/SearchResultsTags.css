@@ -4,7 +4,9 @@
     max-width: 1296px;
     margin: 0 auto;
     padding: 0 16px;
-    margin-bottom: 24px;
+    margin-bottom: 0; /* No bottom margin - grid will handle spacing */
+    /* Reserve space to prevent layout shift */
+    min-height: 40px;
 }
 
 .search-results-tags {
@@ -75,7 +77,7 @@
 @media (max-width: 768px) {
     .search-results-tags-container {
         padding: 0 16px;
-        margin-bottom: 16px;
+        margin-bottom: 0; /* No bottom margin - grid will handle spacing */
     }
 
     .search-results-tag {

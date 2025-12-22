@@ -59,38 +59,38 @@ export const SearchSuggestions = forwardRef<HTMLDivElement, SearchSuggestionsPro
                 {hasQuery ? (
                     // When user is typing, show search suggestions
                     suggestions.length > 0 ? (
-                        <>
+                    <>
                             <div className="suggestions-header">
                                 <TrendingUp size={14} />
                                 <span>Gợi ý tìm kiếm</span>
                             </div>
-                            <div className="suggestions-list">
+                        <div className="suggestions-list">
                                 {loadingSuggestions ? (
-                                    <div
-                                        className="suggestion-item"
-                                        style={{ justifyContent: 'center', cursor: 'default' }}
-                                    >
-                                        <span style={{ color: '#767676', fontSize: '0.875rem' }}>
-                                            Đang tải gợi ý...
-                                        </span>
-                                    </div>
-                                ) : (
-                                    suggestions.map((suggestion, index) => (
-                                        <SuggestionItemButton
-                                            key={`${suggestion.value}-${index}`}
-                                            suggestion={suggestion}
-                                            isSelected={selectedIndex === index}
+                                <div
+                                    className="suggestion-item"
+                                    style={{ justifyContent: 'center', cursor: 'default' }}
+                                >
+                                    <span style={{ color: '#767676', fontSize: '0.875rem' }}>
+                                        Đang tải gợi ý...
+                                    </span>
+                                </div>
+                            ) : (
+                                suggestions.map((suggestion, index) => (
+                                    <SuggestionItemButton
+                                        key={`${suggestion.value}-${index}`}
+                                        suggestion={suggestion}
+                                        isSelected={selectedIndex === index}
                                             isHistory={false}
-                                            onClick={() => onSuggestionClick(suggestion)}
-                                        />
-                                    ))
-                                )}
-                            </div>
-                        </>
+                                        onClick={() => onSuggestionClick(suggestion)}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    </>
                     ) : (
-                        <div className="suggestions-empty">
-                            <Search size={20} />
-                            <span>Không tìm thấy gợi ý</span>
+                    <div className="suggestions-empty">
+                        <Search size={20} />
+                        <span>Không tìm thấy gợi ý</span>
                         </div>
                     )
                 ) : (

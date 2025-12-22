@@ -2,8 +2,37 @@
     min-height: 100vh;
     background: #fff;
     padding: 0;
-    padding-top: calc(var(--header-height, 65px) + 80px);
+    padding-top: calc(var(--header-height, 65px) + 48px); /* Header + SearchResultsNavigation */
     margin-top: 0;
+    /* Prevent layout shift during navigation */
+    contain: layout style;
+    /* Prevent any scroll position changes */
+    scroll-behavior: auto;
+    /* Ensure stable layout from the start */
+    display: block;
+    position: relative;
+    /* Smooth transitions */
+    transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+}
+
+/* Hide content immediately during navigation to prevent flashing */
+.search-results-page.transitioning {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    /* Prevent any interaction during transition */
+    pointer-events: none;
+    /* Prevent layout shift by maintaining position */
+    position: relative;
+    /* Ensure content doesn't move */
+    contain: layout style paint;
+    /* Immediate hide - no transition delay */
+    transition: none;
+}
+
+/* Ensure main content is hidden during transition */
+.search-results-page.transitioning > * {
+    opacity: 0;
+    visibility: hidden;
 }
 
 /* Account for sidebar on desktop */
@@ -17,32 +46,112 @@
     width: 100%;
     max-width: 1296px;
     margin: 0 auto;
-    padding: 0 16px 40px;
+    padding: 0 16px; /* No top padding - grid will handle its own spacing */
     background: #fff;
+    /* Reserve space for heading (3rem) + margin-bottom (16px) + tags (40px min-height) to prevent layout shift */
+    min-height: calc(3rem + 16px + 40px);
+    /* Prevent layout shift during content changes */
+    contain: layout style;
+    /* Ensure it's always rendered */
+    display: block;
 }
 
 .search-results-heading {
     font-size: 2.5rem;
     font-weight: 700;
     color: #111;
-    margin: 0 0 16px 0;
+    margin: 16px 0 16px 0; /* Top margin to match homepage grid top padding (16px) */
     line-height: 1.2;
     letter-spacing: -0.02em;
     display: block;
     visibility: visible;
+    /* Reserve space to prevent layout shift */
+    min-height: 3rem;
 }
 
 @media (max-width: 768px) {
     .search-results-page {
-        padding-top: calc(var(--header-height, 48px) + 80px);
+        padding-top: calc(var(--header-height, 48px) + 48px); /* Header + SearchResultsNavigation */
     }
 
     .search-results-content {
-        padding: 0 16px 24px;
+        padding: 0 16px; /* No top padding - grid will handle its own spacing */
+        min-height: 100px;
     }
 
     .search-results-heading {
         font-size: 1.75rem;
-        margin-bottom: 12px;
+        margin: 16px 0 12px 0; /* Top margin to match homepage grid top padding (16px) */
+        min-height: 2.5rem;
     }
+}
+
+.search-results-loading {
+    width: 100%;
+    max-width: 1296px;
+    margin: 0 auto;
+    padding: 16px 16px 40px; /* Match grid container padding exactly (16px top) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Reserve minimum space to match grid container min-height exactly */
+    min-height: 500px;
+    /* Prevent layout shift */
+    box-sizing: border-box;
+    /* Ensure it takes up the same space as grid */
+    position: relative;
+}
+
+.search-results-empty {
+    width: 100%;
+    max-width: 1296px;
+    margin: 0 auto;
+    padding: 80px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 400px;
+}
+
+.search-results-empty-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #111;
+    margin: 0 0 8px 0;
+}
+
+.search-results-empty-hint {
+    font-size: 0.9375rem;
+    color: #767676;
+    margin: 0;
+}
+
+/* Grid wrapper - maintains consistent position to prevent layout shift */
+.search-results-grid-wrapper {
+    width: 100%;
+    max-width: 1296px;
+    margin: 0 auto;
+    /* Reserve space to prevent layout shift - matches grid container min-height */
+    min-height: 500px;
+    /* Prevent layout shift during content changes */
+    contain: layout style paint;
+    /* Ensure consistent positioning */
+    position: relative;
+    /* Prevent any visual changes */
+    display: block;
+}
+
+/* Grid container - maintains position when grid is shown */
+.search-results-grid-container {
+    width: 100%;
+    max-width: 1296px;
+    margin: 0 auto;
+    /* Same min-height as wrapper to prevent layout shift */
+    min-height: 500px;
+    /* Prevent layout shift */
+    contain: layout style paint;
+    position: relative;
+    display: block;
 }

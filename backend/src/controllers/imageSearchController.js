@@ -79,12 +79,16 @@ export const getAllImages = asyncHandler(async (req, res) => {
     let useTextSearch = false;
 
     if (search) {
-        // Use text search for better performance (requires text index)
-        // Text search is much faster than regex for large collections
-        // Note: If text index doesn't exist, MongoDB will throw an error
-        // In that case, the error handler will catch it and you should create the index
-        query.$text = { $search: search };
-        useTextSearch = true;
+        // Search in all text fields: title, location, description, and tags
+        // Use regex for reliable search across all fields (including tags which aren't in text index)
+        const escapedSearch = escapeRegex(search);
+        query.$or = [
+            { imageTitle: { $regex: new RegExp(escapedSearch, 'i') } },
+            { location: { $regex: new RegExp(escapedSearch, 'i') } },
+            { description: { $regex: new RegExp(escapedSearch, 'i') } },
+            { tags: { $regex: new RegExp(escapedSearch, 'i') } },
+        ];
+        useTextSearch = false; // Using regex, not text search
     }
     if (category) {
         // Find category by name (case-insensitive) - must be active
@@ -237,17 +241,41 @@ export const getAllImages = asyncHandler(async (req, res) => {
         ]
     };
 
-    // Combine all conditions - if query has other conditions, use $and
-    const hasOtherConditions = Object.keys(query).length > 0 && !query.$text;
-    if (hasOtherConditions) {
-        // Wrap existing conditions and moderation filter in $and
-        const existingConditions = { ...query };
-        query.$and = [
-            existingConditions,
-            moderationFilter
-        ];
-        // Remove original conditions (they're now in $and)
-        Object.keys(existingConditions).forEach(key => {
+    // Combine all conditions - need to handle $or (search) with other conditions
+    // Build the main conditions object (everything except $and)
+    const mainConditions = {};
+    const existingAndConditions = query.$and || [];
+    
+    // Collect all non-$and conditions
+    Object.keys(query).forEach(key => {
+        if (key !== '$and' && key !== '$text') {
+            mainConditions[key] = query[key];
+        }
+    });
+    
+    // If we have any main conditions or existing $and conditions, combine with moderation filter
+    const hasMainConditions = Object.keys(mainConditions).length > 0;
+    const hasAndConditions = existingAndConditions.length > 0;
+    
+    if (hasMainConditions || hasAndConditions) {
+        // Build the final $and array
+        query.$and = [];
+        
+        // Add main conditions if they exist
+        if (hasMainConditions) {
+            query.$and.push(mainConditions);
+        }
+        
+        // Add existing $and conditions
+        if (hasAndConditions) {
+            query.$and.push(...existingAndConditions);
+        }
+        
+        // Always add moderation filter
+        query.$and.push(moderationFilter);
+        
+        // Clear the original query object (all conditions are now in $and)
+        Object.keys(query).forEach(key => {
             if (key !== '$and' && key !== '$text') {
                 delete query[key];
             }
@@ -261,6 +289,13 @@ export const getAllImages = asyncHandler(async (req, res) => {
     // Use estimatedDocumentCount for better performance on large collections
     // Only use countDocuments if we need exact count (e.g., with filters)
     let imagesRaw, total;
+    
+    // Debug: log the final query structure for troubleshooting
+    if (search) {
+        logger.info('Search query:', search);
+        logger.info('Final query structure:', JSON.stringify(query, null, 2));
+    }
+    
     try {
         [imagesRaw, total] = await Promise.all([
             Image.find(query)
@@ -283,26 +318,73 @@ export const getAllImages = asyncHandler(async (req, res) => {
                 : Image.estimatedDocumentCount(),
         ]);
     } catch (error) {
-        logger.error('Error fetching images (populate may have failed):', error);
-        // If populate fails (e.g., invalid category references), try without populating category
-        // But we still need to populate category to validate it
-        [imagesRaw, total] = await Promise.all([
-            Image.find(query)
-                .populate('uploadedBy', 'username displayName avatarUrl')
-                .populate({
-                    path: 'imageCategory',
-                    select: 'name description isActive',
-                    justOne: true,
-                    match: { isActive: true }
-                })
-                .sort(buildSortQuery(sortBy, order, useTextSearch))
-                .skip(skip)
-                .limit(limit)
-                .lean(),
-            Object.keys(query).length > 0
-                ? Image.countDocuments(query)
-                : Image.estimatedDocumentCount(),
-        ]);
+        logger.error('Error fetching images:', error);
+        
+        // If text search fails (e.g., text index doesn't exist), fallback to regex search
+        if (error.message && (error.message.includes('text index') || error.message.includes('$text'))) {
+            logger.warn('Text index not found or text search failed, falling back to regex search');
+            // Remove $text search and use regex instead
+            if (search) {
+                const escapedSearch = escapeRegex(search);
+                // Replace $or with regex search in all fields
+                query.$or = [
+                    { imageTitle: { $regex: new RegExp(escapedSearch, 'i') } },
+                    { location: { $regex: new RegExp(escapedSearch, 'i') } },
+                    { description: { $regex: new RegExp(escapedSearch, 'i') } },
+                    { tags: { $regex: new RegExp(escapedSearch, 'i') } },
+                ];
+                // Rebuild query with moderation filter
+                query.$and = [
+                    { $or: query.$or },
+                    moderationFilter
+                ];
+                delete query.$text;
+                useTextSearch = false;
+            }
+            
+            // Retry with regex search
+            try {
+                [imagesRaw, total] = await Promise.all([
+                    Image.find(query)
+                        .populate('uploadedBy', 'username displayName avatarUrl')
+                        .populate({
+                            path: 'imageCategory',
+                            select: 'name description isActive',
+                            justOne: true,
+                            match: { isActive: true }
+                        })
+                        .sort(buildSortQuery(sortBy, order, useTextSearch))
+                        .skip(skip)
+                        .limit(limit)
+                        .lean(),
+                    Object.keys(query).length > 0
+                        ? Image.countDocuments(query)
+                        : Image.estimatedDocumentCount(),
+                ]);
+            } catch (retryError) {
+                logger.error('Error fetching images with regex fallback:', retryError);
+                throw retryError;
+            }
+        } else {
+            // Other errors - try without populating category
+            [imagesRaw, total] = await Promise.all([
+                Image.find(query)
+                    .populate('uploadedBy', 'username displayName avatarUrl')
+                    .populate({
+                        path: 'imageCategory',
+                        select: 'name description isActive',
+                        justOne: true,
+                        match: { isActive: true }
+                    })
+                    .sort(buildSortQuery(sortBy, order, useTextSearch))
+                    .skip(skip)
+                    .limit(limit)
+                    .lean(),
+                Object.keys(query).length > 0
+                    ? Image.countDocuments(query)
+                    : Image.estimatedDocumentCount(),
+            ]);
+        }
     }
 
     // Handle images with invalid or missing category references

@@ -329,6 +329,10 @@ export const en = {
     aspectRatio: 'Aspect Ratio',
     min: 'Min',
     max: 'Max',
+    activeFilters: 'Active Filters',
+    clearAll: 'Clear All',
+    clearFilters: 'Clear Filters',
+    order: 'Order',
   },
 
   // Admin

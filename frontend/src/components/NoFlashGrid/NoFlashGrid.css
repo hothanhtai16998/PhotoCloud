@@ -6,12 +6,19 @@
   max-width: 1296px;
   margin: 0 auto;
   width: 100%;
+  /* Prevent layout shift during loading */
+  min-height: 400px;
 }
 
 /* Search results page - adjust padding to match other pages */
 .search-results-page .no-flash-grid-container {
-  padding: 0 16px 40px;
+  padding: 16px 16px 40px; /* Match homepage grid padding exactly (16px top) */
   max-width: 1296px;
+  margin-top: 0; /* No extra margin, spacing handled by parent */
+  /* Reserve minimum space to prevent layout shift - must match loading spinner min-height */
+  min-height: 500px;
+  /* Prevent layout shift */
+  box-sizing: border-box;
 }
 
 /* Grid Container */

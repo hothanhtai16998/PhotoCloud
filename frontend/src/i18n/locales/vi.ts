@@ -329,6 +329,10 @@ export const vi = {
     aspectRatio: 'Tỷ lệ khung hình',
     min: 'Tối thiểu',
     max: 'Tối đa',
+    activeFilters: 'Bộ lọc đang áp dụng',
+    clearAll: 'Xóa tất cả',
+    clearFilters: 'Xóa bộ lọc',
+    order: 'Thứ tự',
   },
 
   // Admin

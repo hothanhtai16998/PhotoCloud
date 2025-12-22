@@ -64,91 +64,94 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         if (location.pathname.startsWith('/s/photos/')) {
             // Only update if we have a urlQuery (wait for params to be ready)
             if (urlQuery) {
-                const decodedQuery = decodeURIComponent(urlQuery);
-                if (decodedQuery !== searchQuery && !isFocused) {
-                    setSearchQuery(decodedQuery);
+                try {
+                    const decodedQuery = decodeURIComponent(urlQuery);
+                    if (decodedQuery !== searchQuery && !isFocused) {
+                        setSearchQuery(decodedQuery);
+                    }
+                } catch (error) {
+                    // Invalid URL encoding, ignore
+                    console.warn('Failed to decode search query:', error);
                 }
+            } else if (!isFocused) {
+                // If we're on search page but no query param, clear search
+                setSearchQuery('');
             }
-        } else if (location.pathname === '/' && !isFocused && searchQuery) {
+        } else if (location.pathname === '/' && !isFocused) {
             // Only clear search query when on homepage and not focused
-            setSearchQuery('');
+            // But only if it's different from what's in the URL
+            if (searchQuery && !urlQuery) {
+                setSearchQuery('');
+            }
         }
     }, [urlQuery, location.pathname, searchQuery, isFocused]);
 
-    // Debounced search execution (only for homepage - search pages handle their own fetching)
+    // Debounced search execution (disabled for instant-only on Enter/Submit)
     useEffect(() => {
-        // Don't run debounced search if we're already on a search page
-        if (location.pathname.startsWith('/s/')) {
-            return;
-        }
-
+        // Intentionally no auto-navigation on input change to avoid flashing
         if (debounceTimerRef.current) {
             clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = null;
         }
-
-        debounceTimerRef.current = setTimeout(() => {
-            // Only auto-search on homepage, not on search results pages
-            if (location.pathname === '/') {
-                if (searchQuery.trim()) {
-                    // Navigate to search results page instead of fetching here
-                    const encodedQuery = encodeURIComponent(searchQuery.trim());
-                    navigate(`/s/photos/${encodedQuery}`);
-                } else {
-                    fetchImages({ search: undefined });
-                }
-            }
-        }, searchConfig.searchDebounceMs);
-
-        return () => {
-            if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current);
-            }
-        };
-    }, [searchQuery, location.pathname, fetchImages, navigate]);
+    }, [searchQuery, location.pathname]);
 
     // Handle search execution
     const handleSearch = useCallback(
         (query: string | SuggestionItem) => {
+            // Clear debounce timer to prevent delayed navigation
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+                debounceTimerRef.current = null;
+            }
+            
             const searchValue = typeof query === 'string' ? query : query.value;
-            setSearchQuery(searchValue);
+            const trimmedSearch = searchValue.trim();
+            
+            setSearchQuery(trimmedSearch);
             setShowSuggestions(false);
             setSelectedIndex(-1);
             inputRef.current?.blur();
 
-            const trimmedSearch = searchValue.trim();
-            
             if (trimmedSearch) {
-                // Navigate to search results page
-                const encodedQuery = encodeURIComponent(trimmedSearch);
-                navigate(`/s/photos/${encodedQuery}`);
+                // Navigate to search results page immediately
+                try {
+                    const encodedQuery = encodeURIComponent(trimmedSearch);
+                    navigate(`/s/photos/${encodedQuery}`, { replace: false });
+                    saveToHistory(trimmedSearch);
+                } catch (error) {
+                    console.error('Failed to encode search query:', error);
+                    // Fallback: try with the original query
+                    navigate(`/s/photos/${trimmedSearch}`, { replace: false });
+                }
             } else {
                 // Clear search - navigate to homepage
-                navigate('/');
-                fetchImages({ search: undefined });
-            }
-
-            if (trimmedSearch) {
-                saveToHistory(trimmedSearch);
+                navigate('/', { replace: true });
             }
         },
-        [navigate, fetchImages, saveToHistory]
+        [navigate, saveToHistory]
     );
 
     // Handle clear button
     const handleClear = useCallback(() => {
-        setSearchQuery('');
-        // Navigate to homepage when clearing search
-        if (location.pathname.startsWith('/s/')) {
-            navigate('/');
+        // Clear debounce timer to prevent delayed navigation
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = null;
         }
+        
+        setSearchQuery('');
         setShowSuggestions(false);
         setSelectedIndex(-1);
-        inputRef.current?.focus();
-
-        if (location.pathname === '/') {
+        inputRef.current?.blur();
+        
+        // Navigate to homepage when clearing search
+        if (location.pathname.startsWith('/s/')) {
+            navigate('/', { replace: true });
+        } else if (location.pathname === '/') {
+            // Only fetch if already on homepage (no navigation needed)
             fetchImages({ search: undefined });
         }
-    }, [location.pathname, fetchImages]);
+    }, [location.pathname, navigate, fetchImages]);
 
     // Handle keyboard navigation
     const handleKeyDown = useCallback(

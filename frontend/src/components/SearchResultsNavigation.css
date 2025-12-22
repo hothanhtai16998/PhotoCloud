@@ -9,6 +9,8 @@
   z-index: var(--z-category-nav, 1499);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
+  height: 48px; /* Match CategoryNavigation height to prevent shift */
+  min-height: 48px; /* Prevent layout shift */
 }
 
 .search-results-navigation-content {
@@ -21,6 +23,8 @@
   min-height: 48px;
   height: 48px;
   gap: 24px;
+  /* Prevent layout shift */
+  box-sizing: border-box;
 }
 
 /* Content Type Tabs */

@@ -139,6 +139,13 @@
   }
 }
 
+/* Prevent layout shift during navigation */
+main.homepage {
+  min-height: 100vh;
+  /* Prevent layout shift during navigation */
+  contain: layout style;
+}
+
 .dark-theme .hero-title {
   color: var(--text-primary);
 }
