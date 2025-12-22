@@ -59,7 +59,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   /* Hide scrollbar but keep scrolling functionality */
@@ -67,6 +67,7 @@
   -ms-overflow-style: none; /* IE and Edge */
   /* Ensure dropdown doesn't interfere with input focus */
   pointer-events: auto;
+  padding: 8px 0;
 }
 
 .search-suggestions::-webkit-scrollbar {
@@ -90,25 +91,102 @@
   color: #767676;
 }
 
+/* Sections container (for Recent/Trending when no query) */
+.suggestions-sections {
+  padding: 8px 0;
+}
+
+.suggestions-section {
+  margin-bottom: 24px;
+}
+
+.suggestions-section:last-child {
+  margin-bottom: 0;
+}
+
+.suggestions-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #767676;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.suggestions-section-header svg {
+  color: #767676;
+  width: 14px;
+  height: 14px;
+}
+
 .clear-history-btn {
   margin-left: auto;
   background: transparent;
   border: none;
   color: #767676;
   font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: none;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  padding: 0;
+  transition: color 0.2s ease;
 }
 
 .clear-history-btn:hover {
-  background: #f5f5f5;
   color: #111;
+}
+
+/* Tags container (Unsplash-style rounded buttons) */
+.suggestions-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.suggestion-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 20px;
+  color: #111;
+  font-size: 0.875rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.suggestion-tag:hover {
+  background: #e5e5e5;
+}
+
+.suggestion-tag.selected {
+  background: #e5e5e5;
+}
+
+.suggestion-tag-icon {
+  color: #767676;
+  flex-shrink: 0;
+}
+
+.suggestion-tag-text {
+  line-height: 1.4;
 }
 
 .suggestions-list {
   padding: 4px 0;
+}
+
+/* Remove padding from sections container since it's already on search-suggestions */
+.suggestions-sections {
+  padding: 0;
 }
 
 .suggestion-item {
