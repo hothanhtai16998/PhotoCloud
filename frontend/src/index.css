@@ -174,8 +174,17 @@
 	}
 
 	/* Cancel button styling - border hover (variant="outline") - excluding admin */
-	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover {
+	/* Remove cyan/blue hover color, use light gray instead */
+	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover:not(.admin-page *) {
 		border-color: #111 !important;
+		background-color: #f5f5f5 !important; /* Light gray hover background */
+		background: #f5f5f5 !important; /* Light gray hover background */
+	}
+
+	/* Ghost button styling - light gray hover (excluding admin) */
+	button[data-slot="button"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):not([class*="border"]):not([class*="bg-background"]):hover:not(.admin-page *) {
+		background-color: #f5f5f5 !important; /* Light gray hover background */
+		background: #f5f5f5 !important; /* Light gray hover background */
 	}
 
 	/* Override for admin pages - restore original styles */
