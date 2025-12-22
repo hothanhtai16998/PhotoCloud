@@ -358,23 +358,31 @@ body.scroll-locked .user-menu-trigger:active {
   border-radius: 12px !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   padding: 8px !important;
-  margin-top: 8px;
+  margin-top: 4px;
   transform-origin: top right !important;
   z-index: var(--z-modal-content, 2002) !important; /* Higher than header z-index */
   /* Ensure dropdown doesn't cause horizontal overflow on desktop */
   /* Prevent layout shifts when modal is open */
   contain: layout style paint;
   backface-visibility: hidden;
-  /* Smooth fade-in/fade-out animation like Pexels */
+  /* Smooth fade-in animation like avatar hover tooltip */
   opacity: 0;
-  transform: translateY(-8px) scale(0.95);
-  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  transform: scale(0.95) translateY(-4px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
   will-change: opacity, transform;
+  pointer-events: none;
 }
 
 .user-menu-content.menu-enter {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.user-menu-content.menu-leave {
+  opacity: 0;
+  transform: scale(0.95) translateY(-4px);
+  pointer-events: none;
 }
 
 /* Allow smooth animations for user menu content */
@@ -385,12 +393,6 @@ body.scroll-locked .user-menu-trigger:active {
 [data-slot='dropdown-menu-content'].user-menu-content[data-state='open'],
 [data-slot='dropdown-menu-content'].user-menu-content[data-state='closed'] {
   /* Animations enabled for smooth fade-in/fade-out */
-}
-
-/* Allow our custom animation to work */
-.user-menu-content.menu-enter {
-  opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 /* Prevent dropdown from causing layout shifts when modal is open */
