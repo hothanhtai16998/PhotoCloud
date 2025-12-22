@@ -590,6 +590,62 @@ body.scroll-locked .user-menu-content {
   color: #111;
 }
 
+/* Mobile Menu Header */
+.user-menu-mobile-header {
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 12px !important;
+  text-align: center;
+  gap: 0 !important;
+}
+
+.user-menu-mobile-avatar-wrapper {
+  margin-bottom: 12px;
+}
+
+.user-menu-mobile-avatar,
+.user-menu-mobile-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-menu-mobile-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e5e5;
+  color: #767676;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.user-menu-mobile-user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-menu-mobile-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.4;
+}
+
+.user-menu-mobile-view-profile {
+  font-size: 0.875rem;
+  color: #767676;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.user-menu-mobile-header:hover .user-menu-mobile-view-profile {
+  color: #111;
+}
+
 /* Desktop Menu Items */
 .user-menu-item-desktop {
   display: none;
@@ -645,6 +701,11 @@ body.scroll-locked .user-menu-content {
 
   .user-menu-separator-mobile-only {
     display: block !important;
+  }
+
+  /* Bold text only for hamburger menu items, not avatar menu */
+  .mobile-hamburger-menu .mobile-hamburger-menu-item {
+    font-weight: 600 !important;
   }
 }
 
@@ -838,7 +899,8 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   
   .header-container {
     flex-wrap: nowrap; /* Don't wrap on mobile */
-    padding: 0 12px;
+    padding: 0 12px 0 12px;
+    padding-right: 0; /* Remove right padding to bring hamburger button to edge */
     gap: 12px;
     height: 44px; /* Reduced from 48px for more compact header */
   }
@@ -1088,6 +1150,12 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 @media (max-width: 768px) {
   .mobile-header-actions {
     display: flex;
+  }
+
+  /* Reduce gap between hamburger button and right edge */
+  .mobile-hamburger-button {
+    margin-right: -4px !important;
+    padding-right: 0 !important;
   }
 }
 

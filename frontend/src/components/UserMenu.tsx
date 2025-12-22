@@ -288,52 +288,50 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
             </button>
 
             {/* Mobile Menu Items */}
-            <Link to="/favorites" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
-              <Heart size={16} />
-              {t('header.favorites')}
-            </Link>
-
-            <Link to="/downloads" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
-              <Download size={16} />
-              {t('profile.downloadHistory')}
-            </Link>
-
-            {user?.isAdmin && (
-              <Link to="/admin" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
-                <Shield size={16} />
-                Admin
-              </Link>
-            )}
-
-            <div className="user-menu-separator user-menu-separator-mobile-only" />
-
-            <Link to="/about" className="user-menu-item user-menu-item-mobile-only" onClick={handleMenuItemClick}>
-              <Info size={16} />
-              {t('header.about')}
-            </Link>
-
-            <Link 
-              to={currentUser?.username ? `/@${currentUser.username}` : '/profile'} 
-              className="user-menu-item user-menu-item-mobile-only" 
+            {/* Mobile Menu - User Info Section */}
+            <Link
+              to={currentUser?.username ? `/@${currentUser.username}` : '/profile'}
+              className="user-menu-item user-menu-item-mobile-only user-menu-mobile-header"
               onClick={handleMenuItemClick}
             >
-              <User size={16} />
-              {t('header.account')}
+              <div className="user-menu-mobile-avatar-wrapper">
+                {currentUser?.avatarUrl && !avatarError ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={currentUser.displayName || currentUser.username || 'User'}
+                    className="user-menu-mobile-avatar"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <div className="user-menu-mobile-avatar-placeholder">
+                    {(currentUser?.displayName?.trim() || currentUser?.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="user-menu-mobile-user-info">
+                <div className="user-menu-mobile-name">
+                  {currentUser?.displayName || currentUser?.username || 'User'}
+                </div>
+                <div className="user-menu-mobile-view-profile">
+                  {t('header.viewProfile')}
+                </div>
+              </div>
             </Link>
 
             <div className="user-menu-separator user-menu-separator-mobile-only" />
 
-            {/* Theme toggle - hidden for now, keeping code for future use */}
-            {/* <ThemeToggleMenuItem onToggle={handleMenuItemClick} /> */}
-
-            {/* <div className="user-menu-separator" /> */}
-
-            <div className="user-menu-item-mobile-only-wrapper">
-              <LanguageSwitcher variant="menu-item" onSwitch={handleMenuItemClick} />
-            </div>
+            {/* Mobile Menu - Account Settings */}
+            <Link
+              to="/profile/edit"
+              className="user-menu-item user-menu-item-mobile-only"
+              onClick={handleMenuItemClick}
+            >
+              {t('header.accountSettings')}
+            </Link>
 
             <div className="user-menu-separator user-menu-separator-mobile-only" />
 
+            {/* Mobile Menu - Logout */}
             <button
               className="user-menu-item user-menu-item-mobile-only user-menu-item-destructive"
               onClick={() => {
@@ -341,9 +339,9 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
                 onSignOut()
               }}
             >
-              <LogOut size={16} />
-              {t('auth.signOut')}
+              {t('auth.signOut')} {currentUser?.username ? `@${currentUser.username}` : ''}
             </button>
+
           </div>
         </div>
       )}

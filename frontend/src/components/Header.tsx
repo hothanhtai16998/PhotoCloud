@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect, useLayoutEffect, useMemo, lazy, Suspense } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { User } from "lucide-react"
+import { User, Menu, Heart, Download, Shield, Info, Globe } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
 import { SearchBar, type SearchBarRef } from "./SearchBar"
@@ -13,6 +13,7 @@ import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
 import CategoryNavigation from "./CategoryNavigation"
 import { TextLogo } from "./TextLogo"
+import { LanguageSwitcher } from "./LanguageSwitcher"
 import './Header.css'
 
 // Lazy load UploadModal to improve initial page load
@@ -26,6 +27,10 @@ export const Header = memo(function Header() {
   const { user } = useUserStore()
   const navigate = useNavigate()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileMenuAnimating, setMobileMenuAnimating] = useState(false)
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
   const searchBarRef = useRef<SearchBarRef>(null)
   
   // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
@@ -67,6 +72,42 @@ export const Header = memo(function Header() {
     
     return () => clearTimeout(timeoutId);
   }, [])
+
+  // Trigger animation when mobile menu appears
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setMobileMenuAnimating(true)
+        })
+      })
+    } else {
+      setMobileMenuAnimating(false)
+    }
+  }, [mobileMenuOpen])
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        mobileMenuOpen &&
+        mobileMenuRef.current &&
+        mobileMenuButtonRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        !mobileMenuButtonRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+    return undefined
+  }, [mobileMenuOpen])
 
 
   const handleLogoClick = () => {
@@ -136,6 +177,26 @@ export const Header = memo(function Header() {
                     />
                   }
                 />
+                <button
+                  ref={mobileMenuButtonRef}
+                  className="mobile-header-icon mobile-hamburger-button"
+                  aria-label="Menu"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileMenuOpen(!mobileMenuOpen);
+                  }}
+                  style={{
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Menu size={20} />
+                </button>
               </div>
             )}
             
@@ -248,6 +309,82 @@ export const Header = memo(function Header() {
           />
         </Suspense>
       )}
+
+      {/* Mobile Menu Dropdown - Only visible at 768px and below */}
+      {mobileMenuOpen && mobileMenuButtonRef.current && (() => {
+        const rect = mobileMenuButtonRef.current.getBoundingClientRect();
+        return (
+          <div
+            ref={mobileMenuRef}
+            className={`user-menu-content ${mobileMenuAnimating ? 'menu-enter' : ''}`}
+            style={{
+              position: 'fixed',
+              top: `${rect.bottom + 4}px`,
+              right: `${window.innerWidth - rect.right}px`,
+              left: 'auto',
+              zIndex: 2002,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="user-menu-items mobile-hamburger-menu">
+              <Link 
+                to="/favorites" 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Heart size={16} />
+                {t('header.favorites')}
+              </Link>
+
+              <Link 
+                to="/downloads" 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Download size={16} />
+                {t('profile.downloadHistory')}
+              </Link>
+
+              {user?.isAdmin && (
+                <Link 
+                  to="/admin" 
+                  className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Shield size={16} />
+                  Admin
+                </Link>
+              )}
+
+              <div className="user-menu-separator user-menu-separator-mobile-only" />
+
+              <Link 
+                to="/about" 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Info size={16} />
+                {t('header.about')}
+              </Link>
+
+              <Link 
+                to={user?.username ? `/@${user.username}` : '/profile'} 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <User size={16} />
+                {t('header.account')}
+              </Link>
+
+              <div className="user-menu-separator user-menu-separator-mobile-only" />
+
+              <div className="user-menu-item-mobile-only-wrapper mobile-hamburger-menu-item">
+                <LanguageSwitcher variant="menu-item" onSwitch={() => setMobileMenuOpen(false)} />
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
     </header >
   )
