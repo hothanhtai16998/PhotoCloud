@@ -13,6 +13,7 @@ import { UploadForm } from './upload/UploadForm';
 import { t } from '@/i18n';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { imageService } from '@/services/imageService';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import './UploadModal.css';
 
 interface UploadModalProps {
@@ -197,30 +198,9 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
         return () => document.removeEventListener('keydown', handleEsc);
     }, [isOpen, handleCancel]);
 
-    // Prevent body scroll when modal is open
-    useEffect(() => {
-        if (isOpen) {
-            // Calculate scrollbar width to prevent layout shift
-            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            const originalPaddingRight = document.body.style.paddingRight;
-
-            document.body.style.overflow = 'hidden';
-            // Add padding to compensate for scrollbar width to prevent layout shift
-            if (scrollbarWidth > 0) {
-                document.body.style.paddingRight = `${scrollbarWidth}px`;
-            }
-
-            return () => {
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = originalPaddingRight || '';
-            };
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => {
-            document.body.style.overflow = '';
-        };
-    }, [isOpen]);
+    // Prevent body scroll when modal is open - use comprehensive scroll lock hook
+    // This allows scrolling within the modal but prevents background scrolling
+    useScrollLock(isOpen, '.upload-modal');
 
     // Cleanup pre-uploaded files when modal closes (only if upload wasn't successful)
     useEffect(() => {
@@ -436,7 +416,6 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                                     };
                                     return mimeMap[type] || `image/${type}`;
                                 }).join(',')}
-                                capture="environment"
                                 className="upload-file-input"
                                 multiple={true}
                                 onChange={handleFileInput}
@@ -542,7 +521,6 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                                 const input = document.createElement('input');
                                 input.type = 'file';
                                 input.accept = 'image/*';
-                                input.setAttribute('capture', 'environment');
                                 input.multiple = true;
                                 input.onchange = (event) => {
                                     const target = event.target as HTMLInputElement;
