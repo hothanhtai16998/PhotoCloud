@@ -66,13 +66,10 @@ interface UserMenuProps {
 export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [avatarError, setAvatarError] = useState(false)
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
-  // Refs for timeout IDs - using refs instead of state to avoid unnecessary re-renders
-  const leaveTimeoutRef = useRef<number | null>(null)
   const { user: currentUser } = useUserStore()
-
-  // No need for click outside handler with hover behavior
 
   // Close menu on Escape key
   useEffect(() => {
@@ -102,34 +99,65 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
     }
   }, [isOpen, currentUser?._id])
 
-  // Cleanup timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (leaveTimeoutRef.current) {
-        clearTimeout(leaveTimeoutRef.current)
+
+  const handleToggle = () => {
+    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (!isOpen && triggerRef.current) {
+      // Calculate position when opening on mobile
+      const rect = triggerRef.current.getBoundingClientRect()
+      if (isMobileNow) {
+        setMenuPosition({
+          top: rect.bottom + 8,
+          right: window.innerWidth - rect.right,
+        })
+      } else {
+        setMenuPosition(null)
       }
     }
-  }, [])
+    setIsOpen(prev => !prev)
+  }
 
   const handleMouseEnter = () => {
-    // Clear any pending close timeout
-    if (leaveTimeoutRef.current) {
-      clearTimeout(leaveTimeoutRef.current)
-      leaveTimeoutRef.current = null
+    // Only use hover on desktop
+    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (!isMobileNow) {
+      setIsOpen(true)
     }
-    // Open menu immediately on hover
-    setIsOpen(true)
   }
 
   const handleMouseLeave = () => {
-    // Small delay before closing to prevent accidental closes
-    // Using ref to store timeout ID so we can clear it if user hovers back
-    // Refs don't cause re-renders, unlike state - perfect for storing timeout IDs
-    leaveTimeoutRef.current = window.setTimeout(() => {
+    // Only use hover on desktop
+    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (!isMobileNow) {
       setIsOpen(false)
-      leaveTimeoutRef.current = null
-    }, 150)
+    }
   }
+
+  // Close menu when clicking outside (only on mobile)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const isMobileNow = window.innerWidth <= 768
+      if (
+        isMobileNow &&
+        isOpen &&
+        menuRef.current &&
+        triggerRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
+      }
+    }
+
+    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (isOpen && isMobileNow) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+    return undefined
+  }, [isOpen])
 
   return (
     <div 
@@ -142,6 +170,12 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
         className="header-link user-menu-trigger"
         aria-label={t('header.userMenu')}
         aria-expanded={isOpen}
+        onClick={(e) => {
+          const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
+          if (isMobileNow) {
+            handleToggle()
+          }
+        }}
       >
         {trigger}
       </button>
@@ -151,9 +185,17 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
           ref={menuRef}
           className="user-menu-content menu-enter"
           style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            [align === 'end' ? 'right' : 'left']: 0,
+            position: window.innerWidth <= 768 && menuPosition ? 'fixed' : 'absolute',
+            ...(window.innerWidth <= 768 && menuPosition
+              ? {
+                  top: `${menuPosition.top}px`,
+                  right: `${menuPosition.right}px`,
+                  left: 'auto',
+                }
+              : {
+                  top: 'calc(100% + 8px)',
+                  [align === 'end' ? 'right' : 'left']: 0,
+                }),
             zIndex: 2002,
           }}
         >

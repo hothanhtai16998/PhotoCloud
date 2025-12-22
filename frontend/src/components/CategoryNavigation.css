@@ -96,7 +96,7 @@
   bottom: -2px; /* Position just below the text for visibility */
   left: 0;
   right: 0;
-  height: 2px; /* Make underline more visible (2px) */
+  height: 3px; /* Make underline thicker (3px) */
   background: var(--color-text-primary, #111);
   display: block;
 }
@@ -286,7 +286,7 @@
     bottom: -1px !important; /* Position just above the container border */
     left: 0 !important; /* Full width underline */
     right: 0 !important; /* Full width underline */
-    height: 2px !important; /* Make underline more visible (2px) */
+    height: 3px !important; /* Make underline thicker (3px) */
     background: #111 !important; /* Solid black underline */
     display: block !important;
     z-index: 2 !important; /* Ensure it's above border and other elements */
@@ -394,7 +394,7 @@
     bottom: -1px !important; /* Position just above the container border */
     left: 0 !important; /* Full width underline */
     right: 0 !important; /* Full width underline */
-    height: 2px !important; /* Make underline more visible (2px) */
+    height: 3px !important; /* Make underline thicker (3px) */
     background: #111 !important; /* Solid black underline */
     display: block !important;
     z-index: 2 !important; /* Ensure it's above border and other elements */
