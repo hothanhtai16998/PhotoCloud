@@ -24,6 +24,7 @@ import {
 
 // Lazy load pages for code splitting
 const HomePage = lazy(() => import('./pages/HomePage'));
+const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
@@ -251,6 +252,7 @@ function App() {
           {/**public routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/t/:categorySlug" element={<HomePage />} />
+          <Route path="/s/photos/:query" element={<SearchResultsPage />} />
           <Route path="/photos/:slug" element={<ImagePage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/signin" element={<SignInPage />} />

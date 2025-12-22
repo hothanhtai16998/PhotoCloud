@@ -200,12 +200,19 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   }
 
   // Show on homepage, category pages (/t/:slug), and test page
+  // Hide on search pages (/s/photos/:query)
   const isHomePage = location?.pathname === '/';
   const isCategoryPage = location?.pathname?.startsWith('/t/');
   const isTestPage = location?.pathname?.includes('UnsplashGridTestPage');
+  const isSearchPage = location?.pathname?.startsWith('/s/');
   
   if (!isHomePage && !isCategoryPage && !isTestPage) {
     return null
+  }
+  
+  // Hide on search pages
+  if (isSearchPage) {
+    return null;
   }
 
   return (

@@ -1,0 +1,48 @@
+.search-results-page {
+    min-height: 100vh;
+    background: #fff;
+    padding: 0;
+    padding-top: calc(var(--header-height, 65px) + 80px);
+    margin-top: 0;
+}
+
+/* Account for sidebar on desktop */
+@media (min-width: 768px) {
+    .search-results-page {
+        margin-left: 64px; /* Sidebar width */
+    }
+}
+
+.search-results-content {
+    width: 100%;
+    max-width: 1296px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+    background: #fff;
+}
+
+.search-results-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111;
+    margin: 0 0 16px 0;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    display: block;
+    visibility: visible;
+}
+
+@media (max-width: 768px) {
+    .search-results-page {
+        padding-top: calc(var(--header-height, 48px) + 80px);
+    }
+
+    .search-results-content {
+        padding: 0 16px 24px;
+    }
+
+    .search-results-heading {
+        font-size: 1.75rem;
+        margin-bottom: 12px;
+    }
+}

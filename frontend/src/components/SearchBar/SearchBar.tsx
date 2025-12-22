@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { useImageStore } from '@/stores/useImageStore';
 import { onSearchFocusRequest } from '@/utils/searchFocusEvent';
@@ -25,9 +25,10 @@ export interface SearchBarRef {
  * Refactored into smaller hooks for maintainability.
  */
 export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
-    const { fetchImages, currentSearch, currentCategory, images } = useImageStore();
+    const { fetchImages, currentCategory, images } = useImageStore();
     const navigate = useNavigate();
     const location = useLocation();
+    const { query: urlQuery } = useParams<{ query?: string }>();
 
     // Local state
     const [searchQuery, setSearchQuery] = useState('');
@@ -58,24 +59,40 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         });
     }, []);
 
-    // Sync with current search from store
+    // Sync with URL query param when on search page
     useEffect(() => {
-        if (currentSearch && currentSearch !== searchQuery && !isFocused) {
-            setSearchQuery(currentSearch);
+        if (location.pathname.startsWith('/s/photos/')) {
+            // Only update if we have a urlQuery (wait for params to be ready)
+            if (urlQuery) {
+                const decodedQuery = decodeURIComponent(urlQuery);
+                if (decodedQuery !== searchQuery && !isFocused) {
+                    setSearchQuery(decodedQuery);
+                }
+            }
+        } else if (location.pathname === '/' && !isFocused && searchQuery) {
+            // Only clear search query when on homepage and not focused
+            setSearchQuery('');
         }
-    }, [currentSearch, searchQuery, isFocused]);
+    }, [urlQuery, location.pathname, searchQuery, isFocused]);
 
-    // Debounced search execution
+    // Debounced search execution (only for homepage - search pages handle their own fetching)
     useEffect(() => {
+        // Don't run debounced search if we're already on a search page
+        if (location.pathname.startsWith('/s/')) {
+            return;
+        }
+
         if (debounceTimerRef.current) {
             clearTimeout(debounceTimerRef.current);
         }
 
         debounceTimerRef.current = setTimeout(() => {
+            // Only auto-search on homepage, not on search results pages
             if (location.pathname === '/') {
                 if (searchQuery.trim()) {
-                    fetchImages({ search: searchQuery.trim() });
-                    saveToHistory(searchQuery.trim());
+                    // Navigate to search results page instead of fetching here
+                    const encodedQuery = encodeURIComponent(searchQuery.trim());
+                    navigate(`/s/photos/${encodedQuery}`);
                 } else {
                     fetchImages({ search: undefined });
                 }
@@ -87,7 +104,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
                 clearTimeout(debounceTimerRef.current);
             }
         };
-    }, [searchQuery, location.pathname, fetchImages, saveToHistory]);
+    }, [searchQuery, location.pathname, fetchImages, navigate]);
 
     // Handle search execution
     const handleSearch = useCallback(
@@ -98,30 +115,32 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
             setSelectedIndex(-1);
             inputRef.current?.blur();
 
-            if (location.pathname !== '/') {
-                navigate('/');
-            }
-
-            // Filter by location if it's a location suggestion
-            const searchParams: { search?: string; location?: string } = {};
-            if (typeof query !== 'string' && query.type === 'location') {
-                searchParams.location = searchValue;
+            const trimmedSearch = searchValue.trim();
+            
+            if (trimmedSearch) {
+                // Navigate to search results page
+                const encodedQuery = encodeURIComponent(trimmedSearch);
+                navigate(`/s/photos/${encodedQuery}`);
             } else {
-                searchParams.search = searchValue.trim() || undefined;
+                // Clear search - navigate to homepage
+                navigate('/');
+                fetchImages({ search: undefined });
             }
 
-            fetchImages(searchParams);
-
-            if (searchValue.trim()) {
-                saveToHistory(searchValue.trim());
+            if (trimmedSearch) {
+                saveToHistory(trimmedSearch);
             }
         },
-        [location.pathname, navigate, fetchImages, saveToHistory]
+        [navigate, fetchImages, saveToHistory]
     );
 
     // Handle clear button
     const handleClear = useCallback(() => {
         setSearchQuery('');
+        // Navigate to homepage when clearing search
+        if (location.pathname.startsWith('/s/')) {
+            navigate('/');
+        }
         setShowSuggestions(false);
         setSelectedIndex(-1);
         inputRef.current?.focus();

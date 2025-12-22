@@ -12,8 +12,10 @@ import { updateFaviconWithImage } from "@/utils/faviconUpdater"
 import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
 import CategoryNavigation from "./CategoryNavigation"
+import { SearchResultsNavigation } from "./SearchResultsNavigation"
 import { TextLogo } from "./TextLogo"
 import { LanguageSwitcher } from "./LanguageSwitcher"
+import { useLocation } from "react-router-dom"
 import './Header.css'
 
 // Lazy load UploadModal to improve initial page load
@@ -26,10 +28,14 @@ export const Header = memo(function Header() {
   const { accessToken, signOut, isInitializing } = useAuthStore()
   const { user } = useUserStore()
   const navigate = useNavigate()
+  const location = useLocation()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileMenuAnimating, setMobileMenuAnimating] = useState(false)
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
+  
+  // Check if we're on a search results page
+  const isSearchPage = location.pathname.startsWith('/s/')
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const searchBarRef = useRef<SearchBarRef>(null)
   
@@ -297,8 +303,8 @@ export const Header = memo(function Header() {
         </div>
       </div>
 
-      {/* Category Navigation - Second row in header */}
-      <CategoryNavigation />
+      {/* Category Navigation or Search Results Navigation - Second row in header */}
+      {isSearchPage ? <SearchResultsNavigation /> : <CategoryNavigation />}
 
       {/* Upload Modal - Lazy loaded, only render when open */}
       {uploadModalOpen && (

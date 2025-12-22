@@ -8,6 +8,12 @@
   width: 100%;
 }
 
+/* Search results page - adjust padding to match other pages */
+.search-results-page .no-flash-grid-container {
+  padding: 0 16px 40px;
+  max-width: 1296px;
+}
+
 /* Grid Container */
 .no-flash-grid {
   display: grid;
