@@ -153,7 +153,7 @@ export const Header = memo(function Header() {
 
           {/* Mobile Header Actions - Icons visible on mobile */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
-          <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative' }}>
+          <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative', marginRight: 0, paddingRight: 0 }}>
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {(accessToken || (isInitializing && stableHasAuth) || stableHasAuth) && (
               <div style={{ 
@@ -168,6 +168,7 @@ export const Header = memo(function Header() {
                   user={user}
                   onSignOut={handleSignOut}
                   align="start"
+                  onUpload={() => setUploadModalOpen(true)}
                   trigger={
                     <Avatar
                       user={user}
@@ -252,6 +253,7 @@ export const Header = memo(function Header() {
                   user={user}
                   onSignOut={handleSignOut}
                   align="end"
+                  onUpload={() => setUploadModalOpen(true)}
                   trigger={
                     <Avatar
                       user={user}
@@ -320,7 +322,7 @@ export const Header = memo(function Header() {
             style={{
               position: 'fixed',
               top: `${rect.bottom + 4}px`,
-              right: `${window.innerWidth - rect.right}px`,
+              right: '0px',
               left: 'auto',
               zIndex: 2002,
             }}

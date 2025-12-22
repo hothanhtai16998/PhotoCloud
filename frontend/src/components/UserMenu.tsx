@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Shield, Heart, User, LogOut, Info, Moon, Sun, Download } from 'lucide-react'
+import { Shield, Heart, User, LogOut, Info, Moon, Sun, Download, Upload } from 'lucide-react'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { t } from '@/i18n'
 import { useUserStore } from '@/stores/useUserStore'
@@ -61,9 +61,10 @@ interface UserMenuProps {
   onSignOut: () => void
   trigger: React.ReactNode
   align?: 'start' | 'end'
+  onUpload?: () => void
 }
 
-export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuProps) {
+export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [menuAnimating, setMenuAnimating] = useState(false)
@@ -319,6 +320,23 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end' }: UserMenuPr
             </Link>
 
             <div className="user-menu-separator user-menu-separator-mobile-only" />
+
+            {/* Mobile Menu - Upload */}
+            {onUpload && (
+              <>
+                <button
+                  className="user-menu-item user-menu-item-mobile-only"
+                  onClick={() => {
+                    handleMenuItemClick()
+                    onUpload()
+                  }}
+                >
+                  <Upload size={16} />
+                  {t('header.addImage')}
+                </button>
+                <div className="user-menu-separator user-menu-separator-mobile-only" />
+              </>
+            )}
 
             {/* Mobile Menu - Account Settings */}
             <Link
