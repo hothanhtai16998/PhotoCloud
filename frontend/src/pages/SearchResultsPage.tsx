@@ -131,6 +131,8 @@ function SearchResultsPage() {
 
     // Reset imagesReady when query changes to prevent showing stale images
     // But don't reset if we're using cached data for the same query
+    // NOTE: This effect is now less critical since useLayoutEffect handles cached data,
+    // but we keep it as a safety net for edge cases
     useEffect(() => {
         if (query && previousQueryRef.current) {
             try {
@@ -141,6 +143,7 @@ function SearchResultsPage() {
                 const isDataFresh = lastFetched && (Date.now() - lastFetched) < STALE_THRESHOLD;
                 
                 // Only reset if query actually changed AND we don't have fresh cached data
+                // The useLayoutEffect handles transitions, so we don't need to check isTransitioning here
                 if (decodedQuery !== previousQueryRef.current && !(cachedImagesData && isDataFresh)) {
                     setImagesReady(false);
                 }
@@ -148,7 +151,8 @@ function SearchResultsPage() {
                 // Invalid encoding, reset to be safe
                 setImagesReady(false);
             }
-        } else {
+        } else if (!query) {
+            // No query - safe to reset
             setImagesReady(false);
         }
     }, [query]);
@@ -159,9 +163,6 @@ function SearchResultsPage() {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
         }
-        
-        // Reset imagesReady immediately when query changes
-        setImagesReady(false);
         
         // Wait a bit for React Router to parse params on initial mount
         const checkQuery = () => {
@@ -217,6 +218,10 @@ function SearchResultsPage() {
                 // Return early to avoid unnecessary fetch
                 return;
             }
+            
+            // Only reset imagesReady if we don't have cached data
+            // This prevents flashing when cached data is available
+            setImagesReady(false);
             
             previousQueryRef.current = decodedQuery;
             isFetchingRef.current = true;
@@ -292,20 +297,8 @@ function SearchResultsPage() {
             const oldQuery = prevQueryRef.current;
             prevQueryRef.current = query;
             
-            // Immediately hide content and clear old images
-            setIsTransitioning(true);
-            setImagesReady(false);
-            
-            // Clear old images IMMEDIATELY to prevent showing stale content
-            // Do this synchronously before any render
-            if (oldQuery && oldQuery !== query) {
-                useImageStore.setState({
-                    images: [],
-                    loading: true,
-                });
-            }
-            
-            // Check for cached data
+            // Check for cached data FIRST before doing anything
+            let hasCachedData = false;
             if (query) {
                 try {
                     const decodedQuery = decodeURIComponent(query);
@@ -313,10 +306,11 @@ function SearchResultsPage() {
                     const lastFetched = searchCacheRef.current.get(decodedQuery);
                     const isDataFresh = lastFetched && (Date.now() - lastFetched) < STALE_THRESHOLD;
                     
-                    // If we have cached data, restore immediately
+                    // If we have cached data, restore immediately WITHOUT clearing old images first
                     if (cachedImagesData && cachedImagesData.images.length > 0 && isDataFresh) {
+                        hasCachedData = true;
                         hasCachedDataRef.current = true;
-                        // Restore cached data synchronously
+                        // Restore cached data synchronously - this replaces old images smoothly
                         useImageStore.setState({
                             images: cachedImagesData.images,
                             pagination: cachedImagesData.pagination,
@@ -325,15 +319,23 @@ function SearchResultsPage() {
                         });
                         setImagesReady(true);
                         setIsTransitioning(false);
-                        return;
+                        return; // Exit early - no need to clear or transition
                     }
                 } catch {
                     // Invalid encoding
                 }
             }
             
-            // No cached data
+            // No cached data - proceed with transition
+            // BUT: Don't clear images here - let the store handle it during fetch
+            // The store keeps old images visible during transitions to prevent flashing
             hasCachedDataRef.current = false;
+            setIsTransitioning(true);
+            setImagesReady(false);
+            
+            // NOTE: We intentionally DON'T clear images here
+            // The store's fetchImages will handle clearing when appropriate,
+            // and it keeps old images visible during transitions to prevent flashing
         }
     }, [query]);
     
