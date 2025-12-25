@@ -371,6 +371,20 @@ function Slider() {
   // Keyboard navigation - Arrow keys, Home, End
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Don't handle navigation if ImagePage modal is open
+      // Check if modal is open by looking for the body class or modal overlay
+      const isModalOpen = document.body.classList.contains('image-modal-open') ||
+        document.querySelector('.image-modal-overlay') !== null;
+      
+      if (isModalOpen) {
+        return; // Don't handle keyboard events when modal is open
+      }
+
+      // Don't handle if event was already prevented (handled by modal)
+      if (e.defaultPrevented) {
+        return;
+      }
+
       if (e.key === "ArrowLeft") prevSlide();
       if (e.key === "ArrowRight") nextSlide();
       if (e.key === "Home") goToSlide(0);

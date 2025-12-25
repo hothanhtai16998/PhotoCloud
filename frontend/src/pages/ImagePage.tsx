@@ -1262,6 +1262,11 @@ function ImagePage() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle keyboard navigation when modal-style is shown
+      if (!showModalStyle) {
+        return;
+      }
+
       // Don't handle navigation if user is typing in an input, textarea, or contenteditable element
       const target = e.target as HTMLElement;
       const isInputElement = target.tagName === 'INPUT' ||
@@ -1275,6 +1280,8 @@ function ImagePage() {
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
+        e.stopPropagation(); // Stop propagation to prevent Slider from handling
+        e.stopImmediatePropagation(); // Stop all other listeners
         if (currentImageIndex < images.length - 1) {
           const nextImage = images[currentImageIndex + 1];
           if (nextImage) {
@@ -1283,6 +1290,8 @@ function ImagePage() {
         }
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
+        e.stopPropagation(); // Stop propagation to prevent Slider from handling
+        e.stopImmediatePropagation(); // Stop all other listeners
         if (currentImageIndex > 0) {
           const prevImage = images[currentImageIndex - 1];
           if (prevImage) {
@@ -1291,13 +1300,16 @@ function ImagePage() {
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
+        e.stopPropagation(); // Stop propagation
+        e.stopImmediatePropagation(); // Stop all other listeners
         handleClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentImageIndex, images, handleImageSelect, handleClose]);
+    // Use capture phase to handle event before other listeners (like Slider)
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [showModalStyle, currentImageIndex, images, handleImageSelect, handleClose]);
 
   // Handle related image hover - preload on hover for instant click
   // This is like Unsplash: preload when user hovers, so click is instant
