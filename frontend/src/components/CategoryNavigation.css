@@ -43,10 +43,19 @@
 
 /* Desktop: Allow scrolling if needed and show buttons when needed */
 @media (min-width: 769px) {
+  .category-navigation-wrapper {
+    height: 100%; /* Full height of container */
+    align-items: center; /* Center vertically */
+  }
+  
   .category-navigation {
     overflow-x: auto;
     padding-left: 48px;
     padding-right: 48px;
+    padding-top: 0; /* Remove top padding for proper centering */
+    padding-bottom: 0; /* Remove bottom padding for proper centering */
+    height: 100%; /* Full height */
+    align-items: center; /* Center items vertically */
   }
 
   .category-scroll-btn {

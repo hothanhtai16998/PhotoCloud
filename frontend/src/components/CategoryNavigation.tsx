@@ -200,13 +200,42 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   }
 
   // Show on homepage, category pages (/t/:slug), and test page
+  // Also show when modal is open (image modal opened from homepage)
   // Hide on search pages (/s/photos/:query)
   const isHomePage = location?.pathname === '/';
   const isCategoryPage = location?.pathname?.startsWith('/t/');
+  const isImagePage = location?.pathname?.startsWith('/photos/');
   const isTestPage = location?.pathname?.includes('UnsplashGridTestPage');
   const isSearchPage = location?.pathname?.startsWith('/s/');
   
-  if (!isHomePage && !isCategoryPage && !isTestPage) {
+  // Check if modal is open (when image modal opens from homepage, categories should still show)
+  // Use state to track modal open status
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  useEffect(() => {
+    // Check if modal is open by looking for the body class
+    const checkModalOpen = () => {
+      setIsModalOpen(document.body.classList.contains('image-modal-open'));
+    };
+    
+    // Initial check
+    checkModalOpen();
+    
+    // Watch for class changes
+    const observer = new MutationObserver(checkModalOpen);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+  
+  // Show on homepage, category pages, test page, or when modal is open from homepage
+  // Only show on image pages if modal is open (meaning it was opened from homepage)
+  const shouldShow = isHomePage || isCategoryPage || isTestPage || (isImagePage && isModalOpen);
+  
+  if (!shouldShow) {
     return null
   }
   

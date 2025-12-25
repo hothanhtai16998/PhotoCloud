@@ -1243,11 +1243,16 @@ function ImagePage() {
   // Lock body scroll when modal-style is shown
   useEffect(() => {
     if (showModalStyle) {
-      const prev = document.body.style.overflow;
+      // Store original styles
+      const prevOverflow = document.body.style.overflow;
+      
+      // Lock scroll (no padding compensation to prevent layout shift)
       document.body.style.overflow = 'hidden';
       document.body.classList.add('image-modal-open');
+      
       return () => {
-        document.body.style.overflow = prev;
+        // Restore original styles
+        document.body.style.overflow = prevOverflow;
         document.body.classList.remove('image-modal-open');
       };
     }
