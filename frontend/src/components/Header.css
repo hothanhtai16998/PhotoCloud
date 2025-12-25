@@ -888,13 +888,16 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   .unsplash-header {
     left: 0;
     width: 100%;
+    border: 0;
   }
 
   /* Mobile header: minimal padding for compact spacing */
   .header-top {
     padding: 0; /* Remove top padding completely */
+    padding-top: 0;
     height: 44px; /* Mobile: 0px padding + 44px container = 44px (reduced from 52px) */
     min-height: 44px;
+    border: 0;
   }
   
   .header-container {
@@ -907,6 +910,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 
   .header-logo {
     font-size: 1.125rem;
+    order: 1;
   }
 
   .header-logo-container {
@@ -918,6 +922,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
   .search-bar-container {
     /* Search bar positioning handled by SearchBar.css */
     /* It's positioned at top: 58px (below header) */
+    order: 3;
   }
 
   .header-actions {
@@ -949,6 +954,22 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
     min-height: 40px; /* Reduced from 44px */
     display: flex;
     align-items: center;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    order: 2;
+  }
+
+  .mobile-menu-button {
+    display: flex;
   }
 }
 
@@ -1061,38 +1082,7 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
 }
 
 /* Desktop Only - Hide on mobile */
-@media (max-width: 768px) {
-  .unsplash-header {
-    border: 0;
-  }
-  .header-top {
-    padding-top: 0;
-    border: 0;
-  }
-  .desktop-only {
-    display: none !important;
-  }
-
-  .mobile-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
-    order: 2;
-  }
-
-  .header-logo {
-    order: 1;
-  }
-
-  .mobile-menu-button {
-    display: flex;
-  }
-
-  .search-bar-container {
-    order: 3;
-  }
-}
+/* Note: Mobile styles consolidated into the main @media (max-width: 768px) block above */
 
 /* Mobile Header Icons */
 .mobile-header-actions {

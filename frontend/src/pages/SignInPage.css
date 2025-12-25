@@ -2,9 +2,12 @@
 .signin-page {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh; /* Use dynamic viewport height */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Background */
@@ -64,6 +67,7 @@
   width: 100%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   color: hsl(var(--card-foreground));
+  position: relative;
 }
 
 /* Header */
@@ -315,12 +319,19 @@
 @media (max-width: 768px) {
   .signin-modal {
     padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
     justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh; /* Use dynamic viewport height */
   }
 
   .signin-modal-content {
     padding: 32px 24px;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0) + 60px); /* Extra padding for phone bottom bar */
     max-width: 100%;
+    max-height: calc(100dvh - 40px); /* Account for top/bottom padding */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .signin-title {
@@ -363,10 +374,13 @@
 @media (max-width: 480px) {
   .signin-modal {
     padding: 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
   }
 
   .signin-modal-content {
     padding: 24px 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0) + 60px); /* Extra padding for phone bottom bar */
+    max-height: calc(100dvh - 24px); /* Account for top/bottom padding */
   }
 
   .signin-title {

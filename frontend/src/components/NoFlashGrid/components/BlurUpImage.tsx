@@ -410,7 +410,13 @@ export function BlurUpImage({
     // Handle favorite/save button
     const handleSaveClick = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!user || !image?._id || isTogglingFavorite) return;
+        if (!image?._id || isTogglingFavorite) return;
+
+        // If user is not logged in, redirect to sign-in page
+        if (!user) {
+            navigate('/signin');
+            return;
+        }
 
         setIsTogglingFavorite(true);
         try {
@@ -443,15 +449,23 @@ export function BlurUpImage({
         } finally {
             setIsTogglingFavorite(false);
         }
-    }, [user, image, isTogglingFavorite]);
+    }, [user, image, isTogglingFavorite, navigate]);
 
-    // Handle bookmark button (using same favorite functionality for now)
+    // Handle bookmark/collection button (using same favorite functionality for now)
     const handleBookmarkClick = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
+        if (!image?._id) return;
+
+        // If user is not logged in, redirect to sign-in page
+        if (!user) {
+            navigate('/signin');
+            return;
+        }
+
         // For now, bookmark uses the same favorite functionality
         // Can be changed to use collection service later if needed
         await handleSaveClick(e);
-    }, [handleSaveClick]);
+    }, [user, image, handleSaveClick, navigate]);
 
     // Handle download button
     const handleDownloadClick = useCallback(async (e: React.MouseEvent) => {
@@ -728,16 +742,14 @@ export function BlurUpImage({
                 <div className="blur-up-image-overlay">
                     {/* Top-right buttons */}
                     <div className="blur-up-image-actions">
-                        {user && (
-                            <button
-                                className="blur-up-image-action-btn"
-                                onClick={handleSaveClick}
-                                disabled={isTogglingFavorite}
-                                aria-label="Save"
-                            >
-                                <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
-                            </button>
-                        )}
+                        <button
+                            className="blur-up-image-action-btn"
+                            onClick={handleSaveClick}
+                            disabled={isTogglingFavorite}
+                            aria-label="Save"
+                        >
+                            <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
+                        </button>
                         <button
                             className="blur-up-image-action-btn"
                             onClick={handleDownloadClick}
@@ -776,26 +788,22 @@ export function BlurUpImage({
             {!minimal && (
             <div className="blur-up-image-mobile-actions">
                 <div className="blur-up-image-mobile-actions-left">
-                    {user && (
-                        <button
-                            className="blur-up-image-mobile-action-btn"
-                            onClick={handleSaveClick}
-                            disabled={isTogglingFavorite}
-                            aria-label="Favorite"
-                        >
-                            <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
-                        </button>
-                    )}
-                    {user && (
-                        <button
-                            className="blur-up-image-mobile-action-btn"
-                            onClick={handleBookmarkClick}
-                            disabled={isTogglingFavorite}
-                            aria-label="Bookmark"
-                        >
-                            <Bookmark size={20} fill={isFavorited ? 'currentColor' : 'none'} />
-                        </button>
-                    )}
+                    <button
+                        className="blur-up-image-mobile-action-btn"
+                        onClick={handleSaveClick}
+                        disabled={isTogglingFavorite}
+                        aria-label="Favorite"
+                    >
+                        <Heart size={20} fill={isFavorited ? 'currentColor' : 'none'} />
+                    </button>
+                    <button
+                        className="blur-up-image-mobile-action-btn"
+                        onClick={handleBookmarkClick}
+                        disabled={isTogglingFavorite}
+                        aria-label="Bookmark"
+                    >
+                        <Bookmark size={20} fill={isFavorited ? 'currentColor' : 'none'} />
+                    </button>
                 </div>
                 <div className="blur-up-image-mobile-actions-right">
                     <button

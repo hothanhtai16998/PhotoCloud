@@ -671,34 +671,6 @@
   }
 }
 
-@media (max-width: 480px) {
-  .slider-main {
-    padding: 0 1.5rem;
-  }
-
-  .main-title {
-    font-size: clamp(32px, 10vw, 50px);
-    letter-spacing: -0.5px;
-    line-height: 1.1;
-  }
-
-  .definition-box {
-    position: relative;
-    bottom: auto;
-    right: auto;
-    margin-top: 1rem;
-    max-width: 100%;
-  }
-
-  .circular-text {
-    display: block;
-  }
-
-  .countdown-number {
-    display: none;
-  }
-}
-
 /* Touch/Swipe Support */
 @media (hover: none) and (pointer: coarse) {
   .nav-arrow:hover {

@@ -742,18 +742,6 @@
     padding: 20px;
   }
 
-  @media (max-width: 768px) {
-    .upload-modal-content {
-      padding: 20px;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .upload-modal-content {
-      padding: 16px;
-    }
-  }
-
   .upload-dropzone {
     padding: 40px 20px;
     min-height: 0;

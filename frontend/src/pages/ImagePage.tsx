@@ -1099,7 +1099,13 @@ function ImagePage() {
   }, []);
 
   const handleToggleFavorite = useCallback(async () => {
-    if (!user || !image?._id || isTogglingFavorite) return;
+    if (!image?._id || isTogglingFavorite) return;
+
+    // If user is not logged in, redirect to sign-in page
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
     
     // Ensure CSRF token is ready before making request (critical for new sessions)
     await ensureCsrfToken();
@@ -1196,7 +1202,7 @@ function ImagePage() {
       .finally(() => {
         setIsTogglingFavorite(false);
       });
-  }, [user, image, isTogglingFavorite, updateFavoriteCount, isFavorited, ensureCsrfToken]);
+  }, [user, image, isTogglingFavorite, updateFavoriteCount, isFavorited, ensureCsrfToken, navigate]);
 
   const handleShare = useCallback(() => {
     if (!image?._id) return;
@@ -1691,45 +1697,48 @@ function ImagePage() {
         </div>
         <div className="image-modal-actions">
           {/* Save/Favorite button */}
-          {user && (
-            <button
-              onClick={handleToggleFavorite}
-              disabled={isTogglingFavorite}
-              className="image-modal-favorite-button"
-            >
-              <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
-              <span>{t('image.save')}</span>
-              {favoriteCount > 0 && (
-                <span className="image-modal-favorite-count">{favoriteCount.toLocaleString()}</span>
-              )}
-              <kbd className="image-modal-kbd">F</kbd>
-            </button>
-          )}
+          <button
+            onClick={handleToggleFavorite}
+            disabled={isTogglingFavorite}
+            className="image-modal-favorite-button"
+          >
+            <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
+            <span>{t('image.save')}</span>
+            {favoriteCount > 0 && (
+              <span className="image-modal-favorite-count">{favoriteCount.toLocaleString()}</span>
+            )}
+            <kbd className="image-modal-kbd">F</kbd>
+          </button>
 
           {/* Add to Collection button with dropdown */}
-          {user && (
-            <div className="image-modal-collection-menu-wrapper" data-collection-menu>
-              <button
-                onClick={() => setShowCollectionModal(!showCollectionModal)}
-                className="image-modal-favorite-button"
-                aria-label={t('image.addToCollection')}
-                title={t('image.addToCollection')}
-              >
-                <FolderPlus size={16} />
-                <span>{t('image.collection')}</span>
-              </button>
-              {showCollectionModal && image && (
-                <CollectionModal
-                  isOpen={showCollectionModal}
-                  onClose={() => setShowCollectionModal(false)}
-                  imageId={image._id}
-                  onCollectionUpdate={() => {
-                    // Optionally refresh data or show success message
-                  }}
-                />
-              )}
-            </div>
-          )}
+          <div className="image-modal-collection-menu-wrapper" data-collection-menu>
+            <button
+              onClick={() => {
+                // If user is not logged in, redirect to sign-in page
+                if (!user) {
+                  navigate('/signin');
+                  return;
+                }
+                setShowCollectionModal(!showCollectionModal);
+              }}
+              className="image-modal-favorite-button"
+              aria-label={t('image.addToCollection')}
+              title={t('image.addToCollection')}
+            >
+              <FolderPlus size={16} />
+              <span>{t('image.collection')}</span>
+            </button>
+            {showCollectionModal && image && (
+              <CollectionModal
+                isOpen={showCollectionModal}
+                onClose={() => setShowCollectionModal(false)}
+                imageId={image._id}
+                onCollectionUpdate={() => {
+                  // Optionally refresh data or show success message
+                }}
+              />
+            )}
+          </div>
 
           {/* Download button with dropdown */}
           <div className="image-modal-download-menu-wrapper" data-download-menu>
