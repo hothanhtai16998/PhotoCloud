@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useGlobalLoadingStore } from '@/stores/useGlobalLoadingStore';
-import LoadingSpinner from './LoadingSpinner';
 import './GlobalLoadingOverlay.css';
 
 /**
@@ -27,11 +26,11 @@ const isInRefreshDelay = (): boolean => {
 /**
  * GlobalLoadingOverlay
  * 
- * Shows a single loading spinner overlay when ANY store/component is loading.
+ * Shows a minimal loading overlay (blank page) when ANY store/component is loading.
  * This provides a consistent loading experience across the entire app.
  * 
  * Features:
- * - Single spinner for all loading states
+ * - Minimal loading state (no spinner, just blank page)
  * - Smooth fade in/out transitions
  * - Prevents layout shifts with fixed positioning
  * - Minimum display time to prevent flashing
@@ -50,13 +49,13 @@ export function GlobalLoadingOverlay() {
   const inRefreshDelay = isInRefreshDelay();
   const shouldShowLoading = isLoading && !inRefreshDelay;
 
-  // Track when spinner is fully hidden to control content visibility
+  // Track when loading overlay is fully hidden to control content visibility
   useEffect(() => {
-    // Add/remove class to body to hide content while spinner is visible
+    // Add/remove class to body to hide content while loading overlay is visible
     if (showSpinner && isVisible) {
       document.body.classList.add('global-loading-active');
     } else if (!showSpinner) {
-      // Only remove class after spinner is completely hidden
+      // Only remove class after loading overlay is completely hidden
       document.body.classList.remove('global-loading-active');
     }
     
@@ -88,12 +87,12 @@ export function GlobalLoadingOverlay() {
         return;
       }
 
-      // Show spinner after a short delay (prevents flash on fast loads)
+      // Show loading overlay after a short delay (prevents flash on fast loads)
       showTimerRef.current = setTimeout(() => {
         setShowSpinner(true);
         hasShownRef.current = true;
         minDisplayTimeRef.current = Date.now();
-        // Fade in after spinner is ready
+        // Fade in after overlay is ready
         requestAnimationFrame(() => {
           setIsVisible(true);
         });
@@ -115,7 +114,7 @@ export function GlobalLoadingOverlay() {
         return;
       }
 
-      // Fade out first, then hide spinner
+      // Fade out first, then hide loading overlay
       setIsVisible(false);
       hideTimerRef.current = setTimeout(() => {
         setShowSpinner(false);
@@ -140,7 +139,7 @@ export function GlobalLoadingOverlay() {
       aria-live="polite"
     >
       <div className="global-loading-content">
-        <LoadingSpinner size="large" />
+        {/* Simple minimal loading state - no spinner, just blank or text */}
       </div>
     </div>
   );

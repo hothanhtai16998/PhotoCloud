@@ -1,4 +1,4 @@
-/* Global Loading Overlay - Single spinner for entire app */
+/* Global Loading Overlay - Minimal loading state (blank page) for entire app */
 .global-loading-overlay {
   position: fixed;
   top: 0;
@@ -22,8 +22,8 @@
   pointer-events: auto;
 }
 
-/* Hide content while spinner is visible or fading out */
-/* Content stays hidden until spinner is completely gone */
+/* Hide content while loading overlay is visible or fading out */
+/* Content stays hidden until loading overlay is completely gone */
 /* Apply to all main page containers */
 body.global-loading-active main.homepage,
 body.global-loading-active main.favorites-page,
@@ -36,13 +36,13 @@ body.global-loading-active div.image-page,
 body.global-loading-active div.favorite-collections-page {
   visibility: hidden;
   opacity: 0;
-  /* No transition delay - hide immediately when spinner shows */
+  /* No transition delay - hide immediately when loading overlay shows */
   transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
   /* Preserve layout space to prevent shifts */
   position: relative;
 }
 
-/* Show content only after spinner is fully hidden */
+/* Show content only after loading overlay is fully hidden */
 body:not(.global-loading-active) main.homepage,
 body:not(.global-loading-active) main.favorites-page,
 body:not(.global-loading-active) main.profile-page,
@@ -54,22 +54,19 @@ body:not(.global-loading-active) div.image-page,
 body:not(.global-loading-active) div.favorite-collections-page {
   visibility: visible;
   opacity: 1;
-  /* Smooth fade in after spinner is gone */
+  /* Smooth fade in after loading overlay is gone */
   transition: opacity 0.2s ease-in-out 0.1s, visibility 0.2s ease-in-out 0.1s;
 }
 
 /* Dark mode support - no background needed */
 
+/* Minimal loading state - no spinner, just blank page during loading */
 .global-loading-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
-}
-
-/* Ensure spinner is centered and doesn't shift */
-.global-loading-content .loading-spinner-optimized {
-  flex-shrink: 0;
+  /* Empty content - just blank page during loading */
 }
 
