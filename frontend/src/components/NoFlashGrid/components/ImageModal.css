@@ -411,7 +411,7 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0px 16px;
+  padding: 0;
   background: #ffffff;
   overflow: visible;
   box-sizing: border-box;
@@ -880,4 +880,28 @@
 
 .image-modal-nav-button.right:not(:disabled) .image-modal-nav-icon {
   opacity: 0.7;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  /* Hide text labels in buttons, keep only icons */
+  .image-modal-favorite-button > span:not(.image-modal-favorite-count),
+  .image-modal-download-button > span,
+  .image-modal-share-button > span {
+    display: none !important;
+  }
+
+  /* Hide keyboard shortcut badge on mobile */
+  .image-modal-favorite-button .image-modal-kbd {
+    display: none !important;
+  }
+
+  /* Adjust button padding for icon-only display */
+  .image-modal-favorite-button,
+  .image-modal-download-button,
+  .image-modal-share-button {
+    padding: 6px 12px;
+    min-width: 40px;
+    justify-content: center;
+  }
 }

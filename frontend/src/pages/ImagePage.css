@@ -80,7 +80,7 @@
 
 /* Regular page mode - full width container */
 /* Override ImageModal.css styles for regular page mode */
-/* Header is 66px total (10px padding + 56px content) */
+/* Desktop Header: 66px total (10px padding + 56px content) */
 .image-page .image-modal-container {
   width: 100% !important;
   max-width: 100% !important;
@@ -88,7 +88,7 @@
   min-height: calc(100vh - 66px) !important;
   border-radius: 0 !important;
   margin: 0 !important;
-  margin-top: 66px !important; /* Full header height including padding */
+  margin-top: 66px !important; /* Desktop: Full header height (10px padding + 56px content = 66px) */
   margin-left: 0 !important; /* No left margin on mobile */
   display: flex !important;
   flex-direction: column !important;
@@ -146,7 +146,14 @@
     align-items: flex-start;
   }
   
+  /* Mobile Header Calculation:
+   * - Header top: 44px (0px padding + 44px container height)
+   * - Search bar: 48px (min-height, positioned at top: 44px)
+   * - Total: 44px + 48px = 92px
+   * Note: Category nav (42px) is typically not visible on ImagePage
+   */
   .image-page:not(.modal-style) .image-modal-container {
-    margin-top: 96px; /* Header + search bar */
+    margin-top: 92px !important; /* Header (44px) + Search bar (48px) = 92px */
+    min-height: calc(100vh - 92px) !important;
   }
 }
