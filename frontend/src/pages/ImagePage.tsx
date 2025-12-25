@@ -1250,7 +1250,43 @@ function ImagePage() {
       document.body.style.overflow = 'hidden';
       document.body.classList.add('image-modal-open');
       
+      // Prevent body scroll while allowing modal scroll
+      const handleWheel = (e: WheelEvent) => {
+        const target = e.target as Element;
+        const modalScrollArea = target.closest('.image-modal-scroll-area');
+        
+        // Allow scrolling within modal scroll area
+        if (modalScrollArea) {
+          return;
+        }
+        
+        // Prevent scrolling outside modal
+        e.preventDefault();
+      };
+      
+      // Prevent touch scrolling outside modal
+      const handleTouchMove = (e: TouchEvent) => {
+        const target = e.target as Element;
+        const modalScrollArea = target.closest('.image-modal-scroll-area');
+        
+        // Allow touch scrolling within modal scroll area
+        if (modalScrollArea) {
+          return;
+        }
+        
+        // Prevent touch scrolling outside modal
+        e.preventDefault();
+      };
+      
+      // Add event listeners with passive: false to allow preventDefault
+      document.addEventListener('wheel', handleWheel, { passive: false, capture: true });
+      document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+      
       return () => {
+        // Remove event listeners
+        document.removeEventListener('wheel', handleWheel, { capture: true } as EventListenerOptions);
+        document.removeEventListener('touchmove', handleTouchMove, { capture: true } as EventListenerOptions);
+        
         // Restore original styles
         document.body.style.overflow = prevOverflow;
         document.body.classList.remove('image-modal-open');
