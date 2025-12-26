@@ -6,6 +6,7 @@ import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlu
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { t, getLocale } from '@/i18n';
 import { getTranslatedCategoryName } from '@/utils/categoryTranslations';
+import { validateModalState } from '@/utils/modalNavigation';
 import './CategoryNavigation.css'
 
 export const CategoryNavigation = memo(function CategoryNavigation() {
@@ -214,8 +215,10 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   
   // Early detection: Check location state for modal indicators (prevents flash)
   // This detects modal navigation before body class is added
-  const locationState = location?.state as { inlineModal?: boolean; background?: unknown } | null;
-  const hasModalState = Boolean(locationState?.inlineModal && locationState?.background);
+  // Use validateModalState() to ensure consistency with other components (App.tsx, ImagePage.tsx)
+  // This validates: flag + inlineModal + proper background Location object
+  const modalValidation = validateModalState(location?.state);
+  const hasModalState = modalValidation.isValid && modalValidation.isModal;
   
   useEffect(() => {
     // Check if modal is open by looking for the body class
@@ -223,9 +226,9 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
       setIsModalOpen(document.body.classList.contains('image-modal-open'));
     };
     
-    // Initial check - also check location state for early detection
+    // Initial check - also check location state AND flag for early detection
     const isOpenFromBody = document.body.classList.contains('image-modal-open');
-    const isOpenFromState = Boolean(locationState?.inlineModal && locationState?.background);
+    const isOpenFromState = hasModalState; // Use the validated modal state
     setIsModalOpen(isOpenFromBody || isOpenFromState);
     
     // Watch for class changes
@@ -236,19 +239,27 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     });
     
     return () => observer.disconnect();
-  }, [locationState]);
+  }, [hasModalState]);
   
-  // Show on homepage, category pages, test page, or when modal is open from homepage
-  // Only show on image pages if modal is open (meaning it was opened from homepage)
+  // Show on homepage, category pages, test page
+  // Also show when modal is open from homepage (category nav should be visible behind modal)
+  // But DON'T show on image pages when NOT in modal mode
   // Use hasModalState as early indicator to prevent flash before body class is added
   const isModalOpenOrHasState = isModalOpen || hasModalState;
+  
+  // Explicitly hide on image pages unless modal is open
+  if (isImagePage && !isModalOpenOrHasState) {
+    return null;
+  }
+  
+  // Show on homepage, category pages, test page, or image pages with modal open
   const shouldShow = isHomePage || isCategoryPage || isTestPage || (isImagePage && isModalOpenOrHasState);
   
   if (!shouldShow) {
     return null
   }
-  
-  // Hide on search pages
+
+  // Hide on search pages (extra check for safety)
   if (isSearchPage) {
     return null;
   }
