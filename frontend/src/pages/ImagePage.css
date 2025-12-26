@@ -97,7 +97,8 @@
 }
 
 /* On desktop, add left margin to account for fixed sidebar */
-@media (min-width: 768px) {
+/* Use 769px to match standard: mobile <= 768px, desktop >= 769px */
+@media (min-width: 769px) {
   .image-page .image-modal-container {
     margin-left: 64px !important; /* Sidebar width (updated from 56px to 64px) */
   }
@@ -109,7 +110,7 @@
   border-radius: 0 !important;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 769px) {
   .image-page .image-modal-container.scrolled {
     margin-left: 64px !important; /* Keep left margin for sidebar (updated from 56px to 64px) */
   }
@@ -126,6 +127,17 @@
   position: sticky !important;
   top: 0 !important; /* Sticks to top of scroll container (which starts below header) */
   z-index: 1499 !important; /* Lower than header z-index (1500) to ensure header stays on top */
+}
+
+/* On mobile, disable sticky positioning to prevent overlap with header */
+@media (max-width: 768px) {
+  .image-page:not(.modal-style) .image-modal-top-info {
+    /* Disable sticky on mobile regular page mode to prevent it from appearing above header */
+    /* On mobile, the header is fixed at top, and sticky elements can overlap it */
+    position: relative !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
 }
 
 /* Disable transition completely when image is changing - topbar should appear instantly */

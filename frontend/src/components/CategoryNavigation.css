@@ -183,7 +183,8 @@ body.image-modal-open .category-navigation-container {
 }
 
 /* Responsive */
-@media (min-width: 768px) {
+/* Use 769px to match standard: mobile <= 768px, desktop >= 769px */
+@media (min-width: 769px) {
   .category-navigation {
     padding: 6px 48px; /* Reduced padding for smaller size */
   }

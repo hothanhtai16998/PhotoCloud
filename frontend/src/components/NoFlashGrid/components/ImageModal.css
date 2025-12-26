@@ -755,6 +755,53 @@
   letter-spacing: -0.01em;
 }
 
+/* Mobile: Match Unsplash design - 2 columns, adjusted spacing */
+@media (max-width: 768px) {
+  .image-modal-related-section {
+    padding: 24px 16px 32px 16px; /* Increased top padding for better separation */
+  }
+
+  .image-modal-related-title {
+    font-size: 18px; /* Slightly smaller on mobile */
+    margin-bottom: 12px; /* Tighter spacing on mobile */
+    padding: 0 4px; /* Small horizontal padding for alignment */
+  }
+
+  /* Force 2 columns on mobile for related images (Unsplash style) */
+  .image-modal-related-section .no-flash-grid,
+  .image-modal-related-section .related-images-grid.no-flash-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* Force 2 columns on mobile */
+    gap: 12px !important; /* Smaller gap on mobile (was 24px) */
+    row-gap: 12px !important; /* Ensure vertical gap between rows */
+    column-gap: 12px !important; /* Ensure horizontal gap between columns */
+  }
+
+  .image-modal-related-section .no-flash-grid-container {
+    padding: 0; /* Remove default padding, handled by parent */
+    max-width: 100%;
+  }
+
+  /* Ensure grid items work properly with 2 columns */
+  .image-modal-related-section .grid-item-wrapper {
+    width: 100%;
+  }
+
+  /* Hide author row in related images to give images more space (Unsplash style) */
+  .image-modal-related-section .blur-up-image-mobile-author {
+    display: none !important;
+  }
+
+  /* Hide mobile actions bar in related images to give images more space */
+  .image-modal-related-section .blur-up-image-mobile-actions {
+    display: none !important;
+  }
+
+  /* Hide desktop overlay author info in related images */
+  .image-modal-related-section .blur-up-image-user-info {
+    display: none !important;
+  }
+}
+
 .image-modal-related-grid {
   display: grid;
   width: 100%;
@@ -884,6 +931,14 @@
 
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
+  /* Make modal container full width on mobile/tablet */
+  .image-modal-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+  }
+
   /* Hide text labels in buttons, keep only icons */
   .image-modal-favorite-button > span:not(.image-modal-favorite-count),
   .image-modal-download-button > span,
@@ -903,5 +958,37 @@
     padding: 6px 12px;
     min-width: 40px;
     justify-content: center;
+  }
+
+  /* Adjust close button position for mobile */
+  .image-modal-close-button {
+    left: 12px;
+    top: 12px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .image-modal-close-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Adjust navigation buttons for mobile */
+  .image-modal-nav-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .image-modal-nav-button.left {
+    left: 8px;
+  }
+
+  .image-modal-nav-button.right {
+    right: 8px;
+  }
+
+  .image-modal-nav-icon {
+    width: 32px;
+    height: 32px;
   }
 }

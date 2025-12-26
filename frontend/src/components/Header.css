@@ -894,12 +894,16 @@ body.scroll-locked .user-menu-content [data-slot='dropdown-menu-item']:hover {
     left: 0;
     width: 100%;
     border: 0;
+    margin: 0; /* Ensure no margin */
+    padding: 0; /* Ensure no padding */
+    top: 0; /* Explicitly stick to top */
   }
 
   /* Mobile header: minimal padding for compact spacing */
   .header-top {
     padding: 0; /* Remove top padding completely */
     padding-top: 0;
+    margin: 0; /* Ensure no margin */
     height: 44px; /* Mobile: 0px padding + 44px container = 44px (reduced from 52px) */
     min-height: 44px;
     border: 0;

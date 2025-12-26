@@ -2234,11 +2234,11 @@ function ImagePage() {
 
       {/* Related images section */}
       {relatedImages.length > 0 && (
-        <div className="image-modal-related-section" style={{ padding: '32px 16px', background: '#fff', position: 'relative' }}>
+        <div className="image-modal-related-section" style={{ background: '#fff', position: 'relative' }}>
           {/* REMOVED: Loading indicator - navigation is now immediate (like Unsplash) */}
           {/* Image is already preloaded on hover, so no loading indicator needed */}
           <div style={{ maxWidth: '1296px', margin: '0 auto', width: '100%' }}>
-            <h2 className="image-modal-related-title" style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px', color: '#111' }}>
+            <h2 className="image-modal-related-title">
               {t('image.relatedImages')}
             </h2>
             <NoFlashGrid
@@ -2246,6 +2246,8 @@ function ImagePage() {
               loading={false}
               onImageClick={handleRelatedImageClick}
               onImageHover={handleRelatedImageHover}
+              forceColumns={isMobile ? 2 : undefined} // Force 2 columns on mobile for related images (Unsplash style)
+              className="related-images-grid" // Add specific className for CSS targeting
             />
           </div>
         </div>

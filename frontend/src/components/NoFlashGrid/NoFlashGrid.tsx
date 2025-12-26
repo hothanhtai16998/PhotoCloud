@@ -31,15 +31,24 @@ export interface NoFlashGridProps {
         pages: number;
     } | null;
     onLoadMore?: () => Promise<void>; // Handler for loading more images (infinite scroll)
+    forceColumns?: number; // Optional: Force a specific number of columns (overrides responsive calculation)
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore }: NoFlashGridProps) {
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore, forceColumns }: NoFlashGridProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
     const [columnCount, setColumnCount] = useState(() => {
+        if (forceColumns !== undefined) return forceColumns;
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
         return getColumnCount(window.innerWidth);
     });
+
+    // Update columnCount when forceColumns prop changes
+    useEffect(() => {
+        if (forceColumns !== undefined) {
+            setColumnCount(forceColumns);
+        }
+    }, [forceColumns]);
     const [containerWidth, setContainerWidth] = useState(0); // Start at 0, will be updated after mount to prevent initial render with wrong dimensions
 
     // Store image dimensions as they load
@@ -300,26 +309,31 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     const gridLayout = useMemo(() => {
         if (filteredImages.length === 0) return [];
         if (containerWidth === 0 || !isFinite(containerWidth) || containerWidth < 300) return [];
-        if (columnCount < 1 || !isFinite(columnCount)) return [];
+        // Use forceColumns if provided, otherwise use columnCount state
+        const effectiveColumnCount = forceColumns ?? columnCount;
+        if (effectiveColumnCount < 1 || !isFinite(effectiveColumnCount)) return [];
 
         // Check if we're on mobile (1 column)
-        const isMobileLayout = columnCount === 1;
+        const isMobileLayout = effectiveColumnCount === 1;
+        // Use 12px gap when forceColumns is 2 (for related images on mobile), otherwise use default
+        const effectiveGap = (forceColumns === 2 && isMobile) ? 12 : GRID_CONFIG.gap;
+        
         // Mobile UI bars take up space:
         // - Author bar: 12px top + 42px avatar + 12px bottom + text line-height = ~66px
         // - Actions bar: 12px top + 40px buttons + 12px bottom = ~64px
         // Total: ~130px
         // Convert to row units to add to rowSpan
         const mobileUIBarsHeight = 130; // Total height of mobile author + actions bars
-        const rowUnit = GRID_CONFIG.baseRowHeight + GRID_CONFIG.gap;
+        const rowUnit = GRID_CONFIG.baseRowHeight + effectiveGap;
         const mobileUIBarsRowSpan = Math.ceil(mobileUIBarsHeight / rowUnit);
 
         // Calculate column width
-        const gapTotal = GRID_CONFIG.gap * (columnCount - 1);
-        const columnWidth = (containerWidth - gapTotal) / columnCount;
+        const gapTotal = effectiveGap * (effectiveColumnCount - 1);
+        const columnWidth = (containerWidth - gapTotal) / effectiveColumnCount;
 
         // Track pixel heights in each column for shortest-column algorithm
         // This is more accurate than row-based tracking
-        const columnHeights = new Array(columnCount).fill(0); // Start at 0px for each column
+        const columnHeights = new Array(effectiveColumnCount).fill(0); // Start at 0px for each column
 
         return filteredImages.map((image) => {
             let dimensions = precalculatedDimensionsMap.get(image._id) || null;
@@ -347,7 +361,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             // Find the shortest column (by pixel height)
             let shortestColumnIndex = 0;
             let shortestHeight = columnHeights[0];
-            for (let i = 1; i < columnCount; i++) {
+            for (let i = 1; i < effectiveColumnCount; i++) {
                 if (columnHeights[i] < shortestHeight) {
                     shortestHeight = columnHeights[i];
                     shortestColumnIndex = i;
@@ -358,7 +372,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             const column = shortestColumnIndex + 1; // CSS Grid columns are 1-indexed
 
             const rowStart = Math.max(1, Math.floor(shortestHeight / rowUnit) + 1);
-            const exactHeight = finalRowSpan * GRID_CONFIG.baseRowHeight + (finalRowSpan - 1) * GRID_CONFIG.gap;
+            const exactHeight = finalRowSpan * GRID_CONFIG.baseRowHeight + (finalRowSpan - 1) * effectiveGap;
 
             columnHeights[shortestColumnIndex] = shortestHeight + finalRowSpan * rowUnit;
 
@@ -371,7 +385,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 exactHeight,
             };
         });
-    }, [filteredImages, columnCount, containerWidth, precalculatedDimensionsMap]);
+    }, [filteredImages, columnCount, containerWidth, precalculatedDimensionsMap, forceColumns]);
 
     // Update column count and container width on resize
     useEffect(() => {
@@ -383,8 +397,11 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 const width = container.offsetWidth - 32; // Subtract padding (16px * 2)
                 setContainerWidth(Math.max(300, width)); // Minimum 300px
             }
-            const viewportWidth = window.innerWidth;
-            setColumnCount(getColumnCount(viewportWidth));
+            // Only update column count if not forced
+            if (forceColumns === undefined) {
+                const viewportWidth = window.innerWidth;
+                setColumnCount(getColumnCount(viewportWidth));
+            }
         };
 
         // Initial calculation
@@ -402,7 +419,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             window.removeEventListener('resize', handleResize);
             clearTimeout(timeoutId);
         };
-    }, []);
+    }, [forceColumns]);
 
 
     const isLoading = externalLoading ?? false;
@@ -430,8 +447,12 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                         className="no-flash-grid"
                         style={{
                             // Unsplash-style: Fixed columns with dynamic row spans
-                            gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
-                            gap: `${GRID_CONFIG.gap}px`,
+                            // When forceColumns is provided, let CSS handle it (for related images section)
+                            // Otherwise use inline styles for normal grid behavior
+                            ...(forceColumns === undefined ? {
+                                gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
+                                gap: `${GRID_CONFIG.gap}px`,
+                            } : {}),
                             // Base row height for row span calculations - MUST be a string with units
                             gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
                             // Don't use grid-auto-flow: dense - we use explicit row positioning
