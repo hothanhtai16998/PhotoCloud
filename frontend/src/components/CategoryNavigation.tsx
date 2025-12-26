@@ -212,14 +212,21 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   // Use state to track modal open status
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  // Early detection: Check location state for modal indicators (prevents flash)
+  // This detects modal navigation before body class is added
+  const locationState = location?.state as { inlineModal?: boolean; background?: unknown } | null;
+  const hasModalState = Boolean(locationState?.inlineModal && locationState?.background);
+  
   useEffect(() => {
     // Check if modal is open by looking for the body class
     const checkModalOpen = () => {
       setIsModalOpen(document.body.classList.contains('image-modal-open'));
     };
     
-    // Initial check
-    checkModalOpen();
+    // Initial check - also check location state for early detection
+    const isOpenFromBody = document.body.classList.contains('image-modal-open');
+    const isOpenFromState = Boolean(locationState?.inlineModal && locationState?.background);
+    setIsModalOpen(isOpenFromBody || isOpenFromState);
     
     // Watch for class changes
     const observer = new MutationObserver(checkModalOpen);
@@ -229,11 +236,13 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     });
     
     return () => observer.disconnect();
-  }, []);
+  }, [locationState]);
   
   // Show on homepage, category pages, test page, or when modal is open from homepage
   // Only show on image pages if modal is open (meaning it was opened from homepage)
-  const shouldShow = isHomePage || isCategoryPage || isTestPage || (isImagePage && isModalOpen);
+  // Use hasModalState as early indicator to prevent flash before body class is added
+  const isModalOpenOrHasState = isModalOpen || hasModalState;
+  const shouldShow = isHomePage || isCategoryPage || isTestPage || (isImagePage && isModalOpenOrHasState);
   
   if (!shouldShow) {
     return null

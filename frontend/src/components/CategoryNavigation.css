@@ -13,6 +13,14 @@
   height: 48px; /* Match SearchResultsNavigation height to prevent layout shift */
   min-height: 48px; /* Prevent layout shift */
   overflow: visible; /* Allow underline to be visible below */
+  /* Prevent flash by using opacity transition instead of display none */
+  opacity: 1;
+  transition: opacity 0.1s ease-out;
+}
+
+/* Ensure category navigation is below modal overlay when modal is open */
+body.image-modal-open .category-navigation-container {
+  z-index: var(--z-category-nav, 1499) !important; /* Keep below modal overlay (2000) */
 }
 
 .category-navigation-wrapper {

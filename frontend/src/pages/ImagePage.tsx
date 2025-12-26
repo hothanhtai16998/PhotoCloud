@@ -1241,6 +1241,17 @@ function ImagePage() {
   }, [navigate, image, handleClose]);
 
   // Lock body scroll when modal-style is shown
+  // Use useLayoutEffect to add body class synchronously before paint to prevent flash
+  useLayoutEffect(() => {
+    if (showModalStyle) {
+      // Add body class immediately (synchronously) to prevent category navigation flash
+      document.body.classList.add('image-modal-open');
+    } else {
+      // Remove class when modal closes
+      document.body.classList.remove('image-modal-open');
+    }
+  }, [showModalStyle]);
+
   useEffect(() => {
     if (showModalStyle) {
       // Store original styles
@@ -1248,7 +1259,6 @@ function ImagePage() {
       
       // Lock scroll (no padding compensation to prevent layout shift)
       document.body.style.overflow = 'hidden';
-      document.body.classList.add('image-modal-open');
       
       // Prevent body scroll while allowing modal scroll
       const handleWheel = (e: WheelEvent) => {
@@ -1289,7 +1299,7 @@ function ImagePage() {
         
         // Restore original styles
         document.body.style.overflow = prevOverflow;
-        document.body.classList.remove('image-modal-open');
+        // Note: body class removal is handled by useLayoutEffect above
       };
     }
     return undefined;
