@@ -251,18 +251,20 @@
   align-items: center;
   gap: 6px;
   padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.05);
-  border: none;
-  border-radius: 8px;
-  color: #333;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  color: #111;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .image-modal-download-button:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Download Menu Wrapper */
@@ -273,6 +275,7 @@
 /* Collection Menu Wrapper - Same pattern as download menu */
 .image-modal-collection-menu-wrapper {
   position: relative;
+  display: inline-block;
 }
 
 /* Download Menu */
@@ -339,18 +342,20 @@
   align-items: center;
   gap: 6px;
   padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.05);
-  border: none;
-  border-radius: 8px;
-  color: #333;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  color: #111;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .image-modal-favorite-button:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 .image-modal-favorite-button:disabled {
@@ -371,18 +376,20 @@
   align-items: center;
   gap: 6px;
   padding: 6px 16px;
-  background: rgba(0, 0, 0, 0.05);
-  border: none;
-  border-radius: 8px;
-  color: #333;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  color: #111;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .image-modal-share-button:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Keyboard Shortcut Badge */
@@ -566,17 +573,20 @@
   width: 100%;
 }
 
+.image-modal-stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
 .image-modal-stats-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
   width: 100%;
   gap: 24px;
-}
-
-.image-modal-stats-header {
-  flex-shrink: 0;
 }
 
 .image-modal-stats-row .image-modal-actions-container {
@@ -587,10 +597,6 @@
   align-items: center;
 }
 
-.image-modal-stats-header {
-  display: flex;
-  gap: 32px;
-}
 
 .image-modal-stat-item {
   display: flex;
@@ -735,6 +741,8 @@
 .image-modal-actions-container .modal-footer-btn {
   position: relative;
   padding: 6px 18px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #111;
 }
 
 /* Related Images Section - Outside bottom bar */
@@ -942,7 +950,8 @@
   /* Hide text labels in buttons, keep only icons */
   .image-modal-favorite-button > span:not(.image-modal-favorite-count),
   .image-modal-download-button > span,
-  .image-modal-share-button > span {
+  .image-modal-share-button > span,
+  .image-modal-actions-container .modal-footer-btn > span {
     display: none !important;
   }
 
@@ -951,13 +960,84 @@
     display: none !important;
   }
 
-  /* Adjust button padding for icon-only display */
+  /* Adjust button padding for icon-only display - ensure proper touch targets */
   .image-modal-favorite-button,
   .image-modal-download-button,
   .image-modal-share-button {
-    padding: 6px 12px;
-    min-width: 40px;
-    justify-content: center;
+    padding: 6px 20px !important;
+    min-width: 44px !important;
+    width: auto !important;
+    min-height: 36px !important;
+    height: auto !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 1 !important;
+    flex-shrink: 0 !important;
+    background: transparent !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+    color: #111 !important;
+  }
+
+  .image-modal-favorite-button:hover:not(:disabled),
+  .image-modal-download-button:hover,
+  .image-modal-share-button:hover {
+    background: #f5f5f5 !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Ensure SVG icons are visible and properly sized when text is hidden */
+  .image-modal-favorite-button svg,
+  .image-modal-download-button svg,
+  .image-modal-share-button svg,
+  .image-modal-actions-container .modal-footer-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+    display: block !important;
+    pointer-events: none !important;
+  }
+
+  /* Adjust Info and Edit button styles to match other icon-only buttons */
+  .image-modal-actions-container .modal-footer-btn {
+    padding: 6px 20px !important;
+    min-width: 44px !important;
+    width: auto !important;
+    min-height: 36px !important;
+    height: auto !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: #111 !important;
+  }
+
+  /* Ensure actions container doesn't block clicks */
+  .image-modal-actions {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto;
+    gap: 8px !important;
+  }
+
+  /* Ensure menu wrappers are clickable */
+  .image-modal-collection-menu-wrapper,
+  .image-modal-download-menu-wrapper {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+  }
+
+  /* Ensure download menu is positioned correctly on mobile */
+  .image-modal-download-menu {
+    z-index: 1001 !important;
+    right: 0 !important;
+    left: auto !important;
   }
 
   /* Adjust close button position for mobile */

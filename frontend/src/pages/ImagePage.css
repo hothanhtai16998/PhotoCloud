@@ -136,7 +136,15 @@
     /* On mobile, the header is fixed at top, and sticky elements can overlap it */
     position: relative !important;
     top: auto !important;
-    z-index: auto !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Ensure buttons in top-info are clickable on mobile */
+  .image-page:not(.modal-style) .image-modal-top-info .image-modal-actions {
+    pointer-events: auto !important;
+    z-index: 2 !important;
+    position: relative;
   }
 }
 

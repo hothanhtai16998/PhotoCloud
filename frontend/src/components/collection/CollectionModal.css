@@ -35,6 +35,43 @@
   animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* When wrapper is inside collection menu wrapper (dropdown mode), position it at button location without affecting layout */
+.image-modal-collection-menu-wrapper .collection-modal-wrapper,
+[data-collection-menu] .collection-modal-wrapper {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  max-width: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: block !important;
+  animation: none !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+  z-index: 10050 !important;
+}
+
+/* Ensure dropdown positions correctly relative to wrapper (which is at button position) */
+/* Use top: 0 with margin-top to account for button height (~36-44px) + gap (8px) */
+.image-modal-collection-menu-wrapper .collection-modal-wrapper .collection-modal-dropdown,
+[data-collection-menu] .collection-modal-wrapper .collection-modal-dropdown {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  bottom: auto !important;
+  margin-top: 44px !important; /* Button height + gap */
+  transform: none !important;
+  z-index: 10050 !important;
+}
+
+
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -59,6 +96,12 @@
   overflow: hidden;
 }
 
+/* Ensure dropdown modal has higher z-index than buttons - ONLY for dropdown mode */
+.image-modal-collection-menu-wrapper .collection-modal-wrapper .collection-modal-dropdown.collection-modal,
+[data-collection-menu] .collection-modal-wrapper .collection-modal-dropdown.collection-modal {
+  z-index: 10050 !important;
+}
+
 .collection-modal.with-sidebar {
   border-radius: 12px 0 0 12px;
 }
@@ -72,6 +115,7 @@
   width: 360px;
   max-height: 85vh;
   animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10050;
 }
 
 /* Centered modal mode (for edit mode) */
@@ -1333,6 +1377,50 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  /* On mobile, for dropdown mode - position wrapper absolutely at top-right (button location) */
+  /* Match Unsplash pattern: dropdown appears below button */
+  .image-modal-collection-menu-wrapper .collection-modal-wrapper,
+  [data-collection-menu] .collection-modal-wrapper {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    max-width: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    display: block !important;
+    z-index: 10050 !important;
+    animation: none !important;
+    align-items: stretch !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Position dropdown below button on mobile - using top:0 with margin-top for consistency */
+  .image-modal-collection-menu-wrapper .collection-modal-wrapper .collection-modal-dropdown,
+  [data-collection-menu] .collection-modal-wrapper .collection-modal-dropdown,
+  .image-modal-collection-menu-wrapper .collection-modal-wrapper .collection-modal.collection-modal-dropdown {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    bottom: auto !important;
+    margin-top: 44px !important; /* Button height (36-44px) + gap */
+    width: 320px !important;
+    max-width: calc(100vw - 16px) !important;
+    min-width: 280px !important;
+    border-radius: 12px !important;
+    max-height: 60vh !important;
+    animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 10050 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    transform: none !important;
+  }
+
   .collection-modal {
     width: 95%;
     max-height: 90vh;
@@ -1341,6 +1429,11 @@
     bottom: 0;
     transform: translate(-50%, 0);
     animation: modalSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Override for dropdown - no transform */
+  .collection-modal-dropdown {
+    transform: none !important;
   }
 
   @keyframes modalSlideUp {
@@ -1359,16 +1452,68 @@
   }
 
   .collection-modal-content {
-    padding: 20px 24px 24px;
+    padding: 8px 8px 12px;
   }
 
   .collection-modal-item {
-    padding: 12px 14px;
+    padding: 6px 8px;
   }
 
   .collection-modal-item-cover,
   .collection-modal-item-placeholder {
     width: 48px;
     height: 48px;
+  }
+
+  /* Remove duplicate/conflicting rules - using the absolute positioning from above */
+
+  /* Reduce padding specifically for dropdown content on mobile */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-content,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-content {
+    padding: 8px 8px 12px !important;
+  }
+
+  /* Reduce padding for dropdown items on mobile */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-item,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-item {
+    padding: 6px 8px !important;
+  }
+
+  /* Reduce padding for search bar on mobile dropdown */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-search,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-search {
+    padding: 10px 8px !important;
+  }
+
+  /* Reduce padding for sections on mobile dropdown */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-section,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-section {
+    padding: 10px 8px 0 !important;
+  }
+
+  /* Reduce padding for create form on mobile dropdown */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-create-form,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-create-form {
+    padding: 8px 6px !important;
+    gap: 12px !important;
+  }
+
+  /* Reduce padding for create button on mobile dropdown */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-create-btn,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-create-btn {
+    padding: 12px 16px !important;
+  }
+
+  /* Reduce padding for create options on mobile dropdown */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-create-options,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-create-options {
+    margin-bottom: 12px !important;
+    gap: 10px !important;
+  }
+
+  /* Reduce padding for create bottom section on mobile dropdown */
+  .image-modal-collection-menu-wrapper .collection-modal-dropdown .collection-modal-create-bottom,
+  [data-collection-menu] .collection-modal-dropdown .collection-modal-create-bottom {
+    padding: 12px 8px !important;
   }
 }

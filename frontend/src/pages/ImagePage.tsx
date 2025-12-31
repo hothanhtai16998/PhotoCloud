@@ -2102,44 +2102,45 @@ function ImagePage() {
           {/* Left: image info */}
           <div className="image-modal-image-info">
             {/* Views and Downloads Stats with Share/Info buttons */}
-            <div className="image-modal-stats-row">
-              <div className="image-modal-stats-header">
+            <div className="image-modal-stats-container">
+              {/* First row: Views and buttons */}
+              <div className="image-modal-stats-row">
                 <div className="image-modal-stat-item">
                   <div className="image-modal-stat-label">Views</div>
                   <div className="image-modal-stat-value">{views.toLocaleString()}</div>
                 </div>
-                <div className="image-modal-stat-item">
-                  <div className="image-modal-stat-label">Downloads</div>
-                  <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
+                {/* Right: Share and Info buttons */}
+                <div className="image-modal-actions-container">
+                  <button
+                    onClick={handleShare}
+                    className="image-modal-share-button"
+                  >
+                    <Share2 size={16} />
+                    <span>{t('share.share')}</span>
+                  </button>
+                  <ImageModalInfo image={image} />
+                  {/* Edit button - only show if user is owner or admin */}
+                  {user && image && (
+                    (user._id === (image.uploadedBy as any)?._id ||
+                      (user as any)?.isAdmin ||
+                      (user as any)?.isSuperAdmin) && (
+                      <button
+                        onClick={() => setShowEditModal(true)}
+                        className="image-modal-share-button"
+                        aria-label="Edit image"
+                        title="Edit image"
+                      >
+                        <Edit2 size={16} />
+                        <span>Edit</span>
+                      </button>
+                    )
+                  )}
                 </div>
               </div>
-
-              {/* Right: Share and Info buttons */}
-              <div className="image-modal-actions-container">
-                <button
-                  onClick={handleShare}
-                  className="image-modal-share-button"
-                >
-                  <Share2 size={16} />
-                  <span>{t('share.share')}</span>
-                </button>
-                <ImageModalInfo image={image} />
-                {/* Edit button - only show if user is owner or admin */}
-                {user && image && (
-                  (user._id === (image.uploadedBy as any)?._id ||
-                    (user as any)?.isAdmin ||
-                    (user as any)?.isSuperAdmin) && (
-                    <button
-                      onClick={() => setShowEditModal(true)}
-                      className="image-modal-share-button"
-                      aria-label="Edit image"
-                      title="Edit image"
-                    >
-                      <Edit2 size={16} />
-                      <span>Edit</span>
-                    </button>
-                  )
-                )}
+              {/* Second row: Downloads */}
+              <div className="image-modal-stat-item">
+                <div className="image-modal-stat-label">Downloads</div>
+                <div className="image-modal-stat-value">{downloads.toLocaleString()}</div>
               </div>
             </div>
 
