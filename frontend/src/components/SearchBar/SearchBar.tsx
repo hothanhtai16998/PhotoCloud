@@ -26,7 +26,6 @@ export interface SearchBarRef {
 export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
     const fetchImages = useImageStore(state => state.fetchImages);
     const currentCategory = useImageStore(state => state.currentCategory);
-    const images = useImageStore(state => state.images);
     const navigate = useNavigate();
     const location = useLocation();
     const searchMatch = useMatch('/s/photos/:query');
@@ -46,7 +45,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
     // Custom hooks
     const { searchHistory, saveToHistory, clearHistory } = useSearchHistory();
     const { suggestions, loadingSuggestions } = useSearchSuggestions(searchQuery, searchHistory, isFocused && showSuggestions);
-    const { filters, setFilters, resetFilters } = useSearchFilters();
+    const { filters, setFilters } = useSearchFilters();
 
     // Expose focus method via ref
     useImperativeHandle(ref, () => ({
@@ -332,13 +331,8 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
                 {/* Search Filters */}
                 <div className="search-filters-wrapper">
                     <SearchFilters
-                        filters={{
-                            ...filters,
-                            color: filters.color as 'all' | 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'brown' | 'black' | 'white' | 'gray'
-                        }}
+                        filters={filters}
                         onFiltersChange={handleFiltersChange}
-                        onReset={resetFilters}
-                        images={images}
                     />
                 </div>
             </form>

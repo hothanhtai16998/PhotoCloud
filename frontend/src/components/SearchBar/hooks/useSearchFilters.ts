@@ -29,7 +29,7 @@ interface UseSearchFiltersReturn {
   resetFilters: () => void;
 }
 
-const DEFAULT_FILTERS: SearchFiltersType = {
+export const DEFAULT_FILTERS: SearchFiltersType = {
   orientation: 'all',
   color: 'all',
   dateFrom: '',

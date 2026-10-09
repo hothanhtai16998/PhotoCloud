@@ -1,7 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { memo, useState, useCallback, useEffect } from 'react';
 import { X, Filter, Calendar, Palette, Image as ImageIcon, ArrowUpDown, Camera, Settings } from 'lucide-react';
 import { t } from '@/i18n';
-import type { SearchFiltersType } from '@/components/SearchBar/hooks/useSearchFilters';
+import { DEFAULT_FILTERS, type SearchFiltersType } from '@/components/SearchBar/hooks/useSearchFilters';
 import './SearchFilters.css';
 
 export type Orientation = 'all' | 'portrait' | 'landscape' | 'square';
@@ -13,30 +13,7 @@ export type SearchFilters = SearchFiltersType;
 interface SearchFiltersProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
-  onReset: () => void;
-  images?: Array<{ dominantColors?: string[] }>; // Optional: for showing color counts
 }
-
-// Helper function to get default filter values
-const getDefaultFilters = (): SearchFilters => ({
-  orientation: 'all',
-  color: 'all',
-  dateFrom: '',
-  dateTo: '',
-  sortBy: 'date',
-  order: 'desc',
-  cameraMake: undefined,
-  cameraModel: undefined,
-  focalLengthMin: undefined,
-  focalLengthMax: undefined,
-  apertureMin: undefined,
-  apertureMax: undefined,
-  isoMin: undefined,
-  isoMax: undefined,
-  minWidth: undefined,
-  minHeight: undefined,
-  aspectRatio: undefined,
-});
 
 // Helper function to count active filters
 const countActiveFilters = (filterObj: SearchFilters): number => {
@@ -91,22 +68,13 @@ const areFiltersEqual = (a: SearchFilters, b: SearchFilters): boolean => {
   return JSON.stringify(normalizedA) === JSON.stringify(normalizedB);
 };
 
-export default function SearchFiltersComponent({
+const SearchFiltersComponent = memo(function SearchFiltersComponent({
   filters,
   onFiltersChange,
-  onReset,
-  images,
 }: SearchFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [localFilters, setLocalFilters] = useState<SearchFilters>(filters);
-
-  // Sync localFilters with props when panel opens
-  useEffect(() => {
-    if (isOpen) {
-      setLocalFilters(filters);
-    }
-  }, [isOpen, filters]);
 
   // Handle filter changes (staged, not applied until Apply is clicked)
   const handleFilterChange = useCallback((key: keyof SearchFilters, value: string | number | undefined) => {
@@ -121,7 +89,7 @@ export default function SearchFiltersComponent({
 
   // Reset all filters to defaults
   const handleReset = useCallback(() => {
-    const defaultFilters = getDefaultFilters();
+    const defaultFilters = DEFAULT_FILTERS;
     setLocalFilters(defaultFilters);
     // Auto-apply reset immediately and close modal
     onFiltersChange(defaultFilters);
@@ -172,8 +140,13 @@ export default function SearchFiltersComponent({
   return (
     <div className="search-filters-container">
       <button
+        type="button"
         className={`search-filters-toggle ${hasActiveFilters ? 'active' : ''}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) setLocalFilters(filters);
+          setIsOpen(open => !open);
+        }}
+        aria-expanded={isOpen}
         aria-label={t('search.openFilter')}
         title={t('search.advancedFilter')}
       >
@@ -205,6 +178,7 @@ export default function SearchFiltersComponent({
             <div className="search-filters-header">
               <h3>{t('search.filterTitle')}</h3>
               <button
+                type="button"
                 className="search-filters-close"
                 onClick={() => {
                   setIsOpen(false);
@@ -229,6 +203,7 @@ export default function SearchFiltersComponent({
                 <div className="filter-options">
                   {(['all', 'portrait', 'landscape', 'square'] as Orientation[]).map((orientation) => (
                     <button
+                      type="button"
                       key={orientation}
                       className={`filter-option ${localFilters.orientation === orientation ? 'active' : ''}`}
                       onClick={() => handleFilterChange('orientation', orientation)}
@@ -264,6 +239,7 @@ export default function SearchFiltersComponent({
                   ] as { value: ColorFilter; label: string; color: string }[]).map((colorOption) => {
                     return (
                       <button
+                        type="button"
                         key={colorOption.value}
                         className={`filter-color-option ${localFilters.color === colorOption.value ? 'active' : ''}`}
                         onClick={() => {
@@ -347,7 +323,7 @@ export default function SearchFiltersComponent({
               {/* Advanced Filters Toggle */}
               <div className="filter-group">
                 <button
-                  type="button"
+                 type="button"
                   className={`filter-advanced-toggle ${showAdvanced ? 'active' : ''}`}
                   onClick={() => setShowAdvanced(!showAdvanced)}
                 >
@@ -513,19 +489,15 @@ export default function SearchFiltersComponent({
 
             <div className="search-filters-footer">
               <button
+                type="button"
                 className="filter-reset-btn"
-                onClick={() => {
-                  const defaultFilters = getDefaultFilters();
-                  setLocalFilters(defaultFilters);
-                  // Auto-apply reset immediately and close modal
-                  onFiltersChange(defaultFilters);
-                  setIsOpen(false);
-                }}
-                disabled={areFiltersEqual(localFilters, getDefaultFilters())}
+                onClick={handleReset}
+                disabled={!hasActiveFilters && areFiltersEqual(localFilters, DEFAULT_FILTERS)}
               >
                 {t('search.reset')}
               </button>
               <button
+                type="button"
                 className="filter-apply-btn"
                 onClick={handleApply}
                 disabled={!hasUnsavedChanges}
@@ -538,6 +510,6 @@ export default function SearchFiltersComponent({
       )}
     </div>
   );
-}
+});
 
-
+export default SearchFiltersComponent;
