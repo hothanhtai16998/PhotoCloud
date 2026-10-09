@@ -1,822 +1,133 @@
-/* Google Fonts removed - using self-hosted fonts from index.css to avoid render-blocking */
-
+/* Slider keeps the complete image inside the available viewport. */
 .visual-art-slider {
   position: relative;
   width: 100%;
-  margin-left: 0;
-  margin-top: 100px; /* Below header: 66px top + 34px category nav = 100px */
-  margin-bottom: 60px; /* Gap between slider and grid */
-  height: calc(100vh - 100px); /* Full height minus header */
-  overflow: hidden;
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transform: none;
-  perspective: none;
-  filter: none;
-  z-index: 1;
-}
-
-/* Background with Gradient and Grain Texture */
-.slider-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.gradient-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #ffffff;
-}
-
-.grain-texture {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Grain texture removed for white background */
-  pointer-events: none;
-}
-
-
-/* Main Content */
-.slider-main {
-  position: relative;
-  z-index: 5;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  margin-top: 114px;
+  margin-bottom: 60px;
+  height: calc(100dvh - 114px);
+  min-height: 280px;
+  background: #f5f5f5;
   overflow: hidden;
 }
-
-/* Text Content - positioned left of centered image */
-.content-left {
-  position: absolute;
-  left: clamp(4rem, 10vw, 10rem);
-  top: 12.5vh;
-  transform: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: auto;
-  min-width: 300px;
-  max-width: 500px;
-  z-index: 10;
-}
-
-.content-left > .subtitle,
-.content-left > .main-title {
-  animation: fadeInUp 1s ease-out;
-}
-
-.subtitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: #000000;
-  text-transform: lowercase;
-  letter-spacing: 3px;
-  margin-bottom: 2rem;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-
-.main-title {
-  font-size: clamp(32px, 5.5vw, 80px);
-  font-weight: 700;
-  color: #000000;
-  line-height: 1;
-  margin: 0 0 2.5rem 0;
-  letter-spacing: -3px;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-}
-
-.image-info {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  animation: fadeInUp 1s ease-out 0.4s both;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.info-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #000000;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  opacity: 0.6;
-}
-
-.info-value {
-  font-size: 14px;
-  font-weight: 400;
-  color: #000000;
-  letter-spacing: 0.5px;
-  line-height: 1.5;
-}
-
-/* Image Container - fills entire available space */
-.image-container {
+.visual-art-slider .slider-main,
+.visual-art-slider .image-container {
   position: relative;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.3s ease;
-  border: none !important;
-  outline: none !important;
+  height: 100%;
   overflow: hidden;
-  /* Performance optimizations */
-  contain: layout style paint;
 }
-
-.slide-image {
-  position: relative;
-  width: 100% !important;
-  height: auto !important;
+.visual-art-slider .slide-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
   display: block;
-  object-fit: contain !important;
-  object-position: center center;
-  transform-origin: center center;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  cursor: zoom-in;
-  image-rendering: auto;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
-
-.slide-image.image-loading {
-  opacity: 0;
-}
-
-.slide-image.image-loaded {
-  opacity: 1;
-}
-
-.slide-image-previous {
+.visual-art-slider .slide-image-previous { z-index: 3; pointer-events: none; }
+.visual-art-slider .slide-image-current { z-index: 2; cursor: zoom-in; }
+.visual-art-slider .slide-image-current:focus-visible { outline: 3px solid #2563eb; outline-offset: -4px; }
+.visual-art-slider .left-navigation-bottom {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center;
-  transform-origin: center center;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  image-rendering: auto;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.slide-image-current {
-  position: relative;
-  width: 100% !important;
-  height: auto !important;
-  display: block;
-  object-fit: contain !important;
-  object-position: center center;
-  transform-origin: center center;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  image-rendering: auto;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  z-index: 2;
-}
-
-/* Circular Text Element */
-.circular-text {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 150px;
-  height: 150px;
-  z-index: 15;
-  animation: rotate 20s linear infinite;
-}
-
-.circular-svg {
-  width: 100%;
-  height: 100%;
-}
-
-.circular-text-path {
-  font-size: 24px;
-  font-weight: 400;
-  fill: #000000;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Countdown Number - Centered in circular text */
-.countdown-number {
-  position: absolute;
-  /* Center it in the 150px x 150px circular-text area: 20px + 75px - 30px = 65px */
-  top: 65px;
-  right: 65px;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  font-weight: 600;
-  color: #000000;
-  z-index: 16;
-  pointer-events: none;
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.countdown-visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.countdown-hidden {
-  opacity: 0;
-  visibility: hidden;
-}
-
-/* Definition Box Wrapper - Fixed Position */
-.definition-box-wrapper {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 400px;
-  z-index: 10;
-  overflow: hidden;
-}
-
-/* Definition Box - Fixed Position (left edge fixed) */
-.definition-box {
-  position: relative;
-  background: #000000;
-  color: #ffffff;
-  padding: 25px 30px;
-  width: 400px;
-  min-width: 400px;
-  max-width: 400px;
-  opacity: 1;
-  box-sizing: border-box;
-}
-
-/* Mask/Overlay - The "blue line" that moves from right to left */
-.definition-box-mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #ffffff;
-  z-index: 1;
-  transform-origin: right center;
-  clip-path: inset(0 0 0 100%);
-  animation: definitionBoxMaskSlide 0.85s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
-}
-
-@keyframes definitionBoxMaskSlide {
-  0% {
-    clip-path: inset(0 0 0 100%);
-  }
-  40% {
-    clip-path: inset(0 0 0 0%);
-  }
-  60% {
-    clip-path: inset(0 0 0 0%);
-  }
-  100% {
-    clip-path: inset(0 0 0 100%);
-  }
-}
-
-.definition-box.transitioning {
-  animation: slideOutDown 0.5s ease-in both;
-}
-
-.definition-label {
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 2.5px;
-  margin-bottom: 12px;
-  font-family: 'Manrope', sans-serif;
-}
-
-.definition-text {
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.7;
-  font-family: 'Merriweather', serif;
-}
-
-/* Left Navigation Bottom */
-.left-navigation-bottom {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 600px;
-  position: absolute;
-  bottom: 2rem;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10;
-  padding: 0 2rem;
-  box-sizing: border-box;
-}
-
-@media (max-width: 1024px) {
-  .left-navigation-bottom {
-    bottom: 1.5rem;
-    padding: 0 1.5rem;
-    max-width: 500px;
-  }
-}
-
-@media (max-width: 768px) {
-  .left-navigation-bottom {
-    bottom: 1rem;
-    padding: 0 1rem;
-    gap: 1rem;
-  }
-}
-
-/* Progress Line */
-.progress-line-container {
-  flex: 1;
+  z-index: 3;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  gap: 1rem;
-}
-
-.progress-line-numbers {
-  width: 100%;
-  display: flex;
-  position: relative;
   align-items: center;
+  gap: 20px;
+  width: min(600px, calc(100% - 48px));
+  box-sizing: border-box;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .12);
+  color: #111;
 }
-
-.progress-line-number {
+.visual-art-slider .nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  height: 44px;
+  padding: 10px;
+  color: #111;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+.visual-art-slider .nav-arrow:hover:not(:disabled) { background: #e5e5e5; }
+.visual-art-slider .nav-arrow:disabled { opacity: .4; cursor: default; }
+.visual-art-slider .nav-arrow:focus-visible,
+.slider-zoom-close:focus-visible,
+.slider-zoom-image-button:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.visual-art-slider .progress-line-container { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.visual-art-slider .progress-line-numbers { position: relative; height: 24px; }
+.visual-art-slider .progress-line-number {
+  position: absolute;
+  transform: translate(-50%, 8px);
   font-size: 18px;
   font-weight: 600;
-  color: #000000;
-  letter-spacing: 2px;
   font-variant-numeric: tabular-nums;
-  text-align: center;
-  position: absolute;
+  color: #111;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  transform: translateX(-50%);
+  transition: opacity .35s ease, transform .45s cubic-bezier(.22, 1, .36, 1);
 }
+.visual-art-slider .progress-line-number.visible { opacity: 1; transform: translate(-50%, 0); }
+.visual-art-slider .progress-line-number.hidden { pointer-events: none; }
+.visual-art-slider .progress-line { position: relative; height: 2px; background: #bdbdbd; }
+.visual-art-slider .progress-segments-container { position: absolute; inset: 0 auto 0 0; transition: transform .55s cubic-bezier(.22, 1, .36, 1); }
+.visual-art-slider .progress-segment-fill { height: 100%; width: 100%; background: #111; }
+.visual-art-slider .slider-error-message { display: grid; place-items: center; height: 100%; }
 
-.progress-line-number.visible {
-  opacity: 1;
-}
-
-.progress-line-number.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.progress-line {
-  width: 100%;
-  height: 2px;
-  background-color: rgba(0, 0, 0, 0.1);
-  display: flex;
-  position: relative;
-  gap: 0;
-  align-items: stretch;
-}
-
-.progress-line-full-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #000000;
-}
-
-.progress-segments-container {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  overflow: hidden;
-  transition: width 0.5s ease-out;
-}
-
-.progress-segment {
-  flex: 0 0 auto;
-  height: 100%;
-  position: relative;
-  display: block;
-}
-
-.progress-segment-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 100%;
-  background-color: #000000;
-}
-
-.progress-segment-fill.filled {
-  width: 100%;
-}
-
-
-.nav-arrow {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #000;
-  padding: 12px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.nav-arrow:hover {
-  transform: scale(1.2);
-  opacity: 0.7;
-}
-
-.nav-arrow:active {
-  transform: scale(1.1);
-}
-
-.social-links {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-}
-
-.social-link {
-  color: #000;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 400;
-  text-transform: lowercase;
-  letter-spacing: 0.5px;
-  transition: opacity 0.3s ease;
-}
-
-.social-link:hover {
-  opacity: 0.6;
-}
-
-
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideOutDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .visual-art-slider {
-    margin-left: 0;
-    margin-top: 100px; /* Same as desktop */
-    margin-bottom: 50px; /* Gap between slider and grid */
-    width: 100%;
-    height: calc(100vh - 100px);
-  }
-
-  .slider-main {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-  }
-
-  .content-left {
-    order: 2;
-    position: static;
-    transform: none;
-    left: auto;
-    bottom: auto;
-    width: 100%;
-    max-width: 720px;
-    min-width: auto;
-    text-align: left;
-    margin-bottom: 0.75rem;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0.5rem;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    grid-template-areas:
-      "nav nav"
-      "title info"
-      "subtitle info";
-    column-gap: 1rem;
-    row-gap: 0.4rem;
-  }
-
-  .main-title {
-    font-size: clamp(34px, 5.5vw, 50px);
-    letter-spacing: -1px;
-    line-height: 1.05;
-    white-space: normal;
-    max-width: 90%;
-    margin: 0 0 0.35rem 0;
-    grid-area: title;
-    justify-self: start;
-  }
-
-  .subtitle {
-    font-size: 12px;
-    margin-bottom: 0.5rem;
-    grid-area: subtitle;
-    justify-self: start;
-  }
-
-  .image-info {
-    gap: 0.25rem;
-    align-items: flex-start;
-    margin-top: 0.35rem;
-    grid-area: info;
-    justify-self: end;
-    text-align: left;
-  }
-
-  .image-container {
-    width: 100%;
-    height: 100%;
-  }
-
-  .slide-image,
-  .slide-image-current {
-    width: 100% !important;
-    height: auto !important;
-    object-fit: contain !important;
-  }
-
-  .definition-box {
-    max-width: 300px;
-    padding: 20px 25px;
-  }
-
-  .circular-text {
-    width: 120px;
-    height: 120px;
-    top: 12px;
-    right: 12px;
-  }
-
-  .countdown-number {
-    top: 45px;
-    right: 45px;
-    width: 50px;
-    height: 50px;
-    font-size: 22px;
-  }
-
-  .nav-arrow {
-    padding: 8px;
-  }
-
-  .progress-line-number {
-    font-size: 14px;
-  }
-
-}
-
-@media (max-width: 768px) {
-  /* Hide slider on mobile devices (768px and below) */
-  .visual-art-slider {
-    display: none;
-  }
-}
-
-/* Touch/Swipe Support */
-@media (hover: none) and (pointer: coarse) {
-  .nav-arrow:hover {
-    transform: scale(1);
-  }
-
-  .social-link:hover {
-    opacity: 1;
-  }
-}
-
-/* Loading and Error States */
-.slider-loading-message,
-.slider-error-message {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  color: #000;
-  font-size: 18px;
-}
-
-/* Image Styles - Common (applied to all slide images) */
-.slide-image-common {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  contain: layout style paint;
-  image-rendering: auto;
-}
-
-/* Current Image Styles */
-.slide-image-current-static {
-  z-index: 1;
-  opacity: 1;
-}
-
-.slide-image-current-animating {
-  transition: clip-path 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  will-change: clip-path;
-}
-
-.slide-image-current-not-animating {
-  transition: none;
-  will-change: auto;
-}
-
-/* Next Image Styles (during animation) */
-.slide-image-next {
-  z-index: 2;
-  transition: clip-path 0.8s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0s;
-  will-change: clip-path;
-}
-
-.slide-image-next-hidden {
-  pointer-events: none;
-}
-
-.slide-image-next-visible {
-  pointer-events: auto;
-}
-
-/* Zoom Animation Styles */
+/* Portal avoids the homepage containment and stacking context. */
 .zoom-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.95);
-  z-index: 9999;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, .95);
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: sliderZoomFadeIn .4s ease;
+}
+.zoom-overlay.zooming-out { animation: sliderZoomFadeOut .4s ease forwards; }
+.slider-zoom-image-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  background: transparent;
+  border: 0;
   cursor: zoom-out;
-  animation: fadeIn 0.4s ease-out;
-  overflow: hidden;
 }
-
-.zoom-overlay.zooming-out {
-  animation: fadeOut 0.4s ease-out;
+.zoom-overlay .zoom-image { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.slider-zoom-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #777;
+  border-radius: 50%;
+  background: #222;
+  color: #fff;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
 }
-
-.zoom-image {
-  /* Ensure proper sizing for both portrait and landscape */
-  /* Fill the entire viewport - use cover to eliminate empty space */
-  width: 100vw;
-  height: 100vh;
-  object-fit: contain;
-  object-position: center center;
-  animation: zoomIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: center center;
-  display: block;
-  margin: auto;
-  /* Prevent image from being cut off */
-  image-rendering: auto;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+@keyframes sliderZoomFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sliderZoomFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@media (max-width: 1024px) {
+  .visual-art-slider .left-navigation-bottom { max-width: 500px; bottom: 16px; }
 }
-
-.zoom-image.zooming-out {
-  animation: zoomOut 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+@media (max-width: 768px) { .visual-art-slider { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .visual-art-slider *, .zoom-overlay { transition: none !important; animation: none !important; }
 }
-
-.slide-image-zoomed {
-  pointer-events: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes zoomIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes zoomOut {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-}
-
-/* Progress Bar Dynamic Styles */
-

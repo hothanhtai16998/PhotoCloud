@@ -66,20 +66,12 @@ export const useSliderStore = create(
 				
 				const images = response.images || [];
 				
-				// Filter to only show landscape images (width > height)
-				const filteredImages = images.filter((img: Image) => {
-					const width = img.width || 0;
-					const height = img.height || 0;
-					
-					if (width === 0 || height === 0) {
-						return false; // Skip images without dimensions
-					}
-					
-					const aspectRatio = width / height;
-					// Only include landscape images (aspect ratio > 1)
-					return aspectRatio > 1;
-				});
-				
+				// Accept any orientation, while excluding invalid image dimensions.
+				const filteredImages = images.filter((img: Image) =>
+					Number.isFinite(img.width) && img.width > 0 &&
+					Number.isFinite(img.height) && img.height > 0
+				);
+
 				// Convert images to slide format
 				const slideData: SlideData[] = filteredImages.map((img: Image) => {
 					const categoryName = typeof img.imageCategory === 'string' 
