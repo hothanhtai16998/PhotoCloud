@@ -4,14 +4,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { t, getLocale, setLocale, type Locale } from '@/i18n';
-import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { favoriteService } from '@/services/favoriteService';
 import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import type { Image } from '@/types/image';
+import { readFavoritePreview, saveFavoritePreview, clearFavoritePreview, toFavoriteThumbnail, EMPTY_PREVIEW } from '@/utils/sidebarFavoriteCache';
 import vietnamFlag from '@/assets/vietnam.svg';
 import americaFlag from '@/assets/america.svg';
 import './ImagePageSidebar.css';
-import { timingConfig } from '@/config/timingConfig';
+import { getSessionItem, setSessionItem, removeSessionItem } from '@/utils/safeStorage';
 import { LANGUAGE_SWITCHER_ENABLED } from '@/config/features';
 
 // NOTE: refreshToken cookie is httpOnly, so we can't check it from JavaScript
@@ -21,58 +22,37 @@ import { LANGUAGE_SWITCHER_ENABLED } from '@/config/features';
  * Hybrid-style sidebar for all pages, inspired by Unsplash.
  * Icon-only with tooltips, active state indicators, and proper navigation.
  */
-const ImagePageSidebar = () => {
+const ImagePageSidebar = memo(function ImagePageSidebar() {
   const location = useLocation();
-  const { accessToken } = useAuthStore();
-  const { user } = useUserStore();
+  const accessToken = useAuthStore(state => state.accessToken);
+  const userId = useUserStore(state => state.user?._id);
+  const isAdmin = useUserStore(state => Boolean(state.user?.isAdmin));
   
-  // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
-  // Instead, use sessionStorage to persist auth state across refreshes
-  // This prevents icons from flashing on refresh
-  const { isInitializing } = useAuthStore();
-  
-  // Initialize stableHasAuth from sessionStorage (persists across refreshes)
-  // This ensures icons appear immediately on refresh if user was previously authenticated
-  const getInitialHasAuth = (): boolean => {
-    if (typeof window === 'undefined') return false;
-    const persisted = sessionStorage.getItem('hasAuth');
-    return persisted === 'true';
-  };
-  const hasAuthRef = useRef(getInitialHasAuth());
-  
-  // Update sessionStorage when accessToken changes
+  const isInitializing = useAuthStore(state => state.isInitializing);
+  const [preview, setPreview] = useState(readFavoritePreview);
+  const [hadAuthOnMount] = useState(() => getSessionItem('hasAuth') === 'true' || Boolean(preview.ownerId));
   useEffect(() => {
-    if (accessToken) {
-      hasAuthRef.current = true;
-      sessionStorage.setItem('hasAuth', 'true');
-    } else if (!isInitializing) {
-      // Only clear on logout (when not initializing), not on initial load
-      hasAuthRef.current = false;
-      sessionStorage.removeItem('hasAuth');
-    }
+    if (accessToken) setSessionItem('hasAuth', 'true');
+    else if (!isInitializing) removeSessionItem('hasAuth');
   }, [accessToken, isInitializing]);
-  
-  const stableHasAuth = hasAuthRef.current;
-  
-  // Unsplash-style: Show icons optimistically during initialization, then use actual state
-  // Icons appear instantly on refresh (optimistic), then stay visible if authenticated
-  // CRITICAL: Show icons if:
-  // 1. We have accessToken (confirmed authenticated), OR
-  // 2. We're still initializing (optimistic - user likely logged in), OR
-  // 3. We've had auth before (stableHasAuth - prevents disappearing)
-  const showAuthIcons = useMemo(() => {
-    // During initialization, optimistically show icons (user likely logged in)
-    // After initialization, only show if we have accessToken or had it before
-    const result = accessToken || (isInitializing && stableHasAuth) || stableHasAuth;
-    return Boolean(result);
-  }, [accessToken, isInitializing, stableHasAuth]);
-  
-  const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale());
-  const [favoriteThumbnail, setFavoriteThumbnail] = useState<Image | null>(null);
-  const [favoriteTotal, setFavoriteTotal] = useState<number>(0);
+  const showAuthIcons = Boolean(accessToken) || (isInitializing && hadAuthOnMount);
+
+  const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale);
+  const previewMatchesUser = !userId || preview.ownerId === userId;
+  const favoriteThumbnail = previewMatchesUser ? preview.thumbnail : null;
+  const favoriteTotal = previewMatchesUser ? preview.total : 0;
+  useEffect(() => {
+    if (!showAuthIcons) {
+      clearFavoritePreview();
+      setPreview(EMPTY_PREVIEW);
+    } else if (userId && preview.ownerId === userId) {
+      saveFavoritePreview(preview);
+    }
+  }, [showAuthIcons, userId, preview]);
   // Subscribe to store values separately to ensure reactivity
-  const favoriteImages = useFavoriteStore((state) => state.images);
-  const favoritePagination = useFavoriteStore((state) => state.pagination);
+  const firstFavorite = useFavoriteStore(state => state.images[0] ?? null);
+  const storedFavoriteTotal = useFavoriteStore(state => state.pagination?.total);
+  const hasStoreData = useFavoriteStore(state => Boolean(state.pagination || state.images.length));
 
   // Listen for locale changes
   useEffect(() => {
@@ -100,26 +80,14 @@ const ImagePageSidebar = () => {
       const thumbnailImage = customEvent.detail?.thumbnailImage;
       const total = customEvent.detail?.total;
       
-      setFavoriteThumbnail(thumbnailImage ?? null);
+      if (!userId) return;
+      setPreview(previous => ({ ownerId: userId, thumbnail: toFavoriteThumbnail(thumbnailImage ?? null), total: total ?? (previous.ownerId === userId ? previous.total : 0) }));
       
-      // Update total if provided in event (fallback, but store subscription is primary)
-      // This ensures immediate update when pagination exists and is incremented
-      if (total !== undefined && total !== null) {
-        setFavoriteTotal(total);
-      }
     };
 
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
     return () => window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
-  }, [showAuthIcons]);
-
-  // Clear state when logged out (consolidated logic)
-  useEffect(() => {
-    if (!showAuthIcons) {
-      setFavoriteThumbnail(null);
-      setFavoriteTotal(0);
-    }
-  }, [showAuthIcons]);
+  }, [showAuthIcons, userId]);
 
   // Fetch thumbnail on initial load (for new sessions/refresh) - like Unsplash
   // Only runs if store has no data yet
@@ -130,8 +98,7 @@ const ImagePageSidebar = () => {
       
       if (response.success && response.pagination) {
         const total = response.pagination.total || 0;
-        setFavoriteTotal(total);
-        setFavoriteThumbnail(total > 0 && response.images?.[0] ? response.images[0] : null);
+        setPreview({ ownerId: userId ?? null, total, thumbnail: toFavoriteThumbnail(total > 0 ? response.images?.[0] ?? null : null) });
       }
     } catch (error) {
       // Ignore abort errors
@@ -145,91 +112,27 @@ const ImagePageSidebar = () => {
       
       // Silently fail - favorite thumbnail is optional
     }
-  }, []);
+  }, [userId]);
 
-  // Fetch on mount if store is empty (initial load/refresh)
-  // CRITICAL: Wait for auth initialization before making authenticated requests
-  // showAuthIcons can be true optimistically, but we need actual token for API calls
+  // Start as soon as authentication and the owner are confirmed.
   useEffect(() => {
-    // Don't fetch if auth is still initializing - wait for token to be available
-    if (isInitializing) {
-      return;
-    }
-    
-    // Don't fetch if user is not authenticated (no accessToken)
-    if (!accessToken) {
-      return;
-    }
-    
-    // Don't fetch if icons shouldn't be shown (user not authenticated)
-    if (!showAuthIcons) {
-      return;
-    }
-    
-    const abortController = new AbortController();
-    
-    // Check store state at mount time - if empty, fetch thumbnail
-    const hasStoreData = favoritePagination || favoriteImages.length > 0;
-    if (!hasStoreData) {
-      // Unsplash-style: Use requestIdleCallback to make requests after initial render
-      // This naturally keeps requests pending during page load phase (like Unsplash)
-      const scheduleFetch = () => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(() => {
-            if (!abortController.signal.aborted) {
-              fetchInitialThumbnail(abortController.signal);
-            }
-          }, { timeout: 100 });
-        } else {
-          // Fallback for browsers without requestIdleCallback
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              if (!abortController.signal.aborted) {
-                fetchInitialThumbnail(abortController.signal);
-              }
-            });
-          });
-        }
-      };
-      
-      scheduleFetch();
-      
-      return () => {
-        abortController.abort();
-      };
-    }
-    
-    return () => {
-      abortController.abort();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInitializing, accessToken, showAuthIcons, favoritePagination, favoriteImages.length, fetchInitialThumbnail]); // Wait for auth before fetching
+    if (isInitializing || !accessToken || !userId || hasStoreData) return;
+    const controller = new AbortController();
+    void fetchInitialThumbnail(controller.signal);
+    return () => controller.abort();
+  }, [isInitializing, accessToken, userId, hasStoreData, fetchInitialThumbnail]);
 
-  // Sync thumbnail and count from store (PRIMARY SOURCE OF TRUTH)
-  // Takes over once store has data (e.g., after visiting favorites page)
+  // Only the first image and total matter to this icon.
   useEffect(() => {
-    if (!showAuthIcons) return;
-    
-    // Skip if store is empty (initial fetch handles it)
-    if (!favoritePagination && favoriteImages.length === 0) return;
-    
-    // Update count from pagination (most reliable)
-    // CRITICAL: Only use pagination.total, never use images.length as fallback
-    // This prevents showing incorrect count (1) when pagination hasn't been fetched yet
-    if (favoritePagination?.total !== undefined) {
-      setFavoriteTotal(favoritePagination.total);
-    }
-    // Don't use images.length as fallback - wait for actual pagination data
-    // This ensures correct count even on new sessions before favorites page is visited
-    
-    // Update thumbnail from store (always more accurate than initial fetch)
-    setFavoriteThumbnail(favoriteImages.length > 0 && favoriteImages[0] ? favoriteImages[0] : null);
-  }, [favoriteImages, favoritePagination, accessToken]);
+    if (!showAuthIcons || !userId || !hasStoreData) return;
+    setPreview(previous => ({ ownerId: userId, thumbnail: toFavoriteThumbnail(firstFavorite), total: storedFavoriteTotal ?? (previous.ownerId === userId ? previous.total : 0) }));
+  }, [showAuthIcons, userId, hasStoreData, firstFavorite, storedFavoriteTotal]);
 
   // Scroll to top immediately when navigating via sidebar (not smooth scroll)
   // Track previous pathname to detect route changes
   const previousPathnameRef = useRef<string>(location.pathname);
   useEffect(() => {
+    let frame = 0;
     // Only scroll if pathname actually changed (not just a re-render)
     if (previousPathnameRef.current !== location.pathname) {
       // Don't scroll if this is modal navigation (ImagePage)
@@ -237,17 +140,17 @@ const ImagePageSidebar = () => {
       const isModalNavigation = location.state && typeof location.state === 'object' && 'modal' in location.state;
       
       // Don't scroll if scroll restoration is in progress (when closing ImagePage modal)
-      const scrollRestoreInProgress = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
+      const scrollRestoreInProgress = getSessionItem('scrollRestoreInProgress') === 'true';
       
       // Don't scroll if there's a saved scroll position (modal was just closed)
-      const hasSavedScroll = sessionStorage.getItem('imageGridScrollPosition') !== null;
+      const hasSavedScroll = getSessionItem('imageGridScrollPosition') !== null;
       
       if (!isModalNavigation && !scrollRestoreInProgress && !hasSavedScroll) {
         // Use requestAnimationFrame to ensure it happens after scroll restoration
-        requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => {
           // Double-check scroll restoration didn't just complete
-          const stillRestoring = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
-          const stillHasScroll = sessionStorage.getItem('imageGridScrollPosition') !== null;
+          const stillRestoring = getSessionItem('scrollRestoreInProgress') === 'true';
+          const stillHasScroll = getSessionItem('imageGridScrollPosition') !== null;
           if (!stillRestoring && !stillHasScroll) {
             window.scrollTo({ top: 0, behavior: 'instant' });
           }
@@ -256,6 +159,7 @@ const ImagePageSidebar = () => {
       
       previousPathnameRef.current = location.pathname;
     }
+    return () => cancelAnimationFrame(frame);
   }, [location.pathname, location.state]);
 
 
@@ -263,15 +167,7 @@ const ImagePageSidebar = () => {
     if (path === '/') {
       return location.pathname === '/' || location.pathname.startsWith('/t/');
     }
-    if (path === '/profile') {
-      // Match /profile/:username, /@:username, /@:username/tab, and /profile/user/:userId
-      return location.pathname === path || 
-             location.pathname.startsWith(path + '/') ||
-             location.pathname.match(/^\/@[^/]+(\/(following|followers|collections|stats))?$/);
-    }
-    if (path === '/admin') {
-      return location.pathname === path || location.pathname.startsWith(path + '/');
-    }
+
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
@@ -330,7 +226,7 @@ const ImagePageSidebar = () => {
               {favoriteThumbnail ? (
                 <div className="sidebar-favorite-thumbnail">
                   <img
-                    src={favoriteThumbnail.thumbnailUrl || favoriteThumbnail.smallUrl || favoriteThumbnail.imageUrl}
+                    src={favoriteThumbnail.imageUrl}
                     alt={favoriteThumbnail.imageTitle || 'Favorite'}
                     className="sidebar-favorite-thumbnail-img"
                     width={40}
@@ -374,7 +270,7 @@ const ImagePageSidebar = () => {
         </Link>
 
         {/* CRITICAL: Always render admin icon when user is admin */}
-        {showAuthIcons && user?.isAdmin && (
+        {showAuthIcons && isAdmin && (
           <>
             <div className="sidebar-separator" />
             <Link
@@ -398,6 +294,7 @@ const ImagePageSidebar = () => {
         {LANGUAGE_SWITCHER_ENABLED && <>
         <div className="sidebar-separator" />
         <button
+          type="button"
           className="sidebar-nav-item sidebar-language-toggle"
           onClick={handleLanguageToggle}
           aria-label={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
@@ -413,7 +310,7 @@ const ImagePageSidebar = () => {
       </div>
     </aside>
   );
-};
+});
 
 export default ImagePageSidebar;
 
