@@ -15,7 +15,7 @@
   border-radius: 50%;
   color: #767676;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .notification-bell-btn:hover {

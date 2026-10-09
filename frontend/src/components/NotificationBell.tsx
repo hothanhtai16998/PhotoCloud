@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Bell, X, Check, CheckCheck, Trash2, Users, Image as ImageIcon, Shield, Folder, RefreshCw, Heart, Download, Share2, Upload, CheckCircle, XCircle, Loader2, Star, AlertTriangle, Ban, User, Eye, Key, Mail, Smartphone, LogIn, Megaphone, Wrench, FileText, Sparkles, Flag, UserPlus, UserMinus } from 'lucide-react';
 import { type Notification } from '@/services/notificationService';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -8,23 +8,19 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { t, getLocale } from '@/i18n';
+import { useShallow } from 'zustand/react/shallow';
+import { getSessionItem } from '@/utils/safeStorage';
 import './NotificationBell.css';
 
 export default function NotificationBell() {
-	const { accessToken, isInitializing } = useAuthStore();
-	const { user } = useUserStore();
+	const accessToken = useAuthStore(state => state.accessToken);
+	const isInitializing = useAuthStore(state => state.isInitializing);
+	const userId = useUserStore(state => state.user?._id);
 	const navigate = useNavigate();
 	
-	// Use same optimistic logic as Header to prevent layout shift on refresh
-	// Check sessionStorage to see if user was authenticated before refresh
-	const getInitialHasAuth = (): boolean => {
-		if (typeof window === 'undefined') return false;
-		const persisted = sessionStorage.getItem('hasAuth');
-		return persisted === 'true';
-	};
-	const stableHasAuthRef = useRef(getInitialHasAuth());
-	const stableHasAuth = stableHasAuthRef.current;
-	
+	const [hadAuthOnMount] = useState(() => getSessionItem('hasAuth') === 'true');
+	const stableHasAuth = Boolean(accessToken) || (isInitializing && hadAuthOnMount);
+
 	// Use shared notification store
 	const {
 		notifications,
@@ -32,7 +28,6 @@ export default function NotificationBell() {
 		loading,
 		refreshing,
 		hasLoaded,
-		websocketConnected,
 		fetchNotifications,
 		markAsRead,
 		markAllAsRead,
@@ -42,28 +37,20 @@ export default function NotificationBell() {
 		setWebSocketConnected,
 		addNotification,
 		updateUnreadCount,
-	} = useNotificationStore();
+	} = useNotificationStore(useShallow(state => ({
+    notifications: state.notifications, unreadCount: state.unreadCount,
+    loading: state.loading, refreshing: state.refreshing, hasLoaded: state.hasLoaded,
+    fetchNotifications: state.fetchNotifications, markAsRead: state.markAsRead,
+    markAllAsRead: state.markAllAsRead, deleteNotification: state.deleteNotification,
+    startPolling: state.startPolling, stopPolling: state.stopPolling,
+    setWebSocketConnected: state.setWebSocketConnected,
+    addNotification: state.addNotification, updateUnreadCount: state.updateUnreadCount,
+  })));
 	
-	// Optimistic unreadCount: Start with 0 to prevent flash, update when data loads
-	// This prevents the badge from appearing/disappearing on refresh
-	const optimisticUnreadCount = useRef(0);
-	const hasReceivedCountUpdate = useRef(false);
-	
-	// Once we get actual count, use that instead of optimistic
-	useEffect(() => {
-		if (!hasReceivedCountUpdate.current && hasLoaded) {
-			hasReceivedCountUpdate.current = true;
-			optimisticUnreadCount.current = unreadCount;
-		} else if (hasReceivedCountUpdate.current) {
-			optimisticUnreadCount.current = unreadCount;
-		}
-	}, [unreadCount, hasLoaded]);
-	
-	// Use optimistic count until we've received actual count
-	const displayUnreadCount = hasReceivedCountUpdate.current ? unreadCount : optimisticUnreadCount.current;
+	const displayUnreadCount = unreadCount;
 
 	// WebSocket connection for instant notifications
-	const { isConnected: wsConnected } = useWebSocket({
+	const { isConnected: wsConnected } = useWebSocket(useMemo(() => ({
 		onNotification: (notification: Notification) => {
 			// Add notification instantly when received via WebSocket
 			addNotification(notification);
@@ -78,10 +65,7 @@ export default function NotificationBell() {
 		onDisconnect: () => {
 			setWebSocketConnected(false);
 		},
-		onError: () => {
-			// Silently handle WebSocket errors
-		},
-	});
+	}), [addNotification, updateUnreadCount, setWebSocketConnected]));
 	
 	const [isOpen, setIsOpen] = useState(false);
 	const [hasNewNotification, setHasNewNotification] = useState(false);
@@ -270,88 +254,88 @@ export default function NotificationBell() {
 	}, []);
 
 
-	// Watch for unread count changes to trigger bell animation
-	// Use displayUnreadCount to prevent flash on initial load
-	useEffect(() => {
-		if (previousUnreadCountRef.current > 0 && displayUnreadCount > previousUnreadCountRef.current) {
-			// New notification arrived - trigger bell animation
-			setHasNewNotification(true);
-			setTimeout(() => setHasNewNotification(false), 500);
-		} else if (previousUnreadCountRef.current === 0 && displayUnreadCount > 0) {
-			// First notification after having none - trigger bell animation
-			setHasNewNotification(true);
-			setTimeout(() => setHasNewNotification(false), 500);
-		}
-		previousUnreadCountRef.current = displayUnreadCount;
-	}, [displayUnreadCount]);
+  // Animate only when the unread count increases; cancel pending cleanup on unmount.
+  useEffect(() => {
+    const increased = displayUnreadCount > previousUnreadCountRef.current;
+    previousUnreadCountRef.current = displayUnreadCount;
+    setHasNewNotification(increased);
+    if (!increased) return;
+    const timer = setTimeout(() => setHasNewNotification(false), 500);
+    return () => clearTimeout(timer);
+  }, [displayUnreadCount]);
 
-	// Initialize: Use WebSocket for instant notifications, polling as fallback
-	useEffect(() => {
-		if (!accessToken || !user) {
-			stopPolling();
-			return;
-		}
+  const fetchInFlight = useRef<Promise<void> | null>(null);
+  const loadNotifications = useCallback((showLoading = false) => {
+    if (fetchInFlight.current) return fetchInFlight.current;
+    const request = fetchNotifications(showLoading).finally(() => {
+      fetchInFlight.current = null;
+    });
+    fetchInFlight.current = request;
+    return request;
+  }, [fetchNotifications]);
 
-		// Initial fetch if not loaded yet
-		if (!hasLoaded) {
-			fetchNotifications();
-		}
+  useEffect(() => {
+    if (accessToken && userId && !hasLoaded) void loadNotifications();
+  }, [accessToken, userId, hasLoaded, loadNotifications]);
 
-		// Only start polling if WebSocket is not connected (fallback)
-		if (!wsConnected) {
-			startPolling();
-		} else {
-			// WebSocket is connected, stop polling to save resources
-			stopPolling();
-		}
-
-		return () => {
-			// Stop polling when component unmounts (store handles cleanup)
-			stopPolling();
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [accessToken, user, wsConnected]);
+  // Balance each polling subscription with exactly one cleanup.
+  useEffect(() => {
+    if (!accessToken || !userId || wsConnected) return;
+    startPolling();
+    return stopPolling;
+  }, [accessToken, userId, wsConnected, startPolling, stopPolling]);
 
 	// Listen for manual refresh triggers
 	useEffect(() => {
 		const handleRefresh = () => {
-			fetchNotifications(true);
+			if (!accessToken) return;
+			void loadNotifications(true);
 		};
 
 		window.addEventListener('notification:refresh', handleRefresh);
 		return () => {
 			window.removeEventListener('notification:refresh', handleRefresh);
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [accessToken, loadNotifications]);
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
+		const handleClickOutside = (event: PointerEvent) => {
 			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
 				setIsOpen(false);
 			}
 		};
 
 		if (isOpen) {
-			document.addEventListener('mousedown', handleClickOutside);
-			return () => document.removeEventListener('mousedown', handleClickOutside);
+			const handleEscape = (event: KeyboardEvent) => {
+				if (event.key === 'Escape') {
+					setIsOpen(false);
+					bellButtonRef.current?.focus();
+				}
+			};
+			document.addEventListener('pointerdown', handleClickOutside);
+			document.addEventListener('keydown', handleEscape);
+			return () => {
+				document.removeEventListener('pointerdown', handleClickOutside);
+				document.removeEventListener('keydown', handleEscape);
+			};
 		}
 		return undefined;
 	}, [isOpen]);
 
 	// Fetch notifications when dropdown opens
 	useEffect(() => {
-		if (isOpen && accessToken) {
-			fetchNotifications();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isOpen, accessToken]);
+    if (!isOpen || !accessToken || !userId) return;
+    const { hasLoaded: loaded, lastFetchedAt } = useNotificationStore.getState();
+    if (!loaded || (!wsConnected && (!lastFetchedAt || Date.now() - lastFetchedAt > 30000))) {
+      void loadNotifications();
+    }
+	}, [isOpen, accessToken, userId, wsConnected, loadNotifications]);
 
 	const handleMarkAsRead = async (notificationId: string) => {
 		try {
 			await markAsRead(notificationId);
-		} catch (error) {
+		} catch {
 			toast.error(t('notifications.markReadFailed'));
 		}
 	};
@@ -360,7 +344,7 @@ export default function NotificationBell() {
 		try {
 			await markAllAsRead();
 			toast.success(t('notifications.markAllReadSuccess'));
-		} catch (error) {
+		} catch {
 			toast.error(t('notifications.markAllReadFailed'));
 		}
 	};
@@ -369,7 +353,7 @@ export default function NotificationBell() {
 		e.stopPropagation();
 		try {
 			await deleteNotification(notificationId);
-		} catch (error) {
+		} catch {
 			toast.error(t('notifications.deleteFailed'));
 		}
 	};
@@ -483,22 +467,9 @@ export default function NotificationBell() {
 
 	// Manual refresh handler
 	const handleManualRefresh = useCallback(async () => {
-		await fetchNotifications(true);
+		await loadNotifications(true);
 		toast.success(t('notifications.refreshed'));
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
-
-	// Update stableHasAuth when accessToken changes (same logic as Header)
-	useEffect(() => {
-		if (accessToken) {
-			stableHasAuthRef.current = true;
-			sessionStorage.setItem('hasAuth', 'true');
-		} else if (!isInitializing) {
-			// Only clear on logout (when not initializing), not on initial load
-			stableHasAuthRef.current = false;
-			sessionStorage.removeItem('hasAuth');
-		}
-	}, [accessToken, isInitializing]);
+	}, [loadNotifications]);
 
 	// Show bell if we have accessToken OR were authenticated before refresh (optimistic rendering)
 	// This prevents layout shift during refresh - bell will appear but notifications won't load until user is available
@@ -507,9 +478,11 @@ export default function NotificationBell() {
 	return (
 		<div className="notification-bell-wrapper" ref={dropdownRef}>
 			<button
+				type="button"
 				ref={bellButtonRef}
 				className={`notification-bell-btn ${hasNewNotification ? 'new-notification' : ''}`}
-				onClick={() => setIsOpen(!isOpen)}
+				onClick={() => setIsOpen(open => !open)}
+				aria-expanded={isOpen}
 				aria-label={t('notifications.title')}
 				title={t('notifications.title')}
 			>
@@ -525,6 +498,7 @@ export default function NotificationBell() {
 						<h3>{t('notifications.title')}</h3>
 						<div className="notification-dropdown-actions">
 							<button
+								type="button"
 								className={`notification-action-btn ${refreshing ? 'refreshing' : ''}`}
 								onClick={handleManualRefresh}
 								title={t('notifications.refresh')}
@@ -534,6 +508,7 @@ export default function NotificationBell() {
 							</button>
 							{displayUnreadCount > 0 && (
 								<button
+									type="button"
 									className="notification-action-btn"
 									onClick={handleMarkAllAsRead}
 									title={t('notifications.markAllRead')}
@@ -542,6 +517,7 @@ export default function NotificationBell() {
 								</button>
 							)}
 							<button
+								type="button"
 								className="notification-action-btn"
 								onClick={() => setIsOpen(false)}
 								title={t('common.close')}
@@ -583,6 +559,7 @@ export default function NotificationBell() {
 										<div className="notification-item-actions">
 											{!notification.isRead && (
 												<button
+													type="button"
 													className="notification-item-action-btn"
 													onClick={(e) => {
 														e.stopPropagation();
@@ -594,6 +571,7 @@ export default function NotificationBell() {
 												</button>
 											)}
 											<button
+												type="button"
 												className="notification-item-action-btn"
 												onClick={(e) => handleDelete(notification._id, e)}
 												title={t('notifications.delete')}
