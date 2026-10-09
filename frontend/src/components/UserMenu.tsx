@@ -1,63 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Shield, Heart, User, LogOut, Info, Moon, Sun, Download, Upload } from 'lucide-react'
-import { LanguageSwitcher } from './LanguageSwitcher'
+import { Upload } from 'lucide-react'
 import { t } from '@/i18n'
-import { useUserStore } from '@/stores/useUserStore'
+import type { User } from '@/types/user'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import './UserMenu.css'
 
-// Theme toggle menu item that doesn't use Radix UI
-// Currently hidden but keeping code for future use
-function ThemeToggleMenuItem({ onToggle }: { onToggle: () => void }) {
-  // Initialize state from actual DOM state to ensure sync
-  const [isDark, setIsDark] = useState(() => {
-    // Force light theme for now - always return false
-    // Future: Uncomment below to restore dark theme support
-    // const hasDarkClass = document.documentElement.classList.contains('dark')
-    // if (hasDarkClass) {
-    //   return true
-    // }
-    // const saved = localStorage.getItem('theme')
-    // if (saved === 'dark') return true
-    // if (saved === 'light') return false
-    // return window.matchMedia('(prefers-color-scheme: dark)').matches
-    return false
-  })
-
-  useEffect(() => {
-    const root = document.documentElement
-    // Force light theme - always remove dark class
-    root.classList.remove('dark')
-    localStorage.setItem('theme', 'light')
-    
-    // Future: Uncomment below to restore dark theme support
-    // if (isDark) {
-    //   root.classList.add('dark')
-    //   localStorage.setItem('theme', 'dark')
-    // } else {
-    //   root.classList.remove('dark')
-    //   localStorage.setItem('theme', 'light')
-    // }
-  }, [isDark])
-  
-  const handleClick = () => {
-    setIsDark(prev => !prev)
-    onToggle()
-  }
-
-  return (
-    <button
-      className="user-menu-item"
-      onClick={handleClick}
-    >
-      {isDark ? <Sun size={16} /> : <Moon size={16} />}
-      <span>{isDark ? t('theme.lightMode') : t('theme.darkMode')}</span>
-    </button>
-  )
-}
-
 interface UserMenuProps {
-  user: any
+  user: User | null | undefined
   onSignOut: () => void
   trigger: React.ReactNode
   align?: 'start' | 'end'
@@ -73,24 +23,8 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const hoverCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { user: currentUser } = useUserStore()
-
-  // Close menu on Escape key
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen && !isClosing) {
-        setIsClosing(true)
-      }
-    }
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape)
-      return () => {
-        document.removeEventListener('keydown', handleEscape)
-      }
-    }
-    return undefined;
-  }, [isOpen, isClosing])
+  const currentUser = user
+  const isMobile = useIsMobile()
 
   const handleMenuItemClick = () => {
     if (isOpen && !isClosing) {
@@ -103,18 +37,24 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
     if (isOpen) {
       setAvatarError(false)
     }
-  }, [isOpen, currentUser?._id])
+  }, [isOpen, currentUser?.avatarUrl])
 
   // Trigger animation when menu appears (like avatar tooltip)
   useEffect(() => {
+    let firstFrame = 0
+    let secondFrame = 0
     if (isOpen && !isClosing) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      firstFrame = requestAnimationFrame(() => {
+        secondFrame = requestAnimationFrame(() => {
           setMenuAnimating(true)
         })
       })
     } else if (!isOpen && !isClosing) {
       setMenuAnimating(false)
+    }
+    return () => {
+      cancelAnimationFrame(firstFrame)
+      cancelAnimationFrame(secondFrame)
     }
   }, [isOpen, isClosing])
 
@@ -132,14 +72,14 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
 
 
   const handleToggle = () => {
-    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current)
     if (isOpen && !isClosing) {
       // Closing
       setIsClosing(true)
     } else if (!isOpen && !isClosing && triggerRef.current) {
       // Opening
       const rect = triggerRef.current.getBoundingClientRect()
-      if (isMobileNow) {
+      if (isMobile) {
         setMenuPosition({
           top: rect.bottom + 4,
           right: window.innerWidth - rect.right,
@@ -153,8 +93,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
 
   const handleMouseEnter = () => {
     // Only use hover on desktop
-    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
-    if (!isMobileNow) {
+    if (!isMobile) {
       if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current)
       setIsClosing(false)
       setIsOpen(true)
@@ -163,8 +102,8 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
 
   const handleMouseLeave = () => {
     // Only use hover on desktop
-    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
-    if (!isMobileNow && isOpen && !isClosing) {
+    if (!isMobile && isOpen && !isClosing) {
+      if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current)
       hoverCloseTimer.current = setTimeout(() => setIsClosing(true), 200)
     }
   }
@@ -173,32 +112,33 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
     if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current)
   }, [])
 
-  // Close menu when clicking outside (only on mobile)
+  // Register dismissal listeners only while the menu is open.
   useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        const isMobileNow = window.innerWidth <= 768
-        if (
-          isMobileNow &&
-          isOpen &&
-          !isClosing &&
-          menuRef.current &&
-          triggerRef.current &&
-          !menuRef.current.contains(event.target as Node) &&
-          !triggerRef.current.contains(event.target as Node)
-        ) {
-          setIsClosing(true)
-        }
+    if (!isOpen || isClosing) return;
+    const closeOnOutside = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node) &&
+          !triggerRef.current?.contains(event.target as Node)) {
+        if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current);
+        setIsClosing(true);
       }
-
-    const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
-    if (isOpen && isMobileNow) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current);
+        setIsClosing(true);
+        triggerRef.current?.focus();
       }
-    }
-    return undefined
-  }, [isOpen])
+    };
+    const closeOnResize = () => setIsClosing(true);
+    document.addEventListener('pointerdown', closeOnOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('resize', closeOnResize);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('resize', closeOnResize);
+    };
+  }, [isOpen, isClosing]);
 
   return (
     <div 
@@ -207,6 +147,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
       onMouseLeave={handleMouseLeave}
     >
       <button
+        type="button"
         ref={triggerRef}
         className="header-link user-menu-trigger"
         aria-label={t('header.userMenu')}
@@ -221,8 +162,8 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
           ref={menuRef}
           className={`user-menu-content account-menu-content ${menuAnimating ? 'menu-enter' : ''} ${isClosing ? 'menu-leave' : ''}`}
           style={{
-            position: window.innerWidth <= 768 && menuPosition ? 'fixed' : 'absolute',
-            ...(window.innerWidth <= 768 && menuPosition
+            position: isMobile && menuPosition ? 'fixed' : 'absolute',
+            ...(isMobile && menuPosition
               ? {
                   top: `${menuPosition.top}px`,
                   right: `${menuPosition.right}px`,
@@ -236,6 +177,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
           }}
         >
           <div className="user-menu-items">
+            {!isMobile && <>
             {/* Desktop Menu - User Info Section */}
             <Link
               to={currentUser?.username ? `/@${currentUser.username}` : '/profile'}
@@ -290,6 +232,8 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
               {t('auth.signOut')} {currentUser?.username ? `@${currentUser.username}` : ''}
             </button>
 
+            </>}
+            {isMobile && <>
             {/* Mobile Menu Items */}
             {/* Mobile Menu - User Info Section */}
             <Link
@@ -362,6 +306,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
               {t('auth.signOut')} {currentUser?.username ? `@${currentUser.username}` : ''}
             </button>
 
+            </>}
           </div>
         </div>
       )}
