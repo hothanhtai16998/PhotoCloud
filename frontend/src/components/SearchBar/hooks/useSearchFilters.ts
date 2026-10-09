@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { create } from 'zustand';
 import { searchConfig } from '@/config/searchConfig';
 
 export interface SearchFiltersType {
@@ -50,57 +50,49 @@ export const DEFAULT_FILTERS: SearchFiltersType = {
   aspectRatio: undefined,
 };
 
-/**
- * Load filters from localStorage
- */
+// Read persisted preferences once; every consumer shares the same snapshot.
 function loadFiltersFromStorage(): SearchFiltersType {
   try {
-    const stored = localStorage.getItem(searchConfig.filtersStorageKey);
-    if (stored) {
-      return JSON.parse(stored);
+    const stored: unknown = JSON.parse(localStorage.getItem(searchConfig.filtersStorageKey) || 'null');
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return DEFAULT_FILTERS;
+    const result = { ...DEFAULT_FILTERS };
+    for (const key of Object.keys(DEFAULT_FILTERS) as (keyof SearchFiltersType)[]) {
+      const value = (stored as Record<string, unknown>)[key];
+      if (key === 'orientation') {
+        if (['all', 'landscape', 'portrait', 'square'].includes(value as string)) result.orientation = value as SearchFiltersType['orientation'];
+      } else if (key === 'sortBy') {
+        if (['date', 'views', 'downloads', 'favorites', 'relevance'].includes(value as string)) result.sortBy = value as SearchFiltersType['sortBy'];
+      } else if (key === 'order') {
+        if (value === 'asc' || value === 'desc') result.order = value;
+      } else if (['focalLengthMin', 'focalLengthMax', 'apertureMin', 'apertureMax', 'isoMin', 'isoMax', 'minWidth', 'minHeight'].includes(key)) {
+        if (typeof value === 'number' && Number.isFinite(value) && value >= 0) Object.assign(result, { [key]: value });
+      } else if (typeof value === 'string') {
+        Object.assign(result, { [key]: value });
+      }
     }
+    return result;
   } catch {
-    // Silently fail - use default filters
+    return DEFAULT_FILTERS;
   }
-  return DEFAULT_FILTERS;
 }
 
-/**
- * Custom hook to manage search filters with localStorage persistence
- */
-export function useSearchFilters(): UseSearchFiltersReturn {
-  const [filters, setFiltersState] = useState<SearchFiltersType>(
-    loadFiltersFromStorage
-  );
-
-  const setFilters = useCallback((newFilters: SearchFiltersType) => {
-    setFiltersState(newFilters);
+export const useSearchFilters = create<UseSearchFiltersReturn>((set) => ({
+  filters: loadFiltersFromStorage(),
+  setFilters: (filters) => {
+    set({ filters });
     try {
-      localStorage.setItem(
-        searchConfig.filtersStorageKey,
-        JSON.stringify(newFilters)
-      );
-      // NOTE: We do NOT dispatch filterChange event here because handleFiltersChange
-      // already handles the fetch. The event is only needed for resetFilters when
-      // called directly from ActiveFiltersIndicator.
+      localStorage.setItem(searchConfig.filtersStorageKey, JSON.stringify(filters));
     } catch {
-      // Silently fail - filters will be lost on refresh
+      // Preferences still work in memory when storage is unavailable.
     }
-  }, []);
-
-  const resetFilters = useCallback(() => {
-    setFiltersState(DEFAULT_FILTERS);
+  },
+  resetFilters: () => {
+    set({ filters: DEFAULT_FILTERS });
     try {
       localStorage.removeItem(searchConfig.filtersStorageKey);
-      window.dispatchEvent(new Event('filterChange'));
     } catch {
-      // Silently fail - filters already cleared from state
+      // Reset must also work when storage is unavailable.
     }
-  }, []);
-
-  return {
-    filters,
-    setFilters,
-    resetFilters,
-  };
-}
+    window.dispatchEvent(new Event('filterChange'));
+  },
+}));

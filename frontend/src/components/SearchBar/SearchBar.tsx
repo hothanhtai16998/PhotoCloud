@@ -234,7 +234,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
             // Apply filters on homepage and category pages
             // NOTE: setFilters no longer dispatches filterChange event, so this is the only place
             // that triggers the fetch for normal filter changes
-            if (location.pathname === '/' || location.pathname.startsWith('/t/')) {
+            if (location.pathname === '/' || location.pathname.startsWith('/t/') || location.pathname.startsWith('/s/')) {
                 const fetchParams = buildFetchParams(newFilters);
                 fetchImages(fetchParams);
             }
@@ -249,16 +249,16 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         const handleFilterReset = () => {
             // Only trigger fetch if resetFilters was called directly (outside of handleFiltersChange)
             // This happens when ActiveFiltersIndicator calls resetFilters directly
-            if (location.pathname === '/' || location.pathname.startsWith('/t/')) {
-                // Use current filters state (which should be default after reset)
-                const fetchParams = buildFetchParams(filters);
+            if (location.pathname === '/' || location.pathname.startsWith('/t/') || location.pathname.startsWith('/s/')) {
+                // Read the shared snapshot synchronously after reset.
+                const fetchParams = buildFetchParams(useSearchFilters.getState().filters);
                 fetchImages(fetchParams);
             }
         };
 
         window.addEventListener('filterChange', handleFilterReset);
         return () => window.removeEventListener('filterChange', handleFilterReset);
-    }, [location.pathname, buildFetchParams, fetchImages, filters]);
+    }, [location.pathname, buildFetchParams, fetchImages]);
 
     return (
         <div 
