@@ -8,7 +8,7 @@ export interface SlideData {
 	title: string;
 	image: string; // Low quality for initial display
 	fullImage: string; // High quality for upgrade
-	highQualityUrl: string; // Full resolution URL
+	highQualityUrl?: string; // Optional legacy upgrade URL
 	width: number;
 	height: number;
 	imageInfo?: {
@@ -20,6 +20,22 @@ export interface SlideData {
 		shutterSpeed?: string;
 		iso?: number;
 	};
+}
+
+
+// Use the display-sized variant for navigation; originals are reserved for zoom.
+function toSlides(images: Image[]): SlideData[] {
+  return images.filter(img =>
+    Number.isFinite(img.width) && img.width > 0 &&
+    Number.isFinite(img.height) && img.height > 0
+  ).map(img => ({
+    id: img._id,
+    title: img.imageTitle || (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name) || 'Image',
+    image: img.regularAvifUrl || img.regularUrl || img.smallAvifUrl || img.smallUrl || img.imageAvifUrl || img.imageUrl || '',
+    fullImage: img.imageAvifUrl || img.imageUrl || img.regularAvifUrl || img.regularUrl || img.smallUrl || '',
+    width: img.width,
+    height: img.height,
+  }));
 }
 
 // Unsplash-style: 15 minutes stale threshold (slider changes less frequently)
@@ -64,45 +80,8 @@ export const useSliderStore = create(
 					return;
 				}
 				
-				const images = response.images || [];
-				
-				// Accept any orientation, while excluding invalid image dimensions.
-				const filteredImages = images.filter((img: Image) =>
-					Number.isFinite(img.width) && img.width > 0 &&
-					Number.isFinite(img.height) && img.height > 0
-				);
+				const slideData = toSlides(response.images || []);
 
-				// Convert images to slide format
-				const slideData: SlideData[] = filteredImages.map((img: Image) => {
-					const categoryName = typeof img.imageCategory === 'string' 
-						? img.imageCategory 
-						: img.imageCategory?.name || 'Photography';
-					
-				// Use full resolution imageUrl for slider to ensure highest quality at full viewport
-				// Slider images fill full viewport, so we need the best quality available
-				const imageUrl = img.imageAvifUrl || img.imageUrl || img.regularAvifUrl || img.regularUrl || img.smallAvifUrl || img.smallUrl || '';
-				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || imageUrl;
-				const title = img.imageTitle || categoryName || 'Image';
-				
-				return {
-					id: img._id,
-					title: title,
-					image: imageUrl,
-					fullImage: fullImageUrl,
-						width: img.width,
-						height: img.height,
-						imageInfo: {
-							location: img.location,
-							cameraModel: img.cameraModel,
-							cameraMake: img.cameraMake,
-							focalLength: img.focalLength ? String(img.focalLength) : undefined,
-							aperture: img.aperture ? String(img.aperture) : undefined,
-							shutterSpeed: img.shutterSpeed,
-							iso: img.iso,
-						},
-					};
-				});
-				
 				// Check again if aborted before updating state
 				if (signal?.aborted) {
 					return;
@@ -176,46 +155,9 @@ export const useSliderStore = create(
 					_refresh: true 
 				}, signal);
 				
-				const images = response.images || [];
-				const filteredImages = images.filter((img: Image) => {
-					const width = img.width || 0;
-					const height = img.height || 0;
-					if (width === 0 || height === 0) return false; // Skip images without dimensions
-					const aspectRatio = width / height;
-					// Only include landscape images (aspect ratio > 1)
-					return aspectRatio > 1;
-				});
-				
-				const slideData: SlideData[] = filteredImages.map((img: Image) => {
-					const categoryName = typeof img.imageCategory === 'string' 
-						? img.imageCategory 
-						: img.imageCategory?.name || 'Photography';
-				// Use regularUrl for initial display (faster load), then upgrade to full resolution
-				const lowQualityUrl = img.regularAvifUrl || img.regularUrl || img.smallAvifUrl || img.smallUrl || '';
-				const highQualityUrl = img.imageAvifUrl || img.imageUrl || img.regularAvifUrl || img.regularUrl || '';
-				const fullImageUrl = img.imageUrl || img.regularUrl || img.smallUrl || lowQualityUrl;
-				const title = img.imageTitle || categoryName || 'Image';
-				
-				return {
-					id: img._id,
-					title: title,
-					image: lowQualityUrl, // Start with lower quality
-					fullImage: fullImageUrl,
-					highQualityUrl: highQualityUrl, // Full resolution for upgrade
-						width: img.width,
-						height: img.height,
-						imageInfo: {
-							location: img.location,
-							cameraModel: img.cameraModel,
-							cameraMake: img.cameraMake,
-							focalLength: img.focalLength ? String(img.focalLength) : undefined,
-							aperture: img.aperture ? String(img.aperture) : undefined,
-							shutterSpeed: img.shutterSpeed,
-							iso: img.iso,
-						},
-					};
-				});
-				
+				if (signal?.aborted) return;
+				const slideData = toSlides(response.images || []);
+
 				set((state) => {
 					state.slides = slideData;
 					state.lastFetchedAt = Date.now();

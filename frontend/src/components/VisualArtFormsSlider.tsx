@@ -22,6 +22,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider() {
   const imageTriggerRef = useRef<HTMLImageElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const totalSlides = slides.length;
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 769px)').matches);
 
   useEffect(() => {
     if (!previousImageSrc) return;
@@ -44,6 +45,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider() {
   useEffect(() => {
     const media = window.matchMedia('(max-width: 768px)');
     const stopHiddenSlider = () => {
+      setIsDesktop(!media.matches);
       if (!media.matches) return;
       navigationRef.current++;
       if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
@@ -105,24 +107,21 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider() {
 
   useEffect(() => {
     navigationRef.current++;
+    if (!isDesktop) return;
     const slide = slides[currentSlide];
     if (!slide) return;
     let active = true;
 
-    void preloadImage(slide.image).then(async ready => {
+    void preloadImage(slide.image).then(ready => {
       if (!active) return;
       if (!ready) return;
       setCurrentImageSrc(slide.image);
       setIsImageReady(true);
-      if (ready && slide.highQualityUrl && slide.highQualityUrl !== slide.image) {
-        const upgraded = await preloadImage(slide.highQualityUrl);
-        if (active && upgraded) setCurrentImageSrc(slide.highQualityUrl);
-      }
     });
     // Only warm the next slide; current and navigation share the same load promise.
     if (slides.length > 1) void preloadImage(slides[(currentSlide + 1) % slides.length].image);
     return () => { active = false; };
-  }, [currentSlide, slides, preloadImage]);
+  }, [currentSlide, slides, preloadImage, isDesktop]);
 
   useEffect(() => () => {
     navigationRef.current++;
@@ -299,7 +298,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider() {
                 : undefined,
             }}
             loading="eager"
-            decoding="sync"
+            decoding="async"
 
           />
           </button>

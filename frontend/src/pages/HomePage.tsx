@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useContext, useCallback, useRef, useMemo, useState } from "react";
+import { useEffect, useContext, useCallback, useRef, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useImageStore } from "@/stores/useImageStore";
 import { useSliderStore } from "@/stores/useSliderStore";
@@ -12,9 +12,7 @@ import { generateImageSlug } from "@/lib/utils";
 import type { Image } from "@/types/image";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { saveScrollPosition, prepareModalNavigationState, isPageRefresh, setModalActive } from "@/utils/modalNavigation";
-import { imageService } from "@/services/imageService";
 import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
-import { timingConfig } from '@/config/timingConfig';
 import { useSearchFilters } from "@/components/SearchBar/hooks/useSearchFilters";
 import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
@@ -96,79 +94,7 @@ function HomePage() {
         };
     }, [isHomePageLoading]);
     
-    // Preload first slider image URL as early as possible for better LCP discovery
-    // CRITICAL: This must use the EXACT same URL priority as slider store (imageAvifUrl || imageUrl || regularAvifUrl || regularUrl || smallAvifUrl || smallUrl)
-    // Use useLayoutEffect to add preload BEFORE React paints, making it discoverable earlier
-    useLayoutEffect(() => {
-        if (currentSearch) return; // Skip if search is active (no slider shown)
-        
-        // Priority 1: Use slides from store if already loaded (fastest path)
-        if (slides.length > 0 && slides[0]?.image) {
-            const firstSlideImageUrl = slides[0].image;
-            // Remove any existing preload to avoid duplicates
-            const existing = document.querySelector('link[rel="preload"][as="image"][fetchpriority="high"]');
-            if (existing) existing.remove();
-            
-            // Preload the first slider image immediately for LCP
-            // Use useLayoutEffect so this runs synchronously before paint
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'image';
-            link.href = firstSlideImageUrl;
-            link.setAttribute('fetchpriority', 'high');
-            document.head.appendChild(link);
-            return;
-        }
-    }, [currentSearch, slides]);
-    
-    // Priority 2: Fetch just 1 image to get the first slider image URL quickly
-    // Use the SAME URL priority logic as the slider store
-    useEffect(() => {
-        if (currentSearch) return; // Skip if search is active (no slider shown)
-        if (slides.length > 0) return; // Already handled in useLayoutEffect above
-        
-        const prefetchFirstImage = async () => {
-            try {
-                const response = await imageService.fetchImages({ 
-                    limit: 1,
-                    _refresh: true 
-                });
-                
-                const firstImage = response.images?.[0];
-                if (firstImage) {
-                    // CRITICAL: Use EXACT same URL priority as slider store (useSliderStore.ts line 91)
-                    // Slider uses: imageAvifUrl || imageUrl || regularAvifUrl || regularUrl || smallAvifUrl || smallUrl
-                    // This ensures the preload URL matches the actual LCP image URL
-                    const imageUrl = firstImage.imageAvifUrl || 
-                                   firstImage.imageUrl || 
-                                   firstImage.regularAvifUrl || 
-                                   firstImage.regularUrl || 
-                                   firstImage.smallAvifUrl || 
-                                   firstImage.smallUrl || '';
-                    
-                    if (imageUrl) {
-                        // Remove any existing preload to avoid duplicates
-                        const existing = document.querySelector('link[rel="preload"][as="image"][fetchpriority="high"]');
-                        if (existing) existing.remove();
-                        
-                        // Preload the first image immediately for LCP
-                        const link = document.createElement('link');
-                        link.rel = 'preload';
-                        link.as = 'image';
-                        link.href = imageUrl;
-                        link.setAttribute('fetchpriority', 'high');
-                        document.head.appendChild(link);
-                    }
-                }
-            } catch (error) {
-                // Silently fail - don't block page load
-            }
-        };
-        
-        // Start prefetch immediately, don't wait
-        prefetchFirstImage();
-    }, [currentSearch, slides]);
-
+    // Slider owns its image preloads; avoid a duplicate metadata request and original-image preload.
     // Check if modal is open (image param exists)
     const isModalOpen = actualLocation?.pathname?.startsWith('/photos/') || false;
 
