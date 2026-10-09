@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate, useLocation, useMatch } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { useImageStore } from '@/stores/useImageStore';
 import { onSearchFocusRequest } from '@/utils/searchFocusEvent';
-import { searchConfig } from '@/config/searchConfig';
 import { t } from '@/i18n';
 import SearchFilters from '../SearchFilters';
 import { SearchSuggestions } from './SearchSuggestions';
@@ -25,10 +24,13 @@ export interface SearchBarRef {
  * Refactored into smaller hooks for maintainability.
  */
 export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
-    const { fetchImages, currentCategory, images } = useImageStore();
+    const fetchImages = useImageStore(state => state.fetchImages);
+    const currentCategory = useImageStore(state => state.currentCategory);
+    const images = useImageStore(state => state.images);
     const navigate = useNavigate();
     const location = useLocation();
-    const { query: urlQuery } = useParams<{ query?: string }>();
+    const searchMatch = useMatch('/s/photos/:query');
+    const urlQuery = searchMatch?.params.query;
 
     // Local state
     const [searchQuery, setSearchQuery] = useState('');
@@ -37,13 +39,13 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     // Refs
-    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const suggestionsRef = useRef<HTMLDivElement>(null);
 
     // Custom hooks
     const { searchHistory, saveToHistory, clearHistory } = useSearchHistory();
-    const { suggestions, loadingSuggestions } = useSearchSuggestions(searchQuery, searchHistory);
+    const { suggestions, loadingSuggestions } = useSearchSuggestions(searchQuery, searchHistory, isFocused && showSuggestions);
     const { filters, setFilters, resetFilters } = useSearchFilters();
 
     // Expose focus method via ref
@@ -65,7 +67,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
             // Only update if we have a urlQuery (wait for params to be ready)
             if (urlQuery) {
                 try {
-                    const decodedQuery = decodeURIComponent(urlQuery);
+                    const decodedQuery = urlQuery;
                     if (decodedQuery !== searchQuery && !isFocused) {
                         setSearchQuery(decodedQuery);
                     }
@@ -86,23 +88,13 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         }
     }, [urlQuery, location.pathname, searchQuery, isFocused]);
 
-    // Debounced search execution (disabled for instant-only on Enter/Submit)
-    useEffect(() => {
-        // Intentionally no auto-navigation on input change to avoid flashing
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-            debounceTimerRef.current = null;
-        }
-    }, [searchQuery, location.pathname]);
+    useEffect(() => () => {
+        if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+    }, []);
 
     // Handle search execution
     const handleSearch = useCallback(
         (query: string | SuggestionItem) => {
-            // Clear debounce timer to prevent delayed navigation
-            if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current);
-                debounceTimerRef.current = null;
-            }
             
             const searchValue = typeof query === 'string' ? query : query.value;
             const trimmedSearch = searchValue.trim();
@@ -133,11 +125,6 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
 
     // Handle clear button
     const handleClear = useCallback(() => {
-        // Clear debounce timer to prevent delayed navigation
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-            debounceTimerRef.current = null;
-        }
         
         setSearchQuery('');
         setShowSuggestions(false);
@@ -147,18 +134,23 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         // Navigate to homepage when clearing search
         if (location.pathname.startsWith('/s/')) {
             navigate('/', { replace: true });
-        } else if (location.pathname === '/') {
-            // Only fetch if already on homepage (no navigation needed)
-            fetchImages({ search: undefined });
         }
-    }, [location.pathname, navigate, fetchImages]);
+    }, [location.pathname, navigate]);
 
     // Handle keyboard navigation
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLInputElement>) => {
+            if (e.nativeEvent.isComposing) return;
+            if (e.key === 'Escape') {
+                setShowSuggestions(false);
+                setSelectedIndex(-1);
+                inputRef.current?.blur();
+                return;
+            }
             if (!showSuggestions || suggestions.length === 0) {
                 if (e.key === 'Enter') {
-                    handleSearch(searchQuery);
+                    e.preventDefault();
+                    if (!e.nativeEvent.isComposing) handleSearch(searchQuery);
                 }
                 return;
             }
@@ -192,10 +184,11 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
 
     // Handle focus/blur
     const handleFocus = useCallback(() => {
+        if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
         setIsFocused(true);
-        // On mobile, only show suggestions if there's a search query
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile && !searchQuery.trim()) {
+        // Only hide empty suggestions on phone layouts; tablets keep the desktop dropdown.
+        const isPhone = window.innerWidth <= 480;
+        if (isPhone && !searchQuery.trim()) {
             setShowSuggestions(false);
         } else {
             setShowSuggestions(true);
@@ -203,14 +196,15 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
     }, [searchQuery]);
 
     const handleBlur = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+        if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
         const relatedTarget = e.relatedTarget as HTMLElement | null;
 
         if (relatedTarget && suggestionsRef.current?.contains(relatedTarget)) {
-            setTimeout(() => inputRef.current?.focus(), 0);
+            blurTimerRef.current = setTimeout(() => inputRef.current?.focus(), 0);
             return;
         }
 
-        setTimeout(() => {
+        blurTimerRef.current = setTimeout(() => {
             const currentActive = document.activeElement;
             const isStillInSuggestions = suggestionsRef.current?.contains(currentActive);
             const isStillInInput = inputRef.current === currentActive;
@@ -354,7 +348,6 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
                 <SearchSuggestions
                     ref={suggestionsRef}
                     suggestions={suggestions}
-                    searchHistory={searchHistory}
                     searchQuery={searchQuery}
                     selectedIndex={selectedIndex}
                     loadingSuggestions={loadingSuggestions}

@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { categoryService, type Category } from '@/services/categoryService';
 import { imageService } from '@/services/imageService';
 import { searchService, type SearchSuggestion } from '@/services/searchService';
-import { useRequestCancellationOnChange } from '@/hooks/useRequestCancellation';
 import { searchConfig } from '@/config/searchConfig';
 import type { SearchHistoryItem } from './useSearchHistory';
 
@@ -25,86 +24,68 @@ interface UseSearchSuggestionsReturn {
  */
 export function useSearchSuggestions(
   searchQuery: string,
-  searchHistory: SearchHistoryItem[]
+  searchHistory: SearchHistoryItem[],
+  enabled = true
 ): UseSearchSuggestionsReturn {
   const [categories, setCategories] = useState<string[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
-  const [apiSuggestions, setApiSuggestions] = useState<SearchSuggestion[]>([]);
+  const [apiResult, setApiResult] = useState<{ query: string; suggestions: SearchSuggestion[] } | null>(null);
+  const query = searchQuery.trim();
+  const apiSuggestions = useMemo(() => apiResult?.query === query ? apiResult.suggestions : [], [apiResult, query]);
+  const loadingSuggestions = enabled && Boolean(query) && apiResult?.query !== query;
   const [popularSearches, setPopularSearches] = useState<SearchSuggestion[]>(
     []
   );
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const suggestionsDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
+  const initialDataRef = useRef<Promise<[Category[], string[], SearchSuggestion[]]> | null>(null);
+  const initialDataLoadedRef = useRef(false);
 
-  // Cancel previous requests when search query changes
-  const cancelSignal = useRequestCancellationOnChange([searchQuery]);
-
-  // Load categories, locations, and popular searches on mount
+  // Load supporting data only when the suggestions dropdown is needed.
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const [categoriesData, locationsData, popular] = await Promise.all([
-          categoryService.fetchCategories(),
-          imageService.fetchLocations(),
-          searchService.getPopularSearches(),
-        ]);
-        setCategories(categoriesData.map((cat: Category) => cat.name));
-        setLocations(locationsData);
-        setPopularSearches(popular);
-      } catch (error) {
-        console.error('Failed to load suggestions:', error);
-      }
-    };
-    loadInitialData();
-  }, []);
-
-  // Fetch API suggestions when user types (debounced)
-  useEffect(() => {
-    if (suggestionsDebounceRef.current) {
-      clearTimeout(suggestionsDebounceRef.current);
+    if (!enabled || initialDataLoadedRef.current) return;
+    let active = true;
+    if (!initialDataRef.current) {
+      initialDataRef.current = Promise.all([
+        categoryService.fetchCategories(), imageService.fetchLocations(),
+        searchService.getPopularSearches(),
+      ]);
     }
+    initialDataRef.current.then(([categoryData, locationData, popular]) => {
+      if (!active) return;
+      initialDataLoadedRef.current = true;
+      setCategories(categoryData.map(cat => cat.name));
+      setLocations(locationData);
+      setPopularSearches(popular);
+    }).catch(() => {
+      initialDataRef.current = null;
+    });
+    return () => { active = false; };
+  }, [enabled]);
 
+  // Own each request and prevent older results from updating a newer query.
+  useEffect(() => {
     const query = searchQuery.trim();
-
-    if (query.length >= 1) {
-      setLoadingSuggestions(true);
-      suggestionsDebounceRef.current = setTimeout(async () => {
-        try {
-          const apiResults = await searchService.getSuggestions(
-            query,
-            10,
-            cancelSignal
-          );
-          setApiSuggestions(apiResults);
-        } catch (error) {
-          if (
-            axios.isCancel(error) ||
-            (error as { code?: string })?.code === 'ERR_CANCELED'
-          ) {
-            return;
-          }
-          console.error('Failed to fetch API suggestions:', error);
-          setApiSuggestions([]);
-        } finally {
-          setLoadingSuggestions(false);
-        }
-      }, searchConfig.suggestionsDebounceMs);
-    } else {
-      setApiSuggestions([]);
-      setLoadingSuggestions(false);
+    if (!enabled || !query) {
+      return;
     }
-
-    return () => {
-      if (suggestionsDebounceRef.current) {
-        clearTimeout(suggestionsDebounceRef.current);
+    let active = true;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchService.getSuggestions(query, 10, controller.signal);
+        if (active) setApiResult({ query, suggestions: results });
+      } catch (error) {
+        if (active && !axios.isCancel(error)) setApiResult({ query, suggestions: [] });
       }
+    }, searchConfig.suggestionsDebounceMs);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+      controller.abort();
     };
-  }, [searchQuery, cancelSignal]);
+  }, [searchQuery, enabled]);
 
   // Merge and filter suggestions
-  const filteredSuggestions = (() => {
+  const filteredSuggestions = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     const seen = new Set<string>();
     const result: SuggestionItem[] = [];
@@ -188,16 +169,19 @@ export function useSearchSuggestions(
       });
 
       // Popular categories
-      categories.slice(0, 5 - result.length).forEach((s) => {
+      categories.slice(0, Math.max(0, 5 - result.length)).forEach((s) => {
         if (!seen.has(s.toLowerCase())) {
           result.push({ type: 'category', value: s });
           seen.add(s.toLowerCase());
         }
       });
 
-      return result.slice(0, 10);
+      return [
+        ...result.filter(item => item.type === 'history').slice(0, 5),
+        ...result.filter(item => item.type !== 'history').slice(0, 5),
+      ];
     }
-  })();
+  }, [searchQuery, apiSuggestions, locations, categories, searchHistory, popularSearches]);
 
   return {
     suggestions: filteredSuggestions,
