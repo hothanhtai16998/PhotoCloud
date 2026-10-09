@@ -28,7 +28,7 @@ export function LanguageSwitcher({
     showLabel = true,
     onSwitch,
 }: LanguageSwitcherProps) {
-    const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale());
+    const [currentLocale, setCurrentLocale] = useState<Locale>(getLocale);
 
     // Listen for locale changes
     useEffect(() => {
@@ -42,15 +42,13 @@ export function LanguageSwitcher({
     }, []);
 
     const toggleLanguage = () => {
-        const newLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
-        setLocale(newLocale);
-        setCurrentLocale(newLocale);
+        const newLocale: Locale = getLocale() === 'vi' ? 'en' : 'vi';
 
         // Call the onSwitch callback if provided
         onSwitch?.();
 
         // Reload the page to apply translations everywhere
-        window.location.reload();
+        setLocale(newLocale, { reload: true });
     };
 
     const nextLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
@@ -58,6 +56,7 @@ export function LanguageSwitcher({
     if (variant === 'menu-item') {
         return (
             <button
+                type="button"
                 onClick={toggleLanguage}
                 className={`user-menu-item language-switcher-menu-item ${className}`}
                 aria-label={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
@@ -72,6 +71,7 @@ export function LanguageSwitcher({
 
     return (
         <button
+            type="button"
             onClick={toggleLanguage}
             className={`language-switcher ${className}`}
             aria-label={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}

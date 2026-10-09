@@ -16,6 +16,7 @@ import CategoryNavigation from "./CategoryNavigation"
 import { SearchResultsNavigation } from "./SearchResultsNavigation"
 import { TextLogo } from "./TextLogo"
 import { LanguageSwitcher } from "./LanguageSwitcher"
+import { LANGUAGE_SWITCHER_ENABLED } from "@/config/features"
 import { useLocation } from "react-router-dom"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import './Header.css'
@@ -403,11 +404,12 @@ export const Header = memo(function Header() {
                 {t('header.account')}
               </Link>
 
+              {LANGUAGE_SWITCHER_ENABLED && <>
               <div className="user-menu-separator user-menu-separator-mobile-only" />
-
               <div className="user-menu-item-mobile-only-wrapper mobile-hamburger-menu-item">
                 <LanguageSwitcher variant="menu-item" onSwitch={() => setMobileMenuOpen(false)} />
               </div>
+              </>}
             </div>
           </div>
       )}

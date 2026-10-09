@@ -22,12 +22,6 @@
 .header-user-avatar {
   object-fit: cover;
   border: none !important;
-  /* transition: all 0.2s ease; */
-}
-
-.user-menu-trigger:hover .header-user-avatar,
-.user-menu-trigger:active .header-user-avatar {
-  border: none !important;
 }
 
 .header-user-avatar-placeholder {
@@ -39,12 +33,10 @@
   font-size: 1.25rem;
   font-weight: 600;
   border: none !important;
-  /* transition: all 0.2s ease; */
 }
 
 .user-menu-trigger:hover .header-user-avatar-placeholder,
 .user-menu-trigger:active .header-user-avatar-placeholder {
-  border: none !important;
   background: linear-gradient(135deg, #000 0%, #222 100%);
 }
 

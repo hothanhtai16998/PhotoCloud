@@ -11,7 +11,7 @@
   cursor: pointer;
   font-size: 14px;
   color: #333;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .language-switcher:hover {

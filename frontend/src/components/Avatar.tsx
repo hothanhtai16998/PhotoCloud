@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import type { User } from '@/types/user';
 import './Avatar.css';
 
@@ -10,7 +10,7 @@ interface AvatarProps {
   showName?: boolean;
 }
 
-export function Avatar({
+export const Avatar = memo(function Avatar({
   user,
   size = 32,
   className = '',
@@ -18,10 +18,9 @@ export function Avatar({
   showName = false,
 }: AvatarProps) {
   // Handle null/undefined user
-  const userObj = user || {};
-  const displayName = 'displayName' in userObj ? userObj.displayName : undefined;
-  const username = 'username' in userObj ? userObj.username : undefined;
-  const avatarUrl = 'avatarUrl' in userObj ? userObj.avatarUrl : undefined;
+  const displayName = user?.displayName;
+  const username = user?.username;
+  const avatarUrl = user?.avatarUrl;
 
   const initials = (
     displayName?.trim() || username || 'U'
@@ -32,7 +31,7 @@ export function Avatar({
 
   // Avatar images are stored at 200x200 but displayed at smaller sizes
   // Add explicit width/height to prevent layout shift (CLS)
-  const numericSize = typeof size === 'number' ? size : (typeof size === 'string' ? parseInt(size, 10) : undefined);
+  const numericSize = typeof size === 'number' ? size : parseInt(size, 10);
   const displaySize = numericSize || 32;
   
   // Use state to handle image load errors and fallback to placeholder
@@ -75,5 +74,5 @@ export function Avatar({
       )}
     </div>
   );
-}
+});
 

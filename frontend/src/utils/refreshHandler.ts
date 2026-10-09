@@ -16,6 +16,7 @@
 import { cancelAllPendingRequests } from '@/lib/axios';
 import type { NavigateEvent } from '@/types/navigation-api';
 import { appConfig } from '@/config/appConfig';
+import { consumeImmediateReload } from './immediateReload';
 
 /**
  * Get refresh delay time
@@ -227,6 +228,8 @@ const setupNavigationAPI = (): (() => void) => {
     const handleNavigate = (event: NavigateEvent) => {
       // Check if this is a refresh (reload)
       if (event.navigationType === 'reload') {
+        if (consumeImmediateReload()) return;
+
         // Check if we're already in a delay (prevent loop)
         // Check BOTH the flag and the in-memory flag
         const delayActive = sessionStorage.getItem(REFRESH_DELAY_FLAG) === 'true';

@@ -18,6 +18,7 @@
  */
 
 import { vi, en, type TranslationKeys } from './locales';
+import { reloadImmediately } from '@/utils/immediateReload';
 
 // Supported locales
 export type Locale = 'vi' | 'en';
@@ -70,14 +71,20 @@ export function getLocale(): Locale {
 /**
  * Set current locale
  */
-export function setLocale(locale: Locale): void {
-    currentLocale = locale;
-    
+export function setLocale(locale: Locale, options: { reload?: boolean } = {}): void {
     try {
         localStorage.setItem(LOCALE_STORAGE_KEY, locale);
     } catch {
         // Ignore storage errors
     }
+
+    // Apply the saved language on the next page load, without changing this page first.
+    if (options.reload && typeof window !== 'undefined') {
+        reloadImmediately();
+        return;
+    }
+
+    currentLocale = locale;
 
     // Dispatch event for components to react to locale change
     if (typeof window !== 'undefined') {

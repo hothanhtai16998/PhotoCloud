@@ -12,6 +12,7 @@ import vietnamFlag from '@/assets/vietnam.svg';
 import americaFlag from '@/assets/america.svg';
 import './ImagePageSidebar.css';
 import { timingConfig } from '@/config/timingConfig';
+import { LANGUAGE_SWITCHER_ENABLED } from '@/config/features';
 
 // NOTE: refreshToken cookie is httpOnly, so we can't check it from JavaScript
 // Instead, we use optimistic rendering based on isInitializing and accessToken state
@@ -75,6 +76,7 @@ const ImagePageSidebar = () => {
 
   // Listen for locale changes
   useEffect(() => {
+    if (!LANGUAGE_SWITCHER_ENABLED) return;
     const handleLocaleChange = (e: Event) => {
       const customEvent = e as CustomEvent<{ locale: Locale }>;
       setCurrentLocale(customEvent.detail.locale);
@@ -279,11 +281,8 @@ const ImagePageSidebar = () => {
   };
 
   const handleLanguageToggle = () => {
-    const newLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
-    setLocale(newLocale);
-    setCurrentLocale(newLocale);
-    // Reload to apply translations
-    window.location.reload();
+    const newLocale: Locale = getLocale() === 'vi' ? 'en' : 'vi';
+    setLocale(newLocale, { reload: true });
   };
 
   const LANGUAGE_LABELS: Record<Locale, string> = {
@@ -396,6 +395,7 @@ const ImagePageSidebar = () => {
           <WebSocketStatus />
         </div>
         
+        {LANGUAGE_SWITCHER_ENABLED && <>
         <div className="sidebar-separator" />
         <button
           className="sidebar-nav-item sidebar-language-toggle"
@@ -409,6 +409,7 @@ const ImagePageSidebar = () => {
             className="sidebar-icon sidebar-language-icon" 
           />
         </button>
+        </>}
       </div>
     </aside>
   );
