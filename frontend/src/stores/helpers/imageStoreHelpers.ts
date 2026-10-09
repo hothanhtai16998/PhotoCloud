@@ -43,9 +43,9 @@ export function hasFiltersChanged(
     categoryChanged:
       params?.category !== currentCategory,
     searchChanged:
-      params?.search !== undefined && params.search !== currentSearch,
+      params?.search !== currentSearch,
     locationChanged:
-      params?.location !== undefined && params.location !== currentLocation,
+      params?.location !== currentLocation,
   };
 }
 

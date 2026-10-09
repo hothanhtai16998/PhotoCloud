@@ -12,44 +12,25 @@ export function useImageGridCategory() {
 
   // Get category slug from route params (for /t/:categorySlug)
   const { categorySlug } = useParams<{ categorySlug?: string }>();
-  const [categoryName, setCategoryName] = useState<string | null>(null);
+  const [resolved, setResolved] = useState<{slug: string; name: string | null} | null>(null);
 
   // Determine category: from route param or query param (backward compatibility)
   const categoryFromQuery = searchParams.get('category');
   // If using route-based category, wait until we resolve the slug -> name mapping
   // to avoid a brief fetch of 'all' that causes flashing
   const category: string | null = categorySlug
-    ? categoryName // null until resolved
+    ? (resolved?.slug === categorySlug ? resolved.name : null)
     : categoryFromQuery || 'all';
 
-  // Fetch categories to convert slug to name
   useEffect(() => {
-    const loadCategories = async () => {
-      // Reset category name immediately when slug changes to prevent stale data
-      setCategoryName(null);
-      
-      try {
-        const fetchedCategories = await categoryService.fetchCategories();
-
-        // If we have a category slug, convert it to name
-        if (categorySlug) {
-          const name = getCategoryNameFromSlug(categorySlug, fetchedCategories);
-          if (name) {
-            setCategoryName(name);
-          } else {
-            // Category slug not found - could be invalid slug
-            console.warn(`Category slug "${categorySlug}" not found`);
-            setCategoryName(null);
-          }
-        } else {
-          setCategoryName(null);
-        }
-      } catch (error) {
-        console.error('Failed to load categories:', error);
-        setCategoryName(null);
-      }
-    };
-    loadCategories();
+    if (!categorySlug) return;
+    let active = true;
+    void categoryService.fetchCategories().then(categories => {
+      if (active) setResolved({slug: categorySlug, name: getCategoryNameFromSlug(categorySlug, categories)});
+    }).catch(error => {
+      if (active) { console.error(error); setResolved({slug: categorySlug, name: null}); }
+    });
+    return () => { active = false; };
   }, [categorySlug]);
 
   // Clean up query params if using route-based category (backward compatibility)

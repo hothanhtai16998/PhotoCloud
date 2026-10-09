@@ -1,87 +1,54 @@
-/* Slider keeps the complete image inside the available viewport. */
-.visual-art-slider {
-  position: relative;
-  width: 100%;
-  margin-top: 114px;
-  margin-bottom: 60px;
-  height: calc(100dvh - 114px);
-  min-height: 280px;
-  background: #f5f5f5;
-  overflow: hidden;
+/* The final gallery keeps photo dimensions steady while crossfading. */
+html:has(.visual-art-slider) { overflow-anchor: none; }
+.visual-art-slider { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 14px 24px; width: min(1280px, calc(100% - 64px)); margin: 146px auto 40px; background: white; overflow: hidden; }
+.visual-art-slider:not(.visual-art-slider-collapsed) { min-height: calc(100dvh - 186px); align-content: start; }
+.fixed-stage { position: relative; grid-column: 1 / -1; grid-row: 1; height: clamp(360px, 70vh, 780px); min-height: 0; }
+.fixed-stage-row { height: 100%; }
+.travel-card { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; overflow: hidden; background: white; cursor: zoom-in; touch-action: pan-y; }
+.fixed-stage-layer { position: absolute; inset: 0; opacity: 0; z-index: 0; pointer-events: none; background: white; }
+.fixed-stage-layer.is-previous { opacity: 1; z-index: 1; }
+.fixed-stage-layer.is-current { opacity: 1; z-index: 2; }
+.stage-fade.has-previous .fixed-stage-layer.is-current { animation: sliderPhotoFade 450ms ease both; }
+@keyframes sliderPhotoFade { from { opacity: 0; } to { opacity: 1; } }
+.slide-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; backface-visibility: hidden; }
+.minimal-gallery-caption { position: absolute; top: 0; left: 0; z-index: 3; max-width: 190px; color: #222; display: flex; flex-direction: column; gap: 7px; padding: 4px 12px 4px 14px; border-left: 2px solid #222; background: #ffffffed; pointer-events: none; }
+.minimal-gallery-caption strong { font-weight: 600; font-size: clamp(20px, 2vw, 26px); letter-spacing: -.5px; line-height: 1.2; }
+.minimal-gallery-caption span { color: #777; font-size: 13px; }
+.travel-controls { grid-row: 2; grid-column: 1 / -1; justify-self: center; display: grid; grid-template-columns: 36px auto 36px; grid-template-rows: auto 36px; align-items: center; gap: 4px 16px; color: #222; }
+.travel-controls button { background: transparent; border: 0; color: #222; width: 36px; height: 36px; padding: 0; display: grid; place-items: center; cursor: pointer; }
+.travel-controls .slider-previous { grid-column: 1; grid-row: 2; }
+.travel-controls .slider-next { grid-column: 3; grid-row: 2; }
+.travel-controls .slider-previous:hover, .travel-controls .slider-next:hover { background: #f4f4f4; }
+.travel-controls button:disabled { opacity: .4; cursor: default; }
+.travel-controls > span { grid-column: 1 / -1; grid-row: 1; text-align: center; font-family: 'Manrope Variable', sans-serif; font-size: 19px; font-weight: 600; letter-spacing: 1px; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.travel-controls i { font-style: normal; color: #929292; font-size: 14px; font-weight: 400; letter-spacing: .6px; }
+.travel-controls i b { font-weight: 300; color: #c5c5c5; padding-inline: 5px; }
+.minimal-pagination { grid-column: 2; grid-row: 2; justify-self: center; height: 36px; overflow: hidden; }
+.minimal-pagination-track { display: flex; width: max-content; height: 36px; transition: transform 280ms ease; }
+.minimal-pagination button { position: relative; flex: 0 0 24px; width: 24px; height: 36px; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.minimal-pagination button::after { content: ''; position: absolute; top: 11px; left: 5px; width: 14px; height: 14px; border-radius: 50%; background: #bcbcbc; transform: scale(.4); transition: background 200ms ease, transform 280ms ease; }
+.minimal-pagination button[data-distance="1"]::after { transform: scale(.7); }
+.minimal-pagination button[aria-pressed="true"]::after { background: #171717; transform: scale(1); }
+.minimal-pagination button:hover:not([aria-pressed="true"])::after { background: #888; }
+.travel-card:focus-visible, .travel-controls button:focus-visible, .minimal-pagination button:focus-visible { outline: 2px solid #555; outline-offset: -2px; }
+.travel-empty { grid-column: 1 / -1; padding: 40px; text-align: center; }
+.visual-art-slider-collapsed { display: flex; flex-direction: column; gap: 0; width: min(360px, 40%); height: 260px; margin: 114px 0 16px; background: #f5f5f5; }
+.visual-art-slider-collapsed .fixed-stage { flex: 1; height: auto; min-height: 0; }
+.visual-art-slider-collapsed .fixed-stage-layer, .visual-art-slider-collapsed .travel-card { background: #f5f5f5; }
+.visual-art-slider-collapsed .travel-controls { display: flex; flex-shrink: 0; width: 100%; height: 40px; justify-content: center; gap: 16px; background: white; }
+.visual-art-slider-collapsed .travel-controls button { width: 28px; height: 28px; font-size: 18px; }
+.visual-art-slider-collapsed .travel-controls > span { font-size: 15px; }
+.visual-art-slider-collapsed .travel-controls i { font-size: 12px; }
+.travel-caption { position: absolute; top: 12px; left: 12px; padding: 6px 10px; background: #ffffffeb; color: #222; border-radius: 4px; box-shadow: 0 2px 8px #0000000d; }
+.travel-caption strong { font-size: 14px; font-weight: 400; }
+@layer base {
+  .visual-art-slider button.travel-card:active { transform: none !important; }
+  .visual-art-slider button.fixed-stage-main { border-radius: 0 !important; }
 }
-.visual-art-slider .slider-main,
-.visual-art-slider .image-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.visual-art-slider .slide-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  display: block;
-}
-.visual-art-slider .slide-image-previous { z-index: 3; pointer-events: none; }
-.visual-art-slider .slide-image-current { z-index: 2; cursor: zoom-in; }
-.visual-art-slider .slide-image-current:focus-visible { outline: 3px solid #2563eb; outline-offset: -4px; }
-.visual-art-slider .left-navigation-bottom {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: min(600px, calc(100% - 48px));
-  box-sizing: border-box;
-  padding: 10px 16px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, .94);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, .12);
-  color: #111;
-}
-.visual-art-slider .nav-arrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 44px;
-  height: 44px;
-  padding: 10px;
-  color: #111;
-  background: transparent;
-  border: 0;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color .2s ease;
-}
-.visual-art-slider .nav-arrow:hover:not(:disabled) { background: #e5e5e5; }
-.visual-art-slider .nav-arrow:disabled { opacity: .4; cursor: default; }
-.visual-art-slider .nav-arrow:focus-visible,
-.slider-zoom-close:focus-visible,
-.slider-zoom-image-button:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
-.visual-art-slider .progress-line-container { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
-.visual-art-slider .progress-line-numbers { position: relative; height: 24px; }
-.visual-art-slider .progress-line-number {
-  position: absolute;
-  transform: translate(-50%, 8px);
-  font-size: 18px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: #111;
-  opacity: 0;
-  transition: opacity .35s ease, transform .45s cubic-bezier(.22, 1, .36, 1);
-}
-.visual-art-slider .progress-line-number.visible { opacity: 1; transform: translate(-50%, 0); }
-.visual-art-slider .progress-line-number.hidden { pointer-events: none; }
-.visual-art-slider .progress-line { position: relative; height: 2px; background: #bdbdbd; }
-.visual-art-slider .progress-segments-container { position: absolute; inset: 0 auto 0 0; transition: transform .55s cubic-bezier(.22, 1, .36, 1); }
-.visual-art-slider .progress-segment-fill { height: 100%; width: 100%; background: #111; }
-.visual-art-slider .slider-error-message { display: grid; place-items: center; height: 100%; }
+@media (max-width: 1100px) { .visual-art-slider:not(.visual-art-slider-collapsed) { width: calc(100% - 40px); } }
+@media (max-height: 760px) { .visual-art-slider:not(.visual-art-slider-collapsed) .fixed-stage { height: max(260px, calc(100dvh - 246px)); } }
+@media (max-width: 768px) { .visual-art-slider { display: none; } }
+@media (prefers-reduced-motion: reduce) { .visual-art-slider *, .zoom-overlay, .slider-zoom-loading span { animation: none !important; transition: none !important; } }
 
 /* Portal avoids the homepage containment and stacking context. */
 .zoom-overlay {
@@ -96,7 +63,7 @@
 }
 .zoom-overlay.zooming-out { animation: sliderZoomFadeOut .4s ease forwards; }
 .slider-zoom-image-button {
-  display: flex;
+  display: grid;
   align-items: center;
   justify-content: center;
   width: 100%;
@@ -106,7 +73,12 @@
   border: 0;
   cursor: zoom-out;
 }
-.zoom-overlay .zoom-image { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.zoom-overlay .zoom-image { grid-area: 1 / 1; justify-self: center; display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.slider-zoom-loading { position: absolute; inset: 0 0 auto; height: 3px; overflow: hidden; background: #ffffff18; z-index: 2; pointer-events: none; }
+.slider-zoom-loading span { display: block; width: 35%; height: 100%; background: #f5cf57; box-shadow: 0 0 8px #f5cf5780; animation: sliderZoomLoading 1.2s ease-in-out infinite; }
+.slider-zoom-error { position: absolute; bottom: 24px; padding: 10px 16px; border-radius: 8px; background: #222e; color: #eee; font-size: 13px; pointer-events: none; }
+.slider-zoom-close:focus-visible, .slider-zoom-image-button:focus-visible { outline: 2px solid white; outline-offset: -3px; }
+@keyframes sliderZoomLoading { from { transform: translateX(-100%); } to { transform: translateX(386%); } }
 .slider-zoom-close {
   position: absolute;
   top: 16px;
@@ -124,10 +96,3 @@
 }
 @keyframes sliderZoomFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes sliderZoomFadeOut { from { opacity: 1; } to { opacity: 0; } }
-@media (max-width: 1024px) {
-  .visual-art-slider .left-navigation-bottom { max-width: 500px; bottom: 16px; }
-}
-@media (max-width: 768px) { .visual-art-slider { display: none; } }
-@media (prefers-reduced-motion: reduce) {
-  .visual-art-slider *, .zoom-overlay { transition: none !important; animation: none !important; }
-}

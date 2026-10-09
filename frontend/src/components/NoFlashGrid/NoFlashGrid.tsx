@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useRef, useState, useCallback, useLayoutEffect } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { useGlobalLoadingStore } from '@/stores/useGlobalLoadingStore';
-import { t } from '@/i18n';
 import './NoFlashGrid.css';
 
 // Import extracted modules
@@ -44,8 +41,6 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
     // Store image dimensions as they load
     const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
-    const loadingDimensionsRef = useRef<Set<string>>(new Set()); // Track which images we're currently loading
-    const stableDimensionsRef = useRef<Map<string, { width: number; height: number }>>(new Map()); // Stable ref for dimensions to prevent unnecessary recalculations
 
     // Load data using provided callback
     const loadData = useCallback(async () => {
@@ -98,203 +93,38 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         preloadImages(thumbnails, true);
     }, [images]);
 
-    // Check cached images synchronously before render to prevent layout shift
-    useLayoutEffect(() => {
-        if (filteredImages.length === 0) return;
-
-        const cachedDimensionsMap = new Map<string, { width: number; height: number }>();
-        
-        for (const image of filteredImages.slice(0, 50)) {
-            if (imageDimensions.has(image._id) || (image.width && image.height)) continue;
-
-            const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-            if (imageUrl) {
-                const cachedDims = getCachedImageDimensions(imageUrl);
-                if (cachedDims) {
-                    cachedDimensionsMap.set(image._id, cachedDims);
-                }
-            }
-        }
-
-        if (cachedDimensionsMap.size > 0) {
-            cachedDimensionsMap.forEach((value, key) => {
-                stableDimensionsRef.current.set(key, value);
-            });
-            
-            setImageDimensions(prev => {
-                const merged = new Map(prev);
-                cachedDimensionsMap.forEach((value, key) => {
-                    merged.set(key, value);
-                });
-                return merged;
-            });
-        }
-    }, [filteredImages, imageDimensions]);
-
-    // Load dimensions asynchronously for non-cached images
     useEffect(() => {
-        let timeoutId: NodeJS.Timeout | null = null;
-        let isMounted = true;
-
-        const loadDimensions = async () => {
-            if (!isMounted || filteredImages.length === 0) return;
-
-            const dimensionsMap = new Map<string, { width: number; height: number }>();
-            const imagesToLoad: Array<{ image: ExtendedImage; url: string }> = [];
-
-            const imagesToProcess = filteredImages.slice(0, 50);
-            
-            for (const image of imagesToProcess) {
-                if (imageDimensions.has(image._id)) {
-                    const existingDims = imageDimensions.get(image._id)!;
-                    if (existingDims.width > 0 && existingDims.height > 0) {
-                        dimensionsMap.set(image._id, existingDims);
-                        stableDimensionsRef.current.set(image._id, existingDims);
-                    }
-                    continue;
-                }
-
-                if (image.width && image.height && image.width > 0 && image.height > 0) {
-                    const imgDims = { width: image.width, height: image.height };
-                    dimensionsMap.set(image._id, imgDims);
-                    stableDimensionsRef.current.set(image._id, imgDims);
-                    continue;
-                }
-
-                if (loadingDimensionsRef.current.has(image._id)) continue;
-
-                const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                if (imageUrl) {
-                    const cachedDims = getCachedImageDimensions(imageUrl);
-                    if (cachedDims && cachedDims.width > 0 && cachedDims.height > 0) {
-                        dimensionsMap.set(image._id, cachedDims);
-                        stableDimensionsRef.current.set(image._id, cachedDims);
-                        continue;
-                    }
-                    
-                    imagesToLoad.push({ image, url: imageUrl });
-                    loadingDimensionsRef.current.add(image._id);
-                }
-            }
-
-            if (dimensionsMap.size > 0) {
-                dimensionsMap.forEach((value, key) => {
-                    stableDimensionsRef.current.set(key, value);
-                });
-                
-                setImageDimensions(prev => {
-                    const merged = new Map(prev);
-                    dimensionsMap.forEach((value, key) => {
-                        merged.set(key, value);
-                    });
-                    return merged;
+        let active = true;
+        const missing = filteredImages.slice(0, 50).filter(image => !(image.width && image.height) && !imageDimensions.has(image._id));
+        void (async () => {
+            for (let i = 0; i < missing.length && active; i += 5) {
+                const results = await Promise.all(missing.slice(i, i + 5).map(async image => {
+                    const url = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                    if (!url) return null;
+                    try { return {id: image._id, dims: getCachedImageDimensions(url) || await loadImageDimensions(url)}; } catch { return null; }
+                }));
+                if (!active) return;
+                setImageDimensions(previous => {
+                    const next = new Map(previous);
+                    results.forEach(result => { if (result?.dims) next.set(result.id, result.dims); });
+                    return next;
                 });
             }
-
-            if (imagesToLoad.length > 0 && isMounted) {
-                const priority = imagesToLoad.slice(0, 15);
-                const rest = imagesToLoad.slice(15);
-
-                const loadBatch = async (batch: typeof imagesToLoad) => {
-                    if (!isMounted) return;
-                    
-                    const batchSize = 5;
-                    for (let i = 0; i < batch.length; i += batchSize) {
-                        if (!isMounted) break;
-                        
-                        const chunk = batch.slice(i, i + batchSize);
-                        const promises = chunk.map(async ({ image, url }) => {
-                            try {
-                                const dims = await loadImageDimensions(url);
-                                if (dims && isMounted) {
-                                    return { id: image._id, dims };
-                                }
-                            } catch (_error) {
-                                // Silently fail - will use fallback
-                            } finally {
-                                loadingDimensionsRef.current.delete(image._id);
-                            }
-                            return null;
-                        });
-
-                        const results = await Promise.all(promises);
-                        const validResults = results.filter((r): r is { id: string; dims: { width: number; height: number } } => r !== null);
-
-                        if (validResults.length > 0 && isMounted) {
-                            validResults.forEach(result => {
-                                stableDimensionsRef.current.set(result.id, result.dims);
-                            });
-                            
-                            setImageDimensions(prev => {
-                                const merged = new Map(prev);
-                                validResults.forEach(result => {
-                                    merged.set(result.id, result.dims);
-                                });
-                                return merged;
-                            });
-                        }
-                        
-                        if (i + batchSize < batch.length) {
-                            await new Promise(resolve => setTimeout(resolve, 50));
-                        }
-                    }
-                };
-
-                loadBatch(priority).catch(() => {});
-
-                if (rest.length > 0) {
-                    setTimeout(() => {
-                        if (isMounted) {
-                            loadBatch(rest).catch(() => {});
-                        }
-                    }, 200);
-                }
-            }
-        };
-
-        timeoutId = setTimeout(() => {
-            loadDimensions();
-        }, 100);
-
-        return () => {
-            isMounted = false;
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
+        })();
+        return () => { active = false; };
     }, [filteredImages]);
-
-    // Pre-calculate dimensions synchronously during render to prevent layout shift
-    // Uses stable ref to persist dimensions across renders without triggering grid recalculation
     const precalculatedDimensionsMap = useMemo(() => {
-        const dims = new Map<string, { width: number; height: number }>();
-        
-        stableDimensionsRef.current.forEach((value, key) => {
-            dims.set(key, value);
+        const map = new Map(imageDimensions);
+        filteredImages.forEach(image => {
+            if (image.width && image.height) map.set(image._id, {width: image.width, height: image.height});
+            else {
+                const url = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                const cached = url && getCachedImageDimensions(url);
+                if (cached) map.set(image._id, cached);
+            }
         });
-        
-        for (const image of filteredImages.slice(0, 50)) {
-            if (dims.has(image._id)) continue;
-            
-            if (image.width && image.height && image.width > 0 && image.height > 0) {
-                const imgDims = { width: image.width, height: image.height };
-                dims.set(image._id, imgDims);
-                stableDimensionsRef.current.set(image._id, imgDims);
-                continue;
-            }
-            
-            const imageUrl = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-            if (imageUrl) {
-                const cachedDims = getCachedImageDimensions(imageUrl);
-                if (cachedDims && cachedDims.width > 0 && cachedDims.height > 0) {
-                    dims.set(image._id, cachedDims);
-                    stableDimensionsRef.current.set(image._id, cachedDims);
-                }
-            }
-        }
-        
-        return dims;
-    }, [filteredImages]);
+        return map;
+    }, [filteredImages, imageDimensions]);
 
     // Calculate grid layout for each image (row spans and columns)
     const gridLayout = useMemo(() => {
@@ -319,14 +149,13 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
         // Track pixel heights in each column for shortest-column algorithm
         // This is more accurate than row-based tracking
-        const columnHeights = new Array(columnCount).fill(0); // Start at 0px for each column
+        const columnHeights = new Array(columnCount).fill(0);
 
         return filteredImages.map((image) => {
             let dimensions = precalculatedDimensionsMap.get(image._id) || null;
             
             if (!dimensions && image.width && image.height && image.width > 0 && image.height > 0) {
                 dimensions = { width: image.width, height: image.height };
-                stableDimensionsRef.current.set(image._id, dimensions);
             }
 
             // Calculate row span based on aspect ratio
@@ -444,7 +273,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
                             return (
                                 <div
-                                    key={`${image._id || idx}-${column}-${rowStart}`}
+                                    key={image._id || idx}
                                     className="grid-item-wrapper"
                                     data-pinned={(image as any).isPinned ? 'true' : 'false'}
                                     data-image-id={image._id}

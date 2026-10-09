@@ -1,4 +1,8 @@
-import { useEffect, useContext, useCallback, useRef, useMemo, useState } from "react";
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { CATEGORY_NAVIGATION_EVENT } from '@/utils/categoryNavigationEvent';
+import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
+import './HomePageLayouts.css';
+import { useEffect, useContext, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useImageStore } from "@/stores/useImageStore";
 import { useSliderStore } from "@/stores/useSliderStore";
@@ -18,14 +22,25 @@ import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
 
 function HomePage() {
-    const { currentSearch, images, loading, pagination, fetchImages } = useImageStore();
-    const { loading: sliderLoading, slides } = useSliderStore();
+    const [sliderCollapsed, setSliderCollapsed] = useState(false);
+    const reducedMotion = useReducedMotion();
+    const sliderTransition = reducedMotion ? { duration: 0 } : sliderLayoutTransition;
+    useEffect(() => {
+        const handleCategory = (event: Event) => setSliderCollapsed(Boolean((event as CustomEvent<string>).detail));
+        const handleHistory = () => {
+            if (window.location.pathname === '/' || window.location.pathname.startsWith('/t/')) setSliderCollapsed(window.location.pathname.startsWith('/t/'));
+        };
+        window.addEventListener(CATEGORY_NAVIGATION_EVENT, handleCategory);
+        window.addEventListener('popstate', handleHistory);
+        return () => { window.removeEventListener(CATEGORY_NAVIGATION_EVENT, handleCategory); window.removeEventListener('popstate', handleHistory); };
+    }, []);
+    const { currentSearch, currentCategory, images, loading, pagination, fetchImages } = useImageStore();
+    const sliderLoading = useSliderStore(state => state.loading);
+    const slideCount = useSliderStore(state => state.slides.length);
     const actualLocation = useContext(ActualLocationContext);
     const { category } = useImageGridCategory();
     const { filters } = useSearchFilters();
     const navigate = useNavigate();
-    const prevCategoryRef = useRef<string | null>(null);
-    const isInitialMountRef = useRef(true);
     const filtersRef = useRef(filters);
     const isMobile = useIsMobile();
     
@@ -34,50 +49,9 @@ function HomePage() {
         filtersRef.current = filters;
     }, [filters]);
     const [gridHasLoaded, setGridHasLoaded] = useState(false);
-    const [sliderHasLoaded, setSliderHasLoaded] = useState(false);
-    const initialLoadCompleteRef = useRef(false);
-    
-    // Track when each component finishes initial load (regardless of cache)
-    // This ensures spinner stays until BOTH are done, even if one loads from cache instantly
-    useEffect(() => {
-        // Grid finished: not loading anymore (regardless of whether it has data or not)
-        if (!loading && !gridHasLoaded) {
-            setGridHasLoaded(true);
-        }
-    }, [loading, gridHasLoaded]);
-    
-    useEffect(() => {
-        // Slider finished: not loading anymore (regardless of whether it has data or not)
-        if (!sliderLoading && !sliderHasLoaded) {
-            setSliderHasLoaded(true);
-        }
-    }, [sliderLoading, sliderHasLoaded]);
-    
-    // Mark initial load as complete when both have finished
-    useEffect(() => {
-        if (gridHasLoaded && sliderHasLoaded && !initialLoadCompleteRef.current) {
-            initialLoadCompleteRef.current = true;
-        }
-    }, [gridHasLoaded, sliderHasLoaded]);
-    
-    // Sync combined loading state to global loading store
-    // On initial page load (refresh), show spinner until BOTH grid AND slider finish their initial fetch
-    // After initial load, only show when either is loading (normal behavior)
-    const isHomePageLoading = useMemo(() => {
-        const gridLoading = loading && images.length === 0;
-        const sliderIsLoading = sliderLoading && slides.length === 0;
-        
-        // On initial load (refresh), keep spinner until BOTH finish their initial fetch
-        // This prevents flashing even if one loads from cache instantly
-        if (!initialLoadCompleteRef.current) {
-            // Show spinner until both have confirmed they're done loading
-            return !gridHasLoaded || !sliderHasLoaded;
-        }
-        
-        // After initial load, normal behavior: show if either is loading
-        return gridLoading || sliderIsLoading;
-    }, [loading, images.length, sliderLoading, slides.length, gridHasLoaded, sliderHasLoaded]);
-    
+    useEffect(() => { if (!loading && !gridHasLoaded) setGridHasLoaded(true); }, [loading, gridHasLoaded]);
+    const isHomePageLoading = !gridHasLoaded || (loading && images.length === 0) || (sliderLoading && slideCount === 0);
+
     // Use ref to track previous state and prevent rapid toggling
     const prevLoadingRef = useRef(isHomePageLoading);
     
@@ -181,109 +155,12 @@ function HomePage() {
         return categoryValue;
     }, []);
 
-    // Fetch images when category changes
-    // CRITICAL: Only run when category changes, NOT when filters change
-    // Filter changes are handled by SearchBar.handleFiltersChange which already calls fetchImages with _refresh: true
-    // If we also fetch here when filters change, we get duplicate/conflicting calls
     useEffect(() => {
-        // Wait for category to resolve (not null)
-        if (category === null) {
-            return;
-        }
-
-        // Only fetch if category actually changed (not just filters)
-        const categoryChanged = prevCategoryRef.current !== category;
-        if (!categoryChanged && !isInitialMountRef.current) {
-            // Category didn't change - don't fetch (filter changes are handled by SearchBar)
-            return;
-        }
-
-        // Update prev category
-        prevCategoryRef.current = category;
-
-        const scheduleFetch = () => {
-            // Always use current filters when category changes (from ref to avoid stale closure)
-            const fetchParams = buildFilterParams(filtersRef.current, {
-                page: 1,
-                limit: 20,
-                category: getCategoryParam(category),
-                _refresh: false // Use cache for instant display when category changes
-            });
-            
-            if ('requestIdleCallback' in window) {
-                requestIdleCallback(() => {
-                    fetchImages(fetchParams);
-                }, { timeout: 100 });
-            } else {
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        fetchImages(fetchParams);
-                    });
-                });
-            }
-        };
-        
-        scheduleFetch();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [category]); // Only depend on category, not filters - filter changes are handled by SearchBar
-
-    // Scroll to NoFlashGrid when category changes (except on initial mount or when restoring scroll)
-    useEffect(() => {
-        // Wait for category to resolve (not null)
-        if (category === null) {
-            return;
-        }
-
-        // Skip if we're restoring scroll position
-        const isRestoringScroll = sessionStorage.getItem('scrollRestoreInProgress') === 'true';
-        if (isRestoringScroll) {
-            prevCategoryRef.current = category;
-            return;
-        }
-
-        // Skip on initial mount
-        if (isInitialMountRef.current) {
-            isInitialMountRef.current = false;
-            prevCategoryRef.current = category;
-            return;
-        }
-
-        // Only scroll if category actually changed
-        if (prevCategoryRef.current !== category) {
-            prevCategoryRef.current = category;
-
-            // Helper function to scroll to grid (accounting for header)
-            const scrollToGrid = () => {
-                const gridContainer = document.getElementById('image-grid-container');
-                if (!gridContainer) return;
-
-                // Calculate header height dynamically
-                const header = document.querySelector('.unsplash-header');
-                const headerHeight = header ? header.getBoundingClientRect().height : 100; // Fallback to 100px for desktop
-
-                // Get the grid container's position
-                const gridRect = gridContainer.getBoundingClientRect();
-                const scrollY = window.scrollY + gridRect.top - headerHeight;
-
-                // Scroll to grid with smooth behavior
-                window.scrollTo({
-                    top: Math.max(0, scrollY), // Ensure we don't scroll to negative position
-                    behavior: 'smooth'
-                });
-            };
-
-            // Scroll to grid after a short delay to ensure DOM is updated
-            setTimeout(() => {
-                requestAnimationFrame(() => {
-                    scrollToGrid();
-                    // Try again after a short delay in case content is still loading
-                    setTimeout(() => {
-                        scrollToGrid();
-                    }, 200);
-                });
-            }, 100);
-        }
-    }, [category]);
+        if (category === null) return;
+        const controller = new AbortController();
+        void fetchImages(buildFilterParams(filtersRef.current, {page: 1, limit: 20, category: getCategoryParam(category), _refresh: false}), controller.signal);
+        return () => controller.abort();
+    }, [category, fetchImages, getCategoryParam]);
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
@@ -298,14 +175,14 @@ function HomePage() {
 
     // Load more images (infinite scroll)
     const loadMore = useCallback(async () => {
-        if (!pagination || pagination.page >= pagination.pages) return;
+        if (category === null || loading || currentCategory !== getCategoryParam(category) || !pagination || pagination.page >= pagination.pages) return;
         const fetchParams = buildFilterParams(filters, {
             page: pagination.page + 1,
             limit: 20, // Load 20 more images per page for better performance
             category: getCategoryParam(category),
         });
         await fetchImages(fetchParams);
-    }, [fetchImages, pagination, category, filters, getCategoryParam]);
+    }, [fetchImages, pagination, category, filters, getCategoryParam, loading, currentCategory]);
 
     // Handle image click - navigate to ImagePage
     const handleImageClick = useCallback((image: Image, _index: number) => {
@@ -348,19 +225,28 @@ function HomePage() {
 
     return (
         <>
-            <main className="homepage">
+            <main className={`homepage layout-preview layout-intro${sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
+                <LayoutGroup>
                 {!currentSearch && (
-                    <VisualArtFormsSlider />
+                    <VisualArtFormsSlider collapsed={sliderCollapsed} />
                 )}
+                {sliderCollapsed && !currentSearch && <section className="category-intro">
+                    <span>KHÁM PHÁ PHOTOCLOUD</span><h1>{category && category !== 'all' ? category : 'Khám phá ảnh'}</h1>
+                    <p>Những góc nhìn mới, những khoảnh khắc đáng lưu giữ.</p>
+                    {pagination && currentCategory === getCategoryParam(category) && <small>{pagination.total} ảnh để khám phá</small>}
+                </section>}
+                <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
                 <ActiveFiltersIndicator filters={filters} />
                 <NoFlashGrid
                     images={images}
                     loading={loading}
                     onLoadData={loadData}
                     onImageClick={handleImageClick}
-                    pagination={pagination}
+                    pagination={category !== null && currentCategory === getCategoryParam(category) ? pagination : null}
                     onLoadMore={loadMore}
                 />
+                </motion.div>
+                </LayoutGroup>
             </main>
         </>
     );

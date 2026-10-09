@@ -1,364 +1,107 @@
-import { useState, useEffect, useRef, useCallback, memo } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, useReducedMotion } from 'motion/react';
 import { useSliderStore } from '@/stores/useSliderStore';
+import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
 import { t } from '@/i18n';
+import '@fontsource-variable/manrope';
 import './VisualArtFormsSlider.css';
+import { FixedSlideStage } from './FixedSlideStage';
+import { SliderZoomImage } from './SliderZoomImage';
 
-export const VisualArtFormsSlider = memo(function VisualArtFormsSlider() {
+export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapsed = false}: {collapsed?: boolean}) {
   const slides = useSliderStore(state => state.slides);
   const loading = useSliderStore(state => state.loading);
-  const hasLoaded = useSliderStore(state => state.hasLoaded);
+  const reducedMotion = useReducedMotion();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
-  const [isZoomingOut, setIsZoomingOut] = useState(false);
-  const [currentImageSrc, setCurrentImageSrc] = useState('');
-  const [previousImageSrc, setPreviousImageSrc] = useState('');
-  const [isImageReady, setIsImageReady] = useState(false);
-  const [shouldFadeOutPrevious, setShouldFadeOutPrevious] = useState(false);
-  const imageLoadsRef = useRef(new Map<string, Promise<boolean>>());
-  const navigationRef = useRef(0);
-  const zoomTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const imageTriggerRef = useRef<HTMLImageElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const totalSlides = slides.length;
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 769px)').matches);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const transition = reducedMotion ? {duration: 0} : sliderLayoutTransition;
+  const active = slides[currentSlide] || slides[0];
+  const paginationStart = Math.min(Math.max(currentSlide - 2, 0), Math.max(slides.length - 5, 0));
+  const closeZoom = useCallback(() => setIsZoomed(false), []);
+  const selectSlide = useCallback((index: number) => {
+    if (slides.length) setCurrentSlide((index + slides.length) % slides.length);
+  }, [slides.length]);
 
   useEffect(() => {
-    if (!previousImageSrc) return;
-    let secondFrame = 0;
-    const firstFrame = requestAnimationFrame(() => {
-      secondFrame = requestAnimationFrame(() => setShouldFadeOutPrevious(true));
-    });
-    return () => {
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-    };
-  }, [previousImageSrc, currentSlide]);
-
-  useEffect(() => {
-    if (!previousImageSrc || !shouldFadeOutPrevious) return;
-    const timer = setTimeout(() => setPreviousImageSrc(''), 350);
-    return () => clearTimeout(timer);
-  }, [previousImageSrc, shouldFadeOutPrevious]);
-
-  useEffect(() => {
-    const media = window.matchMedia('(max-width: 768px)');
-    const stopHiddenSlider = () => {
-      setIsDesktop(!media.matches);
-      if (!media.matches) return;
-      navigationRef.current++;
-      if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
-      setIsZoomed(false);
-      setIsZoomingOut(false);
-    };
-    media.addEventListener('change', stopHiddenSlider);
-    return () => media.removeEventListener('change', stopHiddenSlider);
+    const media = window.matchMedia('(min-width: 769px)');
+    const resize = () => { setIsDesktop(media.matches); if (!media.matches) setIsZoomed(false); };
+    media.addEventListener('change', resize);
+    return () => media.removeEventListener('change', resize);
   }, []);
-
   useEffect(() => {
     const controller = new AbortController();
     const store = useSliderStore.getState();
     if (store.slides.length) store.resetLoading();
-    const request = store.hasLoaded
-      ? store.checkAndRefreshIfStale(controller.signal)
-      : store.fetchSlides(controller.signal);
-    void request.catch(() => {});
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoaded) return;
-    const controller = new AbortController();
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        void useSliderStore.getState().checkAndRefreshIfStale(controller.signal).catch(() => {});
-      }
+    void (store.hasLoaded ? store.checkAndRefreshIfStale(controller.signal) : store.fetchSlides(controller.signal)).catch(() => {});
+    const timer = setInterval(() => {
+      if (document.visibilityState === 'visible') void useSliderStore.getState().checkAndRefreshIfStale(controller.signal).catch(() => {});
     }, 5 * 60 * 1000);
-    return () => {
-      clearInterval(interval);
-      controller.abort();
-    };
-  }, [hasLoaded]);
-
-  const preloadImage = useCallback((src: string): Promise<boolean> => {
-    if (!src) return Promise.resolve(false);
-    const existing = imageLoadsRef.current.get(src);
-    if (existing) return existing;
-    const request = new Promise<boolean>(resolve => {
-      const image = new Image();
-      image.onload = async () => {
-        try { await image.decode?.(); } catch { /* Loaded images can still be displayed. */ }
-        resolve(true);
-      };
-      image.onerror = () => {
-        imageLoadsRef.current.delete(src);
-        resolve(false);
-      };
-      image.src = src;
-    });
-    imageLoadsRef.current.set(src, request);
-    return request;
+    return () => {controller.abort(); clearInterval(timer);};
   }, []);
-
-  useEffect(() => {
-    if (currentSlide >= slides.length) setCurrentSlide(0);
-  }, [currentSlide, slides.length]);
-
-  useEffect(() => {
-    navigationRef.current++;
-    if (!isDesktop) return;
-    const slide = slides[currentSlide];
-    if (!slide) return;
-    let active = true;
-
-    void preloadImage(slide.image).then(ready => {
-      if (!active) return;
-      if (!ready) return;
-      setCurrentImageSrc(slide.image);
-      setIsImageReady(true);
-    });
-    // Only warm the next slide; current and navigation share the same load promise.
-    if (slides.length > 1) void preloadImage(slides[(currentSlide + 1) % slides.length].image);
-    return () => { active = false; };
-  }, [currentSlide, slides, preloadImage, isDesktop]);
-
-  useEffect(() => () => {
-    navigationRef.current++;
-    if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
-  }, []);
-
-  const goToSlide = useCallback(async (index: number) => {
-    if (index === currentSlide || !slides[index]?.image) return;
-    const requestId = ++navigationRef.current;
-    const ready = await preloadImage(slides[index].image);
-    if (!ready || requestId !== navigationRef.current) return;
-    setPreviousImageSrc(currentImageSrc);
-    setShouldFadeOutPrevious(false);
-    setCurrentImageSrc(slides[index].image);
-    setIsImageReady(true);
-    setCurrentSlide(index);
-  }, [currentSlide, slides, currentImageSrc, preloadImage]);
-  const nextSlide = useCallback(() => {
-    if (totalSlides > 1) void goToSlide((currentSlide + 1) % totalSlides);
-  }, [currentSlide, totalSlides, goToSlide]);
-  const goToPrevSlide = useCallback(() => {
-    if (totalSlides > 1) void goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
-  }, [currentSlide, totalSlides, goToSlide]);
-
-  const closeZoom = useCallback(() => {
-    if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
-    setIsZoomingOut(true);
-    zoomTimerRef.current = setTimeout(() => {
-      setIsZoomed(false);
-      setIsZoomingOut(false);
-      zoomTimerRef.current = null;
-    }, 400);
-  }, []);
-  const handleImageClick = useCallback(() => {
-    if (isZoomed) closeZoom();
-    else {
-      if (zoomTimerRef.current) clearTimeout(zoomTimerRef.current);
-      setIsZoomingOut(false);
-      setIsZoomed(true);
-    }
-  }, [isZoomed, closeZoom]);
-  const handleCloseZoom = useCallback((event: React.MouseEvent) => {
-    if (event.target === event.currentTarget) closeZoom();
-  }, [closeZoom]);
-
   useEffect(() => {
     if (!isZoomed) return;
-    const previousOverflow = document.body.style.overflow;
-    const imageTrigger = imageTriggerRef.current;
+    const overflow = document.body.style.overflow;
+    const trigger = triggerRef.current;
     document.body.style.overflow = 'hidden';
-    closeButtonRef.current?.focus({ preventScroll: true });
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      if (imageTrigger?.getClientRects().length) imageTrigger.focus({ preventScroll: true });
-    };
+    closeRef.current?.focus({preventScroll: true});
+    return () => {document.body.style.overflow = overflow; if (trigger?.getClientRects().length) trigger.focus({preventScroll: true});};
   }, [isZoomed]);
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (isZoomed && event.key === 'Escape') { closeZoom(); return; }
-      if (event.defaultPrevented || event.target instanceof HTMLElement && event.target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (isZoomed) { if (event.key === 'Escape') closeZoom(); return; }
+      if (event.defaultPrevented || event.target instanceof HTMLElement && event.target.closest('input,textarea,select,[contenteditable="true"],[role="dialog"]')) return;
       const rect = sliderRef.current?.getBoundingClientRect();
-      if (!rect?.width || !rect.height || (!isZoomed && (rect.bottom <= 0 || rect.top >= window.innerHeight))) return;
-      if (event.key === 'ArrowLeft') { event.preventDefault(); goToPrevSlide(); }
-      else if (event.key === 'ArrowRight') { event.preventDefault(); nextSlide(); }
+      if (!rect?.height || rect.bottom <= 0 || rect.top >= window.innerHeight) return;
+      if (event.key === 'ArrowLeft') {event.preventDefault(); selectSlide(currentSlide - 1);}
+      if (event.key === 'ArrowRight') {event.preventDefault(); selectSlide(currentSlide + 1);}
     };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [nextSlide, goToPrevSlide, isZoomed, closeZoom]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isZoomed, closeZoom, selectSlide, currentSlide]);
 
-  // Reserve space for slider to prevent layout shift when loading
-  if (loading && slides.length === 0) {
-    return (
-      <div className="visual-art-slider">
-        <div className="slider-main" style={{ visibility: 'hidden', pointerEvents: 'none' }}>
-          {/* Placeholder to reserve space - prevents layout shift */}
-        </div>
+  if (!isDesktop) return null;
+  return <motion.div ref={sliderRef} layout layoutDependency={collapsed} initial={false} transition={transition}
+    className={`visual-art-slider${collapsed ? ' visual-art-slider-collapsed' : ''}`} style={{originX: 0, originY: 0}}>
+    {slides.length ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
+      collapsed={collapsed} select={selectSlide}
+      zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
+      : <div className="travel-empty">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh nổi bật'}</div>}
+    {!collapsed && active && <div className="minimal-gallery-caption">
+      <strong>{active.title}</strong><span>{active.author ? `Ảnh của ${active.author}` : 'Bộ sưu tập ảnh nổi bật'}</span>
+    </div>}
+    <div className="travel-controls">
+      <button className="slider-previous" type="button" disabled={slides.length < 2} aria-label={t('visualArtSlider.previousSlide')} onClick={() => selectSlide(currentSlide - 1)}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
+      </button>
+      <span aria-live="polite" aria-label={`Ảnh ${currentSlide + 1} trên ${slides.length}`}>{String(currentSlide + 1).padStart(2, '0')} <i><b>/</b> {String(slides.length).padStart(2, '0')}</i></span>
+      <button className="slider-next" type="button" disabled={slides.length < 2} aria-label={t('visualArtSlider.nextSlide')} onClick={() => selectSlide(currentSlide + 1)}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7" /></svg>
+      </button>
+    {!collapsed && slides.length > 1 && <div className="minimal-pagination" role="group" aria-label="Chọn ảnh"
+      style={{width: Math.min(5, slides.length) * 24}}>
+      <div className="minimal-pagination-track" style={{transform: `translateX(${-paginationStart * 24}px)`}}>
+        {slides.map((slide, index) => <button key={slide.id} type="button" aria-label={`Đến ảnh ${index + 1}: ${slide.title}`}
+          aria-pressed={index === currentSlide} aria-hidden={index < paginationStart || index >= paginationStart + 5}
+          tabIndex={index < paginationStart || index >= paginationStart + 5 ? -1 : 0}
+          data-distance={Math.min(Math.abs(index - currentSlide), 2)} onClick={() => selectSlide(index)} />)}
       </div>
-    );
-  }
-
-  // Don't render anything if we have no slides (and not loading)
-  if (slides.length === 0) {
-    return null;
-  }
-
-  const currentSlideData = slides[currentSlide];
-  
-  if (!currentSlideData) {
-    return (
-      <div className="visual-art-slider">
-        <div className="slider-error-message">
-          {t('visualArtSlider.noSlideData')}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div ref={sliderRef} className="visual-art-slider">
-      <main className="slider-main">
-        <div className="image-container">
-          {/* Previous image for smooth transition */}
-          {previousImageSrc && (
-            <img
-              key={previousImageSrc}
-              src={previousImageSrc}
-              alt=""
-              className="slide-image slide-image-previous slide-image-common"
-              style={{
-                opacity: shouldFadeOutPrevious ? 0 : 1,
-                transition: 'opacity 0.3s ease-in-out',
-              }}
-              aria-hidden="true"
-
-            />
-          )}
-          {/* Current image */}
-          {currentSlideData && currentImageSrc && (
-            <img
-              ref={imageTriggerRef}
-              role="button"
-              tabIndex={0}
-              aria-label={`Phóng to ảnh: ${currentSlideData.title}`}
-              onKeyDown={event => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  handleImageClick();
-                }
-              }}
-              src={currentImageSrc}
-              alt={currentSlideData.title}
-              loading="eager"
-              fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
-              decoding="async"
-              className={`slide-image slide-image-current slide-image-common ${isZoomed ? 'slide-image-zoomed' : ''}`}
-              onClick={handleImageClick}
-              style={{
-                opacity: isImageReady ? 1 : 0,
-                transition: 'opacity 0.3s ease-in-out',
-              }}
-            />
-          )}
-        </div>
-      </main>
-
-      {/* Fullscreen Zoom Overlay */}
-      {(isZoomed || isZoomingOut) && currentSlideData && createPortal(
-        <div 
-          className={`zoom-overlay ${isZoomingOut ? 'zooming-out' : ''}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`Ảnh phóng to: ${currentSlideData.title}`}
-          onKeyDown={event => {
-            if (event.key !== 'Tab') return;
-            const controls = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button'));
-            const first = controls[0];
-            const last = controls[controls.length - 1];
-            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
-            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
-          }}
-          onClick={handleCloseZoom}
-        >
-          <button ref={closeButtonRef} type="button" className="slider-zoom-close" aria-label="Đóng ảnh phóng to" onClick={closeZoom}>×</button>
-          <button type="button" className="slider-zoom-image-button" aria-label="Thu nhỏ ảnh" onClick={closeZoom}>
-          <img
-            src={currentSlideData.fullImage || currentSlideData.image}
-            alt={currentSlideData.title}
-            className={`zoom-image ${isZoomingOut ? 'zooming-out' : ''}`}
-            width={currentSlideData.width}
-            height={currentSlideData.height}
-            style={{
-              aspectRatio: currentSlideData.width && currentSlideData.height 
-                ? `${currentSlideData.width} / ${currentSlideData.height}`
-                : undefined,
-            }}
-            loading="eager"
-            decoding="async"
-
-          />
-          </button>
-        </div>, document.body
-      )}
-
-      {/* Navigation */}
-      <div className="left-navigation-bottom">
-        <button
-          type="button"
-          disabled={totalSlides < 2}
-          className="nav-arrow nav-arrow-left"
-          onClick={goToPrevSlide}
-          aria-label={t('visualArtSlider.previousSlide')}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
-
-        {/* Progress Line */}
-        <div className="progress-line-container" aria-label={`Ảnh ${currentSlide + 1} trên ${totalSlides}`}>
-          <div className="progress-line-numbers">
-            {slides.map((_, index) => (
-              <div 
-                key={index} 
-                className={`progress-line-number ${index === currentSlide ? 'visible' : 'hidden'}`}
-                style={{
-                  left: '50%'
-                }}
-              >
-                {String(index + 1).padStart(2, '0')}
-              </div>
-            ))}
-          </div>
-          <div className="progress-line">
-            <div 
-              className="progress-segments-container"
-              style={{
-                width: `${100 / totalSlides}%`,
-                transform: `translateX(${currentSlide * 100}%)`,
-              }}
-            >
-              <div className="progress-segment-fill filled" />
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          disabled={totalSlides < 2}
-          className="nav-arrow nav-arrow-right"
-          onClick={nextSlide}
-          aria-label={t('visualArtSlider.nextSlide')}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </button>
-      </div>
+    </div>}
     </div>
-  );
+    {isZoomed && active && createPortal(<div className="zoom-overlay" role="dialog" aria-modal="true" aria-label={`Ảnh phóng to: ${active.title}`}
+      onClick={event => {if (event.target === event.currentTarget) closeZoom();}}
+      onKeyDown={event => {
+        if (event.key !== 'Tab') return;
+        const buttons = Array.from(event.currentTarget.querySelectorAll('button'));
+        if (event.shiftKey && document.activeElement === buttons[0]) {event.preventDefault(); buttons[buttons.length - 1]?.focus();}
+        else if (!event.shiftKey && document.activeElement === buttons[buttons.length - 1]) {event.preventDefault(); buttons[0]?.focus();}
+      }}>
+      <button ref={closeRef} className="slider-zoom-close" aria-label="Đóng ảnh phóng to" onClick={closeZoom}>×</button>
+      <SliderZoomImage key={active.fullImage || active.image} src={active.fullImage || active.image} preview={active.image} alt={active.title} close={closeZoom} />
+    </div>, document.body)}
+  </motion.div>;
 });

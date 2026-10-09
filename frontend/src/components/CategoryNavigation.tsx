@@ -1,3 +1,4 @@
+import { notifyCategoryNavigation } from '@/utils/categoryNavigationEvent';
 import { useImageStore } from "@/stores/useImageStore"
 import { useNavigate, useLocation, useSearchParams, useMatch } from "react-router-dom"
 import { useState, useEffect, useRef, memo, useCallback } from "react"
@@ -142,41 +143,14 @@ const CategoryNavigationContent = memo(function CategoryNavigationContent() {
     }
   }, [])
 
-  // Helper function to scroll to NoFlashGrid (accounting for header)
-  const scrollToGrid = useCallback(() => {
-    // Find the image grid container
-    const gridContainer = document.getElementById('image-grid-container');
-    if (!gridContainer) return;
-
-    // Calculate header height dynamically
-    const header = document.querySelector('.unsplash-header');
-    const headerHeight = header ? header.getBoundingClientRect().height : 100; // Fallback to 100px for desktop
-
-    // Get the grid container's position
-    const gridRect = gridContainer.getBoundingClientRect();
-    const scrollY = window.scrollY + gridRect.top - headerHeight;
-
-    // Scroll to grid with smooth behavior
-    window.scrollTo({
-      top: Math.max(0, scrollY), // Ensure we don't scroll to negative position
-      behavior: 'smooth'
-    });
-  }, []);
-
-  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  useEffect(() => () => {
-    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
-  }, [])
-
   const handleCategoryClick = (categoryNameVi: string) => {
-    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
+    notifyCategoryNavigation(categoryNameVi);
     if (location.pathname.includes('UnsplashGridTestPage')) {
       setSearchParams({ category: categoryNameVi || 'all' })
     } else {
       const target = categoryNameVi ? `/t/${categoryNameToSlug(categoryNameVi)}` : '/'
       if (target !== location.pathname) navigate(target)
     }
-    scrollTimerRef.current = setTimeout(scrollToGrid, 100)
   }
 
   return (

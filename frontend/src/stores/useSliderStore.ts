@@ -6,6 +6,8 @@ import type { Image } from '@/types/image';
 export interface SlideData {
 	id: string;
 	title: string;
+    author?: string;
+    category?: string;
 	image: string; // Low quality for initial display
 	fullImage: string; // High quality for upgrade
 	highQualityUrl?: string; // Optional legacy upgrade URL
@@ -30,6 +32,8 @@ function toSlides(images: Image[]): SlideData[] {
     Number.isFinite(img.height) && img.height > 0
   ).map(img => ({
     id: img._id,
+    author: img.uploadedBy?.username,
+    category: (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name) || 'Khám phá',
     title: img.imageTitle || (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name) || 'Image',
     image: img.regularAvifUrl || img.regularUrl || img.smallAvifUrl || img.smallUrl || img.imageAvifUrl || img.imageUrl || '',
     fullImage: img.imageAvifUrl || img.imageUrl || img.regularAvifUrl || img.regularUrl || img.smallUrl || '',
