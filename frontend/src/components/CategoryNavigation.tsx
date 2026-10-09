@@ -1,5 +1,5 @@
 import { useImageStore } from "@/stores/useImageStore"
-import { useNavigate, useLocation, useSearchParams, useParams } from "react-router-dom"
+import { useNavigate, useLocation, useSearchParams, useMatch } from "react-router-dom"
 import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { categoryService, type Category } from "@/services/categoryService"
 import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlug';
@@ -9,16 +9,22 @@ import { getTranslatedCategoryName } from '@/utils/categoryTranslations';
 import './CategoryNavigation.css'
 
 export const CategoryNavigation = memo(function CategoryNavigation() {
-  const { currentCategory } = useImageStore()
+  const { pathname } = useLocation()
+  if (pathname !== '/' && !pathname.startsWith('/t/') && !pathname.includes('UnsplashGridTestPage')) return null
+  return <CategoryNavigationContent />
+})
+
+const CategoryNavigationContent = memo(function CategoryNavigationContent() {
+  const currentCategory = useImageStore(state => state.currentCategory)
   const navigate = useNavigate()
   const location = useLocation()
   const [, setSearchParams] = useSearchParams();
-  const { categorySlug } = useParams<{ categorySlug?: string }>();
+  const categorySlug = useMatch('/t/:categorySlug')?.params.categorySlug;
   const [categoryObjects, setCategoryObjects] = useState<Category[]>([])
   const categoryNavElementRef = useRef<HTMLElement | null>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
-  const [locale, setLocaleState] = useState<('vi' | 'en')>(getLocale())
+  const [locale, setLocaleState] = useState<'vi' | 'en'>(getLocale)
   
   // Listen for locale changes
   useEffect(() => {
@@ -33,7 +39,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   const activeCategoryFromUrl = categorySlug 
     ? (getCategoryNameFromSlug(categorySlug, categoryObjects) || null)
     : null;
-  const activeCategoryVi = activeCategoryFromUrl || currentCategory || '';
+  const activeCategoryVi = location.pathname === '/' ? '' : activeCategoryFromUrl || currentCategory || '';
   
   // Get all category names (Vietnamese - for navigation)
   const allCategoryNames = ['', ...categoryObjects.map((cat: Category) => cat.name)];
@@ -65,35 +71,29 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     setCanScrollRight(canScroll && !isAtEnd)
   }, [])
 
-  // Update scroll button visibility when categories change or on scroll
+  // Coalesce scroll/layout notifications into one measurement per frame.
   useEffect(() => {
-    if (!categoryNavElementRef.current) return
-
-    // Initial check with a small delay to ensure layout is complete
-    const initialCheck = setTimeout(() => {
-      checkScrollButtons()
-    }, 100)
-
     const nav = categoryNavElementRef.current
-    nav.addEventListener('scroll', checkScrollButtons, { passive: true })
-    
-    // Also check on resize with debouncing
-    let resizeTimer: number | null = null
-    const handleResize = () => {
-      if (resizeTimer) clearTimeout(resizeTimer)
-      resizeTimer = window.setTimeout(() => {
+    if (!nav) return
+    let frame = 0
+    const scheduleCheck = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
         checkScrollButtons()
-      }, 150)
+      })
     }
-    window.addEventListener('resize', handleResize)
-
+    const observer = new ResizeObserver(scheduleCheck)
+    observer.observe(nav)
+    for (const child of nav.children) observer.observe(child)
+    nav.addEventListener('scroll', scheduleCheck, { passive: true })
+    scheduleCheck()
     return () => {
-      clearTimeout(initialCheck)
-      if (resizeTimer) clearTimeout(resizeTimer)
-      nav.removeEventListener('scroll', checkScrollButtons)
-      window.removeEventListener('resize', handleResize)
+      cancelAnimationFrame(frame)
+      observer.disconnect()
+      nav.removeEventListener('scroll', scheduleCheck)
     }
-  }, [categoryObjects, checkScrollButtons])
+  }, [categoryObjects, locale, checkScrollButtons])
 
   // Scroll handlers - match Unsplash's smooth scrolling behavior
   const scrollLeft = useCallback(() => {
@@ -114,13 +114,15 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
 
   // Fetch categories from backend
   useEffect(() => {
+    let active = true
+    let requestId = 0
     const loadCategories = async (forceRefresh = false) => {
+      const id = ++requestId
       try {
         const fetchedCategories = await categoryService.fetchCategories(forceRefresh)
-        setCategoryObjects(fetchedCategories)
+        if (active && id === requestId) setCategoryObjects(fetchedCategories)
       } catch (error) {
-        console.error('Failed to load categories:', error)
-        setCategoryObjects([])
+        if (active && id === requestId) console.error('Failed to load categories:', error)
       }
     }
     
@@ -135,6 +137,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     window.addEventListener('categoriesUpdated', handleCategoriesUpdated)
     
     return () => {
+      active = false
       window.removeEventListener('categoriesUpdated', handleCategoriesUpdated)
     }
   }, [])
@@ -160,59 +163,20 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
     });
   }, []);
 
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => () => {
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
+  }, [])
+
   const handleCategoryClick = (categoryNameVi: string) => {
-    const isTestPage = location.pathname.includes('UnsplashGridTestPage');
-    
-    // For test page, use query params (backward compatibility)
-    if (isTestPage) {
-      const newCategory = categoryNameVi ? categoryNameVi : undefined;
-      setSearchParams({ category: newCategory || 'all' });
-      // Scroll to grid after state update
-      setTimeout(() => {
-        requestAnimationFrame(() => {
-          scrollToGrid();
-        });
-      }, 100);
-      return;
-    }
-
-    // For normal pages, navigate to route-based URLs
-    if (!categoryNameVi) {
-      // Navigate to homepage (All category)
-      navigate('/');
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current)
+    if (location.pathname.includes('UnsplashGridTestPage')) {
+      setSearchParams({ category: categoryNameVi || 'all' })
     } else {
-      // Navigate to category page: /t/{slug}
-      const slug = categoryNameToSlug(categoryNameVi);
-      navigate(`/t/${slug}`);
+      const target = categoryNameVi ? `/t/${categoryNameToSlug(categoryNameVi)}` : '/'
+      if (target !== location.pathname) navigate(target)
     }
-
-    // Scroll to grid after navigation
-    // Use multiple attempts to ensure DOM is updated
-    setTimeout(() => {
-      requestAnimationFrame(() => {
-        scrollToGrid();
-        // Try again after a short delay in case content is still loading
-        setTimeout(() => {
-          scrollToGrid();
-        }, 200);
-      });
-    }, 100);
-  }
-
-  // Show on homepage, category pages (/t/:slug), and test page
-  // Hide on search pages (/s/photos/:query)
-  const isHomePage = location?.pathname === '/';
-  const isCategoryPage = location?.pathname?.startsWith('/t/');
-  const isTestPage = location?.pathname?.includes('UnsplashGridTestPage');
-  const isSearchPage = location?.pathname?.startsWith('/s/');
-  
-  if (!isHomePage && !isCategoryPage && !isTestPage) {
-    return null
-  }
-  
-  // Hide on search pages
-  if (isSearchPage) {
-    return null;
+    scrollTimerRef.current = setTimeout(scrollToGrid, 100)
   }
 
   return (
@@ -221,6 +185,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
           {/* Left scroll button - shown when scrolled right */}
           {canScrollLeft && (
             <button
+              type="button"
               className="category-scroll-btn category-scroll-btn-left"
               onClick={scrollLeft}
               aria-label="Scroll left"
@@ -238,9 +203,11 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
               const isActive = categoryNameVi === activeCategoryVi;
               return (
                 <button
+                  type="button"
                   key={categoryNameVi || 'all'}
                   onClick={() => handleCategoryClick(categoryNameVi)}
                   className={`category-nav-link ${isActive ? 'active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   {displayName}
                 </button>
@@ -251,6 +218,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
           {/* Right scroll button - shown when there's content to scroll right */}
           {canScrollRight && (
             <button
+              type="button"
               className="category-scroll-btn category-scroll-btn-right"
               onClick={scrollRight}
               aria-label="Scroll right"
