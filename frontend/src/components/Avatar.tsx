@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { User } from '@/types/user';
+import './Avatar.css';
 
 interface AvatarProps {
   user: User | { username?: string; displayName?: string; avatarUrl?: string } | null | undefined;

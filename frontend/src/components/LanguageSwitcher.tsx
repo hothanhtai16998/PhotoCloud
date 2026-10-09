@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getLocale, setLocale, type Locale } from '@/i18n';
 import { Globe } from 'lucide-react';
+import './LanguageSwitcher.css';
 
 interface LanguageSwitcherProps {
     className?: string;

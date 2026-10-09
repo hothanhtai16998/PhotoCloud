@@ -4,7 +4,7 @@ import { Shield, Heart, User, LogOut, Info, Moon, Sun, Download, Upload } from '
 import { LanguageSwitcher } from './LanguageSwitcher'
 import { t } from '@/i18n'
 import { useUserStore } from '@/stores/useUserStore'
-import './Header.css'
+import './UserMenu.css'
 
 // Theme toggle menu item that doesn't use Radix UI
 // Currently hidden but keeping code for future use
@@ -72,6 +72,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const hoverCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { user: currentUser } = useUserStore()
 
   // Close menu on Escape key
@@ -154,6 +155,8 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
     // Only use hover on desktop
     const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
     if (!isMobileNow) {
+      if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current)
+      setIsClosing(false)
       setIsOpen(true)
     }
   }
@@ -162,9 +165,13 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
     // Only use hover on desktop
     const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
     if (!isMobileNow && isOpen && !isClosing) {
-      setIsClosing(true)
+      hoverCloseTimer.current = setTimeout(() => setIsClosing(true), 200)
     }
   }
+
+  useEffect(() => () => {
+    if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current)
+  }, [])
 
   // Close menu when clicking outside (only on mobile)
   useEffect(() => {
@@ -204,12 +211,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
         className="header-link user-menu-trigger"
         aria-label={t('header.userMenu')}
         aria-expanded={isOpen}
-        onClick={(e) => {
-          const isMobileNow = typeof window !== 'undefined' && window.innerWidth <= 768
-          if (isMobileNow) {
-            handleToggle()
-          }
-        }}
+        onClick={handleToggle}
       >
         {trigger}
       </button>
@@ -217,7 +219,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
       {(isOpen || isClosing) && (
         <div
           ref={menuRef}
-          className={`user-menu-content ${menuAnimating ? 'menu-enter' : ''} ${isClosing ? 'menu-leave' : ''}`}
+          className={`user-menu-content account-menu-content ${menuAnimating ? 'menu-enter' : ''} ${isClosing ? 'menu-leave' : ''}`}
           style={{
             position: window.innerWidth <= 768 && menuPosition ? 'fixed' : 'absolute',
             ...(window.innerWidth <= 768 && menuPosition

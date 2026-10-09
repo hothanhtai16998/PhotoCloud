@@ -1,9 +1,10 @@
-import { memo, useState, useRef, useEffect, useLayoutEffect, useMemo, lazy, Suspense } from "react"
+import { memo, useState, useRef, useEffect, lazy, Suspense } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { User, Menu, Heart, Download, Shield, Info, Globe } from "lucide-react"
+import { User, Menu, Heart, Download, Shield, Info } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
-import { SearchBar, type SearchBarRef } from "./SearchBar"
+import { SearchBar } from "./SearchBar"
+import { getSessionItem, setSessionItem, removeSessionItem } from "@/utils/safeStorage"
 import { Avatar } from "./Avatar"
 import NotificationBell from "./NotificationBell"
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,9 @@ import { SearchResultsNavigation } from "./SearchResultsNavigation"
 import { TextLogo } from "./TextLogo"
 import { LanguageSwitcher } from "./LanguageSwitcher"
 import { useLocation } from "react-router-dom"
+import { useIsMobile } from "@/hooks/useIsMobile"
 import './Header.css'
+import './UserMenu.css'
 
 // Lazy load UploadModal to improve initial page load
 const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default: module.default })))
@@ -25,44 +28,40 @@ const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default
 // Instead, we use optimistic rendering based on isInitializing and accessToken state
 
 export const Header = memo(function Header() {
-  const { accessToken, signOut, isInitializing } = useAuthStore()
-  const { user } = useUserStore()
+  const accessToken = useAuthStore(state => state.accessToken)
+  const signOut = useAuthStore(state => state.signOut)
+  const isInitializing = useAuthStore(state => state.isInitializing)
+  const user = useUserStore(state => state.user)
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = useIsMobile()
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileMenuAnimating, setMobileMenuAnimating] = useState(false)
+  const [mobileMenuTop, setMobileMenuTop] = useState(0)
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
   
   // Check if we're on a search results page
   const isSearchPage = location.pathname.startsWith('/s/')
   const mobileMenuRef = useRef<HTMLDivElement>(null)
-  const searchBarRef = useRef<SearchBarRef>(null)
   
   // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
   // Instead, use sessionStorage to persist auth state across refreshes
   // This prevents icons from flashing on refresh
   // Initialize stableHasAuth from sessionStorage (persists across refreshes)
-  const getInitialHasAuth = (): boolean => {
-    if (typeof window === 'undefined') return false;
-    const persisted = sessionStorage.getItem('hasAuth');
-    return persisted === 'true';
-  };
-  const hasAuthRef = useRef(getInitialHasAuth());
+  const [hadAuthOnMount] = useState(() => getSessionItem('hasAuth') === 'true');
   
   // Update sessionStorage when accessToken changes
   useEffect(() => {
     if (accessToken) {
-      hasAuthRef.current = true;
-      sessionStorage.setItem('hasAuth', 'true');
+      setSessionItem('hasAuth', 'true');
     } else if (!isInitializing) {
       // Only clear on logout (when not initializing), not on initial load
-      hasAuthRef.current = false;
-      sessionStorage.removeItem('hasAuth');
+      removeSessionItem('hasAuth');
     }
   }, [accessToken, isInitializing]);
   
-  const stableHasAuth = hasAuthRef.current;
+  const stableHasAuth = Boolean(accessToken) || (isInitializing && hadAuthOnMount);
   
   // Unsplash-style: Optimistically show icons during initialization
   // Only show placeholder if we're initializing AND never had auth before
@@ -81,14 +80,20 @@ export const Header = memo(function Header() {
 
   // Trigger animation when mobile menu appears
   useEffect(() => {
+    let firstFrame = 0
+    let secondFrame = 0
     if (mobileMenuOpen) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
+      firstFrame = requestAnimationFrame(() => {
+        secondFrame = requestAnimationFrame(() => {
           setMobileMenuAnimating(true)
         })
       })
     } else {
       setMobileMenuAnimating(false)
+    }
+    return () => {
+      cancelAnimationFrame(firstFrame)
+      cancelAnimationFrame(secondFrame)
     }
   }, [mobileMenuOpen])
 
@@ -107,20 +112,32 @@ export const Header = memo(function Header() {
     }
 
     if (mobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      const closeOnEscape = (event: KeyboardEvent) => {
+        if (event.key === 'Escape') {
+          setMobileMenuOpen(false)
+          mobileMenuButtonRef.current?.focus()
+        }
+      }
+      const closeOnResize = () => setMobileMenuOpen(false)
+      document.addEventListener('pointerdown', handleClickOutside)
+      document.addEventListener('keydown', closeOnEscape)
+      window.addEventListener('resize', closeOnResize)
       return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('pointerdown', handleClickOutside)
+        document.removeEventListener('keydown', closeOnEscape)
+        window.removeEventListener('resize', closeOnResize)
       }
     }
     return undefined
   }, [mobileMenuOpen])
 
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname, accessToken])
+
 
   const handleLogoClick = () => {
-    if (window.location.pathname !== '/') {
-      // Navigate to homepage (HomePage will fetch fresh data on mount)
-      navigate('/')
-    } else {
+    if (location.pathname === '/') {
       // If already on homepage, scroll to top (smooth UX)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -159,9 +176,9 @@ export const Header = memo(function Header() {
 
           {/* Mobile Header Actions - Icons visible on mobile */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
-          <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative', marginRight: 0, paddingRight: 0 }}>
+          {isMobile && <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative', marginRight: 0, paddingRight: 0 }}>
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
-            {(accessToken || (isInitializing && stableHasAuth) || stableHasAuth) && (
+            {stableHasAuth && (
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
@@ -188,9 +205,12 @@ export const Header = memo(function Header() {
                   ref={mobileMenuButtonRef}
                   className="mobile-header-icon mobile-hamburger-button"
                   aria-label="Menu"
+                  aria-expanded={mobileMenuOpen}
+                  aria-controls="header-mobile-navigation"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setMobileMenuOpen(!mobileMenuOpen);
+                    setMobileMenuTop(e.currentTarget.getBoundingClientRect().bottom + 4);
+                    setMobileMenuOpen(open => !open);
                   }}
                   style={{
                     padding: '8px',
@@ -223,21 +243,21 @@ export const Header = memo(function Header() {
             )}
             
             {/* Sign In Link - only visible when not authenticated and not initializing */}
-            {!showPlaceholder && !accessToken && !stableHasAuth && (
+            {!showPlaceholder && !stableHasAuth && (
               <Link to="/signin" className="mobile-header-icon" aria-label={t('auth.signIn')}>
                 <User size={20} />
               </Link>
             )}
-          </div>
+          </div>}
 
           {/* Search Bar */}
-          <SearchBar ref={searchBarRef} />
+          <SearchBar />
 
           {/* Right Actions - Desktop */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
-          <div className="header-actions desktop-only" style={{ minWidth: '250px', height: '56px', position: 'relative' }}>
+          {!isMobile && <div className="header-actions desktop-only">
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
-            {(accessToken || (isInitializing && stableHasAuth) || stableHasAuth) && (
+            {stableHasAuth && (
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
@@ -289,7 +309,7 @@ export const Header = memo(function Header() {
             )}
             
             {/* Sign In Links - only visible when not authenticated and not initializing */}
-            {!showPlaceholder && !accessToken && !stableHasAuth && (
+            {!showPlaceholder && !stableHasAuth && (
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
@@ -299,7 +319,7 @@ export const Header = memo(function Header() {
                 <Button onClick={() => navigate('/signin')} className="header-button">{t('header.addImage')}</Button>
               </div>
             )}
-          </div>
+          </div>}
         </div>
       </div>
 
@@ -319,15 +339,14 @@ export const Header = memo(function Header() {
       )}
 
       {/* Mobile Menu Dropdown - Only visible at 768px and below */}
-      {mobileMenuOpen && mobileMenuButtonRef.current && (() => {
-        const rect = mobileMenuButtonRef.current.getBoundingClientRect();
-        return (
+      {mobileMenuOpen && (
           <div
+            id="header-mobile-navigation"
             ref={mobileMenuRef}
             className={`user-menu-content ${mobileMenuAnimating ? 'menu-enter' : ''}`}
             style={{
               position: 'fixed',
-              top: `${rect.bottom + 4}px`,
+              top: `${mobileMenuTop}px`,
               right: '0px',
               left: 'auto',
               zIndex: 2002,
@@ -391,8 +410,7 @@ export const Header = memo(function Header() {
               </div>
             </div>
           </div>
-        );
-      })()}
+      )}
 
     </header >
   )
