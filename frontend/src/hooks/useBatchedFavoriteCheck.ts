@@ -1,349 +1,143 @@
-/**
- * Hook to batch favorite status checks for multiple images
- * Reduces API calls by checking all images in one request
- */
-
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { favoriteService } from '@/services/favoriteService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { LRUCache } from '@/utils/lruCache';
 
-// Global batching state
-const pendingChecks = new Map<string, Set<(result: boolean) => void>>();
-const checkTimeoutRef: { current: ReturnType<typeof setTimeout> | null } = { current: null };
-const BATCH_DELAY = 100; // Wait 100ms to collect all requests
+const favoriteCache = new LRUCache<boolean>(1000);
+const listeners = new Map<string, Set<() => void>>();
+const pendingChecks = new Set<string>();
+const inFlight = new Map<string, symbol>();
+let batchTimer: ReturnType<typeof setTimeout> | undefined;
+let sessionToken: string | null = null;
+let sessionVersion = 0;
+let unsubscribeAuth: (() => void) | undefined;
 
-// Track initial page load to defer favorite checks during critical path
-// This prevents favorite checks from blocking the critical rendering path
-let initialLoadComplete = false;
+function notify(imageId: string): void {
+  listeners.get(imageId)?.forEach(listener => listener());
+}
 
-// Mark initial load as complete after page becomes interactive
-if (typeof window !== 'undefined') {
-  const markLoadComplete = () => {
-    // Small delay to ensure critical resources are loaded first
-    setTimeout(() => {
-      initialLoadComplete = true;
-    }, 500);
-  };
+function syncSession(token: string | null): void {
+  if (token === sessionToken) return;
+  sessionToken = token;
+  sessionVersion += 1;
+  favoriteCache.clear();
+  pendingChecks.clear();
+  inFlight.clear();
+  if (batchTimer !== undefined) clearTimeout(batchTimer);
+  batchTimer = undefined;
+  for (const imageId of listeners.keys()) {
+    notify(imageId);
+    if (token) pendingChecks.add(imageId);
+  }
+  scheduleBatch();
+}
 
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    // Page already loaded, mark as complete after a short delay
-    markLoadComplete();
-  } else {
-    // Wait for page load event
-    window.addEventListener('load', markLoadComplete, { once: true });
+function scheduleBatch(): void {
+  if (!sessionToken || batchTimer !== undefined || pendingChecks.size === 0) return;
+  // One timer belongs to the batch, rather than to an individual mounted card.
+  batchTimer = setTimeout(() => {
+    batchTimer = undefined;
+    void checkBatch();
+  }, 100);
+}
+
+async function checkBatch(): Promise<void> {
+  syncSession(useAuthStore.getState().accessToken);
+  if (!sessionToken) return;
+  const version = sessionVersion;
+  const token = sessionToken;
+  const ticket = Symbol('favorite check');
+  const imageIds = [...pendingChecks].filter(id => listeners.has(id) && !inFlight.has(id));
+  pendingChecks.clear();
+  if (imageIds.length === 0) return;
+  imageIds.forEach(id => inFlight.set(id, ticket));
+  try {
+    // The axios interceptor already obtains and adds the CSRF token.
+    const response = await favoriteService.checkFavorites(imageIds);
+    if (version !== sessionVersion || token !== useAuthStore.getState().accessToken) return;
+    if (!response?.favorites || typeof response.favorites !== 'object') return;
+    for (const id of imageIds) {
+      // A toggle invalidates this ticket so an older check cannot undo it.
+      if (inFlight.get(id) !== ticket) continue;
+      favoriteCache.set(id, response.favorites[id] === true);
+      notify(id);
+    }
+  } catch {
+    // Leave the current value intact. A subsequent mount can retry failed checks.
+  } finally {
+    for (const id of imageIds) {
+      if (inFlight.get(id) === ticket) inFlight.delete(id);
+    }
   }
 }
 
-// Cache for favorite status to allow immediate updates
-// Uses LRU cache to prevent memory leaks from unbounded growth
-const MAX_CACHE_SIZE = 1000;
-const favoriteCache = new LRUCache<boolean>(MAX_CACHE_SIZE);
-
-/**
- * Manually update favorite status in cache (called after toggle)
- */
-export function updateFavoriteCache(imageId: string, isFavorited: boolean) {
-  const validImageId = String(imageId).trim();
-  favoriteCache.set(validImageId, isFavorited);
-  
-  // Immediately notify all callbacks for this image
-  const callbacks = pendingChecks.get(validImageId);
-  if (callbacks && callbacks.size > 0) {
-    // Create a copy of the set to avoid issues during iteration
-    const callbacksCopy = new Set(callbacks);
-    callbacksCopy.forEach(cb => {
-      try {
-        cb(isFavorited);
-      } catch (error) {
-        // Silently handle callback errors
-      }
-    });
-  }
-  
-  // Also dispatch a custom event for components that might not have registered callbacks yet
-  window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-    detail: { imageId: validImageId, isFavorited }
-  }));
+function setFavorite(imageId: string, isFavorited: boolean): void {
+  syncSession(useAuthStore.getState().accessToken);
+  if (!sessionToken) return;
+  pendingChecks.delete(imageId);
+  inFlight.delete(imageId);
+  favoriteCache.set(imageId, isFavorited);
+  notify(imageId);
 }
 
-/**
- * Compute initial favorite state based on inputs
- * Extracted to avoid setting state in effect
- */
-function computeFavoriteState(
-  imageId: string | undefined,
-  accessToken: string | null
-): { isValid: boolean; validId: string | null; isFavorited: boolean } {
-  if (!accessToken || !imageId) {
-    return { isValid: false, validId: null, isFavorited: false };
+function handleCacheUpdate(event: Event): void {
+  const detail = (event as CustomEvent<{ imageId?: string; isFavorited?: boolean }>).detail;
+  if (detail?.imageId && typeof detail.isFavorited === 'boolean') {
+    setFavorite(String(detail.imageId).trim(), detail.isFavorited);
   }
-
-  const validId = String(imageId).trim();
-  const isValidMongoId = /^[0-9a-fA-F]{24}$/.test(validId);
-
-  if (!isValidMongoId) {
-    return { isValid: false, validId: null, isFavorited: false };
-  }
-
-  const cachedValue = favoriteCache.get(validId);
-  return {
-    isValid: true,
-    validId,
-    isFavorited: cachedValue ?? false,
-  };
 }
 
-/**
- * Hook to get favorite status for an image (batched)
- * @param imageId - Image ID to check
- * @returns Favorite status
- */
-export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
-  const { accessToken } = useAuthStore();
-  const validImageIdRef = useRef<string | null>(null);
-
-  // Compute initial state synchronously (not in effect)
-  const initialState = computeFavoriteState(imageId, accessToken);
-
-  const [isFavorited, setIsFavorited] = useState<boolean>(initialState.isFavorited);
-  const callbackRef = useRef<((result: boolean) => void) | null>(null);
-
-  // Track previous values to detect changes
-  const prevAccessToken = useRef(accessToken);
-  const prevImageId = useRef(imageId);
-
-  // Handle prop changes that should reset state
-  // This is done synchronously in render, not in effect
-  if (prevAccessToken.current !== accessToken || prevImageId.current !== imageId) {
-    prevAccessToken.current = accessToken;
-    prevImageId.current = imageId;
-
-    const newState = computeFavoriteState(imageId, accessToken);
-    if (!newState.isValid && isFavorited) {
-      // State needs reset - will happen on next render via useState
-      // We just update the ref here
-      validImageIdRef.current = null;
-    }
+export function updateFavoriteCache(imageId: string, isFavorited: boolean): void {
+  const id = String(imageId).trim();
+  setFavorite(id, isFavorited);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+      detail: { imageId: id, isFavorited },
+    }));
   }
+}
 
-  useEffect(() => {
-    const state = computeFavoriteState(imageId, accessToken);
-
-    if (!state.isValid) {
-      validImageIdRef.current = null;
-      // Only set state if it differs to avoid unnecessary renders
-      setIsFavorited(prev => prev !== false ? false : prev);
-      return;
-    }
-
-    const validImageId = state.validId!;
-    validImageIdRef.current = validImageId;
-
-    // Check cache first for immediate updates
-    const cachedValue = favoriteCache.get(validImageId);
-    if (cachedValue !== undefined) {
-      setIsFavorited(cachedValue);
-    }
-
-    // Create callback for this image
-    const callback = (result: boolean) => {
-      setIsFavorited(result);
-      // Update cache when we get a result
-      favoriteCache.set(validImageId, result);
-    };
-    callbackRef.current = callback;
-
-    // Add to pending checks
-    if (!pendingChecks.has(validImageId)) {
-      pendingChecks.set(validImageId, new Set());
-    }
-    pendingChecks.get(validImageId)!.add(callback);
-
-    // Clear existing idle callback if any
-    if (checkTimeoutRef.current && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-      try {
-        cancelIdleCallback(checkTimeoutRef.current as number);
-      } catch {
-        // Ignore - callback may have already executed
-      }
-    }
-
-    // Defer favorite checks during initial page load to avoid blocking critical path
-    // This improves LCP and reduces critical request chain length
-    const scheduleBatchCheck = () => {
-      checkTimeoutRef.current = setTimeout(async () => {
-      const imageIds = Array.from(pendingChecks.keys());
-      
-      if (imageIds.length > 0) {
-        // Double-check authentication before making request
-        const { accessToken } = useAuthStore.getState();
-        if (!accessToken) {
-          // Not authenticated - clear pending checks and set all to false
-          for (const id of imageIds) {
-            const callbacks = pendingChecks.get(id);
-            if (callbacks) {
-              callbacks.forEach(cb => cb(false));
-              pendingChecks.delete(id);
-            }
-          }
-          return;
-        }
-
-        // Ensure CSRF token is available before making POST request
-        // This prevents critical request chaining
-        const getCsrfTokenFromCookie = (): string | null => {
-          if (typeof document === 'undefined') return null;
-          const cookies = document.cookie.split(';');
-          for (const cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'XSRF-TOKEN' && value) {
-              return decodeURIComponent(value);
-            }
-          }
-          return null;
-        };
-
-        let csrfToken = getCsrfTokenFromCookie();
-        if (!csrfToken) {
-          // Fetch CSRF token first to avoid chaining and 403 errors
-          try {
-            const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
-            const url = baseURL.startsWith('http') 
-              ? `${baseURL}/csrf-token`
-              : `${window.location.origin}${baseURL}/csrf-token`;
-            
-            const response = await fetch(url, {
-              method: 'GET',
-              credentials: 'include',
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
-              csrfToken = data.csrfToken || getCsrfTokenFromCookie();
-            }
-          } catch {
-            // If CSRF fetch fails, still try the request (interceptor will handle retry)
-          }
-        }
-
-        // Make batch request
-        favoriteService.checkFavorites(imageIds)
-          .then((response) => {
-            if (response?.favorites && typeof response.favorites === 'object') {
-              // Distribute results to all callbacks
-              for (const id of imageIds) {
-                const callbacks = pendingChecks.get(id);
-                if (callbacks) {
-                  const isFav = response.favorites[id] === true ||
-                    response.favorites[String(id)] === true;
-                  
-                  const favoritedStatus = !!isFav;
-                  // Update cache
-                  favoriteCache.set(id, favoritedStatus);
-                  // Notify all callbacks
-                  callbacks.forEach(cb => cb(favoritedStatus));
-                  pendingChecks.delete(id);
-                }
-              }
-            }
-          })
-          .catch((error: any) => {
-            // Silently handle 403 errors (not authenticated or CSRF issues)
-            // Only log other errors in development
-            const is403 = error?.response?.status === 403;
-            const is401 = error?.response?.status === 401;
-            
-            // Silently handle auth errors (403/401)
-            
-            // For auth errors, set all to false and clear cache
-            if (is403 || is401) {
-              for (const id of imageIds) {
-                const callbacks = pendingChecks.get(id);
-                if (callbacks) {
-                  callbacks.forEach(cb => cb(false));
-                  pendingChecks.delete(id);
-                }
-                // Clear cache for these images
-                favoriteCache.delete(id);
-              }
-            } else {
-              // For other errors, just clear pending checks
-              pendingChecks.clear();
-            }
-          });
-      }
-    }, BATCH_DELAY);
-    };
-
-    // Unsplash-style: Use requestIdleCallback to defer favorite checks after initial render
-    // This removes them from the critical request chain, improving LCP
-    // The short timeout (100ms) ensures checks happen quickly but not during critical path
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleCallbackId = requestIdleCallback(
-        () => {
-          // Mark initial load as complete after first idle callback
-          if (!initialLoadComplete) {
-            initialLoadComplete = true;
-          }
-          scheduleBatchCheck();
-        },
-        { timeout: 100 } // Short timeout - matches Unsplash pattern (100ms max wait)
-      );
-      
-      // Store callback ID for cleanup
-      checkTimeoutRef.current = idleCallbackId as any;
-    } else {
-      // Fallback: use double requestAnimationFrame (matches Unsplash fallback pattern)
-      // This defers until after paint but doesn't block critical path
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (!initialLoadComplete) {
-            initialLoadComplete = true;
-          }
-          scheduleBatchCheck();
-        });
-      });
-    }
-
-    // Cleanup
-    return () => {
-      const callbacks = pendingChecks.get(validImageId);
-      if (callbacks && callbackRef.current) {
-        callbacks.delete(callbackRef.current);
-        if (callbacks.size === 0) {
-          pendingChecks.delete(validImageId);
-        }
-      }
-      validImageIdRef.current = null;
-      
-      // Cancel scheduled idle callback if component unmounts before it executes
-      if (checkTimeoutRef.current && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
-        try {
-          cancelIdleCallback(checkTimeoutRef.current as number);
-        } catch {
-          // Ignore - callback may have already executed
-        }
-      }
-    };
-  }, [imageId, accessToken]);
-
-  // Listen for cache updates via custom event (for immediate UI updates)
-  useEffect(() => {
-    if (!validImageIdRef.current) return;
-
-    const handleCacheUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<{ imageId: string; isFavorited: boolean }>;
-      if (customEvent.detail && customEvent.detail.imageId === validImageIdRef.current) {
-        setIsFavorited(customEvent.detail.isFavorited);
-      }
-    };
-
+function subscribe(imageId: string, listener: () => void): () => void {
+  if (!imageId) return () => {};
+  syncSession(useAuthStore.getState().accessToken);
+  if (listeners.size === 0) {
+    unsubscribeAuth = useAuthStore.subscribe(state => syncSession(state.accessToken));
     window.addEventListener('favoriteCacheUpdated', handleCacheUpdate);
-    return () => {
+  }
+  let callbacks = listeners.get(imageId);
+  if (!callbacks) {
+    callbacks = new Set();
+    listeners.set(imageId, callbacks);
+  }
+  callbacks.add(listener);
+  if (sessionToken && !favoriteCache.has(imageId) && !inFlight.has(imageId)) {
+    pendingChecks.add(imageId);
+    scheduleBatch();
+  }
+  return () => {
+    callbacks.delete(listener);
+    if (callbacks.size === 0) {
+      listeners.delete(imageId);
+      pendingChecks.delete(imageId);
+    }
+    if (listeners.size === 0) {
+      unsubscribeAuth?.();
+      unsubscribeAuth = undefined;
       window.removeEventListener('favoriteCacheUpdated', handleCacheUpdate);
-    };
-  }, [imageId]);
+      if (batchTimer !== undefined) clearTimeout(batchTimer);
+      batchTimer = undefined;
+    }
+  };
+}
 
-  return isFavorited;
+export function useBatchedFavoriteCheck(imageId: string | undefined): boolean {
+  const accessToken = useAuthStore(state => state.accessToken);
+  const id = imageId?.trim() ?? '';
+  const validId = accessToken && /^[0-9a-fA-F]{24}$/.test(id) ? id : '';
+  const subscribeToImage = useCallback((listener: () => void) => subscribe(validId, listener), [validId]);
+  const getSnapshot = useCallback(() => {
+    if (!validId || accessToken !== sessionToken) return false;
+    return favoriteCache.get(validId) ?? false;
+  }, [validId, accessToken]);
+  return useSyncExternalStore(subscribeToImage, getSnapshot, () => false);
 }

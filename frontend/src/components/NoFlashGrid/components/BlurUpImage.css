@@ -16,20 +16,12 @@
   outline: none !important;
   box-shadow: none !important;
   
-  /* Optimize for scroll performance */
-  will-change: transform;
-  transform: translateZ(0); /* Force GPU acceleration */
-  backface-visibility: hidden;
 }
 
 .blur-up-image-container:hover {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
-}
-
-.blur-up-image-container:hover .blur-up-image {
-  transform: translateZ(0); /* Remove zoom effect on hover */
 }
 
 /* Image wrapper for mobile layout */
@@ -53,16 +45,12 @@
   display: block;
   /* Disable transition during initial load to prevent flashing and scaling */
   transition: opacity 0s;
-  transform: translateZ(0); /* Force GPU acceleration, no scale */
   border: none !important;
   outline: none !important;
   border-radius: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
   
-  /* Optimize for scroll performance */
-  will-change: opacity;
-  backface-visibility: hidden;
   image-rendering: -webkit-optimize-contrast; /* Better image quality during scroll */
   
   /* Prevent any scaling animations */
@@ -184,6 +172,47 @@
   opacity: 1;
 }
 
+.blur-up-image-opening {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blur-up-image-opening span {
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 13px;
+}
+
+.blur-up-image-opening-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 3px;
+  background: #facc15;
+  animation: blur-up-image-opening 1.1s ease-in-out infinite;
+}
+
+@keyframes blur-up-image-opening {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(350%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blur-up-image-opening-bar {
+    animation: none;
+    width: 100%;
+  }
+}
+
 /* Disable transition on full image during initial load to prevent flashing */
 .blur-up-image.full {
   transition: opacity 0s;
@@ -253,6 +282,11 @@
 
 .blur-up-image-action-btn:active {
   transform: scale(0.95);
+}
+
+.blur-up-image-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .blur-up-image-action-btn svg {

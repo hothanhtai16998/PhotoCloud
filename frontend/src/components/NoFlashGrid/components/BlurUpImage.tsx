@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
+import type { ApiErrorResponse } from '@/types/errors';
 import { preloadImage, isImageLoaded } from '../utils/imagePreloader';
 import { Heart, Download, Bookmark } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
@@ -17,11 +18,20 @@ import type { DownloadSize } from './DownloadSizeSelector';
 import { detectAvifSupport } from '@/utils/avifSupport';
 import './BlurUpImage.css';
 
+let avifSupportPromise: Promise<boolean> | undefined;
+
 type ExtendedImage = Image & { categoryName?: string; category?: string };
+
+function getRegularImageUrl(image: Image, supportsAvif: boolean): string {
+    return supportsAvif
+        ? image.regularAvifUrl || image.imageAvifUrl || image.regularUrl || image.imageUrl ||
+          image.smallAvifUrl || image.smallUrl || image.thumbnailAvifUrl || image.thumbnailUrl || ''
+        : image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+}
 
 interface BlurUpImageProps {
     image: ExtendedImage;
-    onClick?: () => void;
+    onClick?: () => void | Promise<void>;
     priority?: boolean;
     onLoadComplete?: () => void;
     images?: ExtendedImage[]; // Full images array for preloading adjacent images
@@ -43,321 +53,125 @@ export function BlurUpImage({
     const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
     const placeholderInitial = base64Placeholder || networkPlaceholder;
     
-    // Determine full image URL synchronously to check cache immediately
-    // Check AVIF support synchronously (from window or default to false)
-    const initialAvifSupport = typeof window !== 'undefined' ? ((window as any).avifSupport ?? false) : false;
-    const getFullImageUrl = useCallback((avifSupported: boolean) => {
-        return avifSupported
-            ? image.regularAvifUrl ||
-              image.imageAvifUrl ||
-              image.regularUrl ||
-              image.imageUrl ||
-              image.smallAvifUrl ||
-              image.smallUrl ||
-              image.thumbnailAvifUrl ||
-              image.thumbnailUrl ||
-              ''
-            : image.regularUrl ||
-              image.imageUrl ||
-              image.smallUrl ||
-              image.thumbnailUrl ||
-              '';
-    }, [image]);
-    
-    // Check cache synchronously on mount to initialize loaded state
-    // Check both AVIF and non-AVIF URLs since browser might have cached either
-    const fullImageUrl = getFullImageUrl(initialAvifSupport);
-    const nonAvifUrl = getFullImageUrl(false);
-    const avifUrl = getFullImageUrl(true);
-    
-    const isCachedOnMount = (() => {
-        // Check all possible URLs (AVIF and non-AVIF) since browser might have cached either
-        const urlsToCheck = [fullImageUrl, avifUrl, nonAvifUrl].filter(Boolean);
-        
-        for (const url of urlsToCheck) {
-            if (!url) continue;
-            
-            // Check preloader cache first (fastest)
-            if (isImageLoaded(url)) return true;
-            
-            // More reliable cache check: try to load and see if it's already cached
-            // Cached images will have complete=true immediately or within a few ms
-            try {
-                const testImg = new Image();
-                let isCached = false;
-                
-                // Set up load handler before setting src
-                testImg.onload = () => {
-                    if (testImg.complete && testImg.naturalWidth > 0) {
-                        isCached = true;
-                    }
-                };
-                
-                testImg.src = url;
-                
-                // If already complete, it's cached
-                if (testImg.complete && testImg.naturalWidth > 0) {
-                    return true;
-                }
-                
-                // For cross-origin images, complete might be false even if cached
-                // Check if naturalWidth is available (indicates it's loading from cache)
-                // This is a heuristic but works for most cases
-                if (testImg.naturalWidth > 0) {
-                    return true;
-                }
-            } catch {
-                // Ignore errors
-            }
-        }
-        
-        return false;
-    })();
-    
-    // If image is cached, set fullSrc immediately to prevent placeholder flash
-    const [fullSrc, setFullSrc] = useState<string | null>(isCachedOnMount ? fullImageUrl : null);
-    const [loaded, setLoaded] = useState(isCachedOnMount);
-    const [supportsAvif, setSupportsAvif] = useState<boolean>(() => {
-        if (typeof window === 'undefined') return false;
-        return (window as any).avifSupport ?? false;
-    });
+    const [supportsAvif, setSupportsAvif] = useState<boolean | null>(() =>
+        typeof window === 'undefined' ? false :
+            (window as Window & { avifSupport?: boolean }).avifSupport ?? null
+    );
+    const fullImageUrl = supportsAvif === null ? '' : getRegularImageUrl(image, supportsAvif);
+    const [readySrc, setReadySrc] = useState<string | null>(null);
+    const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
     const [isInView, setIsInView] = useState(priority);
+    const canLoad = priority || isInView;
+    // Cache reads are pure: never create an Image or start requests during render.
+    const fullSrc = canLoad && fullImageUrl &&
+        (readySrc === fullImageUrl || isImageLoaded(fullImageUrl)) ? fullImageUrl : null;
+    const loaded = !!fullSrc && loadedSrc === fullSrc;
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const loadingRef = useRef(false);
     const imgRef = useRef<HTMLImageElement | null>(null);
+    const notifiedSrcRef = useRef<string | null>(null);
 
-    // Intersection Observer for lazy loading
     useEffect(() => {
-        if (priority) {
-            // Use setTimeout to avoid synchronous setState in effect
-            setTimeout(() => setIsInView(true), 0);
-            return;
-        }
-
-        if (!containerRef.current) return;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setIsInView(true);
-                        observer.disconnect();
-                    }
-                });
-            },
-            {
-                rootMargin: '1000px', // Start loading 1000px before entering viewport (very aggressive for fast scrolling)
-                threshold: 0.01,
+        if (canLoad || !containerRef.current) return;
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting)) {
+                setIsInView(true);
+                observer.disconnect();
             }
-        );
-
+        }, { rootMargin: '1000px', threshold: 0.01 });
         observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, [canLoad]);
 
-        return () => {
-            observer.disconnect();
-        };
-    }, [priority]);
-
-    // Detect AVIF support once and cache it
     useEffect(() => {
-        let isMounted = true;
-        detectAvifSupport()
-            .then((result) => {
-                if (isMounted) {
-                    setSupportsAvif(result);
-                }
-            })
-            .catch(() => {
-                if (isMounted) {
-                    setSupportsAvif(false);
-                }
-            });
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+        if (supportsAvif !== null) return;
+        let disposed = false;
+        (avifSupportPromise ??= detectAvifSupport()).then(result => {
+            if (!disposed) setSupportsAvif(result);
+        }).catch(() => {
+            if (!disposed) setSupportsAvif(false);
+        });
+        return () => { disposed = true; };
+    }, [supportsAvif]);
 
-    // Load full image when in view
     useEffect(() => {
-        if (!isInView || loadingRef.current) return;
-
-        const full = getFullImageUrl(supportsAvif);
-
-        if (!full) return;
-
-        // If already using this image, no need to reload
-        if (fullSrc === full) return;
-
-        // Check both AVIF and non-AVIF URLs since browser might have cached either
-        const nonAvifUrl = getFullImageUrl(false);
-        const avifUrl = getFullImageUrl(true);
-        const urlsToCheck = [full, avifUrl, nonAvifUrl].filter(Boolean) as string[];
-        
-        // Check if any URL is cached
-        for (const url of urlsToCheck) {
-            if (isImageLoaded(url)) {
-                setFullSrc(url);
-                setLoaded(true);
-                return;
-            }
-            
-            try {
-                const testImg = new Image();
-                testImg.src = url;
-                
-                if (testImg.complete && testImg.naturalWidth > 0) {
-                    setFullSrc(url);
-                    setLoaded(true);
-                    return;
-                }
-                
-                // Heuristic: if naturalWidth is available, image might be cached
-                if (testImg.naturalWidth > 0) {
-                    setFullSrc(url);
-                    setLoaded(true);
-                    return;
-                }
-            } catch {
-                // Ignore errors
-            }
-        }
-
-        loadingRef.current = true;
-        // Skip decode for grid images to load faster (like admin page)
-        // Use requestIdleCallback for non-priority images to not block scroll
-        const loadImage = () => {
-            preloadImage(full, true)
-                .then((src) => {
-                    setFullSrc(src);
-                })
-                .catch(() => {
-                    // Keep placeholder on error
-                })
-                .finally(() => {
-                    loadingRef.current = false;
-                });
+        if (!canLoad || !fullImageUrl || isImageLoaded(fullImageUrl)) return;
+        let disposed = false;
+        const load = () => {
+            if (disposed) return;
+            preloadImage(fullImageUrl, true).then(src => {
+                if (!disposed) setReadySrc(src);
+            }).catch(() => { /* Keep the placeholder on failure. */ });
         };
+        let idleId: number | undefined;
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        if (priority) load();
+        else if (typeof requestIdleCallback !== 'undefined') {
+            idleId = requestIdleCallback(load, { timeout: 1000 });
+        } else timeoutId = setTimeout(load, 0);
+        return () => {
+            disposed = true;
+            if (idleId !== undefined) cancelIdleCallback(idleId);
+            if (timeoutId !== undefined) clearTimeout(timeoutId);
+        };
+    }, [canLoad, fullImageUrl, priority]);
 
-        // For priority images, load immediately
-        // For others, use requestIdleCallback to not block scroll
-        if (priority) {
-            loadImage();
-        } else if (typeof requestIdleCallback !== 'undefined') {
-            requestIdleCallback(loadImage, { timeout: 1000 });
-        } else {
-            // Fallback for browsers without requestIdleCallback
-            setTimeout(loadImage, 0);
+    const handleImageLoaded = useCallback(() => {
+        if (!fullSrc) return;
+        setLoadedSrc(fullSrc);
+        if (notifiedSrcRef.current !== fullSrc) {
+            notifiedSrcRef.current = fullSrc;
+            onLoadComplete?.();
         }
-    }, [isInView, image, fullSrc, supportsAvif, priority, getFullImageUrl]);
+    }, [fullSrc, onLoadComplete, setLoadedSrc]);
 
-    // Check if image is cached when fullSrc is set or when component mounts
-    // Use multiple strategies to detect cached images
+    // Covers cache hits where the browser completed before the load listener attached.
     useLayoutEffect(() => {
-        if (loaded || !isInView) return;
-        
-        const currentFullUrl = getFullImageUrl(supportsAvif);
-        const nonAvifUrl = getFullImageUrl(false);
-        const avifUrl = getFullImageUrl(true);
-        
-        const urlsToCheck = [fullSrc, currentFullUrl, avifUrl, nonAvifUrl].filter(Boolean) as string[];
-        
-        for (const url of urlsToCheck) {
-            if (isImageLoaded(url)) {
-                setLoaded(true);
-                if (!fullSrc) {
-                    setFullSrc(url);
-                }
-                return;
-            }
+        if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+            handleImageLoaded();
         }
-        
-        // Also check the actual rendered image element if it exists
-        if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-            setLoaded(true);
-            return;
-        }
-    }, [fullSrc, loaded, supportsAvif, isInView, getFullImageUrl]);
-    
-    // Additional check after image element is rendered
-    useEffect(() => {
-        if (loaded || !fullSrc) return;
-        
-        // Check the actual image element after a brief delay
-        // This catches images that load from cache very quickly
-        const checkImage = () => {
-            if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
-                setLoaded(true);
-            }
-        };
-        
-        // Check immediately
-        checkImage();
-        
-        // Check again in next frame (for cached images)
-        requestAnimationFrame(checkImage);
-        
-        // Check after a very short delay (cached images load within 1-2ms)
-        const timeoutId = setTimeout(checkImage, 5);
-        
-        return () => clearTimeout(timeoutId);
-    }, [fullSrc, loaded]);
+    }, [handleImageLoaded]);
 
     // Tooltip state
     const [showTooltip, setShowTooltip] = useState(false);
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-    const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const tooltipRef = useRef<HTMLDivElement | null>(null);
+    const mousePositionRef = useRef({ x: 0, y: 0 });
+    const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Preload adjacent images on hover for faster modal navigation
+    useLayoutEffect(() => {
+        if (showTooltip && tooltipRef.current) {
+            tooltipRef.current.style.left = mousePositionRef.current.x + 'px';
+            tooltipRef.current.style.top = mousePositionRef.current.y + 'px';
+        }
+    }, [showTooltip]);
+
+    // Share URL selection with the card and avoid preloading the same neighbor twice.
     const handleMouseEnter = useCallback(() => {
-        if (!images || currentIndex === undefined) return;
-        
-        // Preload previous and next images (for modal navigation)
-        const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
-        const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
-        
-        const prevImage = images[prevIndex];
-        const nextImage = images[nextIndex];
-        
-        // Preload best regular-size URL for adjacent images (what modal will use)
-        if (prevImage) {
-            const prevUrl = supportsAvif
-                ? prevImage.regularAvifUrl ||
-                  prevImage.imageAvifUrl ||
-                  prevImage.regularUrl ||
-                  prevImage.imageUrl ||
-                  prevImage.smallAvifUrl ||
-                  prevImage.smallUrl
-                : prevImage.regularUrl || prevImage.imageUrl || prevImage.smallUrl;
-            if (prevUrl) {
-                preloadImage(prevUrl, true).catch(() => {});
-            }
+        if (!images?.length || currentIndex === undefined || supportsAvif === null) return;
+        const neighborIndexes = new Set([
+            (currentIndex - 1 + images.length) % images.length,
+            (currentIndex + 1) % images.length,
+        ]);
+        const urls = new Set<string>();
+        for (const index of neighborIndexes) {
+            if (index === currentIndex || !images[index]) continue;
+            const url = getRegularImageUrl(images[index], supportsAvif);
+            if (url && url !== fullImageUrl) urls.add(url);
         }
-        
-        if (nextImage) {
-            const nextUrl = supportsAvif
-                ? nextImage.regularAvifUrl ||
-                  nextImage.imageAvifUrl ||
-                  nextImage.regularUrl ||
-                  nextImage.imageUrl ||
-                  nextImage.smallAvifUrl ||
-                  nextImage.smallUrl
-                : nextImage.regularUrl || nextImage.imageUrl || nextImage.smallUrl;
-            if (nextUrl) {
-                preloadImage(nextUrl, true).catch(() => {});
-            }
-        }
-    }, [images, currentIndex, supportsAvif]);
+        urls.forEach(url => { preloadImage(url, true).catch(() => {}); });
+    }, [images, currentIndex, supportsAvif, fullImageUrl]);
 
     // Handle mouse move to track position
     const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        if (containerRef.current) {
+        if (!minimal && containerRef.current) {
             const rect = containerRef.current.getBoundingClientRect();
-            setMousePosition({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top,
-            });
+            const position = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            mousePositionRef.current = position;
+            if (tooltipRef.current) {
+                tooltipRef.current.style.left = position.x + 'px';
+                tooltipRef.current.style.top = position.y + 'px';
+            }
         }
-    }, []);
+    }, [minimal]);
 
     // Handle mouse enter - start 2 second timer
     const handleContainerMouseEnter = useCallback(() => {
@@ -392,35 +206,69 @@ export function BlurUpImage({
     }, []);
 
     // Get user info
-    const uploadedBy = (image as any)?.uploadedBy;
-    const username = uploadedBy?.username || '';
-    const userAvatar = uploadedBy?.avatar || uploadedBy?.profilePicture || '';
+    const uploadedBy = image.uploadedBy as (Image['uploadedBy'] & {
+        avatar?: string; profilePicture?: string;
+    }) | string | null;
+    const username = typeof uploadedBy === 'object' ? uploadedBy?.username || '' : '';
+    const userAvatar = typeof uploadedBy === 'object'
+        ? uploadedBy?.avatar || uploadedBy?.profilePicture || uploadedBy?.avatarUrl || '' : '';
 
     // Favorite state
-    const { user } = useUserStore();
-    const { accessToken } = useAuthStore();
-    const { addDownloadToHistory } = useDownloadHistoryStore();
-    const isFavorited = useBatchedFavoriteCheck(image?._id);
+    const hasUser = useUserStore(state => !!state.user);
+    const accessToken = useAuthStore(state => state.accessToken);
+    const addDownloadToHistory = useDownloadHistoryStore(state => state.addDownloadToHistory);
+    const isFavorited = useBatchedFavoriteCheck(minimal ? undefined : image._id);
     const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isOpening, setIsOpening] = useState(false);
+    const openingRef = useRef(false);
+    const favoriteBusyRef = useRef(false);
+    const downloadBusyRef = useRef(false);
+    const mountedRef = useRef(false);
+    useEffect(() => {
+        mountedRef.current = true;
+        return () => { mountedRef.current = false; };
+    }, []);
     const navigate = useNavigate();
     const isMobile = useIsMobile();
     const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
     const touchHandledRef = useRef(false);
+    const touchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => {
+        if (touchTimeoutRef.current !== null) clearTimeout(touchTimeoutRef.current);
+    }, []);
+
+    const handleOpenImage = useCallback(async () => {
+        if (!onClick || openingRef.current) return;
+        openingRef.current = true;
+        setIsOpening(true);
+        try {
+            await onClick();
+        } catch (error) {
+            console.error('Failed to open image:', error);
+        } finally {
+            openingRef.current = false;
+            if (mountedRef.current) setIsOpening(false);
+        }
+    }, [onClick]);
 
     // Handle favorite/save button
     const handleSaveClick = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!image?._id || isTogglingFavorite) return;
+        if (!image?._id || favoriteBusyRef.current) return;
 
         // If user is not logged in, redirect to sign-in page
-        if (!user) {
+        if (!hasUser) {
             navigate('/signin');
             return;
         }
 
+        favoriteBusyRef.current = true;
         setIsTogglingFavorite(true);
+        const requestToken = useAuthStore.getState().accessToken;
         try {
             const response = await favoriteService.toggleFavorite(image._id);
+            if (useAuthStore.getState().accessToken !== requestToken) return;
             updateFavoriteCache(image._id, response.isFavorited);
             
             // Update favorite count from response (optimistic update)
@@ -443,34 +291,21 @@ export function BlurUpImage({
             } else {
                 toast.success(t('favorites.removed'));
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to toggle favorite:', error);
-            toast.error(error?.response?.data?.message || t('favorites.error'));
+            toast.error((error as ApiErrorResponse)?.response?.data?.message || t('favorites.error'));
         } finally {
-            setIsTogglingFavorite(false);
+            favoriteBusyRef.current = false;
+            if (mountedRef.current) setIsTogglingFavorite(false);
         }
-    }, [user, image, isTogglingFavorite, navigate]);
-
-    // Handle bookmark/collection button (using same favorite functionality for now)
-    const handleBookmarkClick = useCallback(async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!image?._id) return;
-
-        // If user is not logged in, redirect to sign-in page
-        if (!user) {
-            navigate('/signin');
-            return;
-        }
-
-        // For now, bookmark uses the same favorite functionality
-        // Can be changed to use collection service later if needed
-        await handleSaveClick(e);
-    }, [user, image, handleSaveClick, navigate]);
+    }, [hasUser, image, navigate]);
 
     // Handle download button
     const handleDownloadClick = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!image?._id) return;
+        if (!image?._id || downloadBusyRef.current) return;
+        downloadBusyRef.current = true;
+        setIsDownloading(true);
 
         try {
             // Increment download count
@@ -488,7 +323,9 @@ export function BlurUpImage({
                 withCredentials: true,
             });
 
-            const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/webp' });
+            const contentType = typeof response.headers['content-type'] === 'string'
+                ? response.headers['content-type'] : 'image/webp';
+            const blob = new Blob([response.data], { type: contentType });
             const blobUrl = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = blobUrl;
@@ -496,7 +333,7 @@ export function BlurUpImage({
             // Generate filename
             const imageTitle = image.imageTitle || 'photo';
             const sanitizedTitle = imageTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            const extension = response.headers['content-type']?.includes('webp') ? 'webp' : 'jpg';
+            const extension = contentType.includes('webp') ? 'webp' : 'jpg';
             const fileName = `${sanitizedTitle}_${size}.${extension}`;
 
             link.download = fileName;
@@ -506,7 +343,7 @@ export function BlurUpImage({
             setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 
             // Optimistic update: Add to download history immediately (if authenticated)
-            if (accessToken && image) {
+            if (accessToken && useAuthStore.getState().accessToken === accessToken) {
                 addDownloadToHistory(image);
                 
                 // Dispatch event for global download history update
@@ -519,6 +356,9 @@ export function BlurUpImage({
         } catch (error) {
             console.error('Download failed:', error);
             toast.error(t('image.downloadFailed'));
+        } finally {
+            downloadBusyRef.current = false;
+            if (mountedRef.current) setIsDownloading(false);
         }
     }, [image, accessToken, addDownloadToHistory]);
 
@@ -527,7 +367,7 @@ export function BlurUpImage({
         e.stopPropagation();
         if (!uploadedBy) return;
 
-        const userId = uploadedBy._id || uploadedBy;
+        const userId = typeof uploadedBy === 'string' ? uploadedBy : uploadedBy._id;
         if (username) {
             navigate(`/@${username}`);
         } else if (userId) {
@@ -538,6 +378,7 @@ export function BlurUpImage({
     // Handle touch events on mobile to avoid 300ms click delay
     const handleTouchStart = useCallback((e: React.TouchEvent) => {
         if (!isMobile || !onClick) return;
+        if (touchTimeoutRef.current !== null) clearTimeout(touchTimeoutRef.current);
         touchHandledRef.current = false; // Reset flag
         const touch = e.touches[0];
         if (touch) {
@@ -581,22 +422,22 @@ export function BlurUpImage({
         touchStartRef.current = null;
         
         // Trigger navigation
-        onClick();
+        void handleOpenImage();
         
         // Prevent default click and double-tap zoom
         e.preventDefault();
         e.stopPropagation();
         
-        setTimeout(() => {
+        touchTimeoutRef.current = setTimeout(() => {
             touchHandledRef.current = false;
         }, 300);
-    }, [isMobile, onClick]);
+    }, [isMobile, onClick, handleOpenImage]);
 
     return (
         <div
             ref={containerRef}
             className="blur-up-image-container"
-            onClick={!isMobile ? onClick : undefined}
+            onClick={!isMobile && onClick ? handleOpenImage : undefined}
             onMouseEnter={handleContainerMouseEnter}
             onMouseLeave={handleContainerMouseLeave}
             onMouseMove={handleMouseMove}
@@ -634,8 +475,13 @@ export function BlurUpImage({
             {/* Image Container - clickable wrapper on mobile */}
             <div 
                 className="blur-up-image-image-wrapper"
+                aria-busy={isOpening}
                 onTouchStart={isMobile ? handleTouchStart : undefined}
                 onTouchEnd={isMobile ? handleTouchEnd : undefined}
+                onTouchCancel={isMobile ? () => {
+                    touchStartRef.current = null;
+                    touchHandledRef.current = false;
+                } : undefined}
                 onClick={isMobile && onClick ? (e) => {
                     // On mobile, if touch already handled it, ignore click event
                     if (touchHandledRef.current) {
@@ -650,14 +496,14 @@ export function BlurUpImage({
                         target.closest('.blur-up-image-mobile-author')) {
                         return;
                     }
-                    onClick();
+                    void handleOpenImage();
                 } : undefined}
                 style={isMobile ? { cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' } : undefined}
             >
                 {/* Placeholder Image (Low Quality) - Hide immediately if image is cached to prevent flash */}
-                {placeholderInitial && !loaded ? (
+                {placeholderInitial && (base64Placeholder || canLoad) && !loaded ? (
                     <img
-                        src={placeholderInitial}
+                        src={base64Placeholder || (canLoad ? networkPlaceholder : undefined) || undefined}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
                         width={minimal ? undefined : (image.width || undefined)}
@@ -694,24 +540,8 @@ export function BlurUpImage({
                 {/* Full Image (High Quality) */}
                 {fullSrc && (
                     <img
-                        ref={(el) => {
-                            imgRef.current = el;
-                            // Check if image is already loaded (cached) to prevent flash
-                            // Use multiple checks to catch cached images
-                            if (el) {
-                                // Immediate check
-                                if (el.complete && el.naturalWidth > 0 && !loaded) {
-                                    setLoaded(true);
-                                } else {
-                                    // Check again in next frame (for cached images that load instantly)
-                                    requestAnimationFrame(() => {
-                                        if (el.complete && el.naturalWidth > 0 && !loaded) {
-                                            setLoaded(true);
-                                        }
-                                    });
-                                }
-                            }
-                        }}
+                        key={fullSrc}
+                        ref={imgRef}
                         src={fullSrc}
                         alt={image.imageTitle || 'photo'}
                         className={`blur-up-image full ${loaded ? 'loaded' : 'loading'}`}
@@ -727,14 +557,16 @@ export function BlurUpImage({
                             // Don't set aspectRatio when minimal=true (used in collection cards) to prevent layout shifts
                             aspectRatio: minimal ? undefined : (image.width && image.height ? `${image.width} / ${image.height}` : undefined)
                         }}
-                        onLoad={() => {
-                            setLoaded(true);
-                            onLoadComplete?.();
-                        }}
-                        onError={() => {
-                            setLoaded(false);
-                        }}
+                        onLoad={handleImageLoaded}
+                        onError={() => setLoadedSrc(null)}
                     />
+                )}
+
+                {isOpening && (
+                    <div className="blur-up-image-opening" role="status">
+                        <div className="blur-up-image-opening-bar" aria-hidden="true" />
+                        <span>Đang mở ảnh…</span>
+                    </div>
                 )}
 
                 {/* Desktop Hover Overlay */}
@@ -753,6 +585,7 @@ export function BlurUpImage({
                         <button
                             className="blur-up-image-action-btn"
                             onClick={handleDownloadClick}
+                            disabled={isDownloading}
                             aria-label="Download"
                         >
                             <Download size={18} />
@@ -798,7 +631,7 @@ export function BlurUpImage({
                     </button>
                     <button
                         className="blur-up-image-mobile-action-btn"
-                        onClick={handleBookmarkClick}
+                        onClick={handleSaveClick}
                         disabled={isTogglingFavorite}
                         aria-label="Bookmark"
                     >
@@ -809,6 +642,7 @@ export function BlurUpImage({
                     <button
                         className="blur-up-image-mobile-action-btn"
                         onClick={handleDownloadClick}
+                        disabled={isDownloading}
                         aria-label="Download"
                     >
                         <Download size={20} />
@@ -820,11 +654,8 @@ export function BlurUpImage({
             {/* Image Title Tooltip - shows after 2 seconds at mouse position */}
             {!minimal && showTooltip && image.imageTitle && (
                 <div
+                    ref={tooltipRef}
                     className="blur-up-image-title-tooltip"
-                    style={{
-                        left: `${mousePosition.x}px`,
-                        top: `${mousePosition.y}px`,
-                    }}
                 >
                     {image.imageTitle}
                 </div>

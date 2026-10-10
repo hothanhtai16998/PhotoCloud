@@ -52,75 +52,13 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]';
         },
-        // Optimized chunking strategy to reduce unused JavaScript
-        manualChunks: (id) => {
-          // NEVER chunk React or ReactDOM - they must stay in entry chunk
-          if (
-            id.includes('react') && 
-            (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/'))
-          ) {
-            return undefined; // Keep in entry chunk
-          }
-          
-          // Split vendor libraries into separate chunks for better caching and tree-shaking
-          if (id.includes('node_modules')) {
-            // Router libraries - used on most pages but can be code-split
-            if (id.includes('react-router')) {
-              return 'vendor-router';
-            }
-            // UI libraries - only load when needed (modals, dropdowns, etc.)
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('@radix-ui')) {
-              return 'vendor-radix';
-            }
-            // Chart libraries - only used in admin (lazy load)
-            // Keep recharts in vendor-misc to avoid initialization error
-            // We split other libraries to keep vendor-misc under 500KB
-            // if (id.includes('recharts')) {
-            //   return 'vendor-charts';
-            // }
-            // State management - split zustand and immer
-            if (id.includes('zustand')) {
-              return 'vendor-zustand';
-            }
-            if (id.includes('immer')) {
-              return 'vendor-immer';
-            }
-            // HTTP client - used everywhere but can be optimized
-            if (id.includes('axios')) {
-              return 'vendor-http';
-            }
-            // Form libraries - only used in specific pages
-            if (id.includes('react-hook-form') || id.includes('zod')) {
-              return 'vendor-forms';
-            }
-            // Toast/notification - only used when needed
-            if (id.includes('sonner')) {
-              return 'vendor-toast';
-            }
-            // Image compression - only used when uploading
-            if (id.includes('browser-image-compression')) {
-              return 'vendor-image';
-            }
-            // Socket.io - only used for real-time features
-            if (id.includes('socket.io')) {
-              return 'vendor-socket';
-            }
-            // Other vendor code - split further if possible
-            return 'vendor-misc';
-          }
-        },
+        // Let Rollup split the dependency graph automatically. Manual vendor
+        // groups introduced cycles that crashed production module initialization.
         // Prevent circular dependency issues
         format: 'es',
       },
       // Handle circular dependencies better
       onwarn(warning, warn) {
-        // Suppress circular dependency warnings for vendor chunks
-        if (warning.code === 'CIRCULAR_DEPENDENCY') {
-          return;
-        }
         // Suppress other warnings that don't affect functionality
         if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
           return;

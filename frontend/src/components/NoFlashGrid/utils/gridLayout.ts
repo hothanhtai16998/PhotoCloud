@@ -215,7 +215,7 @@ export function calculateImageLayout(
 
 // Get column count based on viewport width
 export function getColumnCount(width: number): number {
-  if (width < GRID_CONFIG.breakpoints.tablet) {
+  if (width <= GRID_CONFIG.breakpoints.tablet) {
     return GRID_CONFIG.columns.mobile;
   }
   if (width < GRID_CONFIG.breakpoints.desktop) {
@@ -223,6 +223,3 @@ export function getColumnCount(width: number): number {
   }
   return GRID_CONFIG.columns.desktop;
 }
-
-
-

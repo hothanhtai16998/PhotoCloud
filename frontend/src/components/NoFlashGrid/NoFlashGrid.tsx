@@ -12,7 +12,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useInfiniteScroll } from './hooks/useInfiniteScroll';
 
 // Simple blur-up image with persistent back layer
-type ExtendedImage = Image & { categoryName?: string; category?: string };
+type ExtendedImage = Image & { categoryName?: string; category?: string; isPinned?: boolean };
 
 export interface NoFlashGridProps {
     images: ExtendedImage[];
@@ -41,6 +41,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
     // Store image dimensions as they load
     const [imageDimensions, setImageDimensions] = useState<Map<string, { width: number; height: number }>>(new Map());
+    const imageDimensionsRef = useRef(imageDimensions);
 
     // Load data using provided callback
     const loadData = useCallback(async () => {
@@ -95,7 +96,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
 
     useEffect(() => {
         let active = true;
-        const missing = filteredImages.slice(0, 50).filter(image => !(image.width && image.height) && !imageDimensions.has(image._id));
+        const missing = filteredImages.slice(0, 50).filter(image => !(image.width && image.height) && !imageDimensionsRef.current.has(image._id));
         void (async () => {
             for (let i = 0; i < missing.length && active; i += 5) {
                 const results = await Promise.all(missing.slice(i, i + 5).map(async image => {
@@ -107,6 +108,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 setImageDimensions(previous => {
                     const next = new Map(previous);
                     results.forEach(result => { if (result?.dims) next.set(result.id, result.dims); });
+                    imageDimensionsRef.current = next;
                     return next;
                 });
             }
@@ -129,7 +131,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     // Calculate grid layout for each image (row spans and columns)
     const gridLayout = useMemo(() => {
         if (filteredImages.length === 0) return [];
-        if (containerWidth === 0 || !isFinite(containerWidth) || containerWidth < 300) return [];
+        if (containerWidth === 0 || !isFinite(containerWidth) || containerWidth <= 0) return [];
         if (columnCount < 1 || !isFinite(columnCount)) return [];
 
         // Check if we're on mobile (1 column)
@@ -202,47 +204,37 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         });
     }, [filteredImages, columnCount, containerWidth, precalculatedDimensionsMap]);
 
-    // Update column count and container width on resize
+    // Measure the grid itself: mobile and search containers have different padding.
     useEffect(() => {
+        const grid = gridRef.current;
+        if (!grid) return;
         const updateLayout = () => {
-            if (!gridRef.current) return;
-            // Get actual container width (accounting for padding)
-            const container = gridRef.current.parentElement;
-            if (container) {
-                const width = container.offsetWidth - 32; // Subtract padding (16px * 2)
-                setContainerWidth(Math.max(300, width)); // Minimum 300px
-            }
-            const viewportWidth = window.innerWidth;
-            setColumnCount(getColumnCount(viewportWidth));
+            setContainerWidth(grid.getBoundingClientRect().width);
+            setColumnCount(getColumnCount(window.innerWidth));
         };
-
-        // Initial calculation
         updateLayout();
-
-        // Update on resize with debounce
-        let timeoutId: NodeJS.Timeout;
-        const handleResize = () => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(updateLayout, 150);
-        };
-
-        window.addEventListener('resize', handleResize);
+        const observer = new ResizeObserver(updateLayout);
+        observer.observe(grid);
+        window.addEventListener('resize', updateLayout);
         return () => {
-            window.removeEventListener('resize', handleResize);
-            clearTimeout(timeoutId);
+            observer.disconnect();
+            window.removeEventListener('resize', updateLayout);
         };
     }, []);
-
 
     const isLoading = externalLoading ?? false;
 
     // Calculate if there are more pages to load
     const hasMore = pagination ? pagination.page < pagination.pages : false;
+    // A replacement query may return the same IDs; array identity distinguishes
+    // that result from a failed page that made no progress.
+    const scrollProgress = useMemo(() => ({ images: filteredImages, page: pagination?.page }), [filteredImages, pagination?.page]);
 
     // Infinite scroll hook
     const { loadMoreRef, isLoadingMore } = useInfiniteScroll({
         hasMore: hasMore && !!onLoadMore,
         isLoading: isLoading,
+        progressKey: scrollProgress,
         onLoadMore: onLoadMore || (async () => {}),
     });
 
@@ -275,7 +267,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                 <div
                                     key={image._id || idx}
                                     className="grid-item-wrapper"
-                                    data-pinned={(image as any).isPinned ? 'true' : 'false'}
+                                    data-pinned={image.isPinned ? 'true' : 'false'}
                                     data-image-id={image._id}
                                     style={{
                                         gridColumn: column,
@@ -343,4 +335,3 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         </div>
     );
 }
-

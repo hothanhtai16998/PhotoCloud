@@ -1,25 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import { appConfig } from '@/config/appConfig';
 
-/**
- * Hook to detect if the current viewport is mobile-sized
- * Returns true if window width <= mobile breakpoint
- * Handles window resize events and SSR (returns false if window is undefined)
- */
+let mobileQuery: MediaQueryList | undefined;
+const listeners = new Set<() => void>();
+
+function getQuery(): MediaQueryList | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return mobileQuery ??= window.matchMedia(`(max-width: ${appConfig.mobileBreakpoint}px)`);
+}
+
+function notify(): void {
+  listeners.forEach(listener => listener());
+}
+
+function subscribe(listener: () => void): () => void {
+  const query = getQuery();
+  if (listeners.size === 0) query?.addEventListener('change', notify);
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) query?.removeEventListener('change', notify);
+  };
+}
+
+function getSnapshot(): boolean {
+  return getQuery()?.matches ?? false;
+}
+
+/** Share one breakpoint listener across all cards and update only when it changes. */
 export function useIsMobile(): boolean {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.innerWidth <= appConfig.mobileBreakpoint;
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= appConfig.mobileBreakpoint);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return isMobile;
+  return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }

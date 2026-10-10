@@ -1,0 +1,120 @@
+# PhotoCloud — bàn giao ngày 10/10/2026
+
+## Đọc trước khi tiếp tục
+
+Workspace: `C:\Users\Fenn\Desktop\PhotoCloud`. Người dùng đã chốt giao diện slide hiện tại và báo “tạm thời ổn”. Không thiết kế lại slide, không phục hồi các phương án cũ. Yêu cầu gần nhất là kiểm tra bước tiếp theo và lưu context để mở chat mới.
+
+Mục tiêu toàn dự án: thu gọn code, bỏ dư/lặp, giảm render/request không cần thiết, cải thiện độ mượt và responsive. Làm từng component/đơn vị: rà soát → sửa → build → kiểm thử localhost → dừng để người dùng kiểm tra. Kiểm tra git diff trước khi sửa và bảo toàn thay đổi hiện có. Người dùng cho phép commit phần đã xác nhận nếu họ quên commit; không chuyển nhánh, push, deploy, sửa dữ liệu production hoặc đọc/in bí mật .env. Backend dùng MongoDB Atlas/R2 nên localhost không đồng nghĩa dữ liệu disposable: không tạo/sửa dữ liệu backend để test nếu chưa được yêu cầu.
+
+## Trạng thái Git và môi trường
+
+HEAD mới nhất khi kết thúc bàn giao: `58359d1 Fix slide` (xuất hiện trong lúc lập context, không do trợ lý thực hiện). Commit này đã lưu toàn bộ thay đổi slide/category/store và cả 4 ZIP cũ. Trước đó `81e560a Use display-sized slider images and avoid hidden preloads`, `0284fa6 Simplify homepage slider loading transitions and zoom`. Header/Sidebar đã hoàn thành trong các commit `23c0066`, `09fbbac`, `b82d302`.
+
+Thay đổi code phiên này đã được commit trong `58359d1`. Chỉ context và ZIP bàn giao mới đang chưa tracked. Luôn kiểm tra lại `git status`, `git diff`, `git log` vì trạng thái có thể thay đổi sau bàn giao. Không reset/checkout để làm sạch. Có cả file mới chưa tracked; `git diff` không thể hiện chúng.
+
+PowerShell; Node/npm tại `C:\Program Files\nodejs`. Frontend `http://localhost:5173/`, backend cổng 3000. Chạy từ gốc `npm run dev` nếu chưa có server; tránh chạy Vite trùng cổng/IPv4–IPv6.
+
+Lệnh build: `$env:PATH='C:\Program Files\nodejs;'+$env:PATH; npm run build --prefix frontend`. Build Vite chỉ bundle, KHÔNG thay thế kiểm tra TypeScript. Trong sandbox, Vite từng bị EPERM và cần quyền chạy ngoài sandbox. Lint các file vừa sửa bằng ESLint trong frontend. `frontend/package-lock.json` đang bị gitignore nhưng đã cập nhật dependencies; lưu ý khi commit/tái cài đặt.
+
+## Giao diện slide cuối cùng — đã chốt
+
+- Một ảnh lớn, kích thước khung ổn định, chuyển ảnh crossfade. Giữ `object-fit: contain`, thấy đủ ảnh ngang/dọc/vuông; khoảng trắng hai bên là lựa chọn đã chấp nhận. KHÔNG đổi sang cover.
+- Bỏ các phương án địa cầu, phóng to/thu nhỏ ba ảnh, thumbnail, màn che và các nút chọn phương án. Swiper đã gỡ; dùng custom gallery + Motion cho animation bố cục. Không thêm lại globe hoặc các toggle thử nghiệm.
+- Caption tên category + tác giả nằm góc trái, ngang với lề trên của ảnh, không nằm thành hàng riêng phía trên.
+- Navigation dưới ảnh, chính giữa: số hiện tại/tổng ở trên; chevron `< >` ở hai bên dynamic dots. Active dot đen; tối đa 5 dot hiển thị, thu nhỏ dot xa. Font số Manrope Variable cài local qua `@fontsource-variable/manrope`.
+- Khung ảnh đã tăng vừa đủ để lưới ảnh bên dưới khuất khỏi màn hình đầu khi ở đầu trang. Slider ẩn <=768px.
+- Click category: slide thu về góc trên trái, bên phải là phần giới thiệu category (tiêu đề, mô tả, số ảnh); lưới ở dưới. Category → category giữ compact; về Tất cả mới mở rộng. Không tự scroll xuống grid. Reload trên route category vẫn khởi đầu slide lớn như người dùng yêu cầu. Ảnh slide độc lập với filter category, không tự đổi ảnh khi chọn category.
+- Chuyển slide giữ ảnh trước nằm dưới ảnh mới trong lúc fade để tránh chớp nền sáng. Các ảnh preview slide được giữ mounted. Có điều hướng bàn phím, swipe và reduced-motion.
+
+## Zoom/loading mới nhất — người dùng đã báo ổn
+
+Click slide mở dialog portal vào document.body, nền tối, ảnh contain. Nút đóng, click ảnh để đóng, Escape, focus trap Tab/Shift+Tab, trả focus bằng preventScroll, khóa cuộn body; xuống mobile đóng zoom. Input/dialog không kích hoạt phím đổi slide.
+
+`SliderZoomImage.tsx` mới: tải ảnh gốc (`fullImage || image`) nhưng giữ preview trong lúc chờ; thanh vàng mảnh indeterminate 3px ở mép trên overlay. Chỉ tắt khi ảnh tải và decode xong; không giả lập phần trăm. Ảnh cache được xử lý qua complete/naturalWidth. Load/error listener cleanup và cờ disposed ngăn cập nhật sau unmount. Lỗi tải gốc giữ preview, tắt thanh và báo nhẹ. Không preload ảnh gốc hàng loạt.
+
+## Các file hiện tại cần bảo toàn
+
+Các file code đã sửa và được commit:
+- `frontend/package.json`
+- `frontend/src/components/CategoryNavigation.tsx`
+- `frontend/src/components/NoFlashGrid/NoFlashGrid.tsx`
+- `frontend/src/components/VisualArtFormsSlider.tsx` và `.css`
+- `frontend/src/hooks/useImageGridCategory.ts`
+- `frontend/src/pages/HomePage.tsx`
+- `frontend/src/stores/helpers/imageStoreHelpers.ts`
+- `frontend/src/stores/useImageStore.ts`
+- `frontend/src/stores/useSliderStore.ts`
+
+Các file mới đã được commit:
+- `frontend/src/components/FixedSlideStage.tsx`: các layer fade ổn định, swipe/click zoom.
+- `frontend/src/components/SliderZoomImage.tsx`: preview + original + loading/error.
+- `frontend/src/pages/HomePageLayouts.css`: compact slide + category intro.
+- `frontend/src/utils/categoryNavigationEvent.ts`: liên kết click category với trạng thái layout.
+- `frontend/src/utils/sliderLayoutTransition.ts`: spring dùng chung.
+- `frontend/scripts/test-image-store.cjs`: regression test store với mock services, không ghi backend.
+
+Luồng category/store và NoFlashGrid đã có thay đổi trong phiên này (chống response cũ, giải quyết slug trước khi fetch category, giảm preload/đo kích thước). Cần đọc implementation và test hiện có trước khi làm thêm; không coi chúng là code nguyên bản chưa sửa.
+
+## Kiểm tra đã thực hiện và giới hạn
+
+- Build Vite pass sau thay đổi mới nhất; còn cảnh báo circular chunks/chunk lớn sẵn có.
+- ESLint `VisualArtFormsSlider.tsx`, `SliderZoomImage.tsx` pass.
+- Localhost: đã thấy original chưa tải → bar có, original hidden; sau tải → bar mất, original visible. Đã kiểm tra chuyển slide, zoom/đóng, bố cục category/navigation trong quá trình tinh chỉnh.
+- Test Node tạm thời chạy code TSX thật với hook/image mocks: giữ loading qua decode, success, error, cache, unmount khi đang tải đều pass. Script này chạy inline, không được lưu thành file test trong repo.
+- `test-image-store.cjs` đã pass ở các bước trước; nên chạy lại khi sửa store.
+- Chưa xác nhận toàn bộ lint/type-check dự án pass; đã có lỗi TS ngoài phạm vi trước đây. Không diễn giải Vite build pass thành TypeScript pass.
+- Chưa mô phỏng mạng chậm/lỗi hoàn chỉnh bằng browser throttling; lỗi/unmount đã kiểm tra bằng mock. Không sửa dữ liệu backend để test.
+
+## Bước tiếp theo đề xuất
+
+1. Đối chiếu status/diff với bàn giao; lưu checkpoint/commit phần đã được xác nhận nếu phù hợp. Không đưa ZIP thử nghiệm vào commit code.
+2. Đơn vị tiếp theo theo thứ tự: **thẻ ảnh `frontend/src/components/NoFlashGrid/components/BlurUpImage.tsx` và CSS của nó**. NoFlashGrid/HomePage/store đã được chỉnh trong phiên này, không bắt đầu lại toàn bộ lưới. BlurUpImage chưa được sửa trong commit 58359d1. Đọc các helper/hook mà thẻ dùng trước khi sửa.
+3. Rà soát thẻ: kiểm tra cache hiện tạo new Image() ngay trong render; request/preload trùng, chọn URL AVIF, lazy loading/IntersectionObserver, cleanup khi đổi ảnh hoặc unmount, subscription auth/user/favorite/download, callback và giao diện desktop/mobile. Bảo toàn thích/lưu/tải/click ảnh. Chỉ sửa vấn đề đã xác minh. Infinite-scroll là bước sau; không refactor toàn dự án.
+4. Chạy regression store nếu chạm data, lint file sửa, build, kiểm tra dev desktop/mobile và đổi category nhanh; dừng để người dùng kiểm tra sau đơn vị này.
+
+Thứ tự phần còn lại: thẻ ảnh BlurUpImage → tải thêm/cuộn → modal/chi tiết ảnh → tìm kiếm → đăng nhập/đăng ký/upload → hồ sơ → yêu thích/lịch sử/bộ sưu tập → giới thiệu → admin → màn hình/file chưa dùng. Header/Sidebar đã hoàn thành, không làm lại trừ khi có lỗi cụ thể.
+
+## Sao lưu và bằng chứng
+
+`PhotoCloud-handoff-2026-10-10.zip` là snapshot các file thay đổi và context tại lần bàn giao này (không có .env, node_modules, dữ liệu backend). Đây không phải toàn bộ repo; cần checkout hiện tại để dùng snapshot.
+
+Các ZIP `PhotoCloud-session-recovery.zip`, `PhotoCloud-travel-slider-backup.zip`, `PhotoCloud-globe-slider-backup.zip`, `PhotoCloud-four-slider-modes-backup.zip` đều là các giai đoạn CŨ; KHÔNG tự phục hồi chúng.
+
+Screenshot mới nhất ở `C:\Users\Fenn\.codex\visualizations\2026\10\09\01a1207e-8dc0-7fe2-bbd8-ed8a603ada38\slide-zoom-loading-complete.png` (tên file có complete nhưng chụp lúc ảnh đang tải). Các proof giao diện khác cùng thư mục: `gallery-manrope-navigation.png`, `photocloud-final-category-intro.png`.
+
+## Prompt để mở chat mới
+
+Tiếp tục PhotoCloud tại C:\Users\Fenn\Desktop\PhotoCloud. Đọc PHOTOCloud-HANDOFF.md, kiểm tra git status/diff/log trước khi sửa. Giữ nguyên slide đã chốt, không phục hồi các mẫu thử cũ. Tiếp theo rà soát và tối ưu thẻ ảnh frontend/src/components/NoFlashGrid/components/BlurUpImage.tsx và CSS liên quan; NoFlashGrid/HomePage/category/store đã được chỉnh, không làm lại toàn bộ lưới. Build, lint phần sửa, kiểm thử localhost rồi dừng để tôi kiểm tra. Không reset, chuyển nhánh, push, deploy, đọc .env hoặc sửa dữ liệu backend để test.
+
+
+
+## Cập nhật tiến độ sau bàn giao — 10/10/2026
+
+Người dùng yêu cầu từ nay mỗi lần hoàn tất phải gạch ngang tên component/trang trong `PHOTOCloud-INVENTORY.md`. File này là danh sách tiến độ hiện tại; xem mục Tiến độ tối ưu trước khi chọn phần mới. Chỉ gạch ngang phần đã xong, không tự gạch toàn bộ con theo cha, không gạch cả trang vì mới sửa một phần. Luôn kiểm tra responsive desktop/mobile/tablet và hai phía breakpoint của đơn vị đang làm để tránh phải quay lại.
+
+BlurUpImage đã được tối ưu cùng hook useBatchedFavoriteCheck/useIsMobile và bổ sung hiệu ứng chờ mở ảnh, khóa click lặp. Người dùng đã báo “ok rồi”. Build/lint phần sửa, test mock và localhost desktop/mobile pass. Các thay đổi này vẫn chưa commit; kiểm tra lại Git trước thao tác mới. Có thêm scripts/test-blur-up-image.cjs và scripts/test-image-card-hooks.cjs trong frontend. Không phục hồi slide/header đã chốt.
+
+Bước tiếp theo đã rà soát nhưng CHƯA triển khai: NoFlashGrid/useInfiniteScroll — tải thêm/cuộn vô hạn và responsive lưới. Vấn đề xác minh trong source: các timer không được hủy khi cleanup; khóa loading bị reset mỗi lần effect đổi dependency; breakpoint tại đúng 768px chọn 2 cột nhưng card/CSS ở mobile; phép đo container trừ cố định 32px trong khi padding mobile = 0. Giữ phần category/store đã sửa, chỉ chạm điểm tích hợp cần thiết. Ma trận responsive và phạm vi cụ thể nằm trong inventory. NoFlashGrid và HomePage chưa được đánh dấu hoàn tất toàn bộ.
+
+## Hoàn tất đơn vị NoFlashGrid — 10/10/2026
+
+Đã thực hiện theo yêu cầu “ok làm đi”: useInfiniteScroll hủy timer khi cleanup, giữ khóa request qua loading/callback changes, guard theo snapshot images/page tránh retry loop khi lỗi hoặc không tiến triển, re-observe sau completion để tiếp tục khi sentinel còn trong vùng nhìn. Completion sau unmount không cập nhật state. Retry bằng cách cuộn sentinel ra/vào vùng quan sát. Không thay đổi API/store/category; snapshot array phân biệt query mới kể cả IDs giống nhau.
+
+Responsive: getColumnCount dùng <=768px thống nhất hook/card/CSS; đo chiều rộng grid thật với ResizeObserver + resize listener, bỏ trừ padding cố định/clamp 300px. Giữ masonry, slide/header và CSS hiện có. ImageDimensions đọc cache từ ref để không restart effect mỗi batch, bỏ any ở isPinned. Không thêm preload hàng loạt.
+
+Kiểm tra: scripts/test-infinite-scroll.cjs pass (events trùng, callback/loading changes, progress, filter cancellation, exhausted pagination, lỗi/retry, unmount đang tải); các regression store/BlurUp/hooks trước đó pass. ESLint 3 file sửa không warning/error; Vite build cuối pass, còn warnings circular chunks/chunk size sẵn có. TypeScript toàn dự án còn lỗi ngoài phạm vi; không có lỗi ở 3 file sửa. Fixture HTML/TSX tạm đã xóa.
+
+Localhost: fixture dùng NoFlashGrid thật với request chờ resolve; page1→2→3, chỉ 2 request, dừng cuối; desktop/mobile ảnh ngang/dọc/vuông, tác giả/nút hiển thị. Trang thật kiểm tra 360/390/767/768/769/1024/1279/1280/1366px, số cột đúng, không tràn ngang, resize desktop↔mobile; đổi Chân dung→Du lịch nhanh kết quả cuối Du lịch 6 ảnh; cuộn nhanh Tất cả tải 20→40 ảnh, không duplicate, loading tắt. Lỗi mạng/cleanup test bằng mock, không browser throttling. Không ghi dữ liệu backend.
+
+Inventory đã gạch NoFlashGrid, tổng 17 component hoàn tất phạm vi, chưa có trang nào hoàn tất toàn bộ. Các thay đổi chưa commit, đang chờ người dùng kiểm tra đơn vị này. Đơn vị tiếp theo: modal/chi tiết ảnh; không tự chuyển sang trước khi người dùng kiểm tra.
+
+Proof desktop: C:/Users/Fenn/.codex/visualizations/2026/10/09/01a12274-f462-73c0-972c-29e2225ff141/no-flash-grid-desktop.png. Proof mobile cùng thư mục no-flash-grid-mobile.png.
+Reset filter trên trang localhost tải mới: áp dụng Dọc có ảnh, nút Xóa tất cả đưa badge/chip về mặc định; không có console error. Mobile sau reset 1 cột, không tràn ngang.
+
+## Hotfix production khởi tạo bundle — 10/10/2026
+
+Người dùng báo uploadanh.cloud spinner vô hạn; screenshot console ReferenceError Cannot access 'U' before initialization tại vendor-forms-BRNOgEqU.js:1:1939. Tái hiện đúng lỗi trong build local cũ bằng vite preview port4174 (vendor-forms-DBXidNqG.js cùng offset). Nguyên nhân xác nhận: manualChunks chia vendor thành graph vòng (router/misc/forms/socket). Build pass và dev pass không chứng minh production startup pass; circular chunks trước đây thực sự gây crash.
+
+Sửa frontend/vite.config.ts: bỏ manualChunks để Rollup chia theo graph/dynamic imports tự động; bỏ việc suppress CIRCULAR_DEPENDENCY warnings. Build pass, không còn circular chunk warnings. Entry mới index-Dm7EC6pn.js 811.66KB (gzip256.91KB), form/chart vẫn chunk lazy; còn cảnh báo chunk size lớn, chưa tối ưu tiếp để không tái tạo lỗi thứ tự khởi tạo. ESLint config file không thuộc cấu hình lint hiện tại (ignored), không tuyên bố lint config pass. git diff --check pass.
+
+Production preview fresh tab khởi động UI, không ReferenceError; trang signin lazy form hiển thị cả desktop/mobile390px, console errors trống. Preview local API dữ liệu không kiểm tra đầy đủ, không ghi backend hoặc submit auth. Chỉ sửa build config; bảo toàn slide/header/NoFlashGrid/category/store. CHƯA deploy/push/commit; uploadanh.cloud còn build lỗi cho tới khi deploy bản mới. Không tự deploy theo handoff.
