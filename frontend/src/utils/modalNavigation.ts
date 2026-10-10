@@ -52,7 +52,7 @@ export function isPageRefresh(): boolean {
 }
 
 /**
- * Clear modal state on refresh (should be called synchronously)
+ * Clear modal flags while normalizing the Router entry after reload.
  * 
  * IMPORTANT: Only clear if it's actually a page refresh.
  * Don't clear during normal navigation - the flag should persist.
@@ -182,23 +182,6 @@ export function validateModalState(locationState: unknown): {
     isModal,
     background: isValid ? state.background : undefined,
   };
-}
-
-/**
- * Clear all modal-related state from history
- */
-export function clearHistoryState(): void {
-  if (typeof window === 'undefined') return;
-  
-  try {
-    window.history.replaceState(
-      { ...window.history.state, usr: null },
-      document.title,
-      window.location.pathname + window.location.search + window.location.hash
-    );
-  } catch (error) {
-    console.warn('Failed to clear history state:', error);
-  }
 }
 
 /** Remove modal routing fields without discarding the selected photo's data. */

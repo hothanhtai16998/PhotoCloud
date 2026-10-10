@@ -573,29 +573,18 @@ function ImagePage() {
   // Handlers
   const handleClose = useCallback(() => {
     const background = validateModalState(locationWithState.state).background;
-    // Use unified utilities for cleanup
     clearModalActive();
     restoreScrollPosition();
-
-    // Check if we have a background location (where we came from)
-    // Use locationWithState to get the actual state with background
-
-    // If we have a background location, navigate there
-    // This handles: homepage → ImagePage (close) → homepage
-    // And: ImagePage1 → ImagePage2 (close) → ImagePage1
     if (background?.pathname) {
       if (locationWithState.state?.returnToBackgroundInHistory) {
         navigate(-1);
         return;
       }
-      // Don't navigate if we're already on that path (shouldn't happen, but prevent issues)
       if (background.pathname === locationWithState.pathname) {
-        // Already on the background page, just go back in history
         navigate(-1);
         return;
       }
 
-      // Navigate to background location without causing a reload
       // Replace the modal entry so browser Back cannot reopen the closed photo.
       navigate(background.pathname + background.search + background.hash, {
         replace: true,
@@ -604,9 +593,6 @@ function ImagePage() {
       return;
     }
 
-    // No background location - go back in history
-    // This handles edge cases where background is not set
-    // The HomePage's useEffect will handle scroll restoration on mount
     navigate(-1);
   }, [navigate, locationWithState]);
 
@@ -620,35 +606,29 @@ function ImagePage() {
   );
 
   const handleImageSelect = useCallback((selectedImage: Image) => {
-    const newSlug = generateImageSlug(selectedImage.imageTitle || "", selectedImage._id);
-    // Always create modal state when navigating to another image
-    // This ensures the new ImagePage opens as modal-style, even if current page is regular
-    // Use locationWithState to get the actual state
+    const nextImages = images.some(item => item._id === selectedImage._id)
+      ? images : [...images, selectedImage];
     const currentState = locationWithState.state || {};
     const isCurrentModal = validateModalState(currentState).isValid;
     if (!isCurrentModal) saveImagePageScroll(locationWithState, scrollRef.current);
 
-    // Determine background location:
-    // 1. If we have a background from grid/homepage, preserve it (for proper back navigation)
-    // 2. If we're on a regular ImagePage (no background), use current location as background
-    //    This way: ImagePage1 (regular) → ImagePage2 (modal) → close → ImagePage1 (regular)
     const background = getImageNavigationBackground(locationWithState);
 
     const navigationState = {
       ...currentState,
-      background, // Preserve original background or use current location
-      inlineModal: true, // Always set inlineModal to true for modal-style
+      background,
+      inlineModal: true,
       returnToBackgroundInHistory: isCurrentModal
         ? currentState.returnToBackgroundInHistory : true,
-      images
+      images: nextImages,
+      image: selectedImage,
+      fromGrid: false,
     };
 
-    // Set modal active flag when navigating to another image
-    // This ensures validation passes when the new ImagePage loads
     setModalActive();
 
     // Preserve a standalone photo's history entry; subsequent modal changes replace.
-    navigate(`/photos/${newSlug}`, {
+    navigate(`/photos/${generateImageSlug(selectedImage.imageTitle || '', selectedImage._id)}`, {
       replace: isCurrentModal,
       state: navigationState
     });
@@ -1003,26 +983,8 @@ function ImagePage() {
       preloadImage(regular, false).catch(() => {});
     }
     
-    // Note: Container height is calculated in handleRelatedImageClick when user actually clicks
   }, [getRegularUrl]);
 
-  // Navigate immediately; the keyed photo owns its pending load/decode state.
-  const handleRelatedImageClick = useCallback((relatedImage: Image, _index: number) => {
-    const nextImages = images.some(item => item._id === relatedImage._id)
-      ? images : [...images, relatedImage];
-    const currentState = locationWithState.state || {};
-    const isCurrentModal = validateModalState(currentState).isValid;
-    if (!isCurrentModal) saveImagePageScroll(locationWithState, scrollRef.current);
-    const background = getImageNavigationBackground(locationWithState);
-    setModalActive();
-    navigate(`/photos/${generateImageSlug(relatedImage.imageTitle || '', relatedImage._id)}`, {
-      replace: isCurrentModal,
-      state: { ...currentState, background, inlineModal: true,
-        returnToBackgroundInHistory: isCurrentModal
-          ? currentState.returnToBackgroundInHistory : true,
-        images: nextImages, image: relatedImage, fromGrid: false },
-    });
-  }, [navigate, locationWithState, images]);
   // Keep the author popup inside the viewport after resize/scroll.
   useLayoutEffect(() => {
     if (!showAuthorTooltip) return;
@@ -1572,7 +1534,7 @@ function ImagePage() {
             <NoFlashGrid
               images={relatedImages}
               loading={false}
-              onImageClick={handleRelatedImageClick}
+              onImageClick={handleImageSelect}
               onImageHover={handleRelatedImageHover}
             />
           </div>
