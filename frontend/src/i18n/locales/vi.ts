@@ -743,6 +743,8 @@ export const vi = {
   // ImagePage
   imagePage: {
     loading: 'Đang tải ảnh...',
+    loadError: 'Không tải được ảnh. Vui lòng thử lại.',
+    retry: 'Thử lại',
     notFound: 'Không tìm thấy ảnh',
     backToHome: 'Quay lại trang chủ',
     shareText: 'Xem ảnh này: {title}',

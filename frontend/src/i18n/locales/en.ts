@@ -748,6 +748,8 @@ export const en = {
   // ImagePage
   imagePage: {
     loading: 'Loading image...',
+    loadError: 'Could not load the image. Please try again.',
+    retry: 'Try again',
     notFound: 'Image not found',
     backToHome: 'Back to homepage',
     shareText: 'Check out this photo: {title}',

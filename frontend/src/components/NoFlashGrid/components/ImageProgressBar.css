@@ -9,8 +9,22 @@
   z-index: 99999; /* Above everything including modal */
   pointer-events: none;
   width: 100%;
+  overflow: hidden;
   display: block !important; /* Force display */
   visibility: visible !important; /* Force visibility */
+}
+
+.image-progress-bar-container.is-indeterminate .image-progress-bar-fill {
+  width: 35%;
+  animation: image-progress-travel 1.2s ease-in-out infinite;
+}
+@keyframes image-progress-travel {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(386%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .image-progress-bar-container .image-progress-bar-fill { animation: none; transition: none; }
+  .image-progress-bar-container.is-indeterminate .image-progress-bar-fill { width: 100%; }
 }
 
 .image-progress-bar-fill {

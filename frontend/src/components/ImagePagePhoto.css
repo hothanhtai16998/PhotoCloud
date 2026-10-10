@@ -1,0 +1,17 @@
+.image-page-photo-preview,
+.image-modal-image.image-page-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.image-page-photo-preview { pointer-events: none; }
+.image-modal-image.image-page-photo { opacity: 0; }
+.image-modal-image.image-page-photo.is-ready { opacity: 1; transition: opacity 180ms ease; }
+.image-page-photo-error { position: absolute; inset: 0; z-index: 3; display: flex; flex-wrap: wrap; gap: 12px; align-content: center; justify-content: center; padding: 16px; background: #f3f4f6e8; overflow: auto; overflow-wrap: anywhere; }
+.image-page-photo-error button { padding: 8px 16px; }
+@media (prefers-reduced-motion: reduce) {
+  .image-modal-image.image-page-photo.is-ready { transition: none; }
+}

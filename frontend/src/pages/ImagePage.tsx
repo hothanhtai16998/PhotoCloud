@@ -23,8 +23,8 @@ import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
 import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
-import { preloadImage, preloadImageWithProgress, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
-import { ImageProgressBar } from '@/components/NoFlashGrid/components/ImageProgressBar';
+import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
+import { ImagePagePhoto } from '@/components/ImagePagePhoto';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
@@ -85,45 +85,22 @@ function ImagePage() {
   const modalRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef(0);
+  const scrollAnimationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isImageChangingRef = useRef(false);
   const topInfoRef = useRef<HTMLDivElement>(null);
   const authorAreaRef = useRef<HTMLDivElement>(null);
-  const previousImgRef = useRef<Image | null>(null);
+
   const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const incrementedViewIds = useRef<Set<string>>(new Set());
   const currentImageIdRef = useRef<string | null>(null);
   const pageActiveRef = useRef(true);
   // Track container height to maintain it during transitions
-  const containerHeightRef = useRef<number | null>(null);
+
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const [displayHeight, setDisplayHeight] = useState(400);
-  const imgElementRef = useRef<HTMLImageElement>(null);
+
   // Track if we manually set image from related click to prevent fetch effect from overwriting
   const manuallySetImageRef = useRef<string | null>(null);
-  // State to track if we're clicking a related image (not keyboard navigation)
-  // When true, never show previous image - just show new image directly
-  // Use state instead of ref so React re-renders when it changes
-  const [isClickingRelatedImage, setIsClickingRelatedImage] = useState(false);
-  
-  // Calculate initial container height based on image dimensions
-  const calculateInitialHeight = useCallback((img: Image | null): number | null => {
-    if (!img || !imageContainerRef.current) return null;
-    
-    // If we have image dimensions, calculate expected height
-    if (img.width && img.height) {
-      const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-      if (containerWidth > 0) {
-        const aspectRatio = img.width / img.height;
-        const calculatedHeight = containerWidth / aspectRatio;
-        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-        return Math.max(300, maxHeight); // Minimum 300px to prevent collapse
-      }
-    }
-    
-    // Fallback: use saved height or reasonable default
-    return containerHeightRef.current || 400; // Default 400px if no dimensions
-  }, []);
-
   // Detect AVIF support once, cache globally on window, and use for modal URLs
   useEffect(() => {
     let isMounted = true;
@@ -195,28 +172,13 @@ function ImagePage() {
     return getOriginalDisplayUrl(img, supportsAvif);
   }, [supportsAvif]);
 
-  // Simplified: Single image source and loaded state (like Unsplash)
-  const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  // Track which image ID the current imageSrc belongs to
-  const imageSrcImageIdRef = useRef<string | null>(null);
-  // Keep previous imageSrc to show during transition
-  const previousImageSrcRef = useRef<string | null>(null);
-  const previousImageSrcImageIdRef = useRef<string | null>(null);
-  // Track loaded state per image ID
-  const imageLoadedMapRef = useRef<Map<string, boolean>>(new Map());
-  // Progress tracking for image loading
-  const [imageProgress, setImageProgress] = useState(0);
-  const [showProgressBar, setShowProgressBar] = useState(false);
-  const currentLoadingUrlRef = useRef<string | null>(null);
-  const isLoadingRef = useRef<boolean>(false); // Track if we're actively loading
-
   useEffect(() => {
     pageActiveRef.current = true;
     return () => {
       pageActiveRef.current = false;
+      if (scrollAnimationTimerRef.current) clearTimeout(scrollAnimationTimerRef.current);
       if (authorTooltipTimeoutRef.current) clearTimeout(authorTooltipTimeoutRef.current);
-      currentLoadingUrlRef.current = null;
+
     };
   }, []);
 
@@ -276,42 +238,6 @@ function ImagePage() {
   }, [image, images]);
 
 
-  // Helper function to set image source and loaded state
-  // Avoids code duplication across multiple fetch paths
-  const setImageSourceAndState = useCallback((img: Image) => {
-    const regular = getRegularUrl(img);
-    const original = getOriginalUrl(img);
-    
-    if (regular && loadedImages.has(regular)) {
-      setImageSrc(regular);
-      imageSrcImageIdRef.current = img._id;
-      const wasLoaded = imageLoadedMapRef.current.get(img._id) === true;
-      setImageLoaded(wasLoaded);
-    } else if (original && loadedImages.has(original)) {
-      setImageSrc(original);
-      imageSrcImageIdRef.current = img._id;
-      const wasLoaded = imageLoadedMapRef.current.get(img._id) === true;
-      setImageLoaded(wasLoaded);
-    } else {
-      // Set imageSrc immediately even if not cached to prevent flash
-      const targetUrl = regular || original;
-      if (targetUrl) {
-        setImageSrc(targetUrl);
-        imageSrcImageIdRef.current = img._id;
-        
-        // Check browser cache synchronously
-        const testImg = new Image();
-        testImg.src = targetUrl;
-        if (testImg.complete && testImg.naturalWidth > 0 && testImg.naturalHeight > 0) {
-          imageLoadedMapRef.current.set(img._id, true);
-          setImageLoaded(true);
-        } else {
-          setImageLoaded(false);
-        }
-      }
-    }
-  }, [getRegularUrl, getOriginalUrl]);
-
   // Fetch image
   useEffect(() => {
     const controller = new AbortController();
@@ -353,7 +279,7 @@ function ImagePage() {
 
             setImage(passedImage);
             setImages(passedImages);
-            setImageSourceAndState(passedImage);
+
             
             setLoading(false);
             return;
@@ -371,7 +297,7 @@ function ImagePage() {
           if (foundImage) {
             setImage(foundImage);
             setImages(passedImages);
-            setImageSourceAndState(foundImage);
+
             
             setLoading(false);
             return;
@@ -391,7 +317,7 @@ function ImagePage() {
         if (foundImage) {
           setImage(foundImage);
           setImages(allImages);
-          setImageSourceAndState(foundImage);
+
         } else {
           setError('Image not found');
         }
@@ -410,7 +336,7 @@ function ImagePage() {
       active = false;
       controller.abort();
     };
-  }, [imageId, locationWithState.state, setImageSourceAndState]);
+  }, [imageId, locationWithState.state]);
 
   // WebSocket for real-time updates
   const { isConnected, joinImageRoom, leaveImageRoom } = useWebSocket({
@@ -552,243 +478,46 @@ function ImagePage() {
     return () => { active = false; };
   }, [image?._id, updateStats]);
 
-  // Image loading logic - check browser cache when image changes to prevent flash
+  // Image loading logic now lives in ImagePagePhoto. Only reset scroll/menus here.
   useLayoutEffect(() => {
-    if (!image) {
-      return;
+    if (loading || !image?._id) return;
+    const scroller = scrollRef.current;
+    const previousOverflow = scroller?.style.overflow || '';
+    let firstFrame = 0;
+    let secondFrame = 0;
+    isImageChangingRef.current = true;
+    setIsImageChanging(true);
+    setIsScrolled(false);
+    setShouldAnimate(false);
+    scrollPosRef.current = 0;
+    setShowDownloadMenu(false);
+    setShowAuthorTooltip(false);
+    setLoadingAuthorImages(false);
+    setAuthorImages([]);
+    setShowCollectionModal(false);
+    setShowEditModal(false);
+    if (authorTooltipTimeoutRef.current) {
+      clearTimeout(authorTooltipTimeoutRef.current);
+      authorTooltipTimeoutRef.current = null;
     }
-    
-    const currentImageId = image._id;
-    const regular = getRegularUrl(image);
-    const original = getOriginalUrl(image);
-    const src = regular || original;
-    
-    if (!src) return;
-    
-    // Check browser cache synchronously to set imageLoaded immediately
-    // Also check if image was preloaded (from hover or previous load)
-    const inLoadedSet = loadedImages.has(regular) || loadedImages.has(original);
-    const inLoadedMap = imageLoadedMapRef.current.get(currentImageId) === true;
-    
-    // Check browser cache directly by creating a test image
-    // This is more reliable than just checking loadedImages set
-    const testImg = new Image();
-    testImg.src = src;
-    const inBrowserCache = testImg.complete && testImg.naturalWidth > 0 && testImg.naturalHeight > 0;
-    
-    const wasPreloaded = inLoadedSet || inLoadedMap || inBrowserCache;
-    
-    if (wasPreloaded || inBrowserCache) {
-      // Image is preloaded or in browser cache, mark as loaded immediately
-      imageLoadedMapRef.current.set(currentImageId, true);
-      // Only set imageLoaded if this is the current image
-      if (imageSrcImageIdRef.current === currentImageId || !imageSrcImageIdRef.current) {
-        setImageLoaded(true);
-      }
-    } else {
-      // Image not in cache, will load via onLoad handler
-      if (imageSrcImageIdRef.current === currentImageId || !imageSrcImageIdRef.current) {
-        setImageLoaded(false);
-      }
+    if (scroller) {
+      scroller.scrollTop = 0;
+      scroller.style.overflow = 'hidden';
     }
-
-    const previousImageId = previousImgRef.current?._id;
-    const imageChanged = previousImageId !== currentImageId;
-
-    previousImgRef.current = image;
-
-    // Don't reset imageLoaded when image changes - keep old image visible
-    if (imageChanged) {
-      // CRITICAL: Only save previous imageSrc if it belongs to the PREVIOUS image
-      // Don't overwrite if previousImageSrcRef was already cleared (e.g., in handleRelatedImageClick)
-      // Only save if imageSrc belongs to previous image (not current)
-      // IMPORTANT: If previousImageSrcRef is null, it was intentionally cleared - don't restore it
-      if (imageSrc && imageSrcImageIdRef.current && imageSrcImageIdRef.current === previousImageId) {
-        // Only save if it's actually the previous image's src AND previous wasn't cleared
-        // If previousImageSrcRef is null, it means we intentionally cleared it (e.g., new image is preloaded)
-        if (!previousImageSrcRef.current && previousImageSrcImageIdRef.current === null) {
-          // Previous was cleared intentionally - don't restore it
-          // This prevents overwriting the cleared state from handleRelatedImageClick
-        } else if (!previousImageSrcRef.current || previousImageSrcImageIdRef.current !== previousImageId) {
-          previousImageSrcRef.current = imageSrc;
-          previousImageSrcImageIdRef.current = imageSrcImageIdRef.current;
-        }
-      }
-      
-      // CRITICAL: Update imageSrcImageIdRef immediately when image changes
-      // This prevents the render logic from thinking we're still transitioning
-      // Also update imageSrc immediately if image is preloaded to prevent flash
-      if (imageSrcImageIdRef.current !== currentImageId) {
-        // If image is preloaded, update imageSrc immediately to prevent flash
-        if (wasPreloaded && src) {
-          setImageSrc(src);
-          imageSrcImageIdRef.current = currentImageId;
-          // If preloaded, set imageLoaded to true immediately so new image shows right away
-          setImageLoaded(true);
-          // CRITICAL: Clear previous image reference immediately when new image is ready
-          // This prevents the old image from flashing
-          previousImageSrcRef.current = null;
-          previousImageSrcImageIdRef.current = null;
-        } else {
-          // Still update the ref even if not preloaded, so render logic knows we're on new image
-          imageSrcImageIdRef.current = currentImageId;
-          // Reset imageLoaded to false so previous image stays visible until new one loads
-          setImageLoaded(false);
-        }
-      }
-      
-      // CRITICAL: Clear previous image reference when image prop changes and new image is ready
-      // This handles navigation timing issues where image prop updates before refs
-      // Check if image prop changed (different from previous ref)
-      if (imageChanged && previousImageSrcImageIdRef.current && 
-          previousImageSrcImageIdRef.current !== currentImageId) {
-        // If new image is ready (preloaded or loaded), clear previous immediately
-        if (wasPreloaded || imageLoaded) {
-          previousImageSrcRef.current = null;
-          previousImageSrcImageIdRef.current = null;
-        }
-      } else if (wasPreloaded && imageLoaded && previousImageSrcImageIdRef.current !== currentImageId) {
-        // If image is already current and preloaded, clear previous image reference
-        // This handles the case where image was preloaded after the initial check
-        previousImageSrcRef.current = null;
-        previousImageSrcImageIdRef.current = null;
-      }
-      
-      // Save current container height to maintain it during transition
-      if (imageContainerRef.current) {
-        const currentHeight = imageContainerRef.current.offsetHeight;
-        if (currentHeight > 0) {
-          containerHeightRef.current = currentHeight;
-        } else {
-          const initialHeight = calculateInitialHeight(image);
-          if (initialHeight) {
-            containerHeightRef.current = initialHeight;
-          }
-        }
-      } else {
-        const initialHeight = calculateInitialHeight(image);
-        if (initialHeight) {
-          containerHeightRef.current = initialHeight;
-        }
-      }
-    }
-
-    // Reset scroll to top when image changes
-    if (imageChanged) {
-      // Set flag to prevent scroll handler from interfering
-      isImageChangingRef.current = true;
-      setIsImageChanging(true);
-      
-      // Immediately reset states to prevent layout shifts
-      // Reset isScrolled immediately to prevent margin jump (no animation)
-      setIsScrolled(false);
-      setShouldAnimate(false);
-      
-      // Lock scroll position immediately to prevent browser scroll restoration
-      scrollPosRef.current = 0;
-      if (scrollRef.current) {
-        // Reset scroll to top immediately
-        scrollRef.current.scrollTop = 0;
-        // Temporarily disable scroll to prevent browser restoration during height changes
-        scrollRef.current.style.overflow = 'hidden';
-      }
-      
-      // Delay scroll re-enable to avoid triggering re-renders during image loading
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (scrollRef.current) {
-            // Ensure scroll is still at top
-            scrollRef.current.scrollTop = 0;
-            // Re-enable scroll after container height is locked
-            scrollRef.current.style.overflow = '';
-          }
-          // Double-check state after scroll reset to ensure it's correct
-          setIsScrolled(false);
-          
-          // Clear flags after a short delay to re-enable transitions for scroll-based changes
-          // The topbar should already be visible instantly (no transition)
-          setTimeout(() => {
-            isImageChangingRef.current = false;
-            setIsImageChanging(false);
-          }, 100); // Short delay to ensure state is settled
-        });
+    firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => {
+        if (scroller) scroller.style.overflow = previousOverflow;
+        isImageChangingRef.current = false;
+        setIsImageChanging(false);
       });
-
-      // Close menus when image changes
-      setShowDownloadMenu(false);
-      setShowAuthorTooltip(false);
-      if (authorTooltipTimeoutRef.current) {
-        clearTimeout(authorTooltipTimeoutRef.current);
-        authorTooltipTimeoutRef.current = null;
-      }
-    }
-
-    // Preload image if not already set
-    // Check if imageSrc belongs to current image by checking imageSrcImageIdRef
-    const imageSrcBelongsToCurrentImage = imageSrcImageIdRef.current === currentImageId;
-    const needsPreload = !imageSrc || (!imageSrcBelongsToCurrentImage && (imageSrc !== regular && imageSrc !== original));
-    
-    if (needsPreload) {
-      const targetUrl = regular || original;
-      if (targetUrl) {
-        // Cancel any existing progress tracking
-        if (currentLoadingUrlRef.current) {
-          currentLoadingUrlRef.current = null;
-        }
-
-        // Reset progress
-        setImageProgress(0);
-        isLoadingRef.current = true;
-        setShowProgressBar(true);
-
-        // Preload with progress tracking
-        currentLoadingUrlRef.current = targetUrl;
-        preloadImageWithProgress(
-          targetUrl,
-          (progress) => {
-            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === targetUrl) {
-              setImageProgress(progress);
-              if (isLoadingRef.current) {
-                setShowProgressBar(true);
-              }
-            }
-          },
-          false // skipDecode=false to ensure image is ready
-        )
-          .then((src) => {
-            if (previousImgRef.current?._id === currentImageId && currentLoadingUrlRef.current === targetUrl) {
-              // Save previous imageSrc before updating (only if it belongs to a different image)
-              if (imageSrc && imageSrcImageIdRef.current && imageSrcImageIdRef.current !== currentImageId) {
-                previousImageSrcRef.current = imageSrc;
-                previousImageSrcImageIdRef.current = imageSrcImageIdRef.current;
-              }
-              
-              // Set new imageSrc
-              setImageSrc(src);
-              imageSrcImageIdRef.current = currentImageId;
-              
-              // Check if this image was already loaded before
-              const wasLoaded = imageLoadedMapRef.current.get(currentImageId) === true;
-              if (wasLoaded) {
-                setImageLoaded(true);
-              } else {
-                setImageLoaded(false);
-              }
-              
-              isLoadingRef.current = false;
-              setShowProgressBar(false);
-            }
-          })
-          .catch(() => {
-            if (previousImgRef.current?._id === currentImageId) {
-              isLoadingRef.current = false;
-              setShowProgressBar(false);
-            }
-          });
-      }
-    }
-  }, [image, imageSrc, getRegularUrl, getOriginalUrl, calculateInitialHeight]);
-
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      if (scroller) scroller.style.overflow = previousOverflow;
+      isImageChangingRef.current = false;
+    };
+  }, [loading, image?._id]);
   // Measure the actual frame, including toolbar wrapping and viewport changes.
   useLayoutEffect(() => {
     if (loading || !image || !imageContainerRef.current) return;
@@ -803,7 +532,7 @@ function ImagePage() {
       const proportional = image.width > 0 && image.height > 0
         ? width * image.height / image.width : available;
       const height = Math.round(Math.min(available, Math.max(80, proportional)));
-      containerHeightRef.current = height;
+
       setDisplayHeight(previous => previous === height ? previous : height);
     };
     const schedule = () => {
@@ -1291,127 +1020,27 @@ function ImagePage() {
     // Note: Container height is calculated in handleRelatedImageClick when user actually clicks
   }, [getRegularUrl]);
 
-  // Handle related image click
-  //
-  // Preload image with decode before navigating (like Unsplash)
-  // This ensures image is fully ready and prevents flash
-  // Simplified: handleRelatedImageClick (like Unsplash)
+  // Navigate immediately; the keyed photo owns its pending load/decode state.
   const handleRelatedImageClick = useCallback((relatedImage: Image, _index: number) => {
-    // CRITICAL: Set flag to indicate we're clicking a related image
-    // This tells the render logic to NEVER show previous image
-    // Use state so React re-renders immediately
-    setIsClickingRelatedImage(true);
-    
-    // CRITICAL: Update image state IMMEDIATELY to the new image
-    // This prevents the old image from being rendered after navigation
-    // The navigation state will have the image, but we update state now to prevent flash
+    const nextImages = images.some(item => item._id === relatedImage._id)
+      ? images : [...images, relatedImage];
     setImage(relatedImage);
-    // CRITICAL: Keep the full images array, not just relatedImages
-    // relatedImages is filtered (excludes current image), so using it would shrink the array each click
-    // Instead, keep the full images array so related images don't disappear
-    // Only update if images array doesn't already contain the related image
-    if (!images.find(img => img._id === relatedImage._id)) {
-      // If related image is not in current images array, add it
-      // This handles edge cases but normally images should already contain it
-      setImages([...images, relatedImage]);
-    }
-    // Mark that we manually set the image to prevent fetch effect from overwriting it
+    setImages(nextImages);
     manuallySetImageRef.current = relatedImage._id;
-    
-    // CRITICAL: Clear previous image reference IMMEDIATELY when clicking related image
-    // This must happen before anything else to prevent flash
-    previousImageSrcRef.current = null;
-    previousImageSrcImageIdRef.current = null;
-    
-    // OPTIMIZATION: Like Unsplash - navigate immediately, don't wait for preload
-    // Image is already preloaded on hover, so it should be ready
-    
-    // Lock scroll position to prevent layout shift
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-      scrollRef.current.style.overflow = 'hidden';
-    }
-
-    // Calculate and set container height for new image (before navigation)
-    // This prevents layout shift when new image loads
-    if (relatedImage.width && relatedImage.height && imageContainerRef.current) {
-      const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth || 1400;
-      const aspectRatio = relatedImage.width / relatedImage.height;
-      const calculatedHeight = containerWidth / aspectRatio;
-      const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-      const newHeight = Math.max(300, maxHeight);
-      containerHeightRef.current = newHeight;
-    }
-
-    // Check if image is already preloaded (from hover) FIRST
-    // This determines whether we should save previous image or not
-    const regular = getRegularUrl(relatedImage);
-    const original = getOriginalUrl(relatedImage);
-    const wasPreloaded = regular && (loadedImages.has(regular) || loadedImages.has(original) || imageLoadedMapRef.current.get(relatedImage._id) === true);
-    
-    if (wasPreloaded) {
-      // Image was preloaded on hover, mark as loaded
-      imageLoadedMapRef.current.set(relatedImage._id, true);
-    }
-
-    // CRITICAL: Update imageSrcImageIdRef immediately to prevent render logic from showing old image
-    // This must happen BEFORE clearing/saving previous to ensure render knows we're on new image
-    imageSrcImageIdRef.current = relatedImage._id;
-    
-    // CRITICAL: Never save previous image when clicking related images
-    // We already cleared it above - keep it cleared to prevent any flash
-    // The previous image logic is only for keyboard navigation, not related image clicks
-    
-    // If preloaded, also update imageSrc immediately to prevent flash
-    if (wasPreloaded && regular) {
-      setImageSrc(regular);
-      setImageLoaded(true);
-    } else {
-      // Reset imageLoaded to false BEFORE navigating
-      // This ensures previous image stays visible during transition
-      // The previous image will be shown until new image is ready
-      setImageLoaded(false);
-    }
-    
-    const newSlug = generateImageSlug(relatedImage.imageTitle || '', relatedImage._id);
-
     const currentState = locationWithState.state || {};
-    const background = locationWithState.state?.background || {
+    const background = currentState.background || {
       pathname: locationWithState.pathname,
       search: locationWithState.search,
       hash: locationWithState.hash,
       state: locationWithState.state,
       key: locationWithState.key,
     };
-
-    const navigationState = {
-      ...currentState,
-      background,
-      inlineModal: true,
-      // CRITICAL: Pass full images array, not relatedImages
-      // relatedImages is filtered (excludes current image), so using it would shrink the array each click
-      // Pass images array (which should contain all images including the new one)
-      images: images.length > 0 ? images : relatedImages, // Fallback to relatedImages if images is empty
-      image: relatedImage,
-      fromGrid: false,
-    };
-
     setModalActive();
-
-    // Navigate immediately (like Unsplash) - no await preload
-    // Image should already be preloaded from hover
-    navigate(`/photos/${newSlug}`, {
+    navigate(`/photos/${generateImageSlug(relatedImage.imageTitle || '', relatedImage._id)}`, {
       replace: true,
-      state: navigationState,
+      state: { ...currentState, background, inlineModal: true, images: nextImages, image: relatedImage, fromGrid: false },
     });
-    
-    // Clear flag after a short delay to allow render to complete
-    // This ensures the flag is set during the critical render phase
-    setTimeout(() => {
-      setIsClickingRelatedImage(false);
-    }, 100);
-  }, [navigate, locationWithState, relatedImages, image, imageSrc, imageLoaded, getRegularUrl]);
-
+  }, [navigate, locationWithState, images]);
   // Keep the author popup inside the viewport after resize/scroll.
   useLayoutEffect(() => {
     if (!showAuthorTooltip) return;
@@ -1527,7 +1156,8 @@ function ImagePage() {
           setShouldAnimate(true);
           setIsScrolled(nowScrolled);
 
-          setTimeout(() => {
+          if (scrollAnimationTimerRef.current) clearTimeout(scrollAnimationTimerRef.current);
+          scrollAnimationTimerRef.current = setTimeout(() => {
             setShouldAnimate(false);
           }, 150);
         } else {
@@ -1801,198 +1431,13 @@ function ImagePage() {
               overflow: 'hidden',
             }}
           >
-            {/* Simplified: Single image with background (like Unsplash) */}
-            {/* Render both previous and current images to prevent flash */}
-            {/* Render previous image if available and we're changing */}
-            {/* Render current image */}
-            {/* Always render image directly from image object (like Unsplash) */}
-            {image && (() => {
-              // Always use getRegularUrl directly, don't wait for imageSrc state
-              const src = getRegularUrl(image) || getOriginalUrl(image);
-              
-              // Only render if we have a valid src
-              if (!src) return null;
-              
-              // CRITICAL: Determine if this is the current image
-              // Check both the ref AND the image prop to handle navigation timing issues
-              // When navigating, the image prop updates immediately but refs might lag
-              const isCurrentImage = imageSrcImageIdRef.current === image._id;
-              
-              // CRITICAL: If image prop doesn't match previous image ID, this is a new image
-              // Even if refs haven't updated yet, we should treat it as current
-              // This handles the navigation timing issue where image state updates before refs
-              const isNewImageFromNavigation = previousImageSrcImageIdRef.current && 
-                previousImageSrcImageIdRef.current !== image._id &&
-                imageSrcImageIdRef.current !== image._id;
-              
-              // Use imageLoaded state for current image, or check map for others
-              // Also check if image was preloaded (for instant display)
-              const regular = getRegularUrl(image);
-              const original = getOriginalUrl(image);
-              // Check multiple sources: loadedImages set and imageLoadedMap
-              const inLoadedSet = loadedImages.has(regular) || loadedImages.has(original);
-              const inLoadedMap = imageLoadedMapRef.current.get(image._id) === true;
-              // Also check if the image element itself is already loaded (for current image)
-              // This handles the case where the image was loaded in a previous render
-              const imgElementLoaded = isCurrentImage && imgElementRef.current && 
-                imgElementRef.current.complete && 
-                imgElementRef.current.naturalWidth > 0 &&
-                imgElementRef.current.naturalHeight > 0;
-              const wasPreloaded = inLoadedSet || inLoadedMap || imgElementLoaded;
-              
-              // CRITICAL: Show image if:
-              // 1. It's the current image AND (imageLoaded is true OR image is preloaded)
-              // 2. OR it's a new image from navigation that's preloaded (handles timing issue)
-              // 3. OR it's not the current image but it's loaded/preloaded
-              // This ensures preloaded images show immediately without waiting for imageLoaded state
-              const shouldShow = isCurrentImage 
-                ? (imageLoaded || wasPreloaded)  // Show if loaded OR preloaded
-                : isNewImageFromNavigation && wasPreloaded  // New image from nav that's preloaded
-                ? true  // Show immediately
-                : (imageLoadedMapRef.current.get(image._id) === true || wasPreloaded);
-              
-              // Determine if previous image should be visible
-              // CRITICAL: Check the image PROP directly, not just refs
-              // When React Router navigates, the image prop updates immediately
-              // This is the source of truth - use it to prevent flash
-              const imagePropChanged = previousImageSrcImageIdRef.current && 
-                previousImageSrcImageIdRef.current !== image._id;
-              
-              // CRITICAL: If image prop changed (new image from navigation), be very aggressive
-              // If the new image is preloaded OR if imageSrcImageIdRef was updated (meaning we clicked it),
-              // NEVER show the previous image
-              // This handles the case where navigation happened but refs haven't fully updated
-              const isNavigatingToNewImage = imagePropChanged && 
-                (imageSrcImageIdRef.current === image._id || isNewImageFromNavigation);
-              
-              // CRITICAL: Don't show previous if new image is ready
-              // Check multiple conditions to ensure new image is truly not ready
-              // If new image is preloaded OR loaded, never show previous
-              const newImageReady = shouldShow || wasPreloaded || imageLoaded;
-              const isNewImageReady = isNewImageFromNavigation && wasPreloaded;
-              
-              // NEVER show previous image if:
-              // 1. Previous image doesn't exist (was cleared)
-              // 2. Image prop didn't change (still showing same image)
-              // 3. We're clicking a related image (flag is set)
-              // 4. We're navigating to a new image (image prop changed AND refs updated)
-              // 5. New image is ready (preloaded or loaded)
-              // 6. OR it's a new image from navigation that's preloaded
-              // 7. OR imageSrcImageIdRef matches current image (we clicked this image)
-              // KEY: Be very aggressive - if clicking related image, NEVER show previous
-              const isClickingThisImage = imageSrcImageIdRef.current === image._id;
-              const isClickingRelated = isClickingRelatedImage;
-              
-              // CRITICAL: If clicking related image, NEVER show previous - show new image directly
-              // This prevents any flash of old image
-              // Check this FIRST before all other conditions
-              const shouldShowPrevious = !isClickingRelated &&  // NEVER show previous when clicking related image
-                previousImageSrcRef.current && 
-                imagePropChanged &&  // Image prop changed (new image from navigation)
-                !isNavigatingToNewImage &&  // NOT navigating to new image (refs updated)
-                !isClickingThisImage &&  // NOT clicking this image (refs match = we clicked it)
-                !newImageReady &&  // Only show previous if new image is definitely not ready
-                !isNewImageReady;  // Never show previous if new image from nav is ready
-              
-              return (
-                <>
-                  {/* Render previous image ONLY if new image is not ready AND we're not clicking a related image */}
-                  {/* CRITICAL: Never render previous image when clicking related images - this prevents flash */}
-                  {/* Use display: none in CSS to completely remove from layout, not just opacity */}
-                  {shouldShowPrevious && !isClickingRelated && (
-                    <img
-                      key={`image-previous-${previousImageSrcImageIdRef.current}`}
-                      src={previousImageSrcRef.current!}
-                      alt={image.imageTitle || t('image.photo')}
-                      className="image-modal-image"
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        opacity: 1,
-                        transition: 'opacity 0.15s ease-out',
-                        zIndex: 1,
-                        pointerEvents: 'none',
-                      }}
-                      draggable={false}
-                    />
-                  )}
-                  {/* Render current image */}
-                  <img
-                    key={`image-${image._id}`}
-                    ref={isCurrentImage ? imgElementRef : null}
-                    src={src}
-                    alt={image.imageTitle || t('image.photo')}
-                    className="image-modal-image"
-                    style={{
-                      opacity: shouldShow ? 1 : 0,
-                      // Disable transition when changing images OR when image is preloaded to prevent fade animation
-                      // If preloaded, show immediately without transition
-                      transition: (isImageChanging || wasPreloaded) ? 'none' : 'opacity 0.2s ease-in-out',
-                      position: 'relative',
-                      zIndex: 2,
-                    }}
-                    draggable={false}
-                    onContextMenu={() => {
-                      // Don't prevent default - let browser show native context menu
-                      // Browser will automatically show "Open image in new tab" option
-                      // No need to prevent default or handle manually
-                    }}
-                    onLoad={(e) => {
-                    const imgEl = e.currentTarget;
-                    // Update container height when image loads
-                    if (imageContainerRef.current) {
-                      requestAnimationFrame(() => {
-                        if (imageContainerRef.current) {
-                          const actualHeight = imageContainerRef.current.offsetHeight;
-                          if (actualHeight > 0) {
-                            containerHeightRef.current = actualHeight;
-                          }
-                        }
-                      });
-                    }
-                    
-                    // Set loaded state after decode (only for current image)
-                    if (isCurrentImage) {
-                      if (imgEl.decode) {
-                        imgEl.decode()
-                          .then(() => {
-                            // Mark this image as loaded in the map
-                            if (imageSrcImageIdRef.current) {
-                              imageLoadedMapRef.current.set(imageSrcImageIdRef.current, true);
-                            }
-                            setImageLoaded(true);
-                          })
-                          .catch(() => {
-                            if (imageSrcImageIdRef.current) {
-                              imageLoadedMapRef.current.set(imageSrcImageIdRef.current, true);
-                            }
-                            setImageLoaded(true);
-                          });
-                      } else {
-                        if (imageSrcImageIdRef.current) {
-                          imageLoadedMapRef.current.set(imageSrcImageIdRef.current, true);
-                        }
-                        setImageLoaded(true);
-                      }
-                    } else {
-                      // Mark as loaded in map even if not current image
-                      imageLoadedMapRef.current.set(image._id, true);
-                    }
-                  }}
-                  onError={() => {
-                    // Image failed to load - handled by fallback
-                    if (isCurrentImage) {
-                      setImageLoaded(false);
-                    }
-                  }}
-                />
-                </>
-              );
-            })()}
+            <ImagePagePhoto
+              key={`${image._id}:${getRegularUrl(image)}:${getOriginalUrl(image)}`}
+              src={getRegularUrl(image)}
+              fallback={getOriginalUrl(image)}
+              preview={image.base64Thumbnail || image.thumbnailUrl || image.smallUrl}
+              alt={image.imageTitle || t('image.photo')}
+            />
           </div>
         </div>
       </div>
@@ -2158,7 +1603,7 @@ function ImagePage() {
   return (
     <>
       {/* Progress bar at top of viewport */}
-      <ImageProgressBar progress={imageProgress} visible={showProgressBar} />
+
       {showModalStyle ? (
         // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)
         <div
