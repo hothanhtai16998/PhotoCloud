@@ -52,7 +52,7 @@ function ImagePage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useUserStore();
+  const user = useUserStore(state => state.user);
   
   // IMPORTANT: Use ActualLocationContext to get the REAL location (not background location)
   // When rendered as modal route, location from useLocation() is the background location
@@ -92,9 +92,11 @@ function ImagePage() {
   const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const incrementedViewIds = useRef<Set<string>>(new Set());
   const currentImageIdRef = useRef<string | null>(null);
+  const pageActiveRef = useRef(true);
   // Track container height to maintain it during transitions
   const containerHeightRef = useRef<number | null>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const [displayHeight, setDisplayHeight] = useState(400);
   const imgElementRef = useRef<HTMLImageElement>(null);
   // Track if we manually set image from related click to prevent fetch effect from overwriting
   const manuallySetImageRef = useRef<string | null>(null);
@@ -209,6 +211,15 @@ function ImagePage() {
   const currentLoadingUrlRef = useRef<string | null>(null);
   const isLoadingRef = useRef<boolean>(false); // Track if we're actively loading
 
+  useEffect(() => {
+    pageActiveRef.current = true;
+    return () => {
+      pageActiveRef.current = false;
+      if (authorTooltipTimeoutRef.current) clearTimeout(authorTooltipTimeoutRef.current);
+      currentLoadingUrlRef.current = null;
+    };
+  }, []);
+
   // Stats state
   const getInitialStats = useCallback(() => {
     if (!image?._id) return { views: 0, downloads: 0 };
@@ -227,16 +238,19 @@ function ImagePage() {
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
   
   // Favorite count state
-  const { updateFavoriteCount, getFavoriteCount } = useImageFavoriteCountStore();
-  const favoriteCount = useMemo(() => {
-    if (!image?._id) return 0;
-    // Use store count if available, otherwise fall back to image data
-    const storeCount = getFavoriteCount(image._id);
-    return storeCount > 0 ? storeCount : (image.favoriteCount || 0);
-  }, [image?._id, image?.favoriteCount, getFavoriteCount]);
+  const updateFavoriteCount = useImageFavoriteCountStore(state => state.updateFavoriteCount);
+  const storedFavoriteCount = useImageFavoriteCountStore(state => image?._id ? state.favoriteCounts.get(image._id) : undefined);
+  const favoriteCount = storedFavoriteCount ?? image?.favoriteCount ?? 0;
 
   // Image stats store for real-time updates
-  const { updateStats, getStats } = useImageStatsStore();
+  const updateStats = useImageStatsStore(state => state.updateStats);
+  const getStats = useImageStatsStore(state => state.getStats);
+  const liveStats = useImageStatsStore(state => image?._id ? state.imageStats.get(image._id) : undefined);
+  const chartImage = useMemo(() => image ? {
+    ...image, views, downloads,
+    dailyViews: liveStats?.dailyViews ?? image.dailyViews,
+    dailyDownloads: liveStats?.dailyDownloads ?? image.dailyDownloads,
+  } : null, [image, views, downloads, liveStats]);
 
   // Download menu state
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
@@ -250,6 +264,8 @@ function ImagePage() {
   // Author tooltip state
   const [showAuthorTooltip, setShowAuthorTooltip] = useState(false);
   const [tooltipAnimating, setTooltipAnimating] = useState(false);
+  const [authorTooltipPosition, setAuthorTooltipPosition] = useState({ top: 12, left: 12, maxHeight: 300 });
+  const authorTooltipRef = useRef<HTMLDivElement>(null);
   const [authorImages, setAuthorImages] = useState<Image[]>([]);
   const [loadingAuthorImages, setLoadingAuthorImages] = useState(false);
 
@@ -298,6 +314,8 @@ function ImagePage() {
 
   // Fetch image
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
     if (!imageId) {
       setError('Invalid image slug');
       setLoading(false);
@@ -312,10 +330,7 @@ function ImagePage() {
           const manualImageId = manuallySetImageRef.current.slice(-12);
           if (manualImageId === imageId) {
             // Don't set loading or fetch - image is already set
-            // Clear the ref after a short delay to allow render to complete
-            setTimeout(() => {
-              manuallySetImageRef.current = null;
-            }, 100);
+            manuallySetImageRef.current = null;
             return;
           }
         }
@@ -364,7 +379,8 @@ function ImagePage() {
         }
 
         // 3) Fallback: fetch from API (direct URL / refresh)
-        const relatedResponse = await imageService.fetchImages({ limit: 50 });
+        const relatedResponse = await imageService.fetchImages({ limit: 50 }, controller.signal);
+        if (!active) return;
         const allImages = relatedResponse.images || [];
 
         const foundImage = allImages.find((img) => {
@@ -380,16 +396,21 @@ function ImagePage() {
           setError('Image not found');
         }
       } catch (err: unknown) {
+        if (!active) return;
         // Error handled by error boundary
         const axiosError = err as { response?: { data?: { message?: string } } };
         setError(axiosError.response?.data?.message || 'Failed to load image');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     fetchImage();
-  }, [imageId, location.state]);
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [imageId, locationWithState.state, setImageSourceAndState]);
 
   // WebSocket for real-time updates
   const { isConnected, joinImageRoom, leaveImageRoom } = useWebSocket({
@@ -401,7 +422,7 @@ function ImagePage() {
 
       // Update favorite count
       updateFavoriteCount(update.imageId, update.favoriteCount);
-    }, [image?._id, user?._id, updateFavoriteCount]),
+    }, [image, user, updateFavoriteCount]),
     onImageStatsUpdate: useCallback((update) => {
       if (!image?._id || update.imageId !== image._id) return;
 
@@ -422,7 +443,7 @@ function ImagePage() {
       stats.views = update.views;
       stats.downloads = update.downloads;
       apiStatsCache.set(update.imageId, stats);
-    }, [image?._id, updateStats]),
+    }, [image, updateStats]),
   });
 
   // Join/leave image room for real-time updates
@@ -462,6 +483,14 @@ function ImagePage() {
     // Check store first, then API cache, then image data
     const storeStats = getStats(imageId);
     const apiStats = apiStatsCache.get(imageId);
+    if (!storeStats) {
+      updateStats(imageId, {
+        views: apiStats?.views ?? image.views ?? 0,
+        downloads: apiStats?.downloads ?? image.downloads ?? 0,
+        dailyViews: image.dailyViews,
+        dailyDownloads: image.dailyDownloads,
+      });
+    }
     
     if (storeStats) {
       // Use store stats (most up-to-date, includes real-time updates)
@@ -482,18 +511,19 @@ function ImagePage() {
       setViews(image.views || 0);
       setDownloads(image.downloads || 0);
     }
-  }, [image?._id, image?.views, image?.downloads, getStats]);
+  }, [image?._id, image?.views, image?.downloads, image?.dailyViews, image?.dailyDownloads, getStats, updateStats]);
 
   // Increment view count when image is viewed
   useEffect(() => {
     if (!image?._id) return;
 
+    let active = true;
     const imageId = image._id;
     if (!incrementedViewIds.current.has(imageId)) {
       incrementedViewIds.current.add(imageId);
       imageStatsService.incrementView(imageId)
         .then((response) => {
-          setViews(response.views);
+          if (active) setViews(response.views);
           const stats = apiStatsCache.get(imageId) || {};
           stats.views = response.views;
           apiStatsCache.set(imageId, stats);
@@ -508,7 +538,7 @@ function ImagePage() {
           if (error.response?.status === 429) {
             const rateLimitData = error.response.data;
             if (rateLimitData.views !== undefined) {
-              setViews(rateLimitData.views);
+              if (active) setViews(rateLimitData.views);
               const stats = apiStatsCache.get(imageId) || {};
               stats.views = rateLimitData.views;
               apiStatsCache.set(imageId, stats);
@@ -519,7 +549,8 @@ function ImagePage() {
           }
         });
     }
-  }, [image?._id]);
+    return () => { active = false; };
+  }, [image?._id, updateStats]);
 
   // Image loading logic - check browser cache when image changes to prevent flash
   useLayoutEffect(() => {
@@ -750,6 +781,7 @@ function ImagePage() {
           })
           .catch(() => {
             if (previousImgRef.current?._id === currentImageId) {
+              isLoadingRef.current = false;
               setShowProgressBar(false);
             }
           });
@@ -757,90 +789,38 @@ function ImagePage() {
     }
   }, [image, imageSrc, getRegularUrl, getOriginalUrl, calculateInitialHeight]);
 
-  // Set initial container height when image changes (before images load)
-  useEffect(() => {
-    if (!image || !imageContainerRef.current) return;
-    
-    // Calculate initial height from image dimensions
-    if (image.width && image.height) {
-      requestAnimationFrame(() => {
-        if (!imageContainerRef.current) return;
-        
-        const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-        const estimatedWidth = containerWidth > 0 ? containerWidth : 1400; // Default to 1400px if not measured yet
-        const aspectRatio = image.width / image.height;
-        const calculatedHeight = estimatedWidth / aspectRatio;
-        const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-        const initialHeight = Math.max(300, maxHeight);
-        
-        // Only update if significantly different to avoid unnecessary updates
-        if (!containerHeightRef.current || Math.abs(containerHeightRef.current - initialHeight) > 50) {
-          containerHeightRef.current = initialHeight;
-        }
-      });
-    } else if (!containerHeightRef.current) {
-      // No dimensions, use default
-      containerHeightRef.current = 400;
-    }
-  }, [image?._id, image?.width, image?.height]);
-
-  // Preload related images aggressively when they come into view
-  // This ensures images are ready when user clicks (like Unsplash)
-  useEffect(() => {
-    if (relatedImages.length === 0) return;
-    
-    // Preload ALL related images with decode (critical for modal)
-    // This is more aggressive than normal preload but prevents flash
-    relatedImages.forEach((relatedImg, index) => {
-      // Stagger preload slightly to not block main thread
-      setTimeout(() => {
-        // Preload regular URL with decode (ensures image is ready for display)
-        const regular = getRegularUrl(relatedImg);
-        if (regular && !loadedImages.has(regular)) {
-          preloadImage(regular, false).catch(() => {}); // skipDecode=false for modal
-        }
-        
-        // Also ensure base64 is "loaded" (it's instant but mark it)
-        if (relatedImg.base64Thumbnail) {
-          loadedImages.add(relatedImg.base64Thumbnail);
-        }
-      }, index * 50); // Stagger by 50ms to avoid overwhelming
-    });
-  }, [relatedImages, getRegularUrl]);
-
-  // Load dimensions for related images
-  // Update image container height if dimensions are available
-  useEffect(() => {
-    const updateLayout = () => {
-      if (image && imageContainerRef.current && image.width && image.height) {
-        const containerWidth = imageContainerRef.current.offsetWidth || imageContainerRef.current.clientWidth;
-        if (containerWidth > 0) {
-          const aspectRatio = image.width / image.height;
-          const calculatedHeight = containerWidth / aspectRatio;
-          const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-          const newHeight = Math.max(300, maxHeight);
-          if (newHeight !== containerHeightRef.current) {
-            containerHeightRef.current = newHeight;
-          }
-        }
-      }
+  // Measure the actual frame, including toolbar wrapping and viewport changes.
+  useLayoutEffect(() => {
+    if (loading || !image || !imageContainerRef.current) return;
+    let frame = 0;
+    const measure = () => {
+      const container = imageContainerRef.current;
+      if (!container) return;
+      const width = container.clientWidth;
+      const toolbarHeight = topInfoRef.current?.offsetHeight || 60;
+      const headerHeight = showModalStyle ? 16 : (isMobile ? 96 : 66);
+      const available = Math.max(80, window.innerHeight - toolbarHeight - headerHeight - 72);
+      const proportional = image.width > 0 && image.height > 0
+        ? width * image.height / image.width : available;
+      const height = Math.round(Math.min(available, Math.max(80, proportional)));
+      containerHeightRef.current = height;
+      setDisplayHeight(previous => previous === height ? previous : height);
     };
-
-    updateLayout();
-
-    let timeoutId: NodeJS.Timeout;
-    const handleResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(updateLayout, 150);
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
     };
-
-    window.addEventListener('resize', handleResize);
+    const observer = new ResizeObserver(schedule);
+    observer.observe(imageContainerRef.current);
+    if (topInfoRef.current) observer.observe(topInfoRef.current);
+    window.addEventListener('resize', schedule);
+    measure();
     return () => {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(timeoutId);
+      observer.disconnect();
+      window.removeEventListener('resize', schedule);
+      cancelAnimationFrame(frame);
     };
-  }, [image]);
-
+  }, [loading, image?._id, image?.width, image?.height, showModalStyle, isMobile]);
   // Locale and date formatting
   const locale = getLocale();
   const formattedDate = useFormattedDate(image?.createdAt, {
@@ -865,7 +845,7 @@ function ImagePage() {
     
     // Fallback: translate using dictionary (for other languages or if translation failed)
     return translateTags(image.tags, locale);
-  }, [image?.tags, image?.tagsEnglish, locale]);
+  }, [image, locale]);
 
   // Author name
   const authorName = useMemo(() => {
@@ -973,7 +953,7 @@ function ImagePage() {
     // Increment download count in background (fire and forget - don't block download)
     imageStatsService.incrementDownload(image._id)
       .then((statsResponse) => {
-        setDownloads(statsResponse.downloads);
+        if (pageActiveRef.current && currentImageIdRef.current === image._id) setDownloads(statsResponse.downloads);
         const stats = apiStatsCache.get(image._id) || {};
         stats.downloads = statsResponse.downloads;
         apiStatsCache.set(image._id, stats);
@@ -988,7 +968,7 @@ function ImagePage() {
         if (error.response?.status === 429) {
           const rateLimitData = error.response.data;
           if (rateLimitData.downloads !== undefined) {
-            setDownloads(rateLimitData.downloads);
+            if (pageActiveRef.current && currentImageIdRef.current === image._id) setDownloads(rateLimitData.downloads);
             const stats = apiStatsCache.get(image._id) || {};
             stats.downloads = rateLimitData.downloads;
             apiStatsCache.set(image._id, stats);
@@ -1009,7 +989,8 @@ function ImagePage() {
     try {
       const response = await downloadPromise;
 
-      const blob = new Blob([response.data], { type: response.headers['content-type'] || 'image/webp' });
+      const contentType = response.headers['content-type'];
+      const blob = new Blob([response.data], { type: typeof contentType === 'string' ? contentType : 'image/webp' });
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = blobUrl;
@@ -1044,18 +1025,18 @@ function ImagePage() {
             detail: { image }
           }));
         }
-      } catch (error) {
+      } catch {
         // Silently fail - download still succeeded
         // Silently fail - download already completed
       }
 
       toast.success(t('image.downloadSuccess'));
       setShowDownloadMenu(false);
-    } catch (error) {
+    } catch {
       // Error handled by toast
       toast.error(t('image.downloadFailed'));
     }
-  }, [image]);
+  }, [image, updateStats]);
 
   // Helper to ensure CSRF token is ready
   const ensureCsrfToken = useCallback(async (): Promise<boolean> => {
@@ -1257,12 +1238,13 @@ function ImagePage() {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || showEditModal || showCollectionModal) return;
       // Don't handle navigation if user is typing in an input, textarea, or contenteditable element
       const target = e.target as HTMLElement;
       const isInputElement = target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.isContentEditable ||
-        target.closest('input, textarea, [contenteditable="true"]');
+        target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]');
 
       if (isInputElement) {
         return; // Let the input handle the key event
@@ -1292,7 +1274,7 @@ function ImagePage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentImageIndex, images, handleImageSelect, handleClose]);
+  }, [currentImageIndex, images, handleImageSelect, handleClose, showEditModal, showCollectionModal]);
 
   // Handle related image hover - preload on hover for instant click
   // This is like Unsplash: preload when user hovers, so click is instant
@@ -1430,19 +1412,39 @@ function ImagePage() {
     }, 100);
   }, [navigate, locationWithState, relatedImages, image, imageSrc, imageLoaded, getRegularUrl]);
 
-  // Trigger animation when tooltip appears
-  useEffect(() => {
-    if (showAuthorTooltip) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTooltipAnimating(true);
-        });
-      });
-    } else {
-      setTooltipAnimating(false);
-    }
+  // Keep the author popup inside the viewport after resize/scroll.
+  useLayoutEffect(() => {
+    if (!showAuthorTooltip) return;
+    let frame = 0;
+    const measure = () => {
+      const anchor = authorAreaRef.current;
+      const popup = authorTooltipRef.current;
+      if (!anchor || !popup) return;
+      const rect = anchor.getBoundingClientRect();
+      const width = Math.min(360, window.innerWidth - 24);
+      const height = Math.min(popup.scrollHeight, window.innerHeight - 24);
+      const left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12));
+      const top = Math.max(12, Math.min(rect.bottom + 8, window.innerHeight - height - 12));
+      const next = { top, left, maxHeight: window.innerHeight - top - 12 };
+      setAuthorTooltipPosition(previous => previous.top === next.top && previous.left === next.left && previous.maxHeight === next.maxHeight ? previous : next);
+      setTooltipAnimating(true);
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    const observer = new ResizeObserver(schedule);
+    if (authorTooltipRef.current) observer.observe(authorTooltipRef.current);
+    window.addEventListener('resize', schedule);
+    window.addEventListener('scroll', schedule, true);
+    measure();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', schedule);
+      window.removeEventListener('scroll', schedule, true);
+      cancelAnimationFrame(frame);
+    };
   }, [showAuthorTooltip]);
-
   // Close download menu when clicking outside
   useEffect(() => {
     if (!showDownloadMenu) return;
@@ -1551,18 +1553,19 @@ function ImagePage() {
               clearTimeout(authorTooltipTimeoutRef.current);
             }
             authorTooltipTimeoutRef.current = setTimeout(async () => {
+              if (!pageActiveRef.current || currentImageIdRef.current !== image._id) return;
               setShowAuthorTooltip(true);
               const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
               if (userId && !loadingAuthorImages) {
                 setLoadingAuthorImages(true);
                 try {
                   const response = await imageFetchService.fetchUserImages(userId, { page: 1, limit: 3 });
-                  setAuthorImages(response.images || []);
-                } catch (error) {
+                  if (pageActiveRef.current && currentImageIdRef.current === image._id) setAuthorImages(response.images || []);
+                } catch {
                   // Silently fail - author images are optional
-                  setAuthorImages([]);
+                  if (pageActiveRef.current && currentImageIdRef.current === image._id) setAuthorImages([]);
                 } finally {
-                  setLoadingAuthorImages(false);
+                  if (pageActiveRef.current && currentImageIdRef.current === image._id) setLoadingAuthorImages(false);
                 }
               }
             }, 1000);
@@ -1608,17 +1611,12 @@ function ImagePage() {
           </div>
 
           {/* Author tooltip/popup */}
-          {showAuthorTooltip && authorAreaRef.current && topInfoRef.current && modalRef.current && (() => {
-            const authorRect = authorAreaRef.current!.getBoundingClientRect();
-            const modalRect = modalRef.current!.getBoundingClientRect();
-            return (
+          {showAuthorTooltip && (
               <div
+                ref={authorTooltipRef}
                 data-author-tooltip
                 className={`image-modal-author-tooltip ${tooltipAnimating ? 'animating' : ''}`}
-                style={{
-                  top: `${authorRect.bottom - 10}px`,
-                  left: `${modalRect.left - 140}px`,
-                }}
+                style={authorTooltipPosition}
                 onMouseEnter={() => {
                   if (authorAreaRef.current && (authorAreaRef.current as any).hideTimeout) {
                     clearTimeout((authorAreaRef.current as any).hideTimeout);
@@ -1692,8 +1690,7 @@ function ImagePage() {
                   {t('image.viewProfile')}
                 </button>
               </div>
-            );
-          })()}
+          )}
         </div>
         <div className="image-modal-actions">
           {/* Save/Favorite button */}
@@ -1796,42 +1793,9 @@ function ImagePage() {
             ref={imageContainerRef}
             className={`image-modal-image-container ${image.width && image.height ? 'has-aspect-ratio' : 'no-aspect-ratio'}`}
             style={{
-              // Lock container height to prevent layout shift
-              // Use fixed height from containerHeightRef or calculate from image dimensions
-              height: containerHeightRef.current 
-                ? `${containerHeightRef.current}px` 
-                : (image.width && image.height 
-                  ? (() => {
-                      // Calculate height from image aspect ratio
-                      const containerWidth = 1400; // Default container width
-                      const aspectRatio = image.width / image.height;
-                      const calculatedHeight = containerWidth / aspectRatio;
-                      const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-                      return `${Math.max(300, maxHeight)}px`;
-                    })()
-                  : '400px'),
-              minHeight: containerHeightRef.current 
-                ? `${containerHeightRef.current}px` 
-                : (image.width && image.height 
-                  ? (() => {
-                      const containerWidth = 1400;
-                      const aspectRatio = image.width / image.height;
-                      const calculatedHeight = containerWidth / aspectRatio;
-                      const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-                      return `${Math.max(300, maxHeight)}px`;
-                    })()
-                  : '400px'),
-              maxHeight: containerHeightRef.current 
-                ? `${containerHeightRef.current}px` 
-                : (image.width && image.height 
-                  ? (() => {
-                      const containerWidth = 1400;
-                      const aspectRatio = image.width / image.height;
-                      const calculatedHeight = containerWidth / aspectRatio;
-                      const maxHeight = Math.min(calculatedHeight, window.innerHeight - 180);
-                      return `${Math.max(300, maxHeight)}px`;
-                    })()
-                  : '400px'),
+              height: displayHeight,
+              minHeight: displayHeight,
+              maxHeight: displayHeight,
               // Unsplash-style: background color with dominant color
               backgroundColor: (image as any).dominantColor || '#f3f4f6',
               overflow: 'hidden',
@@ -2019,7 +1983,7 @@ function ImagePage() {
                       imageLoadedMapRef.current.set(image._id, true);
                     }
                   }}
-                  onError={(e) => {
+                  onError={() => {
                     // Image failed to load - handled by fallback
                     if (isCurrentImage) {
                       setImageLoaded(false);
@@ -2060,7 +2024,7 @@ function ImagePage() {
                   <Share2 size={16} />
                   <span>{t('share.share')}</span>
                 </button>
-                <ImageModalInfo image={image} />
+                <ImageModalInfo image={chartImage || image} />
                 {/* Edit button - only show if user is owner or admin */}
                 {user && image && (
                   (user._id === (image.uploadedBy as any)?._id ||
@@ -2194,12 +2158,12 @@ function ImagePage() {
   return (
     <>
       {/* Progress bar at top of viewport */}
-      <ImageProgressBar progress={imageProgress} visible={showProgressBar || isLoadingRef.current} />
+      <ImageProgressBar progress={imageProgress} visible={showProgressBar} />
       {showModalStyle ? (
         // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)
         <div
           onClick={handleOverlayClick}
-          className="image-modal-overlay"
+          className="image-modal-overlay image-page-modal"
         >
           <div
             ref={modalRef}
@@ -2227,7 +2191,7 @@ function ImagePage() {
             e.stopPropagation();
             handleClose();
           }}
-          className="image-modal-close-button"
+          className="image-modal-close-button image-page-close"
         >
           <img
             src={closeIcon}

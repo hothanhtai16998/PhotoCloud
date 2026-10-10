@@ -1,8 +1,10 @@
 /* The final gallery keeps photo dimensions steady while crossfading. */
 html:has(.visual-art-slider) { overflow-anchor: none; }
-.visual-art-slider { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 14px 24px; width: min(1280px, calc(100% - 64px)); margin: 146px auto 40px; background: white; overflow: hidden; }
+.visual-art-slider { position: relative; display: grid; grid-template-columns: clamp(150px, 15vw, 190px) minmax(0, 1fr) clamp(150px, 15vw, 190px); gap: 14px 24px; width: min(1600px, calc(100% - 64px)); margin: 146px auto 40px; background: white; overflow: hidden; }
 .visual-art-slider:not(.visual-art-slider-collapsed) { min-height: calc(100dvh - 186px); align-content: start; }
 .fixed-stage { position: relative; grid-column: 1 / -1; grid-row: 1; height: clamp(360px, 70vh, 780px); min-height: 0; }
+.visual-art-slider:not(.visual-art-slider-collapsed) .fixed-stage { grid-column: 2; grid-row: 1; }
+.visual-art-slider:not(.visual-art-slider-collapsed) > .travel-controls { grid-column: 2; grid-row: 2; }
 .fixed-stage-row { height: 100%; }
 .travel-card { position: relative; display: block; width: 100%; height: 100%; padding: 0; border: 0; overflow: hidden; background: white; cursor: zoom-in; touch-action: pan-y; }
 .fixed-stage-layer { position: absolute; inset: 0; opacity: 0; z-index: 0; pointer-events: none; background: white; }
@@ -11,7 +13,7 @@ html:has(.visual-art-slider) { overflow-anchor: none; }
 .stage-fade.has-previous .fixed-stage-layer.is-current { animation: sliderPhotoFade 450ms ease both; }
 @keyframes sliderPhotoFade { from { opacity: 0; } to { opacity: 1; } }
 .slide-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; backface-visibility: hidden; }
-.minimal-gallery-caption { position: absolute; top: 0; left: 0; z-index: 3; max-width: 190px; color: #222; display: flex; flex-direction: column; gap: 7px; padding: 4px 12px 4px 14px; border-left: 2px solid #222; background: #ffffffed; pointer-events: none; }
+.minimal-gallery-caption { grid-column: 1; grid-row: 1; align-self: start; justify-self: stretch; max-width: 100%; min-width: 0; overflow-wrap: anywhere; color: #222; display: flex; flex-direction: column; gap: 7px; padding: 4px 12px 4px 14px; border-left: 2px solid #222; pointer-events: none; }
 .minimal-gallery-caption strong { font-weight: 600; font-size: clamp(20px, 2vw, 26px); letter-spacing: -.5px; line-height: 1.2; }
 .minimal-gallery-caption span { color: #777; font-size: 13px; }
 .travel-controls { grid-row: 2; grid-column: 1 / -1; justify-self: center; display: grid; grid-template-columns: 36px auto 36px; grid-template-rows: auto 36px; align-items: center; gap: 4px 16px; color: #222; }

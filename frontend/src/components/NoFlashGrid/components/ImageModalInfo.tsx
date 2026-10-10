@@ -1,158 +1,112 @@
-import { useState, useRef, useEffect, memo, useMemo } from 'react';
+import { useState, useRef, useLayoutEffect, useEffect, useId, memo, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 import { ImageModalChart } from './ImageModalChart';
 import type { Image } from '@/types/image';
 import { t } from '@/i18n';
 import './ImageModalInfo.css';
+import './modal-info.css';
 
-interface ImageModalInfoProps {
-  image: Image;
-}
+interface ImageModalInfoProps { image: Image }
 
-export const ImageModalInfo = memo(({ image }: ImageModalInfoProps) => {
-  const [showInfoModal, setShowInfoModal] = useState(false);
+const ImageModalInfoContent = memo(({ image }: ImageModalInfoProps) => {
+  const [openImageId, setOpenImageId] = useState<string | null>(null);
+  const showInfoModal = openImageId === image._id;
   const [activeTab, setActiveTab] = useState<'views' | 'downloads'>('views');
-  const [positionBelow, setPositionBelow] = useState(false);
   const infoButtonRef = useRef<HTMLButtonElement>(null);
   const infoModalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogId = useId();
 
-  // Check available space and position modal accordingly
-  useEffect(() => {
-    if (!showInfoModal || !infoButtonRef.current) return;
-
-    const checkPosition = () => {
-      const buttonRect = infoButtonRef.current?.getBoundingClientRect();
-
-      if (buttonRect) {
-        const spaceAbove = buttonRect.top;
-        const spaceBelow = window.innerHeight - buttonRect.bottom;
-        // Estimate modal height (usually around 400-500px, but can be up to 60vh)
-        const estimatedModalHeight = Math.min(500, window.innerHeight * 0.6);
-        const requiredSpace = estimatedModalHeight + 20; // 20px for gap
-
-        // If not enough space above but enough below, position below
-        if (spaceAbove < requiredSpace && spaceBelow >= requiredSpace) {
-          setPositionBelow(true);
-        } else {
-          setPositionBelow(false);
-        }
-      }
+  useLayoutEffect(() => {
+    if (!showInfoModal) return;
+    const panel = infoModalRef.current;
+    const button = infoButtonRef.current;
+    if (!panel || !button) return;
+    let frame = 0;
+    const updatePosition = () => {
+      const anchor = button.getBoundingClientRect();
+      const width = panel.offsetWidth;
+      const height = panel.offsetHeight;
+      const margin = 12, gap = 8;
+      const below = anchor.top < height + gap + margin && window.innerHeight - anchor.bottom >= height + gap + margin;
+      const top = below ? anchor.bottom + gap : anchor.top - height - gap;
+      panel.style.left = `${Math.max(margin, Math.min(anchor.right - width, window.innerWidth - width - margin))}px`;
+      panel.style.top = `${Math.max(margin, Math.min(top, window.innerHeight - height - margin))}px`;
     };
-
-    // Check position immediately and after modal renders
-    checkPosition();
-    const timer = setTimeout(checkPosition, 50);
-    const timer2 = setTimeout(checkPosition, 200); // Check again after animation
-
-    // Also check on scroll/resize
-    window.addEventListener('scroll', checkPosition, true);
-    window.addEventListener('resize', checkPosition);
-
-    // Use ResizeObserver for more accurate detection
-    let resizeObserver: ResizeObserver | null = null;
-    if (infoModalRef.current) {
-      resizeObserver = new ResizeObserver(checkPosition);
-      resizeObserver.observe(infoModalRef.current);
-    }
-
+    const schedulePosition = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => { frame = 0; updatePosition(); });
+    };
+    updatePosition();
+    closeButtonRef.current?.focus({ preventScroll: true });
+    const observer = new ResizeObserver(schedulePosition);
+    observer.observe(panel);
+    window.addEventListener('scroll', schedulePosition, true);
+    window.addEventListener('resize', schedulePosition);
     return () => {
-      clearTimeout(timer);
-      clearTimeout(timer2);
-      window.removeEventListener('scroll', checkPosition, true);
-      window.removeEventListener('resize', checkPosition);
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener('scroll', schedulePosition, true);
+      window.removeEventListener('resize', schedulePosition);
     };
   }, [showInfoModal]);
 
-  // Calculate days ago using useMemo to avoid calling Date.now() during render
-  const daysAgoText = useMemo(() => {
-    const now = new Date().getTime();
-    const daysAgo = Math.floor((now - new Date(image.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-    if (daysAgo === 0) return t('notifications.justNow');
-    if (daysAgo === 1) return t('notifications.daysAgo', { count: 1 });
-    return t('notifications.daysAgo', { count: daysAgo });
-  }, [image.createdAt]);
-
-  // Close info modal when clicking outside
   useEffect(() => {
     if (!showInfoModal) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        infoButtonRef.current &&
-        !infoButtonRef.current.contains(target) &&
-        !target.closest('.info-modal')
-      ) {
-        setShowInfoModal(false);
+    const outside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !infoButtonRef.current?.contains(target) && !infoModalRef.current?.contains(target)) {
+        setOpenImageId(null);
       }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener('pointerdown', outside);
+    return () => document.removeEventListener('pointerdown', outside);
   }, [showInfoModal]);
 
-  return (
-    <div style={{ position: 'relative' }}>
-      <button
-        ref={infoButtonRef}
-        className={`modal-footer-btn ${showInfoModal ? 'active' : ''}`}
-        onClick={() => setShowInfoModal(!showInfoModal)}
-      >
-        <Info size={18} />
-        <span>{t('image.info')}</span>
-      </button>
-      {/* Info Modal */}
-      {showInfoModal && (
-        <div
-          ref={infoModalRef}
-          className={`info-modal-wrapper ${positionBelow ? 'position-below' : ''}`}
-        >
-          <div className="info-modal">
-            <div className="info-modal-header">
-              <h2 className="info-modal-title">{t('image.info')}</h2>
-              <button
-                className="info-modal-close"
-                onClick={() => setShowInfoModal(false)}
-                aria-label="Close info modal"
-              >
-                ×
-              </button>
-            </div>
-            <div className="info-modal-content">
-              <div className="info-published">
-                {t('image.published')} {daysAgoText}
-              </div>
+  const daysAgoText = useMemo(() => {
+    const published = new Date(image.createdAt).getTime();
+    const days = Number.isFinite(published) ? Math.max(0, Math.floor((new Date().getTime() - published) / 86400000)) : 0;
+    return days === 0 ? t('notifications.justNow') : t('notifications.daysAgo', { count: days });
+  }, [image.createdAt]);
 
-              {/* Chart Container */}
-              <ImageModalChart image={image} activeTab={activeTab} />
+  const close = () => {
+    setOpenImageId(null);
+    infoButtonRef.current?.focus({ preventScroll: true });
+  };
 
-              {/* Tabs */}
-              <div className="info-tabs">
-                <button
-                  className={`info-tab ${activeTab === 'views' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('views')}
-                >
-                  {t('image.views')}
-                </button>
-                <button
-                  className={`info-tab ${activeTab === 'downloads' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('downloads')}
-                >
-                  {t('image.downloads')}
-                </button>
-              </div>
+  return <>
+    <button ref={infoButtonRef} type="button" className={`modal-footer-btn ${showInfoModal ? 'active' : ''}`}
+      aria-haspopup="dialog" aria-expanded={showInfoModal} aria-controls={showInfoModal ? dialogId : undefined}
+      onClick={() => { setActiveTab('views'); setOpenImageId(showInfoModal ? null : image._id); }}>
+      <Info size={18} /><span>{t('image.info')}</span>
+    </button>
+    {showInfoModal && createPortal(
+      <div ref={infoModalRef} id={dialogId} className="info-modal-wrapper" role="dialog" aria-labelledby={`${dialogId}-title`}
+        onKeyDown={event => {
+          // ImagePage also handles Escape/arrows; keys inside this panel belong to it.
+          event.stopPropagation();
+          if (event.key === 'Escape') { event.preventDefault(); close(); }
+        }}>
+        <div className="info-modal">
+          <div className="info-modal-header">
+            <h2 id={`${dialogId}-title`} className="info-modal-title">{t('image.info')}</h2>
+            <button ref={closeButtonRef} type="button" className="info-modal-close" onClick={close} aria-label="Close info modal">×</button>
+          </div>
+          <div className="info-modal-content">
+            <div className="info-published">{t('image.published')} {daysAgoText}</div>
+            <ImageModalChart key={`${image._id}:${activeTab}`} image={image} activeTab={activeTab} />
+            <div className="info-tabs" role="group" aria-label={t('image.info')}>
+              <button type="button" className={`info-tab ${activeTab === 'views' ? 'active' : ''}`} aria-pressed={activeTab === 'views'} onClick={() => setActiveTab('views')}>{t('image.views')}</button>
+              <button type="button" className={`info-tab ${activeTab === 'downloads' ? 'active' : ''}`} aria-pressed={activeTab === 'downloads'} onClick={() => setActiveTab('downloads')}>{t('image.downloads')}</button>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>, document.body)}
+  </>;
 });
-
+ImageModalInfoContent.displayName = 'ImageModalInfoContent';
+// Navigation must dispose panel state/listeners even if the page reuses this slot.
+export const ImageModalInfo = memo(({ image }: ImageModalInfoProps) =>
+  <ImageModalInfoContent key={image._id} image={image} />);
 ImageModalInfo.displayName = 'ImageModalInfo';
-

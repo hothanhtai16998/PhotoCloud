@@ -68,6 +68,18 @@ export const useImageChart = (image: Image): UseImageChartReturn => {
     const remainingViews = Math.max(0, (image.views || 0) - totalTrackedViews);
     const remainingDownloads = Math.max(0, (image.downloads || 0) - totalTrackedDownloads);
 
+    // Convert each daily bucket once instead of scanning all history for each bar.
+    const indexDailyCounts = (counts: Record<string, number>) => {
+      const indexed = new Map<string, number>();
+      for (const [utcDate, count] of Object.entries(counts)) {
+        const localDate = convertUTCToLocalDateStr(utcDate);
+        indexed.set(localDate, (indexed.get(localDate) || 0) + count);
+      }
+      return indexed;
+    };
+    const indexedViews = indexDailyCounts(dailyViews);
+    const indexedDownloads = indexDailyCounts(dailyDownloads);
+
     const { daysToDisplay, daysAgoOffset } = chartConfig;
     const data = Array.from({ length: daysToDisplay }, (_, i) => {
       // Calculate date: i=0 is daysAgoOffset days ago, i=daysAgoOffset is today (0 days ago)
@@ -82,15 +94,7 @@ export const useImageChart = (image: Image): UseImageChartReturn => {
       let viewsValue = 0;
       let downloadsValue = 0;
 
-      // Show per-day tracked views (real data)
-      if (hasDailyViews) {
-        for (const [utcDateStr, count] of Object.entries(dailyViews)) {
-          const localDateStr = convertUTCToLocalDateStr(utcDateStr);
-          if (localDateStr === dateStr && !isBeforePublished) {
-            viewsValue += count;
-          }
-        }
-      }
+      if (!isBeforePublished) viewsValue = indexedViews.get(dateStr) || 0;
 
       // Show remaining untracked views on published date (fallback for old views)
       // This handles views that happened before per-day tracking was implemented
@@ -98,15 +102,7 @@ export const useImageChart = (image: Image): UseImageChartReturn => {
         viewsValue += remainingViews;
       }
 
-      // Show per-day tracked downloads (real data)
-      if (hasDailyDownloads) {
-        for (const [utcDateStr, count] of Object.entries(dailyDownloads)) {
-          const localDateStr = convertUTCToLocalDateStr(utcDateStr);
-          if (localDateStr === dateStr && !isBeforePublished) {
-            downloadsValue += count;
-          }
-        }
-      }
+      if (!isBeforePublished) downloadsValue = indexedDownloads.get(dateStr) || 0;
 
       // Show remaining untracked downloads on published date (fallback for old downloads)
       if (remainingDownloads > 0 && dateStr === publishedStr && !isBeforePublished) {

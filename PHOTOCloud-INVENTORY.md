@@ -12,7 +12,7 @@ Thống kê từ mã nguồn ngày 10/10/2026. Phạm vi: `frontend/src`. Không
 
 Từ nay, trước khi đánh dấu xong: rà soát → sửa → lint/build và kiểm thử cần thiết → localhost desktop/mobile/tablet, kiểm tra hai phía breakpoint liên quan → cập nhật danh sách → dừng để người dùng kiểm tra. Các phần đã chốt trước đây căn cứ vào handoff, Git và xác nhận trong chat; không tự mở lại slide/header.
 
-### Đã hoàn tất — 17 file component, chưa có trang nào được đánh dấu hoàn tất toàn bộ
+### Đã hoàn tất — 19 file component, chưa có trang nào được đánh dấu hoàn tất toàn bộ
 
 | Component | Bằng chứng/phạm vi |
 |---|---|
@@ -32,11 +32,13 @@ Từ nay, trước khi đánh dấu xong: rà soát → sửa → lint/build và
 | ~~[FixedSlideStage](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/FixedSlideStage.tsx)~~ | 58359d1 — chuyển ảnh/swipe |
 | ~~[SliderZoomImage](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/SliderZoomImage.tsx)~~ | 58359d1 — zoom và loading |
 | ~~[BlurUpImage](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/BlurUpImage.tsx)~~ | Đã được người dùng xác nhận; tối ưu phụ thuộc và phản hồi click; desktop/mobile + mock pass; chưa commit |
-| ~~[NoFlashGrid](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/NoFlashGrid.tsx)~~ | Tải thêm/cuộn + responsive đã kiểm thử 10/10/2026; chờ người dùng kiểm tra; chưa commit |
+| ~~[NoFlashGrid](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/NoFlashGrid.tsx)~~ | Tải thêm/cuộn + responsive đã kiểm thử 10/10/2026; người dùng đã cho chuyển bước tiếp theo; chưa commit |
+| ~~[ImageModalInfo](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalInfo.tsx)~~ | Panel thông tin: portal/clamp viewport, cleanup khi đổi ảnh, Escape/focus/pointer; localhost responsive pass; chờ kiểm tra |
+| ~~[ImageModalChart](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalChart.tsx)~~ | Tooltip theo cột, bàn phím/touch, thống kê daily index; mock totals + responsive pass; chờ kiểm tra |
 
 Phụ thuộc trực tiếp của BlurUpImage đã xử lý: `useBatchedFavoriteCheck`, `useIsMobile`; test mock cho tải ảnh, response cũ, auth/cache, click lặp và cleanup. Không đánh dấu các hook này thành component trong thống kê.
 
-### Đã hoàn tất: NoFlashGrid — tải thêm/cuộn vô hạn + responsive (chờ người dùng kiểm tra)
+### Đã hoàn tất: NoFlashGrid — tải thêm/cuộn vô hạn + responsive
 
 | Phần | Trạng thái | Việc cần kiểm tra |
 |---|---|---|
@@ -47,7 +49,23 @@ Phụ thuộc trực tiếp của BlurUpImage đã xử lý: `useBatchedFavorite
 
 Ma trận đã kiểm tra cho NoFlashGrid: 360px, 390px, 767px, 768px, 769px, 1024px, 1279px, 1280px, 1366px; resize/đổi hướng; ảnh ngang/dọc/vuông; thanh tác giả/nút không bị cắt, không tràn ngang; cuộn nhanh/tải tiếp/đổi category/reset filter; không ghi dữ liệu backend để test. Chỉ sửa vấn đề đã xác minh trong phạm vi này.
 
-Bước tiếp theo: modal/chi tiết ảnh → trang tìm kiếm → đăng nhập/đăng ký/upload → hồ sơ → yêu thích/lịch sử/bộ sưu tập → giới thiệu → admin → rà soát file chưa dùng.
+Đang thực hiện modal/chi tiết ảnh: đã xong cụm Thông tin/biểu đồ; tiếp theo ImagePage — tải/chuyển ảnh, cleanup và responsive. Chưa đánh dấu ImagePage hoàn tất. Sau đó → trang tìm kiếm → đăng nhập/đăng ký/upload → hồ sơ → yêu thích/lịch sử/bộ sưu tập → giới thiệu → admin → rà soát file chưa dùng.
+
+### ImagePage — đang thực hiện, chưa gạch toàn trang
+
+| Cụm | Trạng thái |
+|---|---|
+| ~~Khung ImagePage/modal và responsive nội dung~~ | Đã sửa min-width1400px, width+sidebar, breakpoint768/769, toolbar/footer wrap, tiêu đề/tác giả/tag dài; đo khung ảnh bằng ResizeObserver theo viewport thật |
+| ~~Chống response cũ khi tải/chuyển ảnh~~ | Abort + active guard; fast path state; regression success/error/cleanup pass |
+| ~~Đồng bộ thống kê và biểu đồ~~ | Response lượt xem/tải không ghi vào ảnh khác; khởi tạo đủ views/downloads; chart nhận tổng/daily mới; favorite count0 hợp lệ; selector chỉ theo ảnh hiện tại |
+| Tải ảnh/animation/cleanup còn lại và ImageProgressBar | Chưa xong: render còn đọc refs, cache probe new Image, nhiều timer/RAF chuyển ảnh; lint còn lỗi ở cụm này |
+| Mở trực tiếp ảnh cũ | Chưa xong: fallback chỉ tìm trong50ảnh mới, backend getImageById chưa có route public tương ứng; cần giải pháp đọc ảnh theo slug |
+| Lưu/tải/chia sẻ/keyboard dialog | Chưa xong: khóa click trước await CSRF, khóa tải lặp, chỉ đếm tải thành công, session guard, focus trap; đã chặn Arrow/Escape khi edit/collection/input/dialog con đang hoạt động |
+| EditImageModal → ImageEditor/EditImageTabs/TagInput/useEditImageForm | Chưa hoàn tất, cần kiểm thử responsive toàn luồng |
+| CollectionModal và các component con | Chưa hoàn tất, cần kiểm thử responsive và portal/outside click |
+| Popup tác giả | Đã sửa tính vị trí ngoài render, clamp viewport và guard response khác ảnh; chưa kiểm chứng đầy đủ hover/focus/touch, timer đóng còn cần rà |
+
+Kiểm thử lượt đầu ImagePage: fixture import trang/component thật, adapter Axios và stats services mock toàn bộ để không ghi backend. 320/360/390/767/768/769/1024/1279/1280/1366/1920px không tràn ngang với tên/title/location/tag rất dài; màn hình ngang956x440,769x440 và769x320; regular/mobile và modal/desktop; ResizeObserver cập nhật khung ảnh khi đổi kích thước. Thông tin mở/đóng Escape và trả focus không đóng trang; race1→2→3 giữ ảnh3 và333views khi response cũ về. Fixture đã xóa. Build pass, test-image-page-lifecycle.cjs pass; chưa tuyên bố lint toàn trang pass vì cụm tải/renderrefs còn lỗi. Không đánh dấu trang hay các modal con xong chỉ vì khung đã sửa.
 
 ## Tổng số
 
@@ -100,7 +118,7 @@ ImagePage dùng chung cho trang riêng và modal ảnh, tính một lần. `/tes
 | ~~[components/Header.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/Header.tsx)~~ | components/Avatar.tsx<br>components/CategoryNavigation.tsx<br>components/LanguageSwitcher.tsx<br>components/NotificationBell.tsx<br>components/SearchBar/SearchBar.tsx<br>components/SearchResultsNavigation.tsx<br>components/TextLogo.tsx<br>components/UploadModal.tsx<br>components/UserMenu.tsx<br>components/ui/button.tsx | App.tsx |
 | ~~[components/ImagePageSidebar.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/ImagePageSidebar.tsx)~~ | components/WebSocketStatus.tsx | App.tsx |
 | ~~[components/NoFlashGrid/NoFlashGrid.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/NoFlashGrid.tsx)~~ | components/NoFlashGrid/components/BlurUpImage.tsx | pages/FavoritesPage.tsx<br>pages/HomePage.tsx<br>pages/ImagePage.tsx<br>pages/SearchResultsPage.tsx<br>pages/collection/components/CollectionNoFlashGrid.tsx<br>pages/profile/ProfilePage.tsx<br>pages/profile/components/EditPinsModal.tsx |
-| [components/NoFlashGrid/components/ImageModalInfo.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalInfo.tsx) | components/NoFlashGrid/components/ImageModalChart.tsx | pages/ImagePage.tsx |
+| ~~[components/NoFlashGrid/components/ImageModalInfo.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalInfo.tsx)~~ | components/NoFlashGrid/components/ImageModalChart.tsx | pages/ImagePage.tsx |
 | [components/PWAInstallPrompt.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/PWAInstallPrompt.tsx) | components/ui/button.tsx | App.tsx |
 | [components/ReportButton.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/ReportButton.tsx) | components/ui/button.tsx | pages/collection/components/CollectionHeader.tsx |
 | ~~[components/SearchBar/SearchBar.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/SearchBar/SearchBar.tsx)~~ | components/SearchBar/SearchSuggestions.tsx<br>components/SearchFilters.tsx | components/Header.tsx |
@@ -172,7 +190,7 @@ ImagePage dùng chung cho trang riêng và modal ảnh, tính một lần. `/tes
 | [components/Logo.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/Logo.tsx) | Chưa thấy JSX từ file khác |
 | ~~[components/NoFlashGrid/components/BlurUpImage.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/BlurUpImage.tsx)~~ | components/NoFlashGrid/NoFlashGrid.tsx<br>components/collection/CollectionModal.tsx<br>pages/CollectionsPage.tsx<br>pages/FavoriteCollectionsPage.tsx<br>pages/collection/components/CollectionImageGrid.tsx<br>pages/profile/ProfilePage.tsx<br>pages/profile/components/PinnedImages.tsx |
 | [components/NoFlashGrid/components/DownloadSizeSelector.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/DownloadSizeSelector.tsx) | Chưa thấy JSX từ file khác |
-| [components/NoFlashGrid/components/ImageModalChart.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalChart.tsx) | components/NoFlashGrid/components/ImageModalInfo.tsx |
+| ~~[components/NoFlashGrid/components/ImageModalChart.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalChart.tsx)~~ | components/NoFlashGrid/components/ImageModalInfo.tsx |
 | [components/NoFlashGrid/components/ImageProgressBar.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageProgressBar.tsx) | pages/ImagePage.tsx |
 | ~~[components/NotificationBell.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NotificationBell.tsx)~~ | components/Header.tsx |
 | [components/PageViewTracker.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/PageViewTracker.tsx) | App.tsx |
@@ -269,8 +287,8 @@ ImagePage dùng chung cho trang riêng và modal ảnh, tính một lần. `/tes
 |---|---|
 | ~~[components/NoFlashGrid/components/BlurUpImage.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/BlurUpImage.tsx)~~ | BlurUpImage |
 | [components/NoFlashGrid/components/DownloadSizeSelector.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/DownloadSizeSelector.tsx) | DownloadSizeSelector |
-| [components/NoFlashGrid/components/ImageModalChart.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalChart.tsx) | ImageModalChart |
-| [components/NoFlashGrid/components/ImageModalInfo.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalInfo.tsx) | ImageModalInfo |
+| ~~[components/NoFlashGrid/components/ImageModalChart.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalChart.tsx)~~ | ImageModalChart |
+| ~~[components/NoFlashGrid/components/ImageModalInfo.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageModalInfo.tsx)~~ | ImageModalInfo |
 | [components/NoFlashGrid/components/ImageProgressBar.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/ImageProgressBar.tsx) | ImageProgressBar |
 
 ### components/SearchBar — 2 file
@@ -445,5 +463,4 @@ Cần rà soát trước khi giữ/gỡ; chưa xóa hoặc sửa các file này:
 - [pages/profile/ProfileRouteHandler.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/pages/profile/ProfileRouteHandler.tsx) → pages/profile/ProfilePage.tsx
 - [components/SearchBar.tsx](C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/SearchBar.tsx) — re-export, không khai báo component mới
 
-
-
+Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid expanded đổi thành3cột với2rail caption cân bằng, stage/navigation cột giữa; maxwidth1600 để giữ đủ bề rộng ảnh desktop. Caption vẫn bên trái ngang stage, gap24px, không overlay ảnh. Đo769/1024/1366/1705: centerError≈0, controlsError≈0, caption top=stage top, không overflow. Nextslide/compact category/mobile390 pass; build pass cập nhật preview4174. Chỉ sửa VisualArtFormsSlider.css, giữ ImagePage và phần khác. Proof slide-centered.png trong thư mục visualization hiện tại. Trạng thái slide vẫn hoàn tất; thay thế bố cục2cột cũ gây lệch tâm.
