@@ -192,13 +192,31 @@ export function clearHistoryState(): void {
   
   try {
     window.history.replaceState(
-      null,
+      { ...window.history.state, usr: null },
       document.title,
       window.location.pathname + window.location.search + window.location.hash
     );
   } catch (error) {
     console.warn('Failed to clear history state:', error);
   }
+}
+
+/** Remove modal routing fields without discarding the selected photo's data. */
+export function withoutModalState(locationState: unknown): Record<string, unknown> | null {
+  if (!locationState || typeof locationState !== 'object') return null;
+  const state = { ...locationState as Record<string, unknown> };
+  delete state.background;
+  delete state.inlineModal;
+  delete state.returnToBackgroundInHistory;
+  return state;
+}
+
+/** Only a validated modal may inherit its original background. */
+export function getImageNavigationBackground(location: Location): Location {
+  return validateModalState(location.state).background || {
+    ...location,
+    state: withoutModalState(location.state),
+  };
 }
 
 /**

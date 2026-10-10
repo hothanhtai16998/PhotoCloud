@@ -1,10 +1,10 @@
-import { lazy, Suspense, useEffect, useMemo, useLayoutEffect, useRef } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
-import LoadingSpinner from "./components/ui/LoadingSpinner";
 import { PageViewTracker } from "./components/PageViewTracker";
-import { ActualLocationContext } from "./contexts/ActualLocationContext";
+import { ActualLocationContext, BackgroundRouteContext } from "./contexts/ActualLocationContext";
+import { useIsMobile } from "./hooks/useIsMobile";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";
 import { ContactButton } from "./components/ContactButton";
@@ -17,8 +17,7 @@ import {
   isPageRefresh,
   clearModalStateOnRefresh,
   validateModalState,
-  clearHistoryState,
-  isModalActive,
+  withoutModalState,
 } from "./utils/modalNavigation";
 
 
@@ -70,6 +69,8 @@ const PageLoader = () => {
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   // Load site settings to update document title and meta tags
   const { settings } = useSiteSettings();
 
@@ -79,37 +80,15 @@ function App() {
     const prefetchCsrfToken = async () => {
       try {
         await fetch('/api/csrf-token', { method: 'GET', credentials: 'include' });
-      } catch (error) {
+      } catch {
         // Silently fail - will be retried on first POST request
       }
     };
     prefetchCsrfToken();
   }, []);
 
-  // Check if this is a refresh - do this synchronously before render logic
-  // Cache the result so we only check once per actual page load
-  const isRefresh = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return isPageRefresh();
-  }, []);
-
-  // Clear modal state on refresh - MUST be done synchronously BEFORE validation
-  // On refresh, ALWAYS clear modal state, even if location.state has modal flags
-  // (location.state persists in browser history on refresh, but we should still clear)
-  const hasClearedOnRefreshRef = useRef(false);
-  
-  // Clear flag synchronously during render (before useMemo runs)
-  // This is safe because clearModalStateOnRefresh() only modifies sessionStorage
-  if (isRefresh && !hasClearedOnRefreshRef.current) {
-    clearModalStateOnRefresh();
-    hasClearedOnRefreshRef.current = true;
-    // Clear any persisted state from browser history to ensure clean state
-    // NOTE: This clears window.history.state, but React Router's location.state
-    // may not update immediately, so we force validation to return invalid on refresh
-    if (location.state != null) {
-      clearHistoryState();
-    }
-  }
+  // Only the entry present at reload is stale; subsequent photo navigation is valid.
+  const [reloadLocationKey] = useState(() => isPageRefresh() ? location.key : null);
 
   // Update meta description when site description changes
   useEffect(() => {
@@ -164,44 +143,27 @@ function App() {
     return undefined;
   }, [settings.maintenanceMode, location.pathname]);
 
-  // Validate modal state using unified utility
-  // CRITICAL: Check if flag is missing but location.state has modal data (refresh scenario)
-  // On refresh, flag is cleared but location.state persists from browser history
-  // If location.state has modal data but flag is missing → refresh scenario → invalid
+  // A reload opens a standalone photo; later navigation may open a new modal.
   const modalValidation = useMemo(() => {
-    const state = location.state as { inlineModal?: boolean; background?: unknown } | undefined;
-    const hasModalStateInLocation = state?.inlineModal === true && Boolean(state?.background);
-    const hasFlag = isModalActive();
-    
-    // If location.state has modal data but flag is missing → refresh scenario → invalid
-    // This detects refresh even if isPageRefresh() is cached incorrectly
-    if (hasModalStateInLocation && !hasFlag) {
-      return { isValid: false, isModal: false };
-    }
-    
-    // Normal validation
+    if (location.key === reloadLocationKey) return { isValid: false, isModal: false };
     return validateModalState(location.state);
-  }, [location.state]);
+  }, [location.key, location.state, reloadLocationKey]);
 
   // Clean up invalid modal state (state exists but flag doesn't, or vice versa)
-  useLayoutEffect(() => {
-    if (isRefresh) return; // Already handled above
-
-  const state = location.state as { background?: Location; inlineModal?: boolean } | undefined;
-    
-    // If state has inlineModal but validation failed, clean it up
-    if (state?.inlineModal && !modalValidation.isValid) {
-      const cleanedState = { ...state };
-      delete cleanedState.inlineModal;
-      delete cleanedState.background;
-      clearHistoryState();
+  useEffect(() => {
+    if (location.key === reloadLocationKey) clearModalStateOnRefresh();
+    const state = location.state as { background?: unknown; inlineModal?: boolean } | undefined;
+    // replaceState alone does not update React Router's in-memory location.
+    if ((state?.inlineModal || state?.background) && !modalValidation.isValid) {
+      navigate(location.pathname + location.search + location.hash, {
+        replace: true,
+        state: withoutModalState(location.state),
+      });
     }
-  }, [isRefresh, location.state, modalValidation.isValid]);
+  }, [location, modalValidation.isValid, navigate, reloadLocationKey]);
 
-  // Use validated background location
-  // DON'T use isRefresh here - it's cached and can be wrong during navigation
-  // Instead, rely on modalValidation.isValid which checks the flag (cleared on refresh)
-  const backgroundLocation = modalValidation.background;
+  // Mobile uses a single full page while preserving its navigation history.
+  const backgroundLocation = isMobile ? undefined : modalValidation.background;
   
   // Validate backgroundLocation is a proper Location object
   const hasValidBackground = Boolean(
@@ -214,10 +176,6 @@ function App() {
   // Render modal routes only when:
   // 1. Modal state is valid (flag + location.state check)
   // 2. We have a valid background location with pathname
-  // NOTE: We don't check isRefresh here because:
-  // - On refresh, the flag is cleared by clearModalStateOnRefresh() above
-  // - So modalValidation.isValid will be false if flag is missing
-  // - This way, navigation works even if initial load was a refresh
   const shouldRenderModalRoutes = Boolean(modalValidation.isValid && hasValidBackground);
 
   // Show sidebar on all pages except admin and auth pages
@@ -248,6 +206,8 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         <PageViewTracker />
         {/* Primary routes. If background exists, render using the background location */}
+        <ActualLocationContext.Provider value={backgroundLocation || location}>
+        <BackgroundRouteContext.Provider value={Boolean(backgroundLocation)}>
         <Routes location={backgroundLocation || location}>
           {/**public routes */}
           <Route path="/" element={<HomePage />} />
@@ -282,6 +242,8 @@ function App() {
           {/* Catch-all route for /@username - must be last to only match unmatched paths */}
           <Route path="/*" element={<ProfileRouteHandler />} />
         </Routes>
+        </BackgroundRouteContext.Provider>
+        </ActualLocationContext.Provider>
 
         {/* Modal routes: render on top when background exists */}
         {shouldRenderModalRoutes && (

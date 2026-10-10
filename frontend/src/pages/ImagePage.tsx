@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ActualLocationContext } from '@/contexts/ActualLocationContext';
+import { ActualLocationContext, BackgroundRouteContext } from '@/contexts/ActualLocationContext';
 import { imageService } from '@/services/imageService';
 import api from '@/lib/axios';
 import { extractIdFromSlug, generateImageSlug } from '@/lib/utils';
@@ -27,7 +27,7 @@ import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/image
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
-import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive } from '@/utils/modalNavigation';
+import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive, getImageNavigationBackground } from '@/utils/modalNavigation';
 import { detectAvifSupport } from '@/utils/avifSupport';
 import { getRegularDisplayUrl, getOriginalDisplayUrl } from '@/utils/imageUrlUtils';
 import leftArrowIcon from '@/assets/left-arrow.svg';
@@ -58,6 +58,7 @@ function ImagePage() {
   // When rendered as modal route, location from useLocation() is the background location
   // We need the actual location with modal state
   const actualLocation = useContext(ActualLocationContext);
+  const isBackgroundRoute = useContext(BackgroundRouteContext);
   const locationWithState = actualLocation || location;
 
   // Ref to capture initial location.state (prevents re-fetching when React Router clears it)
@@ -579,31 +580,34 @@ function ImagePage() {
 
   // Handlers
   const handleClose = useCallback(() => {
+    const background = validateModalState(locationWithState.state).background;
     // Use unified utilities for cleanup
     clearModalActive();
     restoreScrollPosition();
 
     // Check if we have a background location (where we came from)
     // Use locationWithState to get the actual state with background
-    const background = locationWithState.state?.background as { pathname?: string; search?: string; hash?: string } | undefined;
 
     // If we have a background location, navigate there
     // This handles: homepage → ImagePage (close) → homepage
     // And: ImagePage1 → ImagePage2 (close) → ImagePage1
     if (background?.pathname) {
+      if (locationWithState.state?.returnToBackgroundInHistory) {
+        navigate(-1);
+        return;
+      }
       // Don't navigate if we're already on that path (shouldn't happen, but prevent issues)
-      if (background.pathname === location.pathname) {
+      if (background.pathname === locationWithState.pathname) {
         // Already on the background page, just go back in history
         navigate(-1);
         return;
       }
 
       // Navigate to background location without causing a reload
-      // Use replace: false to allow back button to work properly
-      // Don't pass the full background state to avoid circular references
-      navigate(background.pathname, { 
-        replace: false,
-        state: undefined // Clear state to prevent modal-style on the background page
+      // Replace the modal entry so browser Back cannot reopen the closed photo.
+      navigate(background.pathname + background.search + background.hash, {
+        replace: true,
+        state: background.state,
       });
       return;
     }
@@ -612,7 +616,7 @@ function ImagePage() {
     // This handles edge cases where background is not set
     // The HomePage's useEffect will handle scroll restoration on mount
     navigate(-1);
-  }, [navigate, location.state, location.pathname]);
+  }, [navigate, locationWithState]);
 
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent) => {
@@ -629,23 +633,20 @@ function ImagePage() {
     // This ensures the new ImagePage opens as modal-style, even if current page is regular
     // Use locationWithState to get the actual state
     const currentState = locationWithState.state || {};
+    const isCurrentModal = validateModalState(currentState).isValid;
 
     // Determine background location:
     // 1. If we have a background from grid/homepage, preserve it (for proper back navigation)
     // 2. If we're on a regular ImagePage (no background), use current location as background
     //    This way: ImagePage1 (regular) → ImagePage2 (modal) → close → ImagePage1 (regular)
-    const background = locationWithState.state?.background || {
-      pathname: locationWithState.pathname,
-      search: locationWithState.search,
-      hash: locationWithState.hash,
-      state: locationWithState.state,
-      key: locationWithState.key
-    };
+    const background = getImageNavigationBackground(locationWithState);
 
     const navigationState = {
       ...currentState,
       background, // Preserve original background or use current location
       inlineModal: true, // Always set inlineModal to true for modal-style
+      returnToBackgroundInHistory: isCurrentModal
+        ? currentState.returnToBackgroundInHistory : true,
       images
     };
 
@@ -653,10 +654,9 @@ function ImagePage() {
     // This ensures validation passes when the new ImagePage loads
     setModalActive();
 
-    // Always use replace: true to avoid history buildup when navigating between images
-    // The state will be properly set and detected by showModalStyle
+    // Preserve a standalone photo's history entry; subsequent modal changes replace.
     navigate(`/photos/${newSlug}`, {
-      replace: true,
+      replace: isCurrentModal,
       state: navigationState
     });
   }, [navigate, images, locationWithState]);
@@ -958,6 +958,7 @@ function ImagePage() {
 
   // Keyboard navigation
   useEffect(() => {
+    if (isBackgroundRoute) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented || showEditModal || showCollectionModal) return;
       // Don't handle navigation if user is typing in an input, textarea, or contenteditable element
@@ -995,7 +996,7 @@ function ImagePage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentImageIndex, images, handleImageSelect, handleClose, showEditModal, showCollectionModal]);
+  }, [isBackgroundRoute, currentImageIndex, images, handleImageSelect, handleClose, showEditModal, showCollectionModal]);
 
   // Handle related image hover - preload on hover for instant click
   // This is like Unsplash: preload when user hovers, so click is instant
@@ -1020,17 +1021,15 @@ function ImagePage() {
     setImages(nextImages);
     manuallySetImageRef.current = relatedImage._id;
     const currentState = locationWithState.state || {};
-    const background = currentState.background || {
-      pathname: locationWithState.pathname,
-      search: locationWithState.search,
-      hash: locationWithState.hash,
-      state: locationWithState.state,
-      key: locationWithState.key,
-    };
+    const isCurrentModal = validateModalState(currentState).isValid;
+    const background = getImageNavigationBackground(locationWithState);
     setModalActive();
     navigate(`/photos/${generateImageSlug(relatedImage.imageTitle || '', relatedImage._id)}`, {
-      replace: true,
-      state: { ...currentState, background, inlineModal: true, images: nextImages, image: relatedImage, fromGrid: false },
+      replace: isCurrentModal,
+      state: { ...currentState, background, inlineModal: true,
+        returnToBackgroundInHistory: isCurrentModal
+          ? currentState.returnToBackgroundInHistory : true,
+        images: nextImages, image: relatedImage, fromGrid: false },
     });
   }, [navigate, locationWithState, images]);
   // Keep the author popup inside the viewport after resize/scroll.
