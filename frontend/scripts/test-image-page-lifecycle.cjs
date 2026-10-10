@@ -11,6 +11,7 @@ const deferred = () => { let resolve, reject; const promise = new Promise((a,b) 
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const state = { image:null, images:[], loading:false, error:null, views:0 };
 const pending = [];
+const related = [];
 function runFetch(id, passedState) {
   let cleanup;
   const context = {
@@ -20,7 +21,7 @@ function runFetch(id, passedState) {
     setImage:value => {state.image=value;}, setImages:value => {state.images=value;},
     setLoading:value => {state.loading=value;}, setError:value => {state.error=value;},
     setImageSourceAndState:()=>{},
-    imageService:{fetchImages:(_params,signal)=>{const request=deferred();pending.push({...request,signal});return request.promise;}},
+    imageService:{fetchImageById:(_id,signal)=>{const request=deferred();pending.push({...request,signal});return request.promise;},fetchImages:(_params,signal)=>{const request=deferred();related.push({...request,signal});return request.promise;}},
   };
   vm.runInNewContext(fetchEffect,context);
   return cleanup;
@@ -31,10 +32,14 @@ async function main() {
   dispose();
   assert.equal(pending[0].signal.aborted,true);
   runFetch(second._id.slice(-12));
-  pending[1].resolve({images:[first,second]});
+  pending[1].resolve(second);
   await flush();
   assert.equal(state.image._id,second._id);
-  pending[0].resolve({images:[first,second]});
+  assert.equal(state.loading,false,'related photos must not delay the selected photo');
+  related[0].reject(new Error('related photos unavailable'));
+  await flush();
+  assert.equal(state.error,null,'related failure must not hide the selected photo');
+  pending[0].resolve(first);
   await flush();
   assert.equal(state.image._id,second._id,'stale success must not replace the current image');
   const stale=runFetch(first._id.slice(-12));
@@ -44,6 +49,9 @@ async function main() {
   await flush();
   assert.equal(state.error,null,'stale failure must not overwrite the current page');
   assert.equal(state.loading,false);
+  const beforeInvalid=pending.length;
+  runFetch('invalid');
+  assert.equal(pending.length,beforeInvalid,'invalid slug must not request the API');
   const requests=new Map(), cache=new Map(), increments={current:new Set()}, stored=[];
   const runStats = image => {
     let cleanup;

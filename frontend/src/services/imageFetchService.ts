@@ -1,4 +1,5 @@
 import { get } from '@/lib/api';
+import api from '@/lib/axios';
 import type {
   Image,
   FetchImagesParams,
@@ -7,6 +8,14 @@ import type {
 } from '@/types/image';
 
 export const imageFetchService = {
+  fetchImageById: async (id: string, signal?: AbortSignal): Promise<Image> => {
+    // Each detail request owns its signal; do not reuse an aborted deduplicated request.
+    const response = await api.get<{ image: Image }>(`/images/by-id/${encodeURIComponent(id)}`, {
+      withCredentials: true,
+      signal,
+    });
+    return response.data.image;
+  },
   fetchImages: async (
     params?: FetchImagesParams,
     signal?: AbortSignal

@@ -242,19 +242,19 @@ function ImagePage() {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
-    if (!imageId) {
+    if (!imageId || !/^(?:[a-f\d]{12}|[a-f\d]{24})$/i.test(imageId)) {
       setError('Invalid image slug');
       setLoading(false);
       return;
     }
+    const matchesId = (id: string) => (imageId.length === 24 ? id : id.slice(-12)).toLowerCase() === imageId.toLowerCase();
 
     const fetchImage = async () => {
       try {
         // CRITICAL: If we manually set the image (from related click), check if it matches
         // If it does, don't overwrite it - it's already set correctly
         if (manuallySetImageRef.current) {
-          const manualImageId = manuallySetImageRef.current.slice(-12);
-          if (manualImageId === imageId) {
+          if (matchesId(manuallySetImageRef.current)) {
             // Don't set loading or fetch - image is already set
             manuallySetImageRef.current = null;
             return;
@@ -271,8 +271,7 @@ function ImagePage() {
         // 1) Fast path: if a single image was passed in state, use it directly.
         const passedImage = initialState?.image;
         if (passedImage && passedImage._id) {
-          const imgShortId = passedImage._id.slice(-12);
-          if (imgShortId === imageId) {
+          if (matchesId(passedImage._id)) {
             const passedImages = Array.isArray(initialState?.images)
               ? (initialState!.images as Image[])
               : [passedImage];
@@ -290,8 +289,7 @@ function ImagePage() {
         const passedImages = initialState?.images as Image[] | undefined;
         if (passedImages && passedImages.length > 0) {
           const foundImage = passedImages.find((img) => {
-            const imgShortId = img._id.slice(-12);
-            return imgShortId === imageId;
+            return matchesId(img._id);
           });
 
           if (foundImage) {
@@ -305,22 +303,16 @@ function ImagePage() {
         }
 
         // 3) Fallback: fetch from API (direct URL / refresh)
-        const relatedResponse = await imageService.fetchImages({ limit: 50 }, controller.signal);
+        const foundImage = await imageService.fetchImageById(imageId, controller.signal);
         if (!active) return;
-        const allImages = relatedResponse.images || [];
-
-        const foundImage = allImages.find((img) => {
-          const imgShortId = img._id.slice(-12);
-          return imgShortId === imageId;
-        });
-
-        if (foundImage) {
-          setImage(foundImage);
-          setImages(allImages);
-
-        } else {
-          setError('Image not found');
-        }
+        setImage(foundImage);
+        setImages([foundImage]);
+        setLoading(false);
+        // Related photos are optional and must never block the selected photo.
+        void imageService.fetchImages({ limit: 50 }, controller.signal).then(response => {
+          if (!active) return;
+          setImages([foundImage, ...response.images.filter(item => item._id !== foundImage._id)]);
+        }).catch(() => { /* Keep the selected image usable if recommendations fail. */ });
       } catch (err: unknown) {
         if (!active) return;
         // Error handled by error boundary

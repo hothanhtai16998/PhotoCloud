@@ -43,6 +43,7 @@ router.get('/',
 
 // Public routes - get locations for suggestions/filtering
 router.get('/locations', getLocations);
+router.get('/by-id/:imageId', getImageById);
 
 // Public routes - increment stats (with optional auth to track user activity)
 router.patch('/:imageId/view', optionalAuth, incrementView);

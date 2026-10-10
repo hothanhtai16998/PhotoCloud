@@ -44,6 +44,7 @@ export const imageService = {
   createBulkUploadNotification: imageUploadService.createBulkUploadNotification,
 
   // Fetch operations
+  fetchImageById: imageFetchService.fetchImageById,
   fetchImages: imageFetchService.fetchImages,
   fetchUserImages: imageFetchService.fetchUserImages,
   fetchLocations: imageFetchService.fetchLocations,

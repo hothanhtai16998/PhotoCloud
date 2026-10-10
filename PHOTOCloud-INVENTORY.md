@@ -61,7 +61,7 @@ Ma trận đã kiểm tra cho NoFlashGrid: 360px, 390px, 767px, 768px, 769px, 10
 | ~~Chống response cũ khi tải/chuyển ảnh~~ | Abort + active guard; fast path state; regression success/error/cleanup pass |
 | ~~Đồng bộ thống kê và biểu đồ~~ | Response lượt xem/tải không ghi vào ảnh khác; khởi tạo đủ views/downloads; chart nhận tổng/daily mới; favorite count0 hợp lệ; selector chỉ theo ảnh hiện tại |
 | ~~Tải ảnh/animation và ImageProgressBar~~ | Đã gom vào keyed ImagePagePhoto, bỏ cacheprobe/newImage và preload riêng của trang, refs trongrender/previousimageflags; cleanup listener/decode/RAF chuyển ảnh/timer scroll; page lint0errors, còn33warnings |
-| Mở trực tiếp ảnh cũ | Chưa xong: fallback chỉ tìm trong50ảnh mới, backend getImageById chưa có route public tương ứng; cần giải pháp đọc ảnh theo slug |
+| ~~Mở trực tiếp ảnh cũ~~ | Xong: API đọc theo ID ngắn/đầy đủ, giữ visibility gallery; ảnh chính không phụ thuộc 50 ảnh mới hoặc lỗi ảnh liên quan. Test mock và responsive 320–1920px pass |
 | Lưu/tải/chia sẻ/keyboard dialog | Chưa xong: khóa click trước await CSRF, khóa tải lặp, chỉ đếm tải thành công, session guard, focus trap; đã chặn Arrow/Escape khi edit/collection/input/dialog con đang hoạt động |
 | EditImageModal → ImageEditor/EditImageTabs/TagInput/useEditImageForm | Chưa hoàn tất, cần kiểm thử responsive toàn luồng |
 | CollectionModal và các component con | Chưa hoàn tất, cần kiểm thử responsive và portal/outside click |

@@ -95,14 +95,24 @@ export const getImageById = asyncHandler(async (req, res) => {
     const imageId = req.params.imageId;
 
     // Validate ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(imageId)) {
+    if (!/^(?:[a-f\d]{12}|[a-f\d]{24})$/i.test(imageId || '')) {
         return res.status(400).json({
             message: 'Invalid image ID format',
         });
     }
 
-    // Always use ObjectId lookup (more efficient than aggregation)
-    const image = await Image.findById(imageId)
+    // Match public gallery visibility; full IDs keep the indexed lookup.
+    const query = {
+        $or: [
+            { moderationStatus: 'approved' },
+            { moderationStatus: { $exists: false } },
+            { moderationStatus: null },
+        ],
+        ...(imageId.length === 24
+            ? { _id: imageId }
+            : { $expr: { $eq: [{ $substrBytes: [{ $toString: '$_id' }, 12, 12] }, imageId.toLowerCase()] } }),
+    };
+    const matches = await Image.find(query).limit(2)
         .populate('uploadedBy', 'username displayName avatarUrl')
         .populate({
             path: 'imageCategory',
@@ -111,6 +121,10 @@ export const getImageById = asyncHandler(async (req, res) => {
         })
         .lean();
 
+    if (matches.length > 1) {
+        return res.status(409).json({ message: 'Ambiguous image ID; use the full image ID' });
+    }
+    const image = matches[0];
     if (!image) {
         return res.status(404).json({
             message: 'Image not found',
