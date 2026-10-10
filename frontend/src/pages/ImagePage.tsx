@@ -6,6 +6,8 @@ import api from '@/lib/axios';
 import { extractIdFromSlug, generateImageSlug } from '@/lib/utils';
 import type { Image } from '@/types/image';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useImagePageScrollRestore } from '@/hooks/useImagePageScrollRestore';
+import { saveImagePageScroll, getImagePageScroll } from '@/utils/imagePageScroll';
 import { useUserStore } from '@/stores/useUserStore';
 import { imageFetchService } from '@/services/imageFetchService';
 import { imageStatsService } from '@/services/imageStatsService';
@@ -100,8 +102,6 @@ function ImagePage() {
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const [displayHeight, setDisplayHeight] = useState(400);
 
-  // Track if we manually set image from related click to prevent fetch effect from overwriting
-  const manuallySetImageRef = useRef<string | null>(null);
   // Detect AVIF support once, cache globally on window, and use for modal URLs
   useEffect(() => {
     let isMounted = true;
@@ -252,16 +252,6 @@ function ImagePage() {
 
     const fetchImage = async () => {
       try {
-        // CRITICAL: If we manually set the image (from related click), check if it matches
-        // If it does, don't overwrite it - it's already set correctly
-        if (manuallySetImageRef.current) {
-          if (matchesId(manuallySetImageRef.current)) {
-            // Don't set loading or fetch - image is already set
-            manuallySetImageRef.current = null;
-            return;
-          }
-        }
-
         setLoading(true);
         setError(null);
 
@@ -475,14 +465,15 @@ function ImagePage() {
   useLayoutEffect(() => {
     if (loading || !image?._id) return;
     const scroller = scrollRef.current;
+    const restoredTop = getImagePageScroll(locationWithState)?.contentY || 0;
     const previousOverflow = scroller?.style.overflow || '';
     let firstFrame = 0;
     let secondFrame = 0;
     isImageChangingRef.current = true;
     setIsImageChanging(true);
-    setIsScrolled(false);
+    setIsScrolled(restoredTop > 0);
     setShouldAnimate(false);
-    scrollPosRef.current = 0;
+    scrollPosRef.current = restoredTop;
     setShowDownloadMenu(false);
     setShowAuthorTooltip(false);
     setLoadingAuthorImages(false);
@@ -494,7 +485,7 @@ function ImagePage() {
       authorTooltipTimeoutRef.current = null;
     }
     if (scroller) {
-      scroller.scrollTop = 0;
+      scroller.scrollTop = restoredTop;
       scroller.style.overflow = 'hidden';
     }
     firstFrame = requestAnimationFrame(() => {
@@ -510,7 +501,8 @@ function ImagePage() {
       if (scroller) scroller.style.overflow = previousOverflow;
       isImageChangingRef.current = false;
     };
-  }, [loading, image?._id]);
+  }, [loading, image?._id, locationWithState]);
+  useImagePageScrollRestore(locationWithState, scrollRef, !loading && Boolean(image), isBackgroundRoute, image?._id, images.length);
   // Measure the actual frame, including toolbar wrapping and viewport changes.
   useLayoutEffect(() => {
     if (loading || !image || !imageContainerRef.current) return;
@@ -634,6 +626,7 @@ function ImagePage() {
     // Use locationWithState to get the actual state
     const currentState = locationWithState.state || {};
     const isCurrentModal = validateModalState(currentState).isValid;
+    if (!isCurrentModal) saveImagePageScroll(locationWithState, scrollRef.current);
 
     // Determine background location:
     // 1. If we have a background from grid/homepage, preserve it (for proper back navigation)
@@ -1017,11 +1010,9 @@ function ImagePage() {
   const handleRelatedImageClick = useCallback((relatedImage: Image, _index: number) => {
     const nextImages = images.some(item => item._id === relatedImage._id)
       ? images : [...images, relatedImage];
-    setImage(relatedImage);
-    setImages(nextImages);
-    manuallySetImageRef.current = relatedImage._id;
     const currentState = locationWithState.state || {};
     const isCurrentModal = validateModalState(currentState).isValid;
+    if (!isCurrentModal) saveImagePageScroll(locationWithState, scrollRef.current);
     const background = getImageNavigationBackground(locationWithState);
     setModalActive();
     navigate(`/photos/${generateImageSlug(relatedImage.imageTitle || '', relatedImage._id)}`, {

@@ -14,6 +14,9 @@ import americaFlag from '@/assets/america.svg';
 import './ImagePageSidebar.css';
 import { getSessionItem, setSessionItem, removeSessionItem } from '@/utils/safeStorage';
 import { LANGUAGE_SWITCHER_ENABLED } from '@/config/features';
+import { validateModalState } from '@/utils/modalNavigation';
+import { getImagePageScroll } from '@/utils/imagePageScroll';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 // NOTE: refreshToken cookie is httpOnly, so we can't check it from JavaScript
 // Instead, we use optimistic rendering based on isInitializing and accessToken state
@@ -23,6 +26,7 @@ import { LANGUAGE_SWITCHER_ENABLED } from '@/config/features';
  * Icon-only with tooltips, active state indicators, and proper navigation.
  */
 const ImagePageSidebar = memo(function ImagePageSidebar() {
+  const isMobile = useIsMobile();
   const location = useLocation();
   const accessToken = useAuthStore(state => state.accessToken);
   const userId = useUserStore(state => state.user?._id);
@@ -137,7 +141,7 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
     if (previousPathnameRef.current !== location.pathname) {
       // Don't scroll if this is modal navigation (ImagePage)
       // Modal navigation has location.state with modal flag
-      const isModalNavigation = location.state && typeof location.state === 'object' && 'modal' in location.state;
+      const isModalNavigation = !isMobile && validateModalState(location.state).isValid;
       
       // Don't scroll if scroll restoration is in progress (when closing ImagePage modal)
       const scrollRestoreInProgress = getSessionItem('scrollRestoreInProgress') === 'true';
@@ -145,13 +149,13 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
       // Don't scroll if there's a saved scroll position (modal was just closed)
       const hasSavedScroll = getSessionItem('imageGridScrollPosition') !== null;
       
-      if (!isModalNavigation && !scrollRestoreInProgress && !hasSavedScroll) {
+      if (!isModalNavigation && !scrollRestoreInProgress && !hasSavedScroll && !getImagePageScroll(location)) {
         // Use requestAnimationFrame to ensure it happens after scroll restoration
         frame = requestAnimationFrame(() => {
           // Double-check scroll restoration didn't just complete
           const stillRestoring = getSessionItem('scrollRestoreInProgress') === 'true';
           const stillHasScroll = getSessionItem('imageGridScrollPosition') !== null;
-          if (!stillRestoring && !stillHasScroll) {
+          if (!stillRestoring && !stillHasScroll && !getImagePageScroll(location)) {
             window.scrollTo({ top: 0, behavior: 'instant' });
           }
         });
@@ -160,7 +164,7 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
       previousPathnameRef.current = location.pathname;
     }
     return () => cancelAnimationFrame(frame);
-  }, [location.pathname, location.state]);
+  }, [location, isMobile]);
 
 
   const isActive = (path: string) => {
