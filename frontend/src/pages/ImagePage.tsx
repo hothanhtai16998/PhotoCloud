@@ -853,22 +853,13 @@ function ImagePage() {
       const preventBackgroundScroll = (event: WheelEvent | TouchEvent) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
-        if (modalRef.current?.contains(target)) return;
+        if (scrollRef.current?.contains(target)) return;
         // Nested dialogs own their scroll lock; their portalled content is allowed.
         if (target.closest('.edit-image-modal, [role="dialog"][aria-modal="true"]') &&
             !imageDialogRef.current?.contains(target)) return;
         // Preserve browser zoom and let nested dialogs handle their own gestures.
         if (event.type === 'wheel' && (event as WheelEvent).ctrlKey) return;
-        const wasPrevented = event.defaultPrevented;
         event.preventDefault();
-        if (event.type === 'wheel' && !wasPrevented && !showEditModal && !showCollectionModal) {
-          const scroller = scrollRef.current;
-          if (!scroller) return;
-          const wheel = event as WheelEvent;
-          // Wheel devices report pixels, lines, or pages; normalize to pixels.
-          const unit = wheel.deltaMode === 1 ? 16 : wheel.deltaMode === 2 ? scroller.clientHeight : 1;
-          scroller.scrollTop += wheel.deltaY * unit;
-        }
       };
       document.addEventListener('wheel', preventBackgroundScroll, { passive: false, capture: true });
       document.addEventListener('touchmove', preventBackgroundScroll, { passive: false, capture: true });
@@ -880,7 +871,7 @@ function ImagePage() {
       };
     }
     return undefined;
-  }, [showModalStyle, isBackgroundRoute, showEditModal, showCollectionModal]);
+  }, [showModalStyle, isBackgroundRoute]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -1129,6 +1120,7 @@ function ImagePage() {
         }
       }}
     >
+      <div ref={modalRef} className="image-modal-surface">
       {/* Top info - Sticky: starts with space, sticks to viewport top when scrolling */}
       <div 
         ref={topInfoRef} 
@@ -1557,6 +1549,7 @@ function ImagePage() {
         </div>
       )}
 
+      </div>
     </div>
   );
 
@@ -1576,7 +1569,6 @@ function ImagePage() {
           className="image-modal-overlay image-page-modal"
         >
           <div
-            ref={modalRef}
             className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
           >
             {modalContent}
@@ -1649,7 +1641,6 @@ function ImagePage() {
          // Regular page: Wrapper (sidebar is now rendered globally in App.tsx)
          <div className="image-page">
            <div
-            ref={modalRef}
             className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
           >
             {modalContent}

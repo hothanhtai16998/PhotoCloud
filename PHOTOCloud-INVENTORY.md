@@ -502,3 +502,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Modal xem ảnh: chặn wheel/touch vùng nền và backdrop, chặn scroll chaining tại giới hạn nội dung; áp dụng desktop/mobile.~~ 11/10/2026, sửa riêng vùng cuộn nền của trang B.
 
 - ~~Wheel ngoài modal xem ảnh chuyển vào vùng cuộn bên trong modal; trang nền vẫn khóa.~~ 11/10/2026, hỗ trợ delta pixel/line/page, giữ zoom và nested dialog.
+
+- ~~Modal ảnh dùng một vùng cuộn native toàn chiều rộng gồm cả vùng xám; bỏ cộng scrollTop từ wheel để tránh giật.~~ 11/10/2026, giữ bề rộng mặt trắng và click ngoài đóng modal, mobile full width.
