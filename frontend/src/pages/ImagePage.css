@@ -167,6 +167,11 @@
   min-height: 0;
 }
 
+.image-page-modal,
+.image-page-modal .image-modal-scroll-area {
+  overscroll-behavior: contain;
+}
+
 :is(.image-page, .image-page-modal) .image-modal-top-info {
   height: auto;
   flex-shrink: 0;

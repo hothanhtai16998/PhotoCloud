@@ -844,17 +844,32 @@ function ImagePage() {
 
   // Lock body scroll when modal-style is shown
   useEffect(() => {
-    if (showModalStyle) {
+    if (showModalStyle && !isBackgroundRoute) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       document.body.classList.add('image-modal-open');
+
+      // Body overflow alone does not lock a background page's own scroll area.
+      const preventBackgroundScroll = (event: WheelEvent | TouchEvent) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (modalRef.current?.contains(target)) return;
+        // Nested dialogs own their scroll lock; their portalled content is allowed.
+        if (target.closest('.edit-image-modal, [role="dialog"][aria-modal="true"]') &&
+            !imageDialogRef.current?.contains(target)) return;
+        event.preventDefault();
+      };
+      document.addEventListener('wheel', preventBackgroundScroll, { passive: false, capture: true });
+      document.addEventListener('touchmove', preventBackgroundScroll, { passive: false, capture: true });
       return () => {
+        document.removeEventListener('wheel', preventBackgroundScroll, true);
+        document.removeEventListener('touchmove', preventBackgroundScroll, true);
         document.body.style.overflow = prev;
         document.body.classList.remove('image-modal-open');
       };
     }
     return undefined;
-  }, [showModalStyle]);
+  }, [showModalStyle, isBackgroundRoute]);
 
   // Keyboard navigation
   useEffect(() => {

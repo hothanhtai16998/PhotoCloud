@@ -498,3 +498,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~EditImageModal — chiều cao ổn định/tab một hàng (11/10/2026)~~: cao640px giới hạn viewport, cả4tab chung hàng; nền xám chọn tab thay gạch chân; nội dung cuộn riêng. Mobile320 Details/Tags/Exif đều544px, desktop640px.
 
 - ~~Editor desktop tận dụng chiều cao viewport; khóa wheel/touch/keyboard ngoài EditImageModal và chặn scroll chaining của các vùng cuộn trong editor.~~ Hoàn tất 11/10/2026; build và kiểm tra hook đạt. Mobile giữ giới hạn viewport hiện có.
+
+- ~~Modal xem ảnh: chặn wheel/touch vùng nền và backdrop, chặn scroll chaining tại giới hạn nội dung; áp dụng desktop/mobile.~~ 11/10/2026, sửa riêng vùng cuộn nền của trang B.
