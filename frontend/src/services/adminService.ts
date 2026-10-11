@@ -520,5 +520,32 @@ export const adminService = {
         });
         return res.data;
     },
+
+    // Hero config: admin chọn 4 collection hiển thị trên hero
+    getHeroConfig: async (): Promise<{
+        success: boolean;
+        config: { selectedIds: string[]; updatedAt: string | null; updatedBy: string | null };
+        availableCollections: Array<{
+            _id: string;
+            name: string;
+            coverImage?: { url: string; thumbnailUrl?: string } | null;
+            imageCount?: number;
+            updatedAt: string;
+        }>;
+    }> => {
+        const res = await api.get('/admin/hero-config', { withCredentials: true });
+        return res.data;
+    },
+
+    updateHeroConfig: async (collectionIds: string[]): Promise<{
+        success: boolean;
+        message: string;
+        config: { selectedIds: string[]; updatedAt: string };
+    }> => {
+        const res = await api.put('/admin/hero-config', { collectionIds }, {
+            withCredentials: true,
+        });
+        return res.data;
+    },
 };
 

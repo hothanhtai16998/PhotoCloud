@@ -7,6 +7,7 @@ export * from './adminCollectionController.js';
 export * from './adminContentController.js';
 export * from './adminSystemController.js';
 export * from './adminTestUtilsController.js';
+export * from './adminHeroController.js';
 
 // Explicitly export getWebSocketMetrics for clarity
 export { getWebSocketMetrics } from './adminSystemController.js';

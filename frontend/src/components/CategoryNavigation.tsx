@@ -11,7 +11,15 @@ import './CategoryNavigation.css'
 
 export const CategoryNavigation = memo(function CategoryNavigation() {
   const { pathname } = useLocation()
-  if (pathname !== '/' && !pathname.startsWith('/t/') && !pathname.includes('UnsplashGridTestPage')) return null
+  // Chỉ hiển thị ở các trang collections/photo grid — ẩn khỏi trang chủ `/` và landing page
+  // vì hero booking đã chiếm đủ viewport, nav sẽ đẩy hero xuống thành nhiều viewport.
+  if (
+    pathname === '/' ||
+    pathname.startsWith('/t/') ||
+    pathname.includes('UnsplashGridTestPage')
+  ) {
+    return null;
+  }
   return <CategoryNavigationContent />
 })
 

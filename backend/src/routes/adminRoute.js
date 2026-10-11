@@ -42,6 +42,8 @@ import {
     resetAllViewDownloadCounts,
     addTestViewDownloadData,
     listTestIds,
+    getHeroConfig,
+    updateHeroConfig,
 } from '../controllers/admin/index.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { adminRoute } from '../middlewares/adminMiddleware.js';
@@ -90,6 +92,10 @@ router.delete('/roles/:userId', requireSuperAdmin, validateCsrf, deleteAdminRole
 router.get('/collections', requirePermission('viewCollections'), getAllCollectionsAdmin);
 router.put('/collections/:collectionId', requirePermission('manageCollections'), validateCsrf, updateCollectionAdmin);
 router.delete('/collections/:collectionId', requirePermission('manageCollections'), validateCsrf, deleteCollectionAdmin);
+
+// Hero config: admin chọn 4 collection hiển thị trên hero
+router.get('/hero-config', requirePermission('manageSettings'), getHeroConfig);
+router.put('/hero-config', requirePermission('manageSettings'), validateCsrf, updateHeroConfig);
 
 // Export Data
 router.get('/export', requirePermission('exportData'), exportData);
