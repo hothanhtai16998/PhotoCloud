@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
 import type { SlideData } from '@/stores/useSliderStore';
 
 export function FixedSlideStage({slides, current, collapsed, select, zoom}: {
@@ -7,13 +9,16 @@ export function FixedSlideStage({slides, current, collapsed, select, zoom}: {
 }) {
   const pointer = useRef<{x: number; id: number} | null>(null);
   const dragged = useRef(false);
+  const reducedMotion = useReducedMotion();
+  const transition = reducedMotion ? { duration: 0 } : sliderLayoutTransition;
   // Keep the outgoing photograph opaque underneath the incoming one.
   // Fading both layers exposes the light card background at the midpoint.
   const [frame, setFrame] = useState<{current: number; previous: number | null}>({current, previous: null});
   if (frame.current !== current) setFrame({current, previous: frame.current});
   const previous = (current - 1 + slides.length) % slides.length;
   const next = (current + 1) % slides.length;
-  return <div className={`fixed-stage stage-fade${frame.previous !== null ? ' has-previous' : ''}`}>
+  return <motion.div layout layoutDependency={collapsed} transition={transition}
+    className={`fixed-stage stage-fade${frame.previous !== null ? ' has-previous' : ''}`}>
     <div className="fixed-stage-row">
       <button type="button" className="travel-card fixed-stage-main" aria-label={`Phóng to ảnh: ${slides[current].title}`}
         onPointerDown={event => {pointer.current = {x: event.clientX, id: event.pointerId}; dragged.current = false;}}
@@ -27,10 +32,11 @@ export function FixedSlideStage({slides, current, collapsed, select, zoom}: {
         onClick={event => {if (!dragged.current) zoom(event.currentTarget); dragged.current = false;}}>
         {slides.map((slide, index) => <span key={slide.id} aria-hidden={index !== current}
           className={`fixed-stage-layer${index === current ? ' is-current' : index === frame.previous ? ' is-previous' : ''}`}>
-          <img className="slide-image" src={slide.image} alt={slide.title} draggable={false} loading="eager" decoding="async" />
+          <motion.img layout layoutDependency={collapsed} transition={transition}
+            className="slide-image" src={slide.image} alt={slide.title} draggable={false} loading="eager" decoding="async" />
           {collapsed && <span className="travel-caption"><strong>{slide.title}</strong></span>}
         </span>)}
       </button>
     </div>
-  </div>;
+  </motion.div>;
 }

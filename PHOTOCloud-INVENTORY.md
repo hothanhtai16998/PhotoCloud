@@ -516,3 +516,4 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Grid trang chủ bỏ Motion layout transform và layer GPU ép buộc từng card; slide giữ nguyên.~~ 11/10/2026, QA trangthật Du lịch/Kiến trúc/Du lịch loaded6/pending0, buildpass. Chưa đo frame-by-frame nhấp nháy.
 
 - ~~Khôi phục animation Tất cả↔danh mục; grid giữ DOM ba danh sách gần nhất để quay lại không remount ảnh.~~ 11/10/2026, supersede fb18062; browserdesktop/mobile+buildpass.
+- ~~Slide Tất cả ↔ danh mục: đồng bộ layout khung/vùng ảnh/ảnh, giữ tỷ lệ ảnh khi thu/phóng; tween 450ms thay spring kéo đuôi.~~ 11/10/2026. QA fixture tỷ lệ ảnh 1.49988–1.50007 (gốc1.5), kết thúc ~429–450ms; trang thật chuyển ảnh/danh mục, desktop1440/1024 và mobile390. Desktop giữ scrollbar khi không khóa modal.
