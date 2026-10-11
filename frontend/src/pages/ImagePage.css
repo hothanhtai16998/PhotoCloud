@@ -294,6 +294,8 @@
 
 @media (max-width: 768px) {
   .image-page .image-modal-top-info { position: static !important; }
+  :is(.image-page, .image-page-modal) .image-modal-related-section { padding: 24px 12px !important; }
+  .compact-related-grid :is(.blur-up-image-mobile-author, .blur-up-image-mobile-actions) { display: none; }
   :is(.image-page, .image-page-modal) .image-modal-related-section .no-flash-grid-container { padding-top: 0; }
   :is(.image-page, .image-page-modal) .image-modal-actions {
     display: flex;

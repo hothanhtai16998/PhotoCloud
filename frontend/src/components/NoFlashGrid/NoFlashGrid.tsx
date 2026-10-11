@@ -16,6 +16,7 @@ type ExtendedImage = Image & { categoryName?: string; category?: string; isPinne
 
 export interface NoFlashGridProps {
     images: ExtendedImage[];
+    compactMobile?: boolean;
     loading?: boolean;
     onLoadData?: () => Promise<void>;
     className?: string;
@@ -30,12 +31,14 @@ export interface NoFlashGridProps {
     onLoadMore?: () => Promise<void>; // Handler for loading more images (infinite scroll)
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore }: NoFlashGridProps) {
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore, compactMobile = false }: NoFlashGridProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
+    const compactLayout = compactMobile && isMobile;
+    const gap = compactLayout ? 6 : GRID_CONFIG.gap;
     const [columnCount, setColumnCount] = useState(() => {
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
-        return getColumnCount(window.innerWidth);
+        return compactMobile && window.innerWidth <= 768 ? 2 : getColumnCount(window.innerWidth);
     });
     const [containerWidth, setContainerWidth] = useState(0); // Start at 0, will be updated after mount to prevent initial render with wrong dimensions
 
@@ -142,11 +145,11 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         // Total: ~130px
         // Convert to row units to add to rowSpan
         const mobileUIBarsHeight = 130; // Total height of mobile author + actions bars
-        const rowUnit = GRID_CONFIG.baseRowHeight + GRID_CONFIG.gap;
+        const rowUnit = GRID_CONFIG.baseRowHeight + gap;
         const mobileUIBarsRowSpan = Math.ceil(mobileUIBarsHeight / rowUnit);
 
         // Calculate column width
-        const gapTotal = GRID_CONFIG.gap * (columnCount - 1);
+        const gapTotal = gap * (columnCount - 1);
         const columnWidth = (containerWidth - gapTotal) / columnCount;
 
         // Track pixel heights in each column for shortest-column algorithm
@@ -171,7 +174,10 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             // On mobile only, add extra rowSpan to compensate for mobile UI bars
             // Desktop (3 columns) and tablet (2 columns) are NOT affected - they use original rowSpan
             // This ensures the image itself gets the intended height on mobile
-            const finalRowSpan = isMobileLayout
+            const naturalDimensions = dimensions || { width: 4, height: 3 };
+            const finalRowSpan = compactLayout
+                ? Math.max(1, Math.ceil((columnWidth * naturalDimensions.height / naturalDimensions.width + gap) / rowUnit))
+                : isMobileLayout
                 ? layout.rowSpan + mobileUIBarsRowSpan
                 : layout.rowSpan;
 
@@ -189,7 +195,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             const column = shortestColumnIndex + 1; // CSS Grid columns are 1-indexed
 
             const rowStart = Math.max(1, Math.floor(shortestHeight / rowUnit) + 1);
-            const exactHeight = finalRowSpan * GRID_CONFIG.baseRowHeight + (finalRowSpan - 1) * GRID_CONFIG.gap;
+            const exactHeight = finalRowSpan * GRID_CONFIG.baseRowHeight + (finalRowSpan - 1) * gap;
 
             columnHeights[shortestColumnIndex] = shortestHeight + finalRowSpan * rowUnit;
 
@@ -202,7 +208,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                 exactHeight,
             };
         });
-    }, [filteredImages, columnCount, containerWidth, precalculatedDimensionsMap]);
+    }, [filteredImages, columnCount, containerWidth, precalculatedDimensionsMap, compactLayout, gap]);
 
     // Measure the grid itself: mobile and search containers have different padding.
     useEffect(() => {
@@ -210,7 +216,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         if (!grid) return;
         const updateLayout = () => {
             setContainerWidth(grid.getBoundingClientRect().width);
-            setColumnCount(getColumnCount(window.innerWidth));
+            setColumnCount(compactMobile && window.innerWidth <= 768 ? 2 : getColumnCount(window.innerWidth));
         };
         updateLayout();
         const observer = new ResizeObserver(updateLayout);
@@ -220,7 +226,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
             observer.disconnect();
             window.removeEventListener('resize', updateLayout);
         };
-    }, []);
+    }, [compactMobile]);
 
     const isLoading = externalLoading ?? false;
 
@@ -242,7 +248,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     // This prevents duplicate spinners and provides consistent UX
 
     return (
-        <div id="image-grid-container" className={`no-flash-grid-container ${className}`}>
+        <div id="image-grid-container" className={`no-flash-grid-container ${compactMobile ? 'compact-related-grid' : ''} ${className}`}>
             {/* Global spinner handles all loading states - no local spinner needed */}
             {/* Always render grid (global spinner shows as overlay when loading) */}
             <>
@@ -252,7 +258,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                         style={{
                             // Unsplash-style: Fixed columns with dynamic row spans
                             gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
-                            gap: `${GRID_CONFIG.gap}px`,
+                            gap: `${gap}px`,
                             // Base row height for row span calculations - MUST be a string with units
                             gridAutoRows: `${GRID_CONFIG.baseRowHeight}px`,
                             // Don't use grid-auto-flow: dense - we use explicit row positioning

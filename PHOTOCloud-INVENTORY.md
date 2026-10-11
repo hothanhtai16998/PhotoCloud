@@ -486,3 +486,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~ImagePage/ImageModalInfo — bảng thống kê gọn và vị trí mở (11/10/2026)~~: đặt vị trí trước khi hiện, không transition vị trí; mobile rộng tối đa 280px/chart80px; Share/Info chỉ biểu tượng44px. Kiểm tra320/390x320/768/1024.
 
 - ~~ImagePage — thu gọn nút mobile theo mẫu (11/10/2026)~~: nút32x30px, Lưu/Collection trái và Download phải; Share/Info/Edit bên phải cùng hàng thống kê, stats xếp dọc. Dọn CSS grid/44px đã được thay thế; kiểm320/390 ngang/768/1024.
+
+- ~~ImagePage — ảnh liên quan hai cột trên mobile (11/10/2026)~~: compactMobile riêng, hai cột so le theo tỷ lệ ảnh/khe6px, ẩn hàng tác giả/nút ở khu vực này. Giữ grid mặc định và desktop; kiểm320/440/768/1024 và click ảnh.

@@ -1521,6 +1521,7 @@ function ImagePage() {
               {t('image.relatedImages')}
             </h2>
             <NoFlashGrid
+              compactMobile
               images={relatedImages}
               loading={false}
               onImageClick={handleImageSelect}
