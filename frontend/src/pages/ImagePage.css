@@ -285,4 +285,52 @@
     min-width: 0;
     width: min(240px, 100%);
   }
+
+  /* A regular mobile photo scrolls with the document under the fixed header. */
+  .image-page .image-modal-top-info {
+    position: static !important;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-related-section .no-flash-grid-container {
+    padding-top: 0;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-download-menu-wrapper {
+    grid-column: 1 / -1;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-actions button {
+    min-height: 44px;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-stats-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-stats-row .image-modal-actions-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-actions-container > * {
+    min-width: 0;
+    margin-left: 0;
+    justify-content: center;
+    white-space: nowrap;
+    min-height: 44px;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-actions-container > :nth-child(3) {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
 }
