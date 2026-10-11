@@ -506,3 +506,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Modal ảnh dùng một vùng cuộn native toàn chiều rộng gồm cả vùng xám; bỏ cộng scrollTop từ wheel để tránh giật.~~ 11/10/2026, giữ bề rộng mặt trắng và click ngoài đóng modal, mobile full width.
 
 - ~~Modal xem ảnh hẹp hơn, bo hai góc trên12px khi cách mép16px; sát mép thì góc vuông, native scroll giữ nguyên.~~ 11/10/2026, QA CSS browser desktop1705/mobile390 không tràn, buildpass.
+
+- ~~Ảnh chính mobile sát hai mép: bỏ padding ngang wrapper và gutter surface modal; thông tin/nút/related vẫn có đệm riêng.~~ 11/10/2026, scoped<=768 cho standalone và modal.
