@@ -753,10 +753,10 @@ export const vi = {
     description: 'Mô tả',
     descriptionPlaceholder: 'Thêm mô tả',
     title: 'Tiêu đề',
-    titlePlaceholder: 'Image title',
+    titlePlaceholder: 'Tiêu đề ảnh',
     location: 'Địa điểm',
     locationPlaceholder: 'Thêm địa điểm',
-    clearLocation: 'Clear location',
+    clearLocation: 'Xóa địa điểm',
     cameraMake: 'Hãng máy ảnh',
     cameraMakePlaceholder: 'Ví dụ: Canon, Nikon, Sony',
     cameraMakeTooltip:

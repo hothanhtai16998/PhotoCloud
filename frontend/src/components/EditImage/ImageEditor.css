@@ -541,7 +541,13 @@
   .image-editor-actions {
     width: 100%;
     justify-content: flex-end;
+    flex-wrap: wrap;
   }
+  .image-editor-header { padding: 12px; }
+  .image-editor-toolbar { flex-wrap: wrap; padding: 8px 12px; }
+  .image-editor-main { min-height: 0; overflow-y: auto; }
+  .image-editor-canvas-container { min-height: 160px; flex-shrink: 0; }
+  .image-editor-controls { max-height: none; flex-shrink: 0; }
 }
 
 /* Export Options */

@@ -25,9 +25,9 @@
 .edit-image-modal {
   background: #fff;
   border-radius: 12px;
-  width: 90%;
+  width: 100%;
   max-width: min(600px, 96%);
-  max-height: 90vh;
+  max-height: calc(100dvh - 40px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -258,10 +258,11 @@
 }
 
 @media (max-width: 768px) {
+  .edit-image-modal-overlay { padding: 12px; }
   .edit-image-modal {
     max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    max-height: calc(100dvh - 24px);
+    border-radius: 10px;
   }
 
   .edit-modal-tabs {
@@ -272,15 +273,28 @@
   .edit-modal-tab {
     white-space: nowrap;
     flex-shrink: 0;
+    padding: 12px 10px;
   }
 
   .edit-modal-tab-panel {
     gap: 16px;
   }
 
-  .edit-modal-tab-panel > div[style*='gridTemplateColumns'] {
-    grid-template-columns: 1fr !important;
-  }
+  .edit-modal-header { padding: 12px 16px; }
+  .edit-modal-tabs { padding: 0 12px; }
+  .edit-modal-content { padding: 16px; }
+}
+
+.edit-exif-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.edit-image-modal :is(.edit-form-group, .edit-modal-content) { min-width: 0; min-height: 0; }
+.edit-modal-tab { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.edit-modal-tab > svg { flex-shrink: 0; }
+.edit-image-modal :is(input, textarea) { max-width: 100%; box-sizing: border-box; }
+.edit-modal-header, .edit-modal-tabs { flex-shrink: 0; }
+@media (max-width: 480px) {
+  .edit-exif-grid { grid-template-columns: minmax(0, 1fr); }
+  .edit-modal-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .edit-modal-tab { min-width: 0; }
 }
 
 /* Tooltip styles */

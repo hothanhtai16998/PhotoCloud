@@ -71,7 +71,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
       <div className="edit-image-modal" onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="edit-modal-header">
-          <h2>{t('image.editImage')}</h2>
+          <h2>{t('imagePage.editImage')}</h2>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -95,14 +95,14 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
           {activeTab === 'details' && (
             <div className="edit-modal-tab-panel">
               <div className="edit-form-group">
-                <label htmlFor="title">{t('image.title')}</label>
+                <label htmlFor="title">{t('imagePage.title')}</label>
                 <input
                   id="title"
                   type="text"
                   className="edit-form-input"
                   value={imageTitle}
                   onChange={(e) => setImageTitle(e.target.value)}
-                  placeholder={t('image.titlePlaceholder')}
+                  placeholder={t('imagePage.titlePlaceholder')}
                   required
                   maxLength={200}
                 />
@@ -111,7 +111,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
               <div className="edit-form-group">
                 <label htmlFor="location">
                   <MapPin size={16} />
-                  {t('image.location')}
+                  {t('imagePage.location')}
                 </label>
                 <input
                   id="location"
@@ -119,7 +119,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                   className="edit-form-input"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder={t('image.locationPlaceholder')}
+                  placeholder={t('imagePage.locationPlaceholder')}
                   maxLength={200}
                 />
                 {location && (
@@ -127,7 +127,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                     type="button"
                     className="edit-form-clear"
                     onClick={() => setLocation('')}
-                    aria-label={t('image.clearLocation')}
+                    aria-label={t('imagePage.clearLocation')}
                   >
                     <X size={16} />
                   </button>
@@ -135,13 +135,13 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
               </div>
 
               <div className="edit-form-group">
-                <label htmlFor="description">{t('image.description')}</label>
+                <label htmlFor="description">{t('imagePage.description')}</label>
                 <textarea
                   id="description"
                   className="edit-form-textarea"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder={t('image.descriptionPlaceholder')}
+                  placeholder={t('imagePage.descriptionPlaceholder')}
                   maxLength={600}
                   rows={4}
                 />
@@ -152,16 +152,16 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
 
           {activeTab === 'exif' && (
             <div className="edit-modal-tab-panel">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="edit-exif-grid">
                 {/* Camera Make */}
                 <div className="edit-form-group">
                   <label htmlFor="cameraMake" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Camera size={16} />
-                    {t('image.cameraMake')}
+                    {t('imagePage.cameraMake')}
                     <div className="tooltip-wrapper">
                       <HelpCircle size={14} className="tooltip-icon" />
                       <span className="tooltip-text">
-                        {t('image.cameraMakeTooltip')}
+                        {t('imagePage.cameraMakeTooltip')}
                       </span>
                     </div>
                   </label>
@@ -171,7 +171,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                     className="edit-form-input"
                     value={cameraMake}
                     onChange={(e) => setCameraMake(e.target.value)}
-                    placeholder={t('image.cameraMakePlaceholder')}
+                    placeholder={t('imagePage.cameraMakePlaceholder')}
                     maxLength={50}
                   />
                 </div>
@@ -180,11 +180,11 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                 <div className="edit-form-group">
                   <label htmlFor="cameraModel" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Camera size={16} />
-                    {t('image.cameraModel')}
+                    {t('imagePage.cameraModel')}
                     <div className="tooltip-wrapper">
                       <HelpCircle size={14} className="tooltip-icon" />
                       <span className="tooltip-text">
-                        {t('image.cameraModelTooltip')}
+                        {t('imagePage.cameraModelTooltip')}
                       </span>
                     </div>
                   </label>
@@ -194,7 +194,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                     className="edit-form-input"
                     value={cameraModel}
                     onChange={(e) => setCameraModel(e.target.value)}
-                    placeholder={t('image.cameraModelPlaceholder')}
+                    placeholder={t('imagePage.cameraModelPlaceholder')}
                     maxLength={100}
                   />
                 </div>
@@ -202,11 +202,11 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                 {/* Focal Length */}
                 <div className="edit-form-group">
                   <label htmlFor="focalLength" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {t('image.focalLength')}
+                    {t('imagePage.focalLength')}
                     <div className="tooltip-wrapper">
                       <HelpCircle size={14} className="tooltip-icon" />
                       <span className="tooltip-text">
-                        {t('image.focalLengthTooltip')}
+                        {t('imagePage.focalLengthTooltip')}
                       </span>
                     </div>
                   </label>
@@ -225,11 +225,11 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                 {/* Aperture */}
                 <div className="edit-form-group">
                   <label htmlFor="aperture" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {t('image.aperture')}
+                    {t('imagePage.aperture')}
                     <div className="tooltip-wrapper">
                       <HelpCircle size={14} className="tooltip-icon" />
                       <span className="tooltip-text">
-                        {t('image.apertureTooltip')}
+                        {t('imagePage.apertureTooltip')}
                       </span>
                     </div>
                   </label>
@@ -248,11 +248,11 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                 {/* Shutter Speed */}
                 <div className="edit-form-group">
                   <label htmlFor="shutterSpeed" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {t('image.shutterSpeed')}
+                    {t('imagePage.shutterSpeed')}
                     <div className="tooltip-wrapper">
                       <HelpCircle size={14} className="tooltip-icon" />
                       <span className="tooltip-text">
-                        {t('image.shutterSpeedTooltip')}
+                        {t('imagePage.shutterSpeedTooltip')}
                       </span>
                     </div>
                   </label>
@@ -270,11 +270,11 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
                 {/* ISO */}
                 <div className="edit-form-group">
                   <label htmlFor="iso" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {t('image.iso')}
+                    {t('imagePage.iso')}
                     <div className="tooltip-wrapper">
                       <HelpCircle size={14} className="tooltip-icon" />
                       <span className="tooltip-text">
-                        {t('image.isoTooltip')}
+                        {t('imagePage.isoTooltip')}
                       </span>
                     </div>
                   </label>
