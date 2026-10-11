@@ -857,7 +857,18 @@ function ImagePage() {
         // Nested dialogs own their scroll lock; their portalled content is allowed.
         if (target.closest('.edit-image-modal, [role="dialog"][aria-modal="true"]') &&
             !imageDialogRef.current?.contains(target)) return;
+        // Preserve browser zoom and let nested dialogs handle their own gestures.
+        if (event.type === 'wheel' && (event as WheelEvent).ctrlKey) return;
+        const wasPrevented = event.defaultPrevented;
         event.preventDefault();
+        if (event.type === 'wheel' && !wasPrevented && !showEditModal && !showCollectionModal) {
+          const scroller = scrollRef.current;
+          if (!scroller) return;
+          const wheel = event as WheelEvent;
+          // Wheel devices report pixels, lines, or pages; normalize to pixels.
+          const unit = wheel.deltaMode === 1 ? 16 : wheel.deltaMode === 2 ? scroller.clientHeight : 1;
+          scroller.scrollTop += wheel.deltaY * unit;
+        }
       };
       document.addEventListener('wheel', preventBackgroundScroll, { passive: false, capture: true });
       document.addEventListener('touchmove', preventBackgroundScroll, { passive: false, capture: true });
@@ -869,7 +880,7 @@ function ImagePage() {
       };
     }
     return undefined;
-  }, [showModalStyle, isBackgroundRoute]);
+  }, [showModalStyle, isBackgroundRoute, showEditModal, showCollectionModal]);
 
   // Keyboard navigation
   useEffect(() => {

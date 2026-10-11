@@ -500,3 +500,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Editor desktop tận dụng chiều cao viewport; khóa wheel/touch/keyboard ngoài EditImageModal và chặn scroll chaining của các vùng cuộn trong editor.~~ Hoàn tất 11/10/2026; build và kiểm tra hook đạt. Mobile giữ giới hạn viewport hiện có.
 
 - ~~Modal xem ảnh: chặn wheel/touch vùng nền và backdrop, chặn scroll chaining tại giới hạn nội dung; áp dụng desktop/mobile.~~ 11/10/2026, sửa riêng vùng cuộn nền của trang B.
+
+- ~~Wheel ngoài modal xem ảnh chuyển vào vùng cuộn bên trong modal; trang nền vẫn khóa.~~ 11/10/2026, hỗ trợ delta pixel/line/page, giữ zoom và nested dialog.
