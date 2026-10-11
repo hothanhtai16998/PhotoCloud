@@ -478,3 +478,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~ImagePage — bố cục mobile cùng Header (11/10/2026)~~: toolbar cuộn theo trang, nút không bị cắt/ngắt chữ, vùng chạm 44px; bỏ padding header trang chủ trong grid liên quan. Kiểm tra 320/390/768/769/1024px. Chỉ hoàn tất cụm này, ImagePage và các dialog con còn mục riêng.
 
 - ~~ImagePage — ba nút biểu tượng cùng hàng trên mobile (11/10/2026)~~: Lưu/Bộ sưu tập/Tải xuống, giữ aria-label/title, vùng chạm 44px; desktop giữ chữ.
+
+- ~~ImagePage — cleanup timer popup tác giả (11/10/2026)~~: hủy mở/đóng/fade khi quay lại, đổi ảnh hoặc unmount; giữ popup khi hover/focus bên trong. Bàn phím/touch của popup còn cần kiểm tra riêng.

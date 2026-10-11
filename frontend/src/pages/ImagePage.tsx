@@ -97,6 +97,14 @@ function ImagePage() {
   const authorAreaRef = useRef<HTMLDivElement>(null);
 
   const authorTooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const authorHideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const authorFadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearAuthorTimers = useCallback(() => {
+    for (const timer of [authorTooltipTimeoutRef, authorHideTimeoutRef, authorFadeTimeoutRef]) {
+      if (timer.current !== null) clearTimeout(timer.current);
+      timer.current = null;
+    }
+  }, []);
   const incrementedViewIds = useRef<Set<string>>(new Set());
   const currentImageIdRef = useRef<string | null>(null);
   const pageActiveRef = useRef(true);
@@ -181,10 +189,10 @@ function ImagePage() {
     return () => {
       pageActiveRef.current = false;
       if (scrollAnimationTimerRef.current) clearTimeout(scrollAnimationTimerRef.current);
-      if (authorTooltipTimeoutRef.current) clearTimeout(authorTooltipTimeoutRef.current);
+      clearAuthorTimers();
 
     };
-  }, []);
+  }, [clearAuthorTimers]);
 
   // Stats state
   const getInitialStats = useCallback(() => {
@@ -520,10 +528,7 @@ function ImagePage() {
     setAuthorImages([]);
     setShowCollectionModal(false);
     setShowEditModal(false);
-    if (authorTooltipTimeoutRef.current) {
-      clearTimeout(authorTooltipTimeoutRef.current);
-      authorTooltipTimeoutRef.current = null;
-    }
+    clearAuthorTimers();
     if (scroller) {
       scroller.scrollTop = restoredTop;
       scroller.style.overflow = 'hidden';
@@ -541,7 +546,7 @@ function ImagePage() {
       if (scroller) scroller.style.overflow = previousOverflow;
       isImageChangingRef.current = false;
     };
-  }, [loading, image?._id, locationWithState]);
+  }, [loading, image?._id, locationWithState, clearAuthorTimers]);
   useImagePageScrollRestore(locationWithState, scrollRef, !loading && Boolean(image), isBackgroundRoute, image?._id, images.length);
   useImageDialogFocus(imageDialogRef, showModalStyle && !loading && Boolean(image) && !isBackgroundRoute, showEditModal || showCollectionModal);
   // Measure the actual frame, including toolbar wrapping and viewport changes.
@@ -921,6 +926,24 @@ function ImagePage() {
     
   }, [getRegularUrl]);
 
+  const cancelAuthorHide = useCallback(() => {
+    clearAuthorTimers();
+    setTooltipAnimating(true);
+  }, [clearAuthorTimers]);
+
+  const scheduleAuthorHide = useCallback(() => {
+    clearAuthorTimers();
+    authorHideTimeoutRef.current = setTimeout(() => {
+      authorHideTimeoutRef.current = null;
+      if (!pageActiveRef.current || authorAreaRef.current?.matches(':hover, :focus-within') || authorTooltipRef.current?.matches(':hover, :focus-within')) return;
+      setTooltipAnimating(false);
+      authorFadeTimeoutRef.current = setTimeout(() => {
+        authorFadeTimeoutRef.current = null;
+        if (pageActiveRef.current) setShowAuthorTooltip(false);
+      }, 200);
+    }, 150);
+  }, [clearAuthorTimers]);
+
   // Keep the author popup inside the viewport after resize/scroll.
   useLayoutEffect(() => {
     if (!showAuthorTooltip) return;
@@ -1055,14 +1078,9 @@ function ImagePage() {
           ref={authorAreaRef}
           className="image-modal-author-area"
           onMouseEnter={() => {
-            if ((authorAreaRef.current as any)?.hideTimeout) {
-              clearTimeout((authorAreaRef.current as any).hideTimeout);
-              (authorAreaRef.current as any).hideTimeout = null;
-            }
-            if (authorTooltipTimeoutRef.current) {
-              clearTimeout(authorTooltipTimeoutRef.current);
-            }
+            cancelAuthorHide();
             authorTooltipTimeoutRef.current = setTimeout(async () => {
+              authorTooltipTimeoutRef.current = null;
               if (!pageActiveRef.current || currentImageIdRef.current !== image._id) return;
               setShowAuthorTooltip(true);
               const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
@@ -1080,35 +1098,7 @@ function ImagePage() {
               }
             }, 1000);
           }}
-          onMouseLeave={(e) => {
-            const hideTimeout = setTimeout(() => {
-              const tooltipElement = document.querySelector('[data-author-tooltip]') as HTMLElement;
-              if (!tooltipElement) {
-                setShowAuthorTooltip(false);
-                return;
-              }
-              const tooltipRect = tooltipElement.getBoundingClientRect();
-              const mouseX = (e as any).clientX || 0;
-              const mouseY = (e as any).clientY || 0;
-              const isOverTooltip = (
-                mouseX >= tooltipRect.left - 10 &&
-                mouseX <= tooltipRect.right + 10 &&
-                mouseY >= tooltipRect.top - 10 &&
-                mouseY <= tooltipRect.bottom + 10
-              );
-              if (!isOverTooltip) {
-                setTooltipAnimating(false);
-                setTimeout(() => {
-                  setShowAuthorTooltip(false);
-                }, 200);
-              }
-              if (authorTooltipTimeoutRef.current) {
-                clearTimeout(authorTooltipTimeoutRef.current);
-                authorTooltipTimeoutRef.current = null;
-              }
-            }, 150);
-            (authorAreaRef.current as any).hideTimeout = hideTimeout;
-          }}
+          onMouseLeave={scheduleAuthorHide}
           onClick={handleViewProfile}
           style={{ cursor: 'pointer' }}
         >
@@ -1127,23 +1117,10 @@ function ImagePage() {
                 data-author-tooltip
                 className={`image-modal-author-tooltip ${tooltipAnimating ? 'animating' : ''}`}
                 style={authorTooltipPosition}
-                onMouseEnter={() => {
-                  if (authorAreaRef.current && (authorAreaRef.current as any).hideTimeout) {
-                    clearTimeout((authorAreaRef.current as any).hideTimeout);
-                    (authorAreaRef.current as any).hideTimeout = null;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const hideTimeout = setTimeout(() => {
-                    if (!authorAreaRef.current?.matches(':hover')) {
-                      setTooltipAnimating(false);
-                      setTimeout(() => {
-                        setShowAuthorTooltip(false);
-                      }, 200);
-                    }
-                  }, 150);
-                  (e.currentTarget as any).hideTimeout = hideTimeout;
-                }}
+                onMouseEnter={cancelAuthorHide}
+                onMouseLeave={scheduleAuthorHide}
+                onFocus={cancelAuthorHide}
+                onBlur={scheduleAuthorHide}
               >
                 <div className="image-modal-author-tooltip-header">
                   <div className="image-modal-author-tooltip-avatar">
