@@ -250,6 +250,7 @@
   flex-shrink: 0;
   animation: image-action-spin 0.8s linear infinite;
 }
+.image-download-mobile-icon { display: none; }
 
 @keyframes image-action-spin {
   to { transform: rotate(360deg); }
@@ -297,12 +298,34 @@
 
   :is(.image-page, .image-page-modal) .image-modal-actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
   }
 
   :is(.image-page, .image-page-modal) .image-modal-download-menu-wrapper {
-    grid-column: 1 / -1;
+    grid-column: auto;
+    position: relative;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-actions .image-action-label,
+  :is(.image-page, .image-page-modal) .image-modal-actions .image-modal-kbd,
+  :is(.image-page, .image-page-modal) .image-modal-download-button > svg:not(.image-download-mobile-icon):not(.image-action-spinner) {
+    display: none;
+  }
+
+  :is(.image-page, .image-page-modal) .image-download-mobile-icon {
+    display: block;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-collection-menu-wrapper > button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  :is(.image-page, .image-page-modal) .image-modal-download-menu {
+    left: auto;
+    right: 0;
+    width: min(240px, calc(100vw - 32px));
   }
 
   :is(.image-page, .image-page-modal) .image-modal-actions button {

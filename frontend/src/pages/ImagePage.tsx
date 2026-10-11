@@ -25,7 +25,7 @@ import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
-import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle } from 'lucide-react';
+import { Heart, Share2, Download, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
@@ -1208,10 +1208,12 @@ function ImagePage() {
             onClick={handleToggleFavorite}
             disabled={isTogglingFavorite}
             aria-busy={isTogglingFavorite}
+            aria-label={t('image.save')}
+            title={t('image.save')}
             className="image-modal-favorite-button"
           >
             {isTogglingFavorite ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />}
-            <span>{t('image.save')}</span>
+            <span className="image-action-label">{t('image.save')}</span>
             {favoriteCount > 0 && (
               <span className="image-modal-favorite-count">{favoriteCount.toLocaleString()}</span>
             )}
@@ -1234,7 +1236,7 @@ function ImagePage() {
               title={t('image.addToCollection')}
             >
               <FolderPlus size={16} />
-              <span>{t('image.collection')}</span>
+              <span className="image-action-label">{t('image.collection')}</span>
             </button>
             {showCollectionModal && image && (
               <CollectionModal
@@ -1264,6 +1266,8 @@ function ImagePage() {
               aria-busy={isDownloading}
               aria-expanded={showDownloadMenu}
               aria-haspopup="menu"
+              aria-label={t('image.download')}
+              title={t('image.download')}
               className="image-modal-download-button"
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
@@ -1272,7 +1276,8 @@ function ImagePage() {
                 e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
               }}
             >
-              <span>{t('image.download')}</span>
+              <Download size={18} className="image-download-mobile-icon" aria-hidden="true" />
+              <span className="image-action-label">{t('image.download')}</span>
               {isDownloading ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <ChevronDown size={16} />}
             </button>
             {showDownloadMenu && (

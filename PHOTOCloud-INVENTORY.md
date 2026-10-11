@@ -476,3 +476,5 @@ Cần rà soát trước khi giữ/gỡ; chưa xóa hoặc sửa các file này:
 Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid expanded đổi thành3cột với2rail caption cân bằng, stage/navigation cột giữa; maxwidth1600 để giữ đủ bề rộng ảnh desktop. Caption vẫn bên trái ngang stage, gap24px, không overlay ảnh. Đo769/1024/1366/1705: centerError≈0, controlsError≈0, caption top=stage top, không overflow. Nextslide/compact category/mobile390 pass; build pass cập nhật preview4174. Chỉ sửa VisualArtFormsSlider.css, giữ ImagePage và phần khác. Proof slide-centered.png trong thư mục visualization hiện tại. Trạng thái slide vẫn hoàn tất; thay thế bố cục2cột cũ gây lệch tâm.
 
 - ~~ImagePage — bố cục mobile cùng Header (11/10/2026)~~: toolbar cuộn theo trang, nút không bị cắt/ngắt chữ, vùng chạm 44px; bỏ padding header trang chủ trong grid liên quan. Kiểm tra 320/390/768/769/1024px. Chỉ hoàn tất cụm này, ImagePage và các dialog con còn mục riêng.
+
+- ~~ImagePage — ba nút biểu tượng cùng hàng trên mobile (11/10/2026)~~: Lưu/Bộ sưu tập/Tải xuống, giữ aria-label/title, vùng chạm 44px; desktop giữ chữ.
