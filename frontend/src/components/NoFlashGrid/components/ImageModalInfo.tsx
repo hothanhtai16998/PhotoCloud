@@ -33,6 +33,7 @@ const ImageModalInfoContent = memo(({ image }: ImageModalInfoProps) => {
       const top = below ? anchor.bottom + gap : anchor.top - height - gap;
       panel.style.left = `${Math.max(margin, Math.min(anchor.right - width, window.innerWidth - width - margin))}px`;
       panel.style.top = `${Math.max(margin, Math.min(top, window.innerHeight - height - margin))}px`;
+      panel.style.visibility = 'visible';
     };
     const schedulePosition = () => {
       if (frame) return;
@@ -76,13 +77,14 @@ const ImageModalInfoContent = memo(({ image }: ImageModalInfoProps) => {
   };
 
   return <>
-    <button ref={infoButtonRef} type="button" className={`modal-footer-btn ${showInfoModal ? 'active' : ''}`}
+    <button ref={infoButtonRef} type="button" className={`modal-footer-btn image-info-trigger ${showInfoModal ? 'active' : ''}`}
+      aria-label={t('image.info')} title={t('image.info')}
       aria-haspopup="dialog" aria-expanded={showInfoModal} aria-controls={showInfoModal ? dialogId : undefined}
       onClick={() => { setActiveTab('views'); setOpenImageId(showInfoModal ? null : image._id); }}>
       <Info size={18} /><span>{t('image.info')}</span>
     </button>
     {showInfoModal && createPortal(
-      <div ref={infoModalRef} id={dialogId} className="info-modal-wrapper" role="dialog" aria-labelledby={`${dialogId}-title`}
+      <div ref={infoModalRef} id={dialogId} className="info-modal-wrapper" style={{ visibility: 'hidden' }} role="dialog" aria-labelledby={`${dialogId}-title`}
         onKeyDown={event => {
           // ImagePage also handles Escape/arrows; keys inside this panel belong to it.
           event.stopPropagation();

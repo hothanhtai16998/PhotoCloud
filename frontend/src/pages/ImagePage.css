@@ -377,4 +377,17 @@
     grid-column: 1 / -1;
     justify-self: end;
   }
+
+  :is(.image-page, .image-page-modal) .image-modal-stats-row .image-modal-actions-container {
+    display: flex;
+    justify-content: flex-end;
+  }
+  :is(.image-page, .image-page-modal) .image-modal-actions-container :is(.image-modal-share-button, .image-info-trigger) {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+  }
+  :is(.image-page, .image-page-modal) .image-modal-actions-container :is(.image-modal-share-button, .image-info-trigger) > span {
+    display: none;
+  }
 }

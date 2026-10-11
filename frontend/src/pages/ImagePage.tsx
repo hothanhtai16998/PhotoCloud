@@ -1395,6 +1395,8 @@ function ImagePage() {
                   onClick={handleShare}
                   disabled={isSharing}
                   aria-busy={isSharing}
+                  aria-label={t('share.share')}
+                  title={t('share.share')}
                   className="image-modal-share-button"
                 >
                   {isSharing ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <Share2 size={16} />}
