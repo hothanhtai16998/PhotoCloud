@@ -494,3 +494,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~ImagePage — tăng độ rõ và bề rộng nút mobile (11/10/2026)~~: 40x32px thay32x30, viền#ccc/icon18px màu#555, bóng nhẹ; giữ hàng nút gọn.
 
 - ~~EditImageModal — nhãn dịch và bố cục responsive (11/10/2026)~~: gọi imagePage.* đúng nhóm, Exif1cột mobile nhỏ/2cột tablet-desktop; tab2hàng dưới480, bảng giới hạn100dvh và cuộn nội dung; toolbar ImageEditor wrap. Kiểm320/390 ngang/768/1366. Chưa đánh dấu tối ưu toàn bộ ImageEditor/useEditImageForm hoặc focus/session/lưu.
+
+- ~~EditImageModal — chiều cao ổn định/tab một hàng (11/10/2026)~~: cao640px giới hạn viewport, cả4tab chung hàng; nền xám chọn tab thay gạch chân; nội dung cuộn riêng. Mobile320 Details/Tags/Exif đều544px, desktop640px.

@@ -32,7 +32,7 @@ export const EditImageTabs = ({ activeTab, onTabChange, onEditClick }: EditImage
         onClick={onEditClick}
       >
         <ImageIcon size={16} />
-        Chỉnh sửa ảnh
+        Chỉnh ảnh
       </button>
     </div>
   );
