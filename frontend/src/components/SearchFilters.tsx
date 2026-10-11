@@ -225,13 +225,13 @@ const SearchFiltersComponent = memo(function SearchFiltersComponent({
                 <div className="filter-color-options">
                   {([
                     { value: 'all', label: t('common.all'), color: 'transparent' },
-                    { value: 'red', label: t('search.red'), color: '#ef4444' },
+                    { value: 'red', label: t('search.red'), color: '#A6453C' },
                     { value: 'orange', label: t('search.orange'), color: '#f97316' },
                     { value: 'yellow', label: t('search.yellow'), color: '#eab308' },
                     { value: 'green', label: t('search.green'), color: '#22c55e' },
-                    { value: 'blue', label: t('search.blue'), color: '#3b82f6' },
-                    { value: 'purple', label: t('search.purple'), color: '#a855f7' },
-                    { value: 'pink', label: t('search.pink'), color: '#ec4899' },
+                    { value: 'blue', label: t('search.blue'), color: '#B8865B' },
+                    { value: 'purple', label: t('search.purple'), color: '#B8865B' },
+                    { value: 'pink', label: t('search.pink'), color: '#A6453C' },
                     { value: 'brown', label: t('search.brown'), color: '#a16207' },
                     { value: 'black', label: t('search.black'), color: '#000000' },
                     { value: 'white', label: t('search.white'), color: '#ffffff' },

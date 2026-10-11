@@ -64,8 +64,8 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-mono`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#B8865B" />
+              <stop offset="100%" stopColor="#B8865B" />
             </linearGradient>
           </defs>
           <circle cx="24" cy="24" r="20" fill={`url(#${uniqueId}-mono)`} />
@@ -78,9 +78,9 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-abs`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f59e0b" />
-              <stop offset="50%" stopColor="#ef4444" />
-              <stop offset="100%" stopColor="#ec4899" />
+              <stop offset="0%" stopColor="#C9A14A" />
+              <stop offset="50%" stopColor="#A6453C" />
+              <stop offset="100%" stopColor="#A6453C" />
             </linearGradient>
           </defs>
           <path d="M 12 14 Q 24 8 36 14 L 36 18 Q 24 12 12 18 Z" fill={`url(#${uniqueId}-abs)`} />
@@ -94,7 +94,7 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
           <defs>
             <linearGradient id={`${uniqueId}-emblem`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#1e40af" />
-              <stop offset="100%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#B8865B" />
             </linearGradient>
           </defs>
           <path d="M 24 4 L 40 12 L 40 36 L 24 44 L 8 36 L 8 12 Z" fill={`url(#${uniqueId}-emblem)`} />
@@ -108,7 +108,7 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-geo`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="0%" stopColor="#7A8B5C" />
               <stop offset="100%" stopColor="#059669" />
             </linearGradient>
           </defs>
@@ -122,8 +122,8 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-out`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#B8865B" />
+              <stop offset="100%" stopColor="#B8865B" />
             </linearGradient>
           </defs>
           <rect x="12" y="14" width="24" height="6" rx="2" fill="none" stroke={`url(#${uniqueId}-out)`} strokeWidth="3" />
@@ -137,7 +137,7 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
           <defs>
             <linearGradient id={`${uniqueId}-3d`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#fbbf24" />
-              <stop offset="100%" stopColor="#f59e0b" />
+              <stop offset="100%" stopColor="#C9A14A" />
             </linearGradient>
           </defs>
           <rect x="12" y="14" width="24" height="6" rx="1" fill={`url(#${uniqueId}-3d)`} />
@@ -152,9 +152,9 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-cam`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="50%" stopColor="#8b5cf6" />
-              <stop offset="100%" stopColor="#ec4899" />
+              <stop offset="0%" stopColor="#B8865B" />
+              <stop offset="50%" stopColor="#B8865B" />
+              <stop offset="100%" stopColor="#A6453C" />
             </linearGradient>
           </defs>
           <circle cx="24" cy="24" r="22" fill={`url(#${uniqueId}-cam)`} />
@@ -186,9 +186,9 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-mod`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="50%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#B8865B" />
+              <stop offset="50%" stopColor="#B8865B" />
+              <stop offset="100%" stopColor="#B8865B" />
             </linearGradient>
           </defs>
           <rect x="10" y="12" width="28" height="6" rx="3" fill={`url(#${uniqueId}-mod)`} />
@@ -252,7 +252,7 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-sig2`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#7c3aed" />
+              <stop offset="0%" stopColor="#B8865B" />
               <stop offset="100%" stopColor="#5b21b6" />
             </linearGradient>
           </defs>
@@ -360,9 +360,9 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-sig5`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="50%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#B8865B" />
+              <stop offset="50%" stopColor="#B8865B" />
+              <stop offset="100%" stopColor="#B8865B" />
             </linearGradient>
           </defs>
           {/* Modern signature style with smooth curves */}
@@ -397,9 +397,9 @@ function renderLogoStyle(style: LogoStyle, uniqueId: string) {
         <>
           <defs>
             <linearGradient id={`${uniqueId}-grad`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="50%" stopColor="#8b5cf6" />
-              <stop offset="100%" stopColor="#ec4899" />
+              <stop offset="0%" stopColor="#B8865B" />
+              <stop offset="50%" stopColor="#B8865B" />
+              <stop offset="100%" stopColor="#A6453C" />
             </linearGradient>
             <linearGradient id={`${uniqueId}-letter`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" />

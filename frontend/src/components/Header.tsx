@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect, lazy, Suspense } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { User, Menu, Heart, Download, Shield, Info } from "lucide-react"
+import { User, Menu, Heart, Download, Shield, Info, CalendarDays } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
 import { SearchBar } from "./SearchBar"
@@ -186,6 +186,14 @@ export const Header = memo(function Header() {
                 alignItems: 'center',
                 gap: '8px'
               }}>
+                <button
+                  type="button"
+                  className="mobile-header-icon mobile-booking-shortcut"
+                  aria-label="Đặt lịch chụp"
+                  onClick={openBookingModal}
+                >
+                  <CalendarDays size={18} />
+                </button>
                 <div className="mobile-header-icon-wrapper">
                   <NotificationBell />
                 </div>
@@ -266,11 +274,12 @@ export const Header = memo(function Header() {
                 gap: '20px'
               }}>
                 <Button
-                  variant="ghost"
                   onClick={openBookingModal}
-                  className="header-link header-booking-button"
+                  className="header-booking-button"
+                  aria-label="Đặt lịch chụp"
                 >
-                  Đặt lịch chụp
+                  <CalendarDays size={16} />
+                  <span>Đặt lịch chụp</span>
                 </Button>
                 <Button
                   variant="ghost"

@@ -74,13 +74,13 @@ export function AdminSettings() {
         maxConcurrentSessions: 0,
         forceLogoutOnPasswordChange: true,
         // Appearance & Branding Settings
-        themePrimaryColor: '#7c3aed',
+        themePrimaryColor: '#B8865B',
         themeSecondaryColor: '#a78bfa',
         themeAccentColor: '#67e8f9',
-        themeSuccessColor: '#10b981',
-        themeWarningColor: '#f59e0b',
-        themeErrorColor: '#ef4444',
-        themeInfoColor: '#3b82f6',
+        themeSuccessColor: '#7A8B5C',
+        themeWarningColor: '#C9A14A',
+        themeErrorColor: '#A6453C',
+        themeInfoColor: '#B8865B',
         borderRadius: '1rem',
         animationsEnabled: true,
         animationSpeed: 'normal',
@@ -342,13 +342,13 @@ export function AdminSettings() {
                     maxConcurrentSessions: (settingsData.maxConcurrentSessions as number) || 0,
                     forceLogoutOnPasswordChange: (settingsData.forceLogoutOnPasswordChange as boolean) ?? true,
                     // Appearance & Branding Settings
-                    themePrimaryColor: ((settingsData as any).themePrimaryColor as string) || '#7c3aed',
+                    themePrimaryColor: ((settingsData as any).themePrimaryColor as string) || '#B8865B',
                     themeSecondaryColor: ((settingsData as any).themeSecondaryColor as string) || '#a78bfa',
                     themeAccentColor: ((settingsData as any).themeAccentColor as string) || '#67e8f9',
-                    themeSuccessColor: ((settingsData as any).themeSuccessColor as string) || '#10b981',
-                    themeWarningColor: ((settingsData as any).themeWarningColor as string) || '#f59e0b',
-                    themeErrorColor: ((settingsData as any).themeErrorColor as string) || '#ef4444',
-                    themeInfoColor: ((settingsData as any).themeInfoColor as string) || '#3b82f6',
+                    themeSuccessColor: ((settingsData as any).themeSuccessColor as string) || '#7A8B5C',
+                    themeWarningColor: ((settingsData as any).themeWarningColor as string) || '#C9A14A',
+                    themeErrorColor: ((settingsData as any).themeErrorColor as string) || '#A6453C',
+                    themeInfoColor: ((settingsData as any).themeInfoColor as string) || '#B8865B',
                     borderRadius: ((settingsData as any).borderRadius as string) || '1rem',
                     animationsEnabled: ((settingsData as any).animationsEnabled as boolean) ?? true,
                     animationSpeed: ((settingsData as any).animationSpeed as string) || 'normal',
@@ -2160,7 +2160,7 @@ export function AdminSettings() {
                                                 type="text"
                                                 value={settings.themePrimaryColor}
                                                 onChange={(e) => setSettings(prev => ({ ...prev, themePrimaryColor: e.target.value }))}
-                                                placeholder="#7c3aed"
+                                                placeholder="#1B1B19"
                                                 style={{ width: '100px' }}
                                                 aria-label="Primary color hex code"
                                             />
@@ -2293,7 +2293,7 @@ export function AdminSettings() {
                                                 type="text"
                                                 value={settings.themeSuccessColor}
                                                 onChange={(e) => setSettings(prev => ({ ...prev, themeSuccessColor: e.target.value }))}
-                                                placeholder="#10b981"
+                                                placeholder="#7A8B5C"
                                                 style={{ width: '100px' }}
                                             />
                                         </div>
@@ -2329,7 +2329,7 @@ export function AdminSettings() {
                                                 type="text"
                                                 value={settings.themeWarningColor}
                                                 onChange={(e) => setSettings(prev => ({ ...prev, themeWarningColor: e.target.value }))}
-                                                placeholder="#f59e0b"
+                                                placeholder="#C9A14A"
                                                 style={{ width: '100px' }}
                                             />
                                         </div>
@@ -2365,7 +2365,7 @@ export function AdminSettings() {
                                                 type="text"
                                                 value={settings.themeErrorColor}
                                                 onChange={(e) => setSettings(prev => ({ ...prev, themeErrorColor: e.target.value }))}
-                                                placeholder="#ef4444"
+                                                placeholder="#A6453C"
                                                 style={{ width: '100px' }}
                                             />
                                         </div>
@@ -2401,7 +2401,7 @@ export function AdminSettings() {
                                                 type="text"
                                                 value={settings.themeInfoColor}
                                                 onChange={(e) => setSettings(prev => ({ ...prev, themeInfoColor: e.target.value }))}
-                                                placeholder="#3b82f6"
+                                                placeholder="#B8865B"
                                                 style={{ width: '100px' }}
                                             />
                                         </div>
@@ -3090,7 +3090,7 @@ export function AdminSettings() {
                                                 />
                                                 <p className="admin-form-help-text">
                                                     Get your API key from{' '}
-                                                    <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>
+                                                    <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style={{ color: '#B8865B' }}>
                                                         Google Cloud Console
                                                     </a>
                                                     . Free tier: 1,000 images/month

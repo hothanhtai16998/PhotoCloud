@@ -10,7 +10,7 @@
   min-width: 200px;
   max-width: 280px;
   transition: all 0.3s ease;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
 }
 
 .quick-stats-widget:hover {
@@ -27,14 +27,14 @@
   align-items: center;
   margin-bottom: 12px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
 }
 
 .quick-stats-header h4 {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .quick-stats-actions {
@@ -48,7 +48,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #666;
+  color: var(--text-secondary, #6B6B66);
   padding: 4px;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -61,8 +61,8 @@
 
 .quick-stats-toggle:hover,
 .quick-stats-close:hover {
-  background: #f5f5f5;
-  color: #111;
+  background: var(--hover-bg, #F2EEE7);
+  color: var(--text-primary, #1B1B19);
 }
 
 .quick-stats-content {
@@ -81,24 +81,24 @@
 }
 
 .quick-stat-item:hover {
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
 }
 
 .quick-stat-item svg {
-  color: #667eea;
+  color: #B8865B;
   flex-shrink: 0;
 }
 
 .quick-stat-value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   line-height: 1.2;
 }
 
 .quick-stat-label {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--text-secondary, #6B6B66);
   line-height: 1.2;
 }
 

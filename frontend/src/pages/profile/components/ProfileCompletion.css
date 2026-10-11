@@ -1,7 +1,7 @@
 /* Profile Completion Component */
 .profile-completion {
-  background: #fff;
-  border: 1px solid #e5e5e5;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 8px;
   padding: 24px;
   margin-bottom: 24px;
@@ -17,7 +17,7 @@
 .profile-completion-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0;
 }
 
@@ -114,7 +114,7 @@
   align-items: center;
   gap: 8px;
   font-size: 0.9375rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   font-weight: 500;
 }
 

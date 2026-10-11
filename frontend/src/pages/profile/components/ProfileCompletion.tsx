@@ -45,10 +45,10 @@ export const ProfileCompletion = ({ completion, onEditProfile }: ProfileCompleti
   ];
 
   const getProgressColor = () => {
-    if (percentage >= 80) return '#10b981'; // green
-    if (percentage >= 60) return '#3b82f6'; // blue
-    if (percentage >= 40) return '#f59e0b'; // amber
-    return '#ef4444'; // red
+    if (percentage >= 80) return '#7A8B5C'; // green
+    if (percentage >= 60) return '#B8865B'; // blue
+    if (percentage >= 40) return '#C9A14A'; // amber
+    return '#A6453C'; // red
   };
 
   return (

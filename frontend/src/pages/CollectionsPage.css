@@ -26,7 +26,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid #e5e5e5;
-  border-top-color: #111;
+  border-top-color: var(--text-primary, #1B1B19);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 16px;
@@ -527,7 +527,7 @@
 }
 
 .collection-card-action-btn.action-favorite {
-  color: #ef4444;
+  color: #A6453C;
 }
 
 .collection-card-action-btn.action-favorite:hover:not(:disabled) {
@@ -597,7 +597,7 @@
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   font-size: 0.75rem;
-  color: #666;
+  color: var(--text-secondary, #6B6B66);
   font-weight: 500;
 }
 

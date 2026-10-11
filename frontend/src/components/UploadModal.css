@@ -46,7 +46,7 @@
 }
 
 .pre-upload-content {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 16px;
   padding: 48px 40px;
   max-width: min(400px, 96%);
@@ -78,7 +78,7 @@
   width: 48px;
   height: 48px;
   border: 4px solid #e5e5e5;
-  border-top-color: #111;
+  border-top-color: var(--text-primary, #1B1B19);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -97,7 +97,7 @@
 .pre-upload-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0 0 8px 0;
 }
 
@@ -128,13 +128,13 @@
 .pre-upload-percent {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0;
 }
 
 /* Upload Modal */
 .upload-modal {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 12px;
   width: 100%;
   max-width: min(1400px, 96%);
@@ -159,10 +159,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px 32px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   z-index: 100;
   border-radius: 12px 12px 0 0;
   flex-shrink: 0;
@@ -172,7 +172,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .upload-modal-help {
@@ -188,7 +188,7 @@
 }
 
 .upload-modal-help:hover {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .upload-modal-close {
@@ -204,7 +204,7 @@
 }
 
 .upload-modal-close:hover {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 /* Content */
@@ -225,7 +225,7 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fafafa;
+  background: var(--hover-bg, #F2EEE7);
   margin-bottom: 32px;
   position: relative;
   flex: 1;
@@ -239,12 +239,12 @@
 }
 
 .upload-dropzone:hover {
-  border-color: #111;
-  background: #f5f5f5;
+  border-color: var(--text-primary, #1B1B19);
+  background: var(--hover-bg, #F2EEE7);
 }
 
 .upload-dropzone.drag-active {
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
   background: #f0f0f0;
 }
 
@@ -270,7 +270,7 @@
 
 .upload-main-text {
   font-size: 1rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .upload-tag {
@@ -340,7 +340,7 @@
   top: 12px;
   right: 12px;
   background: rgba(0, 0, 0, 0.7);
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   border: none;
   border-radius: 50%;
   width: 32px;
@@ -377,13 +377,13 @@
   width: 40px;
   height: 40px;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border-top-color: var(--bg-card, #FFFFFF);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 .image-upload-overlay .upload-text {
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   font-size: 0.875rem;
   font-weight: 500;
   margin: 0;
@@ -397,7 +397,7 @@
 
 /* Progress Screen */
 .upload-progress-screen {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 12px;
   padding: 80px 60px;
   text-align: center;
@@ -441,7 +441,7 @@
   transform: translate(-50%, -50%);
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .progress-text {
@@ -451,13 +451,13 @@
 }
 
 .progress-text strong {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   font-weight: 600;
 }
 
 /* Success Screen */
 .upload-success-screen {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 12px;
   padding: 60px 40px;
   text-align: center;
@@ -534,7 +534,7 @@
 .success-title {
   font-size: 2rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0 0 16px 0;
 }
 
@@ -547,7 +547,7 @@
 
 .success-button {
   background: #111;
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   border: none;
   padding: 14px 32px;
   border-radius: 6px;
@@ -580,12 +580,12 @@
 .form-group label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .form-group input {
   padding: 10px 12px;
-  border: 1px solid #d1d1d1;
+  border: 1px solid var(--border-strong, #D8D1C5);
   border-radius: 6px;
   font-size: 0.9375rem;
   transition: border-color 0.2s ease;
@@ -593,7 +593,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .error-text {
@@ -609,7 +609,7 @@
   gap: 24px;
   margin: 32px 0;
   padding: 24px;
-  background: #fafafa;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 8px;
 }
 
@@ -631,7 +631,7 @@
 }
 
 .guideline-column strong {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   font-weight: 600;
 }
 
@@ -651,7 +651,7 @@
   align-items: stretch;
   padding: 20px 32px;
   border-top: 1px solid #e5e5e5;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
 }
 
 .upload-modal-footer .footer-buttons {
@@ -666,7 +666,7 @@
 }
 
 .footer-link:hover {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .footer-buttons {
@@ -684,7 +684,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: #111;
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 0.875rem;
@@ -700,7 +700,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: #111;
+  border-top-color: var(--text-primary, #1B1B19);
 }
 
 @keyframes tooltipFadeIn {
@@ -866,13 +866,13 @@
 
 .footer-buttons button:first-child {
   flex: 0 0 auto; /* Cancel button: don't expand, use natural width */
-  border-color: #e5e5e5 !important; /* Softer border color */
+  border-color: var(--border-color, #E8E2D6) !important; /* Softer border color */
 }
 
 .footer-buttons button:first-child:hover {
-  border-color: #d1d1d1 !important; /* Lighter border on hover */
-  background-color: #f5f5f5 !important; /* Light gray hover background */
-  background: #f5f5f5 !important; /* Light gray hover background */
+  border-color: var(--border-strong, #D8D1C5) !important; /* Lighter border on hover */
+  background-color: var(--hover-bg, #F2EEE7) !important; /* Light gray hover background */
+  background: var(--hover-bg, #F2EEE7) !important; /* Light gray hover background */
 }
 
 .footer-buttons button:last-child {
@@ -902,7 +902,7 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: #fafafa;
+  background: var(--hover-bg, #F2EEE7);
   margin-bottom: 32px;
   display: flex;
   flex-direction: column;
@@ -913,8 +913,8 @@
 }
 
 .upload-add-more-card:hover {
-  border-color: #111;
-  background: #f5f5f5;
+  border-color: var(--text-primary, #1B1B19);
+  background: var(--hover-bg, #F2EEE7);
 }
 
 .upload-add-more-icon {
@@ -953,7 +953,7 @@
 }
 
 .upload-image-card {
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 12px 12px 0 0; /* Only top corners rounded */
   padding: 0;
   background-color: white;
@@ -1043,7 +1043,7 @@
 }
 
 .upload-submit-tooltip .required-marker {
-  color: #ef4444;
+  color: #A6453C;
   font-weight: bold;
 }
 

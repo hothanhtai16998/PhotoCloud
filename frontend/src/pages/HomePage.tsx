@@ -4,6 +4,7 @@ import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
 import './HomePageLayouts.css';
 import { useEffect, useContext, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Star, CalendarDays } from 'lucide-react';
 import { useImageStore } from "@/stores/useImageStore";
 import { useSliderStore } from "@/stores/useSliderStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
@@ -21,6 +22,11 @@ import { useSearchFilters } from "@/components/SearchBar/hooks/useSearchFilters"
 import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
 import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
+import { openBookingModal } from '@/utils/bookingModalEvent';
+import { HeroBooking } from '@/components/booking/HeroBooking';
+import { PackagesSection } from '@/components/booking/PackagesSection';
+import { HowItWorks } from '@/components/booking/HowItWorks';
+import { FinalCTA } from '@/components/booking/FinalCTA';
 
 function HomePage() {
     const [sliderCollapsed, setSliderCollapsed] = useState(false);
@@ -225,12 +231,30 @@ function HomePage() {
         });
     }, [navigate, visibleImages, actualLocation, isMobile]);
 
+    const scrollToPackages = useCallback(() => {
+        document.getElementById('home-packages')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, []);
+
     return (
         <>
             <main className={`homepage layout-preview layout-intro${sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
                 <LayoutGroup>
                 {!currentSearch && (
-                    <VisualArtFormsSlider collapsed={sliderCollapsed} />
+                    <>
+                        <HeroBooking onViewPackages={scrollToPackages} />
+                        <PackagesSection />
+                        <HowItWorks />
+                        <section className="home-social-proof" aria-label="Đánh giá khách hàng">
+                            <div>
+                                <span><Star size={16} /> 4.9/5 từ khách đã đặt lịch</span>
+                                <p>“Buổi chụp nhẹ nhàng, hướng dẫn tạo dáng dễ hiểu và gallery nhận đúng hẹn.”</p>
+                            </div>
+                            <button type="button" className="studio-cta-primary" onClick={openBookingModal}>
+                                <CalendarDays size={17} /> Đặt lịch chụp
+                            </button>
+                        </section>
+                        <VisualArtFormsSlider collapsed={sliderCollapsed} />
+                    </>
                 )}
                 {sliderCollapsed && !currentSearch && <section className="category-intro">
                     <span>KHÁM PHÁ PHOTOCLOUD</span><h1>{category && category !== 'all' ? category : 'Khám phá ảnh'}</h1>
@@ -249,6 +273,7 @@ function HomePage() {
                 />
                 </motion.div>
                 </LayoutGroup>
+                {!currentSearch && !sliderCollapsed && <FinalCTA />}
             </main>
         </>
     );

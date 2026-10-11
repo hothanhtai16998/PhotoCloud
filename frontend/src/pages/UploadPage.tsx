@@ -233,7 +233,7 @@ function UploadPage() {
                                     </p>
                                 )}
                                 {preUploadData && !isUploading && (
-                                    <p className="success-text" style={{ marginTop: '8px', color: '#10b981' }}>
+                                    <p className="success-text" style={{ marginTop: '8px', color: '#7A8B5C' }}>
                                         ✓ {t('upload.uploadedCheck')}
                                     </p>
                                 )}

@@ -1,9 +1,13 @@
-/* Image Page Sidebar - Global styles for sidebar on all pages */
+/* Image Page Sidebar - PhotoCloud Warm Studio */
 .image-page-sidebar {
   width: 64px;
   padding: 16px 0;
-  border-right: 1px solid hsl(var(--border));
-  background: #ffffff;
+  border-right: 1px solid var(--border-color, #E8E2D6);
+  background: var(--bg-primary, #FAF8F4);
+  box-shadow:
+    1px 0 0 rgba(27, 27, 25, 0.02),
+    4px 0 12px rgba(27, 27, 25, 0.04),
+    12px 0 32px -8px rgba(27, 27, 25, 0.06);
   display: none; /* Hidden by default on mobile */
   flex-direction: column;
   justify-content: space-between;
@@ -46,7 +50,7 @@
 
 .sidebar-section-bottom {
   padding-top: 12px;
-  border-top: 1px solid hsl(var(--border) / 0.5);
+  border-top: 1px solid var(--border-color, #E8E2D6);
   gap: 12px;
 }
 
@@ -54,7 +58,7 @@
 .sidebar-separator {
   width: 24px;
   height: 2px;
-  background: hsl(var(--border));
+  background: var(--border-color, #E8E2D6);
   margin: 6px 0;
   border-radius: 1px;
 }
@@ -68,7 +72,7 @@
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  color: #6b7280; /* gray-500 */
+  color: var(--text-secondary, #6B6B66);
   text-decoration: none;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -82,13 +86,13 @@
 }
 
 .sidebar-nav-item:hover {
-  background: #f5f5f5; /* gray-100 */
-  color: #111111; /* gray-900 */
+  background: var(--hover-bg, #F2EEE7); /* gray-100 */
+  color: var(--text-primary, #1B1B19); /* gray-900 */
 }
 
 .sidebar-nav-item.active {
-  color: #111111; /* gray-900 */
-  background: #f5f5f5; /* gray-100 */
+  color: var(--text-primary, #1B1B19); /* gray-900 */
+  background: var(--hover-bg, #F2EEE7); /* gray-100 */
 }
 
 /* Active state - left border indicator */
@@ -100,7 +104,7 @@
   transform: translateY(-50%);
   width: 3px;
   height: 24px;
-  background: hsl(var(--primary, #111111));
+  background: var(--accent, #B8865B);
   border-radius: 0 2px 2px 0;
 }
 
@@ -139,8 +143,8 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  background: #111111;
-  color: #ffffff;
+  background: var(--text-primary, #1B1B19);
+  color: var(--bg-card, #FFFFFF);
   font-size: 0.625rem;
   font-weight: 600;
   padding: 2px 4px;
@@ -158,8 +162,8 @@
   left: calc(100% + 12px);
   top: 50%;
   transform: translateY(-50%);
-  background: #111111;
-  color: #ffffff;
+  background: var(--text-primary, #1B1B19);
+  color: var(--bg-card, #FFFFFF);
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 0.75rem;

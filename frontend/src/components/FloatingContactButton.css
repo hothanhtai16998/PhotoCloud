@@ -27,7 +27,7 @@
 }
 
 .contact-modal {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 12px;
   width: 100%;
   max-width: min(500px, 96%);
@@ -68,10 +68,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 24px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   z-index: 10;
   border-radius: 12px 12px 0 0;
 }
@@ -80,7 +80,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .contact-modal-close {
@@ -97,8 +97,8 @@
 }
 
 .contact-modal-close:hover {
-  color: #111;
-  background: #f5f5f5;
+  color: var(--text-primary, #1B1B19);
+  background: var(--hover-bg, #F2EEE7);
 }
 
 .contact-modal-content {
@@ -126,7 +126,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 8px;
   color: #0066cc;
 }
@@ -148,7 +148,7 @@
 
 .contact-value {
   font-size: 0.9375rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -166,14 +166,14 @@
 .contact-section-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0 0 12px 0;
 }
 
 .contact-bio-text {
   font-size: 0.9375rem;
   line-height: 1.6;
-  color: #333;
+  color: var(--text-primary, #1B1B19);
   margin: 0;
 }
 
@@ -193,16 +193,16 @@
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 8px;
   text-decoration: none;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   transition: all 0.2s ease;
   font-size: 0.875rem;
 }
 
 .contact-social-link:hover {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border: 1px solid #0066cc;
   color: #0066cc;
   transform: translateY(-2px);
@@ -245,7 +245,7 @@
   background-image: linear-gradient(
     135deg,
     #6b46c1 0%,
-    #7c3aed 25%,
+    #B8865B 25%,
     #1e40af 60%,
     #1e3a8a 100%
   );
@@ -259,7 +259,7 @@
   transition: all 0.6s ease-in-out;
   font-size: 0.325em;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--bg-card, #FFFFFF);
   letter-spacing: 0.75px;
   z-index: 2;
   display: flex;

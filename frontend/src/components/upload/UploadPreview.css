@@ -27,8 +27,8 @@
 /* Scrolling Loader Styles */
 .upload-loader-container .loader {
   --main-size: 4em;
-  --text-color: #ffffff;
-  --shine-color: #ffffff40;
+  --text-color: var(--bg-card, #FFFFFF);
+  --shine-color: var(--bg-card, #FFFFFF)40;
   --shadow-color: #aaaaaa;
   display: flex;
   justify-content: center;
@@ -381,7 +381,7 @@
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 6px;
-  color: #333;
+  color: var(--text-primary, #1B1B19);
   font-size: 14px;
   font-weight: 500;
   outline: none;
@@ -394,7 +394,7 @@
 }
 
 .upload-location-input:focus {
-  border-color: #6366f1;
+  border-color: #B8865B;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
@@ -412,14 +412,14 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  color: #6366f1;
+  color: #B8865B;
   transition: all 0.2s ease;
   padding: 0;
 }
 
 .upload-location-detect-button:hover:not(:disabled) {
   background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  color: #B8865B;
 }
 
 .upload-location-detect-button:disabled {
@@ -431,7 +431,7 @@
   width: 16px;
   height: 16px;
   border: 2px solid rgba(99, 102, 241, 0.3);
-  border-top: 2px solid #6366f1;
+  border-top: 2px solid #B8865B;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }

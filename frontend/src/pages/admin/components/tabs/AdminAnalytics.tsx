@@ -218,7 +218,7 @@ export function AdminAnalytics() {
     const chartConfig = {
         value: {
             label: activeTab === 'users' ? t('admin.users') : activeTab === 'images' ? t('admin.images') : activeTab === 'pending' ? t('admin.pending') : t('admin.approved'),
-            color: '#667eea',
+            color: '#B8865B',
         },
     };
 
@@ -317,7 +317,7 @@ export function AdminAnalytics() {
                                     <Area
                                         type="monotone"
                                         dataKey="value"
-                                        stroke="#667eea"
+                                        stroke="#B8865B"
                                         strokeWidth={2}
                                         fill="url(#fillValue)"
                                         dot={false}
@@ -509,7 +509,7 @@ export function AdminAnalytics() {
                                                         <div style={{ fontWeight: 600, marginBottom: '6px', color: '#212529' }}>
                                                             {data.name}
                                                         </div>
-                                                        <div style={{ color: '#667eea', fontWeight: 700, fontSize: '16px' }}>
+                                                        <div style={{ color: '#B8865B', fontWeight: 700, fontSize: '16px' }}>
                                                             {data.count.toLocaleString()} ảnh
                                                         </div>
                                                     </div>
@@ -521,10 +521,10 @@ export function AdminAnalytics() {
                                     <Line 
                                         type="monotone" 
                                         dataKey="count" 
-                                        stroke="#667eea" 
+                                        stroke="#B8865B" 
                                         strokeWidth={3}
                                         dot={false}
-                                        activeDot={{ r: 7, fill: '#667eea', stroke: '#fff', strokeWidth: 2 }}
+                                        activeDot={{ r: 7, fill: '#B8865B', stroke: '#fff', strokeWidth: 2 }}
                                         isAnimationActive={false}
                                     />
                                 </LineChart>

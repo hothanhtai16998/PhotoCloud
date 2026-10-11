@@ -24,7 +24,7 @@
 
 /* Dark mode support */
 .dark-theme .text-logo {
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
 }
 
 /* Responsive sizing */

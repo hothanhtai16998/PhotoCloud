@@ -2,12 +2,14 @@
 .search-results-navigation {
   position: relative;
   width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #e5e5e5;
+  background: rgba(250, 248, 244, 0.78);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
   margin: 0;
   padding: 0;
   z-index: var(--z-category-nav, 1499);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(27, 27, 25, 0.04);
   flex-shrink: 0;
   height: 48px; /* Match CategoryNavigation height to prevent shift */
   min-height: 48px; /* Prevent layout shift */
@@ -55,13 +57,13 @@
 }
 
 .content-type-tab:hover {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .content-type-tab.active {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   font-weight: 500;
-  border-bottom-color: #111;
+  border-bottom-color: var(--accent, #B8865B);
   border-bottom-width: 3px;
 }
 
@@ -71,7 +73,7 @@
 }
 
 .content-type-tab.active .content-type-count {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 /* More Tab */
@@ -96,7 +98,7 @@
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 180px;
@@ -115,13 +117,13 @@
   border: none;
   text-align: left;
   font-size: 0.875rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .more-dropdown-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg, #F2EEE7);
 }
 
 .more-item-icon {
@@ -152,10 +154,10 @@
   gap: 6px;
   padding: 8px 12px;
   background: transparent;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
@@ -165,13 +167,13 @@
 }
 
 .filter-dropdown-btn:hover {
-  border-color: #d1d1d1;
-  background-color: #fafafa;
+  border-color: var(--border-strong, #D8D1C5);
+  background-color: var(--hover-bg, #F2EEE7);
 }
 
 .filter-dropdown-btn.active {
-  border-color: #d1d1d1;
-  background-color: #fafafa;
+  border-color: var(--border-strong, #D8D1C5);
+  background-color: var(--hover-bg, #F2EEE7);
 }
 
 .filter-icon {
@@ -194,7 +196,7 @@
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 200px;
@@ -210,7 +212,7 @@
   color: #767676;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
   margin-bottom: 4px;
 }
 
@@ -224,14 +226,14 @@
   border: none;
   text-align: left;
   font-size: 0.875rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   cursor: pointer;
   transition: background-color 0.15s ease;
   position: relative;
 }
 
 .filter-menu-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg, #F2EEE7);
 }
 
 .filter-menu-item.selected {
@@ -239,7 +241,7 @@
 }
 
 .filter-checkmark {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   font-weight: 600;
   font-size: 0.875rem;
   width: 16px;

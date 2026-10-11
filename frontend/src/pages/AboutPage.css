@@ -1,7 +1,7 @@
 /* About Page */
 .about-page {
   min-height: 100vh;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   padding-top: calc(var(--header-height, 65px) + 80px);
   margin-top: 0;
 }
@@ -28,7 +28,7 @@
 .about-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0;
   text-align: center;
 }
@@ -47,8 +47,8 @@
 }
 
 .about-card {
-  background: #fff;
-  border: 1px solid #e5e5e5;
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 12px;
   padding: 32px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -62,7 +62,7 @@
 .card-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0 0 24px 0;
   padding-bottom: 16px;
   border-bottom: 2px solid #f5f5f5;
@@ -88,7 +88,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 8px;
   color: #0066cc;
 }
@@ -110,7 +110,7 @@
 
 .contact-value {
   font-size: 1rem;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -123,7 +123,7 @@
 .bio-text {
   font-size: 1rem;
   line-height: 1.8;
-  color: #333;
+  color: var(--text-primary, #1B1B19);
   margin: 0;
 }
 
@@ -139,16 +139,16 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 8px;
   text-decoration: none;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 
 .social-link:hover {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-color: #0066cc;
   color: #0066cc;
   transform: translateY(-2px);

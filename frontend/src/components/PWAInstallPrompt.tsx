@@ -106,7 +106,7 @@ export function PWAInstallPrompt() {
                 gap: '12px',
             }}
         >
-            <Download size={24} style={{ color: '#667eea', flexShrink: 0 }} />
+            <Download size={24} style={{ color: '#B8865B', flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, marginBottom: '4px', fontSize: '14px' }}>
                     Install PhotoCloud
@@ -119,7 +119,7 @@ export function PWAInstallPrompt() {
                 <Button
                     onClick={handleInstall}
                     size="sm"
-                    style={{ backgroundColor: '#667eea', color: 'white' }}
+                    style={{ backgroundColor: '#B8865B', color: 'white' }}
                 >
                     Install
                 </Button>

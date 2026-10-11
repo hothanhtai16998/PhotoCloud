@@ -234,13 +234,13 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                             <Activity size={20} />
                             System Status
                             {systemStatus?.status === 'healthy' && (
-                                <CheckCircle2 size={18} style={{ color: '#10b981', marginLeft: 'auto' }} />
+                                <CheckCircle2 size={18} style={{ color: '#7A8B5C', marginLeft: 'auto' }} />
                             )}
                             {systemStatus?.status === 'warning' && (
-                                <AlertTriangle size={18} style={{ color: '#f59e0b', marginLeft: 'auto' }} />
+                                <AlertTriangle size={18} style={{ color: '#C9A14A', marginLeft: 'auto' }} />
                             )}
                             {systemStatus?.status === 'critical' && (
-                                <XCircle size={18} style={{ color: '#ef4444', marginLeft: 'auto' }} />
+                                <XCircle size={18} style={{ color: '#A6453C', marginLeft: 'auto' }} />
                             )}
                         </CardTitle>
                     </CardHeader>
@@ -248,7 +248,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                             {systemStatus?.cpuUsage !== undefined && systemStatus?.cpuUsage !== null && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'hsl(var(--muted))', borderRadius: '0.5rem' }}>
-                                    <Zap size={16} style={{ color: (systemStatus.cpuUsage || 0) > 80 ? '#ef4444' : (systemStatus.cpuUsage || 0) > 60 ? '#f59e0b' : '#10b981' }} />
+                                    <Zap size={16} style={{ color: (systemStatus.cpuUsage || 0) > 80 ? '#A6453C' : (systemStatus.cpuUsage || 0) > 60 ? '#C9A14A' : '#7A8B5C' }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>CPU Usage</div>
                                         <div style={{ fontSize: '1rem', fontWeight: 600 }}>{systemStatus.cpuUsage}%</div>
@@ -257,7 +257,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                             )}
                             {systemStatus?.memoryUsage !== undefined && systemStatus?.memoryUsage !== null && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'hsl(var(--muted))', borderRadius: '0.5rem' }}>
-                                    <Database size={16} style={{ color: (systemStatus.memoryUsage || 0) > 85 ? '#ef4444' : (systemStatus.memoryUsage || 0) > 70 ? '#f59e0b' : '#10b981' }} />
+                                    <Database size={16} style={{ color: (systemStatus.memoryUsage || 0) > 85 ? '#A6453C' : (systemStatus.memoryUsage || 0) > 70 ? '#C9A14A' : '#7A8B5C' }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>Memory Usage</div>
                                         <div style={{ fontSize: '1rem', fontWeight: 600 }}>{systemStatus.memoryUsage}%</div>
@@ -266,7 +266,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                             )}
                             {systemStatus?.diskUsage !== undefined && systemStatus?.diskUsage !== null && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'hsl(var(--muted))', borderRadius: '0.5rem' }}>
-                                    <Server size={16} style={{ color: (systemStatus.diskUsage || 0) > 90 ? '#ef4444' : (systemStatus.diskUsage || 0) > 75 ? '#f59e0b' : '#10b981' }} />
+                                    <Server size={16} style={{ color: (systemStatus.diskUsage || 0) > 90 ? '#A6453C' : (systemStatus.diskUsage || 0) > 75 ? '#C9A14A' : '#7A8B5C' }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>Disk Usage</div>
                                         <div style={{ fontSize: '1rem', fontWeight: 600 }}>{systemStatus.diskUsage}%</div>
@@ -275,7 +275,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                             )}
                             {systemStatus?.responseTime !== undefined && systemStatus?.responseTime !== null && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'hsl(var(--muted))', borderRadius: '0.5rem' }}>
-                                    <Clock size={16} style={{ color: (systemStatus.responseTime || 0) > 1000 ? '#ef4444' : (systemStatus.responseTime || 0) > 500 ? '#f59e0b' : '#10b981' }} />
+                                    <Clock size={16} style={{ color: (systemStatus.responseTime || 0) > 1000 ? '#A6453C' : (systemStatus.responseTime || 0) > 500 ? '#C9A14A' : '#7A8B5C' }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>Response Time</div>
                                         <div style={{ fontSize: '1rem', fontWeight: 600 }}>{systemStatus.responseTime}ms</div>
@@ -284,7 +284,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                             )}
                             {systemStatus?.databaseStatus && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'hsl(var(--muted))', borderRadius: '0.5rem' }}>
-                                    <Database size={16} style={{ color: systemStatus.databaseStatus === 'connected' ? '#10b981' : '#ef4444' }} />
+                                    <Database size={16} style={{ color: systemStatus.databaseStatus === 'connected' ? '#7A8B5C' : '#A6453C' }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>Database</div>
                                         <div style={{ fontSize: '1rem', fontWeight: 600, textTransform: 'capitalize' }}>{systemStatus.databaseStatus}</div>
@@ -293,7 +293,7 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                             )}
                             {systemStatus?.storageStatus && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', background: 'hsl(var(--muted))', borderRadius: '0.5rem' }}>
-                                    <Server size={16} style={{ color: systemStatus.storageStatus === 'connected' ? '#10b981' : '#ef4444' }} />
+                                    <Server size={16} style={{ color: systemStatus.storageStatus === 'connected' ? '#7A8B5C' : '#A6453C' }} />
                                     <div style={{ flex: 1 }}>
                                         <div style={{ fontSize: '0.75rem', color: 'hsl(var(--muted-foreground))' }}>Storage</div>
                                         <div style={{ fontSize: '1rem', fontWeight: 600, textTransform: 'capitalize' }}>{systemStatus.storageStatus}</div>

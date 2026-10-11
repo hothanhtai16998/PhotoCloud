@@ -235,7 +235,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
             position: 'absolute',
             top: '8px',
             left: '8px',
-            background: '#10b981',
+            background: '#7A8B5C',
             color: 'white',
             padding: '6px 12px',
             borderRadius: '6px',

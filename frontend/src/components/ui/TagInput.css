@@ -9,7 +9,7 @@
   flex-wrap: wrap;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   background-color: white;
   min-height: 42px;
@@ -18,7 +18,7 @@
 }
 
 .tag-input-wrapper:focus-within {
-  border-color: #6366f1;
+  border-color: #B8865B;
   outline: none;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }

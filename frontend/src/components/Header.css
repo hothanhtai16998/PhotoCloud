@@ -1,8 +1,13 @@
-/* Unsplash-style Header */
-/* Header height is now defined in index.css root variables */
-
+/* Unsplash-style Header — PhotoCloud Warm Studio */
 .unsplash-header {
-  background: var(--color-bg-primary, #fff);
+  background: rgba(250, 248, 244, 0.78);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
+  box-shadow:
+    0 1px 0 rgba(27, 27, 25, 0.02),
+    0 4px 12px rgba(27, 27, 25, 0.04),
+    0 12px 32px -8px rgba(27, 27, 25, 0.06);
   position: fixed;
   top: 0;
   left: 64px; /* Start after sidebar */
@@ -107,7 +112,7 @@
 .header-link {
   font-size: 0.9375rem;
   font-weight: 400;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   text-decoration: none;
   /* transition: color 0.2s ease; */
   background: transparent;
@@ -120,42 +125,65 @@
 }
 
 .header-link:hover {
-  color: #767676;
+  color: var(--text-secondary, #6B6B66);
 }
 
 .header-button {
   font-size: 0.9375rem;
   font-weight: 400;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   text-decoration: none;
-  padding: 8px 16px;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  background: #fff;
   /* transition: all 0.2s ease; */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 8px 16px;
+  border: 1px solid var(--border-strong, #D8D1C5);
+  border-radius: 999px;
+  background: var(--bg-card, #FFFFFF);
+  box-shadow: 0 1px 2px rgba(27, 27, 25, 0.04);
 }
 
 .header-button:hover {
-  border-color: #111;
-  background: #fafafa;
+  border-color: var(--text-primary, #1B1B19);
+  background: var(--hover-bg, #F2EEE7);
+}
+
+.header-booking-button {
+  padding: 9px 16px !important;
+  border: 1px solid #1b1b19 !important;
+  border-radius: 999px !important;
+  background: #1b1b19 !important;
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(27, 27, 25, 0.16) !important;
+  font-weight: 600 !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.header-booking-button:hover {
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(27, 27, 25, 0.22) !important;
+}
+
+.header-booking-button:active,
+.mobile-booking-shortcut:active {
+  transform: scale(0.98);
 }
 
 /* Upload Button */
 .header-upload-button {
   padding: 8px 16px !important;
-  border: 1px solid #d1d1d1 !important;
-  border-radius: 6px !important;
-  background: #fff !important;
+  border: 1px solid var(--border-strong, #D8D1C5) !important;
+  border-radius: 999px !important;
+  background: var(--bg-card, #FFFFFF) !important;
   /* transition: all 0.2s ease !important; */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 1px 2px rgba(27, 27, 25, 0.04) !important;
   font-weight: 400 !important;
+  color: var(--text-primary, #1B1B19) !important;
 }
 
 .header-upload-button:hover {
-  border-color: #111 !important;
-  background: #fafafa !important;
-  color: #111 !important;
+  border-color: var(--text-primary, #1B1B19) !important;
+  background: var(--hover-bg, #F2EEE7) !important;
+  color: var(--text-primary, #1B1B19) !important;
 }
 
 .header-upload-button:active {
@@ -261,6 +289,15 @@
     margin-left: auto;
     order: 2;
   }
+
+  .mobile-booking-shortcut {
+    background: #1b1b19 !important;
+    color: #fff !important;
+    border-radius: 999px !important;
+    width: 36px;
+    height: 36px;
+    box-shadow: 0 8px 18px rgba(27, 27, 25, 0.18);
+  }
 }
 
 @media (max-width: 480px) {
@@ -341,7 +378,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   text-decoration: none;
   /* transition: background-color 0.2s ease; */
   -webkit-tap-highlight-color: transparent;
@@ -349,7 +386,7 @@
 
 .mobile-header-icon:hover,
 .mobile-header-icon:active {
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
 }
 
 .mobile-header-icon-wrapper {

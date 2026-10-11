@@ -51,7 +51,7 @@
     align-items: center;
     justify-content: center;
     height: calc(100vh - 100px); /* Desktop: total header height */
-    color: #fff;
+    color: var(--bg-card, #FFFFFF);
     font-size: 24px;
     gap: 20px;
   }
@@ -359,12 +359,12 @@
   background: linear-gradient(
     90deg,
     #6b46c1 0%,
-    #7c3aed 25%,
+    #B8865B 25%,
     #1e40af 60%,
     #1e3a8a 100%
   );
   transition: none;
-  box-shadow: 0 0 12px rgba(107, 70, 193, 0.6), 0 0 20px rgba(124, 58, 237, 0.4),
+  box-shadow: 0 0 12px rgba(107, 70, 193, 0.6), 0 0 20px rgba(184, 134, 91, 0.4),
     0 0 30px rgba(30, 64, 175, 0.3);
   border-radius: 0;
   will-change: width;
@@ -410,7 +410,7 @@
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,7 +422,7 @@
 
 .carousel-nav-arrow:hover {
   background: rgba(255, 255, 255, 0.2);
-  border-color: #fff;
+  border-color: var(--bg-card, #FFFFFF);
   transform: scale(1.1);
 }
 

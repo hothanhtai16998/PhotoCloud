@@ -13,7 +13,7 @@
 }
 
 .theme-toggle-btn:hover {
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
 }
 
 .dark-theme .theme-toggle-btn:hover {
@@ -27,16 +27,16 @@
   padding: 8px 12px;
   cursor: pointer;
   font-size: 0.9375rem;
-  color: #333;
+  color: var(--text-primary, #1B1B19);
   transition: background-color 0.15s ease;
 }
 
 .theme-toggle-menu-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hover-bg, #F2EEE7);
 }
 
 .dark-theme .theme-toggle-menu-item {
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
 }
 
 .dark-theme .theme-toggle-menu-item:hover {

@@ -153,7 +153,7 @@ export function AdminImages({
                                 <label style={{ fontSize: '14px', fontWeight: '500', whiteSpace: 'nowrap' }}>
                                     {t('admin.categoryLabel2')}
                                     {!getCurrentCategoryId(img) && (
-                                        <span style={{ color: '#ef4444', marginLeft: '2px' }}>*</span>
+                                        <span style={{ color: '#A6453C', marginLeft: '2px' }}>*</span>
                                     )}
                                 </label>
                                 <select

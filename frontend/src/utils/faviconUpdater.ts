@@ -166,8 +166,8 @@ function getFaviconContent(style: LogoStyle, uniqueId: string): string {
       return `
         <defs>
           <linearGradient id="${uniqueId}-mono" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#6366f1" />
-            <stop offset="100%" stop-color="#8b5cf6" />
+            <stop offset="0%" stop-color="#B8865B" />
+            <stop offset="100%" stop-color="#B8865B" />
           </linearGradient>
         </defs>
         <circle cx="16" cy="16" r="14" fill="url(#${uniqueId}-mono)" />
@@ -182,8 +182,8 @@ function getFaviconContent(style: LogoStyle, uniqueId: string): string {
       return `
         <defs>
           <linearGradient id="${uniqueId}-sig" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#6366f1" />
-            <stop offset="100%" stop-color="#8b5cf6" />
+            <stop offset="0%" stop-color="#B8865B" />
+            <stop offset="100%" stop-color="#B8865B" />
           </linearGradient>
         </defs>
         <path d="M 8 10 Q 12 8 16 10 Q 20 12 24 10 L 24 12 Q 20 11 16 12 Q 12 11 8 12 Z" fill="url(#${uniqueId}-sig)" />
@@ -195,9 +195,9 @@ function getFaviconContent(style: LogoStyle, uniqueId: string): string {
       return `
         <defs>
           <linearGradient id="${uniqueId}-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#6366f1" />
-            <stop offset="50%" stop-color="#8b5cf6" />
-            <stop offset="100%" stop-color="#ec4899" />
+            <stop offset="0%" stop-color="#B8865B" />
+            <stop offset="50%" stop-color="#B8865B" />
+            <stop offset="100%" stop-color="#A6453C" />
           </linearGradient>
           <linearGradient id="${uniqueId}-letter" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#ffffff" />

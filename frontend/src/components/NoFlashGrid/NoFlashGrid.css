@@ -55,7 +55,7 @@
 .loading-state {
   padding: 40px;
   text-align: center;
-  color: #666;
+  color: var(--text-secondary, #6B6B66);
   min-height: 400px;
   display: flex;
   align-items: center;

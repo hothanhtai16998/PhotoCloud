@@ -96,7 +96,7 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                 <div className="falcon-card">
                     <div className="falcon-card-body">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <Users size={20} style={{ color: '#667eea' }} />
+                            <Users size={20} style={{ color: '#B8865B' }} />
                             <div className="falcon-stat-label">{t('admin.uniqueVisitors') || 'Unique Visitors'}</div>
                         </div>
                         <div className="falcon-stat-value">{trafficData.uniqueVisitors.toLocaleString()}</div>
@@ -105,7 +105,7 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                 <div className="falcon-card">
                     <div className="falcon-card-body">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <Users size={20} style={{ color: '#10b981' }} />
+                            <Users size={20} style={{ color: '#7A8B5C' }} />
                             <div className="falcon-stat-label">{t('admin.authenticatedUsers') || 'Authenticated Users'}</div>
                         </div>
                         <div className="falcon-stat-value">{trafficData.uniqueAuthenticatedUsers.toLocaleString()}</div>
@@ -114,7 +114,7 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                 <div className="falcon-card">
                     <div className="falcon-card-body">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                            <TrendingUp size={20} style={{ color: '#f59e0b' }} />
+                            <TrendingUp size={20} style={{ color: '#C9A14A' }} />
                             <div className="falcon-stat-label">{t('admin.peakHour') || 'Peak Hour'}</div>
                         </div>
                         <div className="falcon-stat-value">{peakHour.hour}:00</div>
@@ -164,7 +164,7 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                                                 <div style={{ fontWeight: 600, marginBottom: '6px', color: '#212529' }}>
                                                     {data.date}
                                                 </div>
-                                                <div style={{ color: '#667eea', fontWeight: 700, fontSize: '16px' }}>
+                                                <div style={{ color: '#B8865B', fontWeight: 700, fontSize: '16px' }}>
                                                     {data.views.toLocaleString()} {t('admin.views') || 'views'}
                                                 </div>
                                             </div>
@@ -176,10 +176,10 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                             <Line 
                                 type="monotone" 
                                 dataKey="views" 
-                                stroke="#667eea" 
+                                stroke="#B8865B" 
                                 strokeWidth={3}
                                 dot={false}
-                                activeDot={{ r: 6, fill: '#667eea', stroke: '#fff', strokeWidth: 2 }}
+                                activeDot={{ r: 6, fill: '#B8865B', stroke: '#fff', strokeWidth: 2 }}
                                 isAnimationActive={false}
                             />
                         </LineChart>
@@ -223,7 +223,7 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                                                 <div style={{ fontWeight: 600, marginBottom: '6px', color: '#212529' }}>
                                                     {data.hour}
                                                 </div>
-                                                <div style={{ color: '#667eea', fontWeight: 700, fontSize: '16px' }}>
+                                                <div style={{ color: '#B8865B', fontWeight: 700, fontSize: '16px' }}>
                                                     {data.views.toLocaleString()} {t('admin.views') || 'views'}
                                                 </div>
                                             </div>
@@ -232,7 +232,7 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
                                     return null;
                                 }}
                             />
-                            <Bar dataKey="views" fill="#667eea" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                            <Bar dataKey="views" fill="#B8865B" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

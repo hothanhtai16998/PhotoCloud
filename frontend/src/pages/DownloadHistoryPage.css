@@ -37,7 +37,7 @@
 .download-history-page-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #111;
+    color: var(--text-primary, #1B1B19);
     margin: 0 0 16px 0;
     letter-spacing: -0.02em;
     line-height: 1.2;

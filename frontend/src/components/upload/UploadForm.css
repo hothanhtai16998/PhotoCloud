@@ -53,7 +53,7 @@
 }
 
 .upload-form-category-loading {
-  color: #666;
+  color: var(--text-secondary, #6B6B66);
 }
 
 .upload-form-category-empty {
@@ -62,7 +62,7 @@
 
 /* Category Error Message */
 .upload-form-error {
-  color: #ef4444;
+  color: #A6453C;
   font-size: 12px;
   padding: 8px 16px;
   margin: 0;

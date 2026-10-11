@@ -517,7 +517,7 @@ export const UserAnalyticsDashboard = () => {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#10b981"
+                  stroke="#7A8B5C"
                   strokeWidth={1.5}
                   fill="url(#fillViews)"
                   dot={{ r: 2.5, fill: '#111' }}
@@ -624,7 +624,7 @@ export const UserAnalyticsDashboard = () => {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="#10b981"
+                  stroke="#7A8B5C"
                   strokeWidth={1.5}
                   fill="url(#fillDownloads)"
                   dot={{ r: 2.5, fill: '#111' }}

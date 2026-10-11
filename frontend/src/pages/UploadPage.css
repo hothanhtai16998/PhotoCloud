@@ -1,7 +1,7 @@
 /* Unsplash-style Upload Page */
 .upload-page {
   min-height: 100vh;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   padding: 40px 20px;
   padding-top: calc(var(--header-height, 65px) + 80px);
   margin-top: 0;
@@ -28,10 +28,10 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 12px;
   margin-bottom: 24px;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .upload-title {
@@ -39,14 +39,14 @@
   font-weight: 600;
   line-height: 1.2;
   margin: 0 0 16px 0;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   letter-spacing: -0.02em;
 }
 
 .upload-description {
   font-size: 1.125rem;
   font-weight: 400;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   line-height: 1.6;
   margin: 0 0 16px 0;
 }
@@ -74,12 +74,12 @@
 .form-group label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .form-group input {
   padding: 12px 16px;
-  border: 1px solid #d1d1d1;
+  border: 1px solid var(--border-strong, #D8D1C5);
   border-radius: 8px;
   font-size: 0.9375rem;
   transition: border-color 0.2s ease;
@@ -87,7 +87,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .error-text {
@@ -98,14 +98,14 @@
 
 .success-text {
   font-size: 0.875rem;
-  color: #10b981;
+  color: #7A8B5C;
   margin: 0;
 }
 
 .upload-submit-btn {
   padding: 14px 24px;
   background: #111;
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   border: none;
   border-radius: 8px;
   font-size: 0.9375rem;
@@ -130,10 +130,10 @@
 }
 
 .category-section {
-  background: #fafafa;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 12px;
   padding: 32px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
 }
 
 .category-header {
@@ -152,7 +152,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .category-description {
@@ -169,16 +169,16 @@
 }
 
 .category-card {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 8px;
   padding: 16px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
 }
 
 .category-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin-bottom: 12px;
   text-transform: capitalize;
 }
@@ -273,7 +273,7 @@
 }
 
 .upload-progress-content {
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 16px;
   padding: 48px 40px;
   max-width: min(400px, 96%);
@@ -305,7 +305,7 @@
   width: 48px;
   height: 48px;
   border: 4px solid #e5e5e5;
-  border-top-color: #111;
+  border-top-color: var(--text-primary, #1B1B19);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -319,7 +319,7 @@
 .upload-progress-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0 0 8px 0;
 }
 
@@ -350,6 +350,6 @@
 .upload-progress-percent {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   margin: 0;
 }

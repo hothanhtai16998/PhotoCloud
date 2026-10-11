@@ -35,12 +35,12 @@ body.search-filters-open {
 }
 
 .search-filters-toggle:hover {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   background: transparent;
 }
 
 .search-filters-toggle.active {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   background: transparent;
 }
 
@@ -54,12 +54,12 @@ body.search-filters-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ef4444;
+  background: #A6453C;
   border-radius: 9px;
   border: 2px solid #fff;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   line-height: 1;
 }
 
@@ -94,7 +94,7 @@ body.search-filters-open {
   /* Match search-bar-container width - use fixed width that matches common search bar widths */
   width: 600px;
   max-width: min(600px, calc(100vw - 32px));
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 12px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
   z-index: 1501;
@@ -127,8 +127,8 @@ body.search-filters-open {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e5e5;
-  background: #fff;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
+  background: var(--bg-card, #FFFFFF);
   border-radius: 12px 12px 0 0;
   flex-shrink: 0;
   position: relative;
@@ -139,7 +139,7 @@ body.search-filters-open {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .search-filters-close {
@@ -156,8 +156,8 @@ body.search-filters-open {
 }
 
 .search-filters-close:hover {
-  background: #f5f5f5;
-  color: #111;
+  background: var(--hover-bg, #F2EEE7);
+  color: var(--text-primary, #1B1B19);
 }
 
 .search-filters-content {
@@ -185,7 +185,7 @@ body.search-filters-open {
 }
 
 .search-filters-content::-webkit-scrollbar-track {
-  background: #f5f5f5;
+  background: var(--hover-bg, #F2EEE7);
   border-radius: 4px;
 }
 
@@ -218,7 +218,7 @@ body.search-filters-open {
   gap: 8px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .filter-options {
@@ -230,12 +230,12 @@ body.search-filters-open {
 
 .filter-option {
   padding: 8px 16px;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
+  background: var(--hover-bg, #F2EEE7);
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -247,8 +247,8 @@ body.search-filters-open {
 
 .filter-option.active {
   background: #111;
-  color: #fff;
-  border-color: #111;
+  color: var(--bg-card, #FFFFFF);
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .filter-color-options {
@@ -262,8 +262,8 @@ body.search-filters-open {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
+  background: var(--hover-bg, #F2EEE7);
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.8125rem;
   cursor: pointer;
@@ -280,8 +280,8 @@ body.search-filters-open {
 
 .filter-color-option.active {
   background: #f0f0f0;
-  border-color: #111;
-  outline-color: #111; /* Use outline instead of border width change to prevent layout shift */
+  border-color: var(--text-primary, #1B1B19);
+  outline-color: var(--text-primary, #1B1B19); /* Use outline instead of border width change to prevent layout shift */
 }
 
 .filter-color-swatch {
@@ -295,13 +295,13 @@ body.search-filters-open {
 .filter-color-label {
   flex: 1;
   font-weight: 500;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .filter-color-count {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #666;
+  color: var(--text-secondary, #6B6B66);
   background: #e5e5e5;
   padding: 2px 6px;
   border-radius: 10px;
@@ -311,7 +311,7 @@ body.search-filters-open {
 
 .filter-color-option.active .filter-color-count {
   background: #111;
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
 }
 
 .filter-date-inputs {
@@ -334,7 +334,7 @@ body.search-filters-open {
 
 .filter-date-input-group input {
   padding: 8px 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
@@ -343,7 +343,7 @@ body.search-filters-open {
 
 .filter-date-input-group input:focus {
   outline: none;
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .search-filters-footer {
@@ -351,7 +351,7 @@ body.search-filters-open {
   gap: 12px;
   padding: 20px 24px;
   border-top: 1px solid #e5e5e5;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   border-radius: 0 0 12px 12px;
   flex-shrink: 0;
   position: relative;
@@ -371,8 +371,8 @@ body.search-filters-open {
 }
 
 .filter-reset-btn {
-  background: #f5f5f5;
-  color: #111;
+  background: var(--hover-bg, #F2EEE7);
+  color: var(--text-primary, #1B1B19);
 }
 
 .filter-reset-btn:hover:not(:disabled) {
@@ -386,7 +386,7 @@ body.search-filters-open {
 
 .filter-apply-btn {
   background: #111;
-  color: #fff;
+  color: var(--bg-card, #FFFFFF);
   font-weight: 600;
   opacity: 0.5; /* Reduced opacity when no changes */
   transition: opacity 0.2s ease, background 0.2s ease;
@@ -409,12 +409,12 @@ body.search-filters-open {
 /* Missing CSS classes for filter inputs */
 .filter-select {
   padding: 10px 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
-  background: #fff;
-  color: #111;
+  background: var(--bg-card, #FFFFFF);
+  color: var(--text-primary, #1B1B19);
   cursor: pointer;
   transition: border-color 0.2s ease;
   width: 100%;
@@ -428,7 +428,7 @@ body.search-filters-open {
 
 .filter-select:focus {
   outline: none;
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .filter-select:hover {
@@ -447,7 +447,7 @@ body.search-filters-open {
 
 .filter-input {
   padding: 8px 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
@@ -457,7 +457,7 @@ body.search-filters-open {
 
 .filter-input:focus {
   outline: none;
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .filter-input:hover {
@@ -489,18 +489,18 @@ body.search-filters-open {
   flex: 1;
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
   transition: border-color 0.2s ease;
-  background: #fff;
+  background: var(--bg-card, #FFFFFF);
   box-sizing: border-box;
 }
 
 .filter-number-input:focus {
   outline: none;
-  border-color: #111;
+  border-color: var(--text-primary, #1B1B19);
 }
 
 .filter-number-input:hover {
@@ -516,12 +516,12 @@ body.search-filters-open {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
+  background: var(--hover-bg, #F2EEE7);
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
@@ -535,8 +535,8 @@ body.search-filters-open {
 
 .filter-advanced-toggle.active {
   background: #111;
-  color: #fff;
-  border-color: #111;
+  color: var(--bg-card, #FFFFFF);
+  border-color: var(--text-primary, #1B1B19);
 }
 
 /* Active filter chips (for showing active filters outside panel) */
@@ -553,12 +553,12 @@ body.search-filters-open {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
+  background: var(--hover-bg, #F2EEE7);
+  border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 16px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 .filter-chip-remove {
@@ -576,7 +576,7 @@ body.search-filters-open {
 }
 
 .filter-chip-remove:hover {
-  color: #111;
+  color: var(--text-primary, #1B1B19);
 }
 
 /* Visual indicator for changed (unstaged) filters */
