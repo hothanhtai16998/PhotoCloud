@@ -87,6 +87,8 @@ const ImageModalInfoContent = memo(({ image }: ImageModalInfoProps) => {
           // ImagePage also handles Escape/arrows; keys inside this panel belong to it.
           event.stopPropagation();
           if (event.key === 'Escape') { event.preventDefault(); close(); }
+          // Return to the trigger before the browser advances Tab within the photo.
+          if (event.key === 'Tab') close();
         }}>
         <div className="info-modal">
           <div className="info-modal-header">

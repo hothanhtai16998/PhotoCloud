@@ -67,7 +67,8 @@ Ma trận đã kiểm tra cho NoFlashGrid: 360px, 390px, 767px, 768px, 769px, 10
 | ~~Rà gọn code điều hướng A/M/I/B~~ | Xong: bấm I/nút/phím dùng chung handleImageSelect, luôn truyền selected image/list qua state; bỏ helper history không dùng và comment lỗi thời. Regression, build và responsive 320–1920px pass |
 | ~~Lưu/Tải xuống: khóa bấm lặp, trạng thái chờ, session và responsive~~ | Hoàn tất 10/10/2026: khóa đồng bộ trước await; CSRF dùng Axios; tải thất bại không tăng thống kê/lịch sử; response khác tài khoản không cập nhật cache; menu tự đổi hướng và cuộn trong viewport; kiểm thử mocks 320–1920px cả B/M và màn hình thấp |
 | ~~Chia sẻ và bàn phím/focus menu tải~~ | Hoàn tất 11/10/2026: khóa chia sẻ/aria-busy, native cancel không báo lỗi, native denied fallback copy, toast guard ảnh cũ; clipboard fallback trả focus; menu Arrow/Home/End/Escape/Tab, phím F và chặn phím lặp/modifier; responsive B/M 320–1920px/màn hình thấp |
-| Focus toàn modal ảnh và dialog con | Chưa xong: focus trap/trả focus toàn M, EditImageModal/CollectionModal và popup tác giả; chưa đánh dấu toàn ImagePage hoàn tất |
+| ~~Focus modal ảnh M~~ | Xong 11/10/2026: Tab/Shift+Tab trong M, focus nút đóng khi mở, trả focus preventScroll; không trap trang B/mobile/background, tạm nhường Edit/Collection; Info Tab đóng panel rồi tiếp tục trong M. Kiểm tra 320/769x440/1366px |
+| Focus dialog con và popup tác giả | Chưa xong: EditImageModal/CollectionModal và popup tác giả; toàn ImagePage vẫn chưa hoàn tất |
 | EditImageModal → ImageEditor/EditImageTabs/TagInput/useEditImageForm | Chưa hoàn tất, cần kiểm thử responsive toàn luồng |
 | CollectionModal và các component con | Chưa hoàn tất, cần kiểm thử responsive và portal/outside click |
 | Popup tác giả | Đã sửa tính vị trí ngoài render, clamp viewport và guard response khác ảnh; chưa kiểm chứng đầy đủ hover/focus/touch, timer đóng còn cần rà |

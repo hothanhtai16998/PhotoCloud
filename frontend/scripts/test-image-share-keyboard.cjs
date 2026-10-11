@@ -40,7 +40,7 @@ const slice=(a,b)=>compile(page.slice(page.indexOf(a),page.indexOf(b,page.indexO
   listener(keyEvent('ArrowRight'));assert.equal(selected,0);listener(keyEvent('Escape'));assert.equal(close,0);
   keyboard.showDownloadMenu=false;listener(keyEvent('f'));assert.equal(favorited,1);
   listener({...keyEvent('f'),ctrlKey:true});listener({...keyEvent('f'),repeat:true});assert.equal(favorited,1);
-  listener({...keyEvent('f'),target:{tagName:'INPUT'}});assert.equal(favorited,1);
+  listener({...keyEvent('f'),target:{tagName:'INPUT',closest:()=>null}});assert.equal(favorited,1);
   // Exercise the actual hook's error callbacks with a fake socket; no backend connection.
   const logs=[],handlers=new Map(),managerHandlers=new Map(),effects=[];
   const loggerModule={exports:{},env:{DEV:true},console:{error:(...args)=>logs.push(args),warn:(...args)=>logs.push(args)}};

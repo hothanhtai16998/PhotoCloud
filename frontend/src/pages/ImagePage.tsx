@@ -7,6 +7,7 @@ import { extractIdFromSlug, generateImageSlug } from '@/lib/utils';
 import type { Image } from '@/types/image';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useImagePageScrollRestore } from '@/hooks/useImagePageScrollRestore';
+import { useImageDialogFocus } from '@/hooks/useImageDialogFocus';
 import { saveImagePageScroll, getImagePageScroll } from '@/utils/imagePageScroll';
 import { useUserStore } from '@/stores/useUserStore';
 import { imageFetchService } from '@/services/imageFetchService';
@@ -87,6 +88,7 @@ function ImagePage() {
 
   // Refs
   const modalRef = useRef<HTMLDivElement>(null);
+  const imageDialogRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollPosRef = useRef(0);
   const scrollAnimationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -541,6 +543,7 @@ function ImagePage() {
     };
   }, [loading, image?._id, locationWithState]);
   useImagePageScrollRestore(locationWithState, scrollRef, !loading && Boolean(image), isBackgroundRoute, image?._id, images.length);
+  useImageDialogFocus(imageDialogRef, showModalStyle && !loading && Boolean(image) && !isBackgroundRoute, showEditModal || showCollectionModal);
   // Measure the actual frame, including toolbar wrapping and viewport changes.
   useLayoutEffect(() => {
     if (loading || !image || !imageContainerRef.current) return;
@@ -864,10 +867,12 @@ function ImagePage() {
       if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
       // Don't handle navigation if user is typing in an input, textarea, or contenteditable element
       const target = e.target as HTMLElement;
+      const nestedDialog = target.closest('[role="dialog"]');
       const isInputElement = target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.isContentEditable ||
-        target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]');
+        target.closest('input, textarea, select, [contenteditable="true"]') ||
+        (nestedDialog && nestedDialog !== imageDialogRef.current);
 
       if (isInputElement) {
         return; // Let the input handle the key event
@@ -1500,6 +1505,11 @@ function ImagePage() {
       {showModalStyle ? (
         // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)
         <div
+          ref={imageDialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={image.imageTitle || t('image.photo')}
+          tabIndex={-1}
           onClick={handleOverlayClick}
           className="image-modal-overlay image-page-modal"
         >
@@ -1509,19 +1519,6 @@ function ImagePage() {
           >
             {modalContent}
           </div>
-        </div>
-       ) : (
-         // Regular page: Wrapper (sidebar is now rendered globally in App.tsx)
-         <div className="image-page">
-           <div
-            ref={modalRef}
-            className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
-          >
-            {modalContent}
-          </div>
-        </div>
-      )}
-
       {/* Close button - only in modal-style */}
       {showModalStyle && (
         <button
@@ -1583,6 +1580,19 @@ function ImagePage() {
             className="image-modal-nav-icon"
           />
         </button>
+      )}
+
+        </div>
+       ) : (
+         // Regular page: Wrapper (sidebar is now rendered globally in App.tsx)
+         <div className="image-page">
+           <div
+            ref={modalRef}
+            className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
+          >
+            {modalContent}
+          </div>
+        </div>
       )}
 
       {/* Edit Image Modal */}
