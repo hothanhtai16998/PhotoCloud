@@ -510,3 +510,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Ảnh chính mobile sát hai mép: bỏ padding ngang wrapper và gutter surface modal; thông tin/nút/related vẫn có đệm riêng.~~ 11/10/2026, scoped<=768 cho standalone và modal.
 
 - ~~Ảnh grid đã cache giữ loadedSrc khi thẻ remount sau đổi danh mục; không chạy lại hiệu ứng placeholder cho URL đã tải.~~ 11/10/2026, ảnh mới vẫn lazy/preload như trước.
+
+- ~~Grid trang chủ giữ danh sách hiện tại đến khi 12 ảnh ưu tiên danh mục mới được chuẩn bị; bỏ kết quả danh mục cũ khi chuyển nhanh.~~ 11/10/2026, fallback3s khi mạngchậm, navigation dùngdanh sáchđanghiện.

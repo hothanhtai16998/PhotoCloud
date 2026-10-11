@@ -22,7 +22,7 @@ let avifSupportPromise: Promise<boolean> | undefined;
 
 type ExtendedImage = Image & { categoryName?: string; category?: string };
 
-function getRegularImageUrl(image: Image, supportsAvif: boolean): string {
+export function getRegularImageUrl(image: Image, supportsAvif: boolean): string {
     return supportsAvif
         ? image.regularAvifUrl || image.imageAvifUrl || image.regularUrl || image.imageUrl ||
           image.smallAvifUrl || image.smallUrl || image.thumbnailAvifUrl || image.thumbnailUrl || ''

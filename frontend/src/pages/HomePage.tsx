@@ -20,6 +20,7 @@ import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import { useSearchFilters } from "@/components/SearchBar/hooks/useSearchFilters";
 import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
+import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
 
 function HomePage() {
     const [sliderCollapsed, setSliderCollapsed] = useState(false);
@@ -35,6 +36,7 @@ function HomePage() {
         return () => { window.removeEventListener(CATEGORY_NAVIGATION_EVENT, handleCategory); window.removeEventListener('popstate', handleHistory); };
     }, []);
     const { currentSearch, currentCategory, images, loading, pagination, fetchImages } = useImageStore();
+    const visibleImages = usePreparedGridImages(images);
     const sliderLoading = useSliderStore(state => state.loading);
     const slideCount = useSliderStore(state => state.slides.length);
     const actualLocation = useContext(ActualLocationContext);
@@ -193,7 +195,7 @@ function HomePage() {
         if (isMobile) {
             navigate(targetPath, {
                 // Pass full list + clicked image so ImagePage can render instantly
-                state: { images, image, fromGrid: true }
+                state: { images: visibleImages, image, fromGrid: true }
             });
             return;
         }
@@ -219,9 +221,9 @@ function HomePage() {
         // 4. Navigate with modal state
         navigate(targetPath, {
             // Include clicked image in state for fast modal open
-            state: { ...modalState, images, image, fromGrid: true }
+            state: { ...modalState, images: visibleImages, image, fromGrid: true }
         });
-    }, [navigate, images, actualLocation, isMobile]);
+    }, [navigate, visibleImages, actualLocation, isMobile]);
 
     return (
         <>
@@ -238,11 +240,11 @@ function HomePage() {
                 <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
                 <ActiveFiltersIndicator filters={filters} />
                 <NoFlashGrid
-                    images={images}
+                    images={visibleImages}
                     loading={loading}
                     onLoadData={loadData}
                     onImageClick={handleImageClick}
-                    pagination={category !== null && currentCategory === getCategoryParam(category) ? pagination : null}
+                    pagination={visibleImages === images && category !== null && currentCategory === getCategoryParam(category) ? pagination : null}
                     onLoadMore={loadMore}
                 />
                 </motion.div>
