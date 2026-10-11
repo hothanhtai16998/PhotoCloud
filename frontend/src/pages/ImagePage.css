@@ -246,3 +246,43 @@
     top: 8px;
   }
 }
+.image-action-spinner {
+  flex-shrink: 0;
+  animation: image-action-spin 0.8s linear infinite;
+}
+
+@keyframes image-action-spin {
+  to { transform: rotate(360deg); }
+}
+
+:is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-download-button):disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+:is(.image-page, .image-page-modal) .image-modal-download-menu {
+  max-width: calc(100vw - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image-action-spinner { animation: none; }
+}
+
+@media (max-width: 768px) {
+  :is(.image-page, .image-page-modal) .image-modal-download-menu-wrapper {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  :is(.image-page, .image-page-modal) .image-modal-download-button {
+    width: 100%;
+    justify-content: center;
+  }
+  :is(.image-page, .image-page-modal) .image-modal-download-menu {
+    left: 0;
+    right: auto;
+    min-width: 0;
+    width: min(240px, 100%);
+  }
+}

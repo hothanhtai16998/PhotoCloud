@@ -65,7 +65,8 @@ Ma trận đã kiểm tra cho NoFlashGrid: 360px, 390px, 767px, 768px, 769px, 10
 | ~~Refresh → mở ảnh khác → đóng/quay lại~~ | Xong: đồng bộ state Router, bỏ background cũ; giữ ảnh A trong history khi mở B, đóng B trở lại A; chỉ ảnh đang mở nhận keyboard. Mobile một trang, desktop modal; 320/390/768/769/1024/1366px pass |
 | ~~B → mở M từ I → đóng về đúng vị trí B~~ | Xong: lưu window/scroll-area riêng theo history entry, khôi phục khi đủ nội dung, sidebar không reset B; mở lại cập nhật vị trí mới, đổi I trong M không ghi đè. 320–1920px sai lệch 0px trong fixture |
 | ~~Rà gọn code điều hướng A/M/I/B~~ | Xong: bấm I/nút/phím dùng chung handleImageSelect, luôn truyền selected image/list qua state; bỏ helper history không dùng và comment lỗi thời. Regression, build và responsive 320–1920px pass |
-| Lưu/tải/chia sẻ/keyboard dialog | Chưa xong: khóa click trước await CSRF, khóa tải lặp, chỉ đếm tải thành công, session guard, focus trap; đã chặn Arrow/Escape khi edit/collection/input/dialog con đang hoạt động |
+| ~~Lưu/Tải xuống: khóa bấm lặp, trạng thái chờ, session và responsive~~ | Hoàn tất 10/10/2026: khóa đồng bộ trước await; CSRF dùng Axios; tải thất bại không tăng thống kê/lịch sử; response khác tài khoản không cập nhật cache; menu tự đổi hướng và cuộn trong viewport; kiểm thử mocks 320–1920px cả B/M và màn hình thấp |
+| Chia sẻ/keyboard dialog/focus | Chưa xong: rà chia sẻ, focus trap và trả focus; đã chặn Arrow/Escape khi edit/collection/input/dialog con đang hoạt động |
 | EditImageModal → ImageEditor/EditImageTabs/TagInput/useEditImageForm | Chưa hoàn tất, cần kiểm thử responsive toàn luồng |
 | CollectionModal và các component con | Chưa hoàn tất, cần kiểm thử responsive và portal/outside click |
 | Popup tác giả | Đã sửa tính vị trí ngoài render, clamp viewport và guard response khác ảnh; chưa kiểm chứng đầy đủ hover/focus/touch, timer đóng còn cần rà |

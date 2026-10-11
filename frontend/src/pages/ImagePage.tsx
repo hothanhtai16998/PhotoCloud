@@ -16,14 +16,15 @@ import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatched
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useImageFavoriteCountStore } from '@/stores/useImageFavoriteCountStore';
 import { useImageStatsStore } from '@/stores/useImageStatsStore';
-import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
-import { useAuthStore } from '@/stores/useAuthStore';
+// Register the downloadCompleted listener even when opening this route directly.
+import '@/stores/useDownloadHistoryStore';
+import { captureImageActionSession } from '@/utils/imageActionSession';
 import { shareService } from '@/utils/shareService';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
-import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus } from 'lucide-react';
+import { Heart, Share2, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
@@ -199,6 +200,9 @@ function ImagePage() {
   // Favorite state
   const isFavorited = useBatchedFavoriteCheck(image?._id || '');
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const favoritePendingRef = useRef(false);
+  const downloadPendingRef = useRef(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   // Favorite count state
   const updateFavoriteCount = useImageFavoriteCountStore(state => state.updateFavoriteCount);
@@ -217,6 +221,30 @@ function ImagePage() {
 
   // Download menu state
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!showDownloadMenu) return;
+    const positionMenu = () => {
+      const menu = downloadMenuRef.current;
+      const trigger = menu?.parentElement?.querySelector('button');
+      if (!menu || !trigger) return;
+      const rect = trigger.getBoundingClientRect();
+      const below = Math.max(0, window.innerHeight - rect.bottom - 20);
+      const above = Math.max(0, rect.top - 20);
+      const openAbove = below < Math.min(menu.scrollHeight, 280) && above > below;
+      menu.style.top = openAbove ? 'auto' : '100%';
+      menu.style.bottom = openAbove ? 'calc(100% + 8px)' : 'auto';
+      menu.style.maxHeight = `${openAbove ? above : below}px`;
+    };
+    positionMenu();
+    window.addEventListener('resize', positionMenu);
+    window.addEventListener('scroll', positionMenu, true);
+    return () => {
+      window.removeEventListener('resize', positionMenu);
+      window.removeEventListener('scroll', positionMenu, true);
+    };
+  }, [showDownloadMenu]);
 
   // Edit modal state
   const [showEditModal, setShowEditModal] = useState(false);
@@ -635,249 +663,110 @@ function ImagePage() {
   }, [navigate, images, locationWithState]);
 
   const handleDownload = useCallback(async (size: 'small' | 'medium' | 'large' | 'original') => {
-    if (!image?._id) return;
-    
-    // Start download immediately (don't wait for increment API call)
-    // Download image with selected size
-    const downloadPromise = api.get(`/images/${image._id}/download?size=${size}`, {
-      responseType: 'blob',
-      withCredentials: true,
-    });
-    
-    // Increment download count in background (fire and forget - don't block download)
-    imageStatsService.incrementDownload(image._id)
-      .then((statsResponse) => {
-        if (pageActiveRef.current && currentImageIdRef.current === image._id) setDownloads(statsResponse.downloads);
-        const stats = apiStatsCache.get(image._id) || {};
-        stats.downloads = statsResponse.downloads;
-        apiStatsCache.set(image._id, stats);
-        
-        // Update stats store
-        updateStats(image._id, {
-          downloads: statsResponse.downloads,
-          dailyDownloads: statsResponse.dailyDownloads,
-        });
-      })
-      .catch((error: any) => {
-        if (error.response?.status === 429) {
-          const rateLimitData = error.response.data;
-          if (rateLimitData.downloads !== undefined) {
-            if (pageActiveRef.current && currentImageIdRef.current === image._id) setDownloads(rateLimitData.downloads);
-            const stats = apiStatsCache.get(image._id) || {};
-            stats.downloads = rateLimitData.downloads;
-            apiStatsCache.set(image._id, stats);
-            
-            // Update stats store
-            updateStats(image._id, {
-              downloads: rateLimitData.downloads,
-            });
-          }
-        } else {
-          // Silently fail - download already started, don't interrupt user
-          if (import.meta.env.DEV) {
-            // Silently fail - download already started
-          }
-        }
-      });
-
+    if (!image?._id || downloadPendingRef.current) return;
+    downloadPendingRef.current = true;
+    setIsDownloading(true);
+    setShowDownloadMenu(false);
+    const session = captureImageActionSession();
+    const isCurrentPhoto = () => pageActiveRef.current && currentImageIdRef.current === image._id;
     try {
-      const response = await downloadPromise;
-
+      const response = await api.get('/images/' + image._id + '/download?size=' + size, {
+        responseType: 'blob', withCredentials: true,
+      });
       const contentType = response.headers['content-type'];
       const blob = new Blob([response.data], { type: typeof contentType === 'string' ? contentType : 'image/webp' });
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
+      const disposition = response.headers['content-disposition'];
+      const serverName = typeof disposition === 'string' ? disposition.match(/filename="([^"\r\n]+)"|filename=([^;\r\n]+)/i) : null;
+      const sanitizedTitle = (image.imageTitle || t('image.photo')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const extension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
       link.href = blobUrl;
-
-      const contentDisposition = response.headers['content-disposition'];
-      let fileName = `${t('image.photo')}.webp`;
-      if (contentDisposition) {
-        const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/i);
-        if (fileNameMatch) {
-          fileName = fileNameMatch[1];
-        }
-      } else {
-        const sanitizedTitle = (image.imageTitle || t('image.photo')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const urlExtension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
-        fileName = `${sanitizedTitle}.${urlExtension}`;
-      }
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-
-      // Optimistic update: Add to download history immediately (if authenticated)
+      link.download = (serverName?.[1] || serverName?.[2]?.trim() || sanitizedTitle + '.' + extension).replace(/[\\/]/g, '_');
       try {
-        const { accessToken } = useAuthStore.getState();
-        const { addDownloadToHistory } = useDownloadHistoryStore.getState();
-        if (accessToken && image) {
-          addDownloadToHistory(image);
-          
-          // Dispatch event for global download history update
-          window.dispatchEvent(new CustomEvent('downloadCompleted', {
-            detail: { image }
-          }));
-        }
-      } catch {
-        // Silently fail - download still succeeded
-        // Silently fail - download already completed
+        document.body.appendChild(link);
+        link.click();
+      } finally {
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
       }
-
-      toast.success(t('image.downloadSuccess'));
-      setShowDownloadMenu(false);
+      // Count only a completed transfer handed to the browser, in its original session.
+      // Browser APIs cannot confirm whether the user ultimately saves the file.
+      if (session.isCurrent()) {
+        if (session.authenticated) {
+          // The history store already listens to this event; do not add it twice.
+          window.dispatchEvent(new CustomEvent('downloadCompleted', { detail: { image } }));
+        }
+        if (isCurrentPhoto()) toast.success(t('image.downloadSuccess'));
+        try {
+          const stats = await imageStatsService.incrementDownload(image._id);
+          apiStatsCache.set(image._id, { ...apiStatsCache.get(image._id), downloads: stats.downloads });
+          updateStats(image._id, { downloads: stats.downloads, dailyDownloads: stats.dailyDownloads });
+          if (session.isCurrent() && isCurrentPhoto()) setDownloads(stats.downloads);
+        } catch (error: unknown) {
+          const limited = error as { response?: { status?: number; data?: { downloads?: number } } };
+          const count = limited.response?.data?.downloads;
+          if (limited.response?.status === 429 && count !== undefined) {
+            apiStatsCache.set(image._id, { ...apiStatsCache.get(image._id), downloads: count });
+            updateStats(image._id, { downloads: count });
+            if (session.isCurrent() && isCurrentPhoto()) setDownloads(count);
+          }
+          // A statistics failure does not turn a delivered file into a failed download.
+        }
+      }
     } catch {
-      // Error handled by toast
-      toast.error(t('image.downloadFailed'));
+      if (session.isCurrent() && isCurrentPhoto()) toast.error(t('image.downloadFailed'));
+    } finally {
+      session.dispose();
+      downloadPendingRef.current = false;
+      if (pageActiveRef.current) setIsDownloading(false);
     }
   }, [image, updateStats]);
 
-  // Helper to ensure CSRF token is ready
-  const ensureCsrfToken = useCallback(async (): Promise<boolean> => {
-    const getCsrfTokenFromCookie = (): string | null => {
-      if (typeof document === 'undefined') return null;
-      const cookies = document.cookie.split(';');
-      for (const cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'XSRF-TOKEN' && value) {
-          return decodeURIComponent(value);
-        }
-      }
-      return null;
-    };
-
-    // Check if token already exists
-    if (getCsrfTokenFromCookie()) {
-      return true;
-    }
-
-    // Fetch CSRF token if missing
-    try {
-      const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
-      const url = baseURL.startsWith('http') 
-        ? `${baseURL}/csrf-token`
-        : `${window.location.origin}${baseURL}/csrf-token`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        return !!(data.csrfToken || getCsrfTokenFromCookie());
-      }
-    } catch {
-      // Will retry in API call
-    }
-    return false;
-  }, []);
-
   const handleToggleFavorite = useCallback(async () => {
-    if (!image?._id || isTogglingFavorite) return;
-
-    // If user is not logged in, redirect to sign-in page
+    if (!image?._id || favoritePendingRef.current) return;
     if (!user) {
       navigate('/signin');
       return;
     }
-    
-    // Ensure CSRF token is ready before making request (critical for new sessions)
-    await ensureCsrfToken();
-    
-    // Optimistic update: Update UI immediately before API call
-    const imageId = String(image._id);
-    const previousState = isFavorited;
-    const newState = !previousState;
-    
-    // Update cache and UI immediately (like Unsplash)
-    updateFavoriteCache(imageId, newState);
+    // Lock before any await. Axios owns CSRF fetching and its specific CSRF retry.
+    favoritePendingRef.current = true;
     setIsTogglingFavorite(true);
-    
-    // Don't do optimistic count update - wait for server response
-    // This prevents incorrect counts when we don't have a reliable baseline
-    // The server response will update the count correctly
-    
-    // Dispatch event immediately for instant UI updates
-    window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-      detail: { 
-        imageId: imageId.trim(),
-        isFavorited: newState,
-        image: newState ? image : undefined
-      }
-    }));
-
-    // Make API call in background (non-blocking)
-    // Retry once if CSRF error occurs
-    let retryCount = 0;
-    const makeRequest = async (): Promise<void> => {
-      try {
-        const response = await favoriteService.toggleFavorite(imageId);
-        
-        // Update with actual server response
-        updateFavoriteCache(imageId, response.isFavorited);
-        
-        // Update favorite count with actual value from server
-        if (response.favoriteCount !== undefined) {
-          updateFavoriteCount(imageId, response.favoriteCount);
-        }
-        
-        // If favorites store is empty (new session), fetch actual total to update sidebar badge
-        const { useFavoriteStore } = await import('@/stores/useFavoriteStore');
-        const favoriteStore = useFavoriteStore.getState();
-        if (!favoriteStore.pagination && favoriteStore.images.length === 0) {
-          // Store is empty - fetch actual favorites to get correct total
-          favoriteStore.fetchFavorites(1, true).catch(() => {
-            // Silently fail - will be corrected when user visits favorites page
-          });
-        }
-        
-        // Dispatch event with actual server state
-        window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-          detail: { 
-            imageId: imageId.trim(),
-            isFavorited: response.isFavorited,
-            image: response.isFavorited ? image : undefined
-          }
-        }));
-        
-        if (response.isFavorited) {
-          toast.success(t('favorites.added'));
-        } else {
-          toast.success(t('favorites.removed'));
-        }
-      } catch (error: any) {
-        // If CSRF error and we haven't retried, fetch token and retry once
-        if (error?.response?.status === 403 && retryCount === 0) {
-          retryCount++;
-          await ensureCsrfToken();
-          return makeRequest(); // Retry once
-        }
-        
-        // Revert optimistic update on error
-        updateFavoriteCache(imageId, previousState);
-        
-        // No need to revert count - we didn't do optimistic update
-        
-        // Dispatch event to revert UI
-        window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-          detail: { 
-            imageId: imageId.trim(),
-            isFavorited: previousState,
-            image: previousState ? image : undefined
-          }
-        }));
-        
-        // Error handled by toast
-        toast.error(t('favorites.updateFailed'));
-      }
+    const session = captureImageActionSession();
+    const imageId = image._id;
+    const previousState = isFavorited;
+    const publish = (favorited: boolean) => {
+      updateFavoriteCache(imageId, favorited);
+      window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+        detail: { imageId, isFavorited: favorited, image: favorited ? image : undefined },
+      }));
     };
-
-    makeRequest()
-      .finally(() => {
-        setIsTogglingFavorite(false);
-      });
-  }, [user, image, isTogglingFavorite, updateFavoriteCount, isFavorited, ensureCsrfToken, navigate]);
+    publish(!previousState);
+    try {
+      const response = await favoriteService.toggleFavorite(imageId);
+      if (!session.isCurrent()) return;
+      publish(response.isFavorited);
+      if (response.favoriteCount !== undefined) updateFavoriteCount(imageId, response.favoriteCount);
+      const { useFavoriteStore } = await import('@/stores/useFavoriteStore');
+      if (!session.isCurrent()) return;
+      const store = useFavoriteStore.getState();
+      if (!store.pagination && store.images.length === 0) {
+        void store.fetchFavorites(1, true).catch(() => {});
+      }
+      if (pageActiveRef.current && currentImageIdRef.current === imageId) {
+        toast.success(t(response.isFavorited ? 'favorites.added' : 'favorites.removed'));
+      }
+    } catch {
+      if (session.isCurrent()) {
+        publish(previousState);
+        if (pageActiveRef.current && currentImageIdRef.current === imageId) toast.error(t('favorites.updateFailed'));
+      }
+    } finally {
+      session.dispose();
+      favoritePendingRef.current = false;
+      if (pageActiveRef.current) setIsTogglingFavorite(false);
+    }
+  }, [user, image, updateFavoriteCount, isFavorited, navigate]);
 
   const handleShare = useCallback(() => {
     if (!image?._id) return;
@@ -1271,9 +1160,10 @@ function ImagePage() {
           <button
             onClick={handleToggleFavorite}
             disabled={isTogglingFavorite}
+            aria-busy={isTogglingFavorite}
             className="image-modal-favorite-button"
           >
-            <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />
+            {isTogglingFavorite ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />}
             <span>{t('image.save')}</span>
             {favoriteCount > 0 && (
               <span className="image-modal-favorite-count">{favoriteCount.toLocaleString()}</span>
@@ -1315,6 +1205,9 @@ function ImagePage() {
           <div className="image-modal-download-menu-wrapper" data-download-menu>
             <button
               onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+              disabled={isDownloading}
+              aria-busy={isDownloading}
+              aria-expanded={showDownloadMenu}
               className="image-modal-download-button"
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
@@ -1324,10 +1217,11 @@ function ImagePage() {
               }}
             >
               <span>{t('image.download')}</span>
-              <ChevronDown size={16} />
+              {isDownloading ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <ChevronDown size={16} />}
             </button>
             {showDownloadMenu && (
               <div
+                ref={downloadMenuRef}
                 className="image-modal-download-menu"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -1339,10 +1233,8 @@ function ImagePage() {
                 ].map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => {
-                      handleDownload(option.value);
-                      setShowDownloadMenu(false);
-                    }}
+                    onClick={() => void handleDownload(option.value)}
+                    disabled={isDownloading}
                     className="image-modal-download-menu-item"
                   >
                     <div>
