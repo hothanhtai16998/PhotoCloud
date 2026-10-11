@@ -7,6 +7,7 @@ import { EditImageTabs } from './EditImage/EditImageTabs';
 import { useEditImageForm } from './EditImage/hooks/useEditImageForm';
 import { Button } from '@/components/ui/button';
 import { t } from '@/i18n';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import './EditImageModal.css';
 
 interface EditImageModalProps {
@@ -17,6 +18,7 @@ interface EditImageModalProps {
 }
 
 function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProps) {
+  useScrollLock(isOpen, '.edit-image-modal');
   const [activeTab, setActiveTab] = useState<'details' | 'tags' | 'exif' | 'edit'>('details');
 
   const {

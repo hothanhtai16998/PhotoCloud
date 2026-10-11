@@ -37,10 +37,17 @@
 }
 
 .edit-image-modal-fullscreen {
-  max-width: 95vw;
-  width: 95vw;
+  max-width: 100%;
+  width: 100%;
   max-height: calc(100dvh - 40px);
-  height: min(640px, calc(100dvh - 40px));
+  height: calc(100dvh - 40px);
+}
+
+/* Keep scroll gestures inside the active dialog, including at scroll limits. */
+.edit-image-modal-overlay,
+.edit-image-modal,
+.edit-modal-tab-panel {
+  overscroll-behavior: contain;
 }
 
 @keyframes slideUp {

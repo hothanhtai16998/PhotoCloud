@@ -230,12 +230,16 @@
 }
 
 .image-editor-main {
+  min-height: 0;
+  overscroll-behavior: contain;
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
 .image-editor-canvas-container {
+  min-width: 0;
+  overscroll-behavior: contain;
   flex: 1;
   display: flex;
   align-items: center;
@@ -292,6 +296,7 @@
 }
 
 .image-editor-controls {
+  overscroll-behavior: contain;
   width: 320px;
   padding: 24px;
   border-left: 1px solid #e5e5e5;
