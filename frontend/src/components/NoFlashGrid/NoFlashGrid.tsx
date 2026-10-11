@@ -35,7 +35,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
     const compactLayout = compactMobile && isMobile;
-    const gap = compactLayout ? 6 : GRID_CONFIG.gap;
+    const gap = compactLayout ? 12 : GRID_CONFIG.gap;
     const [columnCount, setColumnCount] = useState(() => {
         if (typeof window === 'undefined') return GRID_CONFIG.columns.desktop;
         return compactMobile && window.innerWidth <= 768 ? 2 : getColumnCount(window.innerWidth);
