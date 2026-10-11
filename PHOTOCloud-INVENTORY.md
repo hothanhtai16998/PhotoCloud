@@ -484,3 +484,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~ImagePage — popup tác giả: bàn phím, nút chạm và responsive (11/10/2026)~~: Tab/focus, Enter mở hồ sơ, nút Info mở/đóng popup, ảnh preview dùng Enter/Space; Escape đóng, chạm ngoài đóng. Popup kiểm tra 320/390x320/768/1024 không vượt viewport. Toàn ImagePage chưa xong; tiếp theo EditImageModal và component con.
 
 - ~~ImagePage/ImageModalInfo — bảng thống kê gọn và vị trí mở (11/10/2026)~~: đặt vị trí trước khi hiện, không transition vị trí; mobile rộng tối đa 280px/chart80px; Share/Info chỉ biểu tượng44px. Kiểm tra320/390x320/768/1024.
+
+- ~~ImagePage — thu gọn nút mobile theo mẫu (11/10/2026)~~: nút32x30px, Lưu/Collection trái và Download phải; Share/Info/Edit bên phải cùng hàng thống kê, stats xếp dọc. Dọn CSS grid/44px đã được thay thế; kiểm320/390 ngang/768/1024.

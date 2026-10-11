@@ -293,101 +293,61 @@
 }
 
 @media (max-width: 768px) {
-  :is(.image-page, .image-page-modal) .image-modal-download-menu-wrapper {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
-  :is(.image-page, .image-page-modal) .image-modal-download-button {
-    width: 100%;
-    justify-content: center;
-  }
-  :is(.image-page, .image-page-modal) .image-modal-download-menu {
-    left: 0;
-    right: auto;
-    min-width: 0;
-    width: min(240px, 100%);
-  }
-
-  /* A regular mobile photo scrolls with the document under the fixed header. */
-  .image-page .image-modal-top-info {
-    position: static !important;
-  }
-
-  :is(.image-page, .image-page-modal) .image-modal-related-section .no-flash-grid-container {
-    padding-top: 0;
-  }
-
+  .image-page .image-modal-top-info { position: static !important; }
+  :is(.image-page, .image-page-modal) .image-modal-related-section .no-flash-grid-container { padding-top: 0; }
   :is(.image-page, .image-page-modal) .image-modal-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
     width: 100%;
+    gap: 6px;
   }
-
   :is(.image-page, .image-page-modal) .image-modal-download-menu-wrapper {
-    grid-column: auto;
+    flex: 0 0 auto;
+    min-width: 0;
+    margin-left: auto;
     position: relative;
   }
-
   :is(.image-page, .image-page-modal) .image-modal-actions .image-action-label,
   :is(.image-page, .image-page-modal) .image-modal-actions .image-modal-kbd,
-  :is(.image-page, .image-page-modal) .image-modal-download-button > svg:not(.image-download-mobile-icon):not(.image-action-spinner) {
-    display: none;
-  }
-
-  :is(.image-page, .image-page-modal) .image-download-mobile-icon {
-    display: block;
-  }
-
-  :is(.image-page, .image-page-modal) .image-modal-collection-menu-wrapper > button {
-    width: 100%;
+  :is(.image-page, .image-page-modal) .image-modal-download-button > svg:not(.image-download-mobile-icon):not(.image-action-spinner),
+  :is(.image-page, .image-page-modal) .image-modal-actions-container > button > span { display: none; }
+  :is(.image-page, .image-page-modal) .image-download-mobile-icon { display: block; }
+  :is(.image-page, .image-page-modal) :is(.image-modal-actions > button, .image-modal-collection-menu-wrapper > button, .image-modal-download-button, .image-modal-actions-container > button, .image-author-info-trigger) {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    width: 32px;
+    min-width: 32px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid #e5e5e5;
+    border-radius: 5px;
+    background: #fff;
+    gap: 3px;
   }
-
+  :is(.image-page, .image-page-modal) .image-modal-favorite-count { font-size: 10px; }
+  :is(.image-page, .image-page-modal) .image-modal-actions-container > button.modal-footer-btn { padding: 0; }
+  :is(.image-page, .image-page-modal) :is(.image-modal-actions, .image-modal-actions-container) button > svg { flex-shrink: 0; }
   :is(.image-page, .image-page-modal) .image-modal-download-menu {
     left: auto;
     right: 0;
+    min-width: 0;
     width: min(240px, calc(100vw - 32px));
   }
-
-  :is(.image-page, .image-page-modal) .image-modal-actions button {
-    min-height: 44px;
-  }
-
   :is(.image-page, .image-page-modal) .image-modal-stats-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
   }
-
-  :is(.image-page, .image-page-modal) .image-modal-stats-row .image-modal-actions-container {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    justify-content: stretch;
+  :is(.image-page, .image-page-modal) .image-modal-stats-header {
+    flex-direction: column;
+    gap: 12px;
   }
-
-  :is(.image-page, .image-page-modal) .image-modal-actions-container > * {
-    min-width: 0;
-    margin-left: 0;
-    justify-content: center;
-    white-space: nowrap;
-    min-height: 44px;
-  }
-
-  :is(.image-page, .image-page-modal) .image-modal-actions-container > :nth-child(3) {
-    grid-column: 1 / -1;
-    justify-self: end;
-  }
-
   :is(.image-page, .image-page-modal) .image-modal-stats-row .image-modal-actions-container {
     display: flex;
-    justify-content: flex-end;
+    width: auto;
+    margin-left: auto;
+    gap: 6px;
   }
-  :is(.image-page, .image-page-modal) .image-modal-actions-container :is(.image-modal-share-button, .image-info-trigger) {
-    width: 44px;
-    min-width: 44px;
-    padding: 0;
-  }
-  :is(.image-page, .image-page-modal) .image-modal-actions-container :is(.image-modal-share-button, .image-info-trigger) > span {
-    display: none;
-  }
+  :is(.image-page, .image-page-modal) .image-modal-actions-container > :last-child { margin-left: 0; }
 }
