@@ -1,6 +1,5 @@
-import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
+import { LayoutGroup } from 'motion/react';
 import { CATEGORY_NAVIGATION_EVENT } from '@/utils/categoryNavigationEvent';
-import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
 import './HomePageLayouts.css';
 import { useEffect, useContext, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -24,8 +23,6 @@ import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
 
 function HomePage() {
     const [sliderCollapsed, setSliderCollapsed] = useState(false);
-    const reducedMotion = useReducedMotion();
-    const sliderTransition = reducedMotion ? { duration: 0 } : sliderLayoutTransition;
     useEffect(() => {
         const handleCategory = (event: Event) => setSliderCollapsed(Boolean((event as CustomEvent<string>).detail));
         const handleHistory = () => {
@@ -237,7 +234,7 @@ function HomePage() {
                     <p>Những góc nhìn mới, những khoảnh khắc đáng lưu giữ.</p>
                     {pagination && currentCategory === getCategoryParam(category) && <small>{pagination.total} ảnh để khám phá</small>}
                 </section>}
-                <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
+                <div className="category-grid" style={{position: 'relative', overflowAnchor: 'none'}}>
                 <ActiveFiltersIndicator filters={filters} />
                 <NoFlashGrid
                     images={visibleImages}
@@ -247,7 +244,7 @@ function HomePage() {
                     pagination={visibleImages === images && category !== null && currentCategory === getCategoryParam(category) ? pagination : null}
                     onLoadMore={loadMore}
                 />
-                </motion.div>
+                </div>
                 </LayoutGroup>
             </main>
         </>

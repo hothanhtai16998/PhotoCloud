@@ -512,3 +512,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Ảnh grid đã cache giữ loadedSrc khi thẻ remount sau đổi danh mục; không chạy lại hiệu ứng placeholder cho URL đã tải.~~ 11/10/2026, ảnh mới vẫn lazy/preload như trước.
 
 - ~~Grid trang chủ giữ danh sách hiện tại đến khi 12 ảnh ưu tiên danh mục mới được chuẩn bị; bỏ kết quả danh mục cũ khi chuyển nhanh.~~ 11/10/2026, fallback3s khi mạngchậm, navigation dùngdanh sáchđanghiện.
+
+- ~~Grid trang chủ bỏ Motion layout transform và layer GPU ép buộc từng card; slide giữ nguyên.~~ 11/10/2026, QA trangthật Du lịch/Kiến trúc/Du lịch loaded6/pending0, buildpass. Chưa đo frame-by-frame nhấp nháy.
