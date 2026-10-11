@@ -490,3 +490,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~ImagePage — ảnh liên quan hai cột trên mobile (11/10/2026)~~: compactMobile riêng, hai cột so le theo tỷ lệ ảnh/khe6px, ẩn hàng tác giả/nút ở khu vực này. Giữ grid mặc định và desktop; kiểm320/440/768/1024 và click ảnh.
 
 - ~~ImagePage — tăng khe ảnh liên quan mobile (11/10/2026)~~: đổi khe ngang/dọc từ 6px thành 12px theo phản hồi; phép tính chiều rộng cột và row span dùng chung gap nên tự cập nhật.
+
+- ~~ImagePage — tăng độ rõ và bề rộng nút mobile (11/10/2026)~~: 40x32px thay32x30, viền#ccc/icon18px màu#555, bóng nhẹ; giữ hàng nút gọn.

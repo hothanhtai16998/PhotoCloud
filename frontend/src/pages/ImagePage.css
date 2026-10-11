@@ -317,19 +317,25 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    min-width: 32px;
-    height: 30px;
-    min-height: 30px;
+    width: 40px;
+    min-width: 40px;
+    height: 32px;
+    min-height: 32px;
     padding: 0;
-    border: 1px solid #e5e5e5;
+    border: 1px solid #ccc;
     border-radius: 5px;
     background: #fff;
+    color: #555;
+    box-shadow: 0 1px 2px #00000008;
     gap: 3px;
   }
   :is(.image-page, .image-page-modal) .image-modal-favorite-count { font-size: 10px; }
   :is(.image-page, .image-page-modal) .image-modal-actions-container > button.modal-footer-btn { padding: 0; }
-  :is(.image-page, .image-page-modal) :is(.image-modal-actions, .image-modal-actions-container) button > svg { flex-shrink: 0; }
+  :is(.image-page, .image-page-modal) :is(.image-modal-actions, .image-modal-actions-container) button > svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+  }
   :is(.image-page, .image-page-modal) .image-modal-download-menu {
     left: auto;
     right: 0;

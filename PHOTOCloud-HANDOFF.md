@@ -275,3 +275,6 @@ Buildpass warnings cũ. Browser fixture actualNoFlashGrid/BlurUpImage/API fake10
 
 ## Tăng khe related mobile — 11/10/2026
 User muốn khe thoáng hơn như ảnh mẫu. Đổi compactLayout gap6→12 tại NoFlashGrid, cả column width/row unit/row span/inline grid gap dùng cùng biến nên không lệch bố cục. Desktop/default grid vẫn24. Thay đổi một giá trị, không chạy lại build toàn bộ để tiết kiệm credit. Kiểm tra diff và công thức: tại viewport320 với padding12 hai bên, mỗi cột142px nếu không scrollbar; viewport440 mỗi cột202px, gap12. Inventory gạch mục cập nhật, supersede gap6 trước. Commit theo user, khôngpush/deploy.
+
+## Nút mobile rộng và rõ hơn — 11/10/2026
+Theo phản hồi user: CSS mobile nút40x32 thay32x30, border#ccc/color#555/shadow nhẹ, SVG18px. Giữ icon-only/hàngtoolbar/footer/gap6 và vị trí downloadright. Chỉ CSS scoped ImagePage; desktop không đổi. Diffcheck/buildpass warnings cũ. Kiểm bề rộng nhóm3nút40*3+gap6*2=132px, cùng stats vẫn vừa320. Không chạy lại browsermatrix cho thayđổi nhỏ để tiếtkiệmcredit, không tuyênbố visualQA mới. Inventory cập nhật riêngmục, supersede32x30. Commit theo user khôngpush/deploy.
