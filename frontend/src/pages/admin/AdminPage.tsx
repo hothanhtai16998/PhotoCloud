@@ -2,7 +2,6 @@ import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, useCallba
 import { useUserStore } from '@/stores/useUserStore';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { Menu, X } from 'lucide-react';
 import type { AdminRolePermissions } from '@/services/adminService';
 import type { User as AuthUser } from '@/types/user';
 import {
@@ -16,7 +15,10 @@ import {
     Heart,
     ShieldCheck,
     FileText,
-    Settings
+    Settings,
+    CalendarClock,
+    Menu,
+    X
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { t } from '@/i18n';
@@ -39,6 +41,7 @@ const AdminFavorites = lazy(() => import('./components/tabs/AdminFavorites').the
 const AdminModeration = lazy(() => import('./components/tabs/AdminModeration').then(m => ({ default: m.AdminModeration })));
 const AdminLogs = lazy(() => import('./components/tabs/AdminLogs').then(m => ({ default: m.AdminLogs })));
 const AdminSettings = lazy(() => import('./components/tabs/AdminSettings').then(m => ({ default: m.AdminSettings })));
+const AdminBookings = lazy(() => import('./components/tabs/AdminBookings').then(m => ({ default: m.AdminBookings })));
 const PermissionMatrix = lazy(() => import('./components/PermissionMatrix').then(m => ({ default: m.PermissionMatrix })));
 
 // Loading fallback for admin tabs
@@ -55,7 +58,7 @@ const AdminTabLoader = () => (
     </div>
 );
 
-type TabType = 'analytics' | 'users' | 'images' | 'categories' | 'collections' | 'roles' | 'permissions' | 'favorites' | 'moderation' | 'logs' | 'settings';
+type TabType = 'analytics' | 'users' | 'images' | 'categories' | 'collections' | 'bookings' | 'roles' | 'permissions' | 'favorites' | 'moderation' | 'logs' | 'settings';
 
 function AdminPage() {
     // AdminRoute handles authentication and admin permission checks
@@ -75,6 +78,7 @@ function AdminPage() {
             'images': t('admin.images'),
             'categories': t('admin.categories'),
             'collections': t('admin.collections'),
+            'bookings': 'Đặt lịch chụp',
             'roles': t('admin.roles'),
             'permissions': t('admin.permissions'),
             'favorites': t('admin.favorites'),
@@ -337,6 +341,19 @@ function AdminPage() {
                                     {!sidebarCollapsed && <span>{t('admin.collections')}</span>}
                                 </button>
                             )}
+                            {(isSuperAdmin() || hasPermission('viewDashboard')) && (
+                                <button
+                                    className={`admin-nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
+                                    onClick={() => {
+                                        setActiveTab('bookings');
+                                        if (isMobile) setMobileMenuOpen(false);
+                                    }}
+                                    title="Đặt lịch chụp"
+                                >
+                                    <CalendarClock size={20} className="admin-nav-icon" />
+                                    {!sidebarCollapsed && <span>Đặt lịch chụp</span>}
+                                </button>
+                            )}
                             {isSuperAdmin() && (
                                 <button
                                     className={`admin-nav-item ${activeTab === 'roles' ? 'active' : ''}`}
@@ -469,6 +486,9 @@ function AdminPage() {
                             )}
                             {activeTab === 'collections' && (
                                 <AdminCollections />
+                            )}
+                            {activeTab === 'bookings' && (isSuperAdmin() || hasPermission('viewDashboard')) && (
+                                <AdminBookings />
                             )}
                             {activeTab === 'roles' && isSuperAdmin() && (
                                 <AdminRolesTab

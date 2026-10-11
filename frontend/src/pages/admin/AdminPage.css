@@ -279,7 +279,63 @@
   color: #111;
 }
 
-.admin-loading {
+.admin-booking-toolbar { display: flex; gap: 6px; flex-wrap: wrap; }
+.admin-booking-toolbar button, .admin-package-actions button, .admin-package-row button { border: 1px solid #d8d8d0; background: #fff; padding: 8px 11px; font: inherit; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.admin-booking-toolbar button.active, .admin-package-actions button:first-child { background: #222; border-color: #222; color: #fff; }
+.admin-booking-filters { margin: 16px 0; }
+.admin-booking-calendar { background: #fff; border: 1px solid #e5e5de; padding: 18px; }
+.admin-calendar-header { display:flex; align-items:center; justify-content:center; gap:18px; margin-bottom:14px; }
+.admin-calendar-header button { border: 1px solid #ddd; background:#fff; padding:6px; cursor:pointer; display:grid; place-items:center; }
+.admin-calendar-modes { display:flex; gap:4px; margin-left:12px; }
+.admin-calendar-modes button { padding:6px 9px; font-size:11px; display:block; }
+.admin-calendar-modes button.active { background:#222; color:#fff; border-color:#222; }
+.admin-calendar-agenda { display:grid; gap:8px; }
+.admin-calendar-agenda-item { display:grid; grid-template-columns:130px 1fr auto; gap:12px; align-items:center; padding:14px; background:#fff; border:1px solid #e5e5de; font-size:12px; }
+.admin-calendar-agenda-item span { color:#555; }
+.admin-calendar-agenda-item em { font-style:normal; padding:4px 7px; font-size:10px; }
+.admin-calendar-day[role='button'] { cursor:pointer; }
+.admin-calendar-grid { display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); border-top:1px solid #e5e5de; border-left:1px solid #e5e5de; }
+.admin-calendar-weekday, .admin-calendar-day { min-height:86px; border-right:1px solid #e5e5de; border-bottom:1px solid #e5e5de; padding:8px; font-size:11px; }
+.admin-calendar-weekday { min-height:auto; text-align:center; color:#888; font-weight:600; }
+.admin-calendar-day.muted { background:#fafaf8; color:#aaa; }
+.admin-calendar-item { margin-top:5px; padding:4px; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.admin-packages { display:grid; grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr); gap:18px; }
+.admin-package-form, .admin-package-list { background:#fff; border:1px solid #e5e5de; padding:20px; }
+.admin-package-form h2 { margin:0 0 18px; font-size:18px; font-weight:500; }
+.admin-package-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.admin-package-fields label { display:grid; gap:6px; font-size:11px; color:#666; }
+.admin-package-fields label:nth-child(2), .admin-package-fields label:nth-child(4) { grid-column:1 / -1; }
+.admin-package-fields input, .admin-package-fields textarea { border:1px solid #d8d8d0; padding:9px; font:inherit; font-size:12px; resize:vertical; }
+.admin-package-actions { display:flex; gap:8px; margin-top:16px; }
+.admin-package-list { display:grid; align-content:start; gap:8px; }
+.admin-package-row { display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #eee; padding:12px 0; }
+.admin-package-row:last-child { border-bottom:0; }
+.admin-package-row strong, .admin-package-row small { display:block; }
+.admin-package-row small { margin-top:4px; }
+.admin-package-row div:last-child { display:flex; gap:6px; flex:none; }
+.admin-bookings small {
+  display: block;
+  color: var(--muted-foreground, #777);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.admin-booking-filter,
+.admin-bookings td select {
+  border: 1px solid #d8d8d0;
+  background: #fff;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+}
+
+.booking-status-pending { background: #fff5d7; color: #8b6500; }
+.booking-status-reviewing, .booking-status-needs_information { background: #eaf1ff; color: #2455a4; }
+.booking-status-confirmed { background: #e5f5e9; color: #23733b; }
+.booking-status-rejected, .booking-status-cancelled_by_client, .booking-status-cancelled_by_photographer { background: #fde8e8; color: #a12727; }
+
+.admin-loading { 
   text-align: center;
   padding: 60px 20px;
   color: #666;

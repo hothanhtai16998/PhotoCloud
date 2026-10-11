@@ -53,6 +53,8 @@ const notificationSchema = new mongoose.Schema(
                 'user_reported',
                 'user_followed',
                 'user_unfollowed',
+                'booking_created',
+                'booking_status_changed',
             ],
             index: true,
         },

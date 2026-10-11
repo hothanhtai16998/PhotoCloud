@@ -12,7 +12,7 @@ import type { Image } from "@/types/image";
 import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
 // axios import removed - not used in this file
 import { generateImageSlug } from "@/lib/utils";
-import { Folder, Eye, Lock } from "lucide-react";
+import { Folder, Lock } from "lucide-react";
 // Lazy load analytics dashboard - only needed when stats tab is active
 const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDashboard").then(module => ({ default: module.UserAnalyticsDashboard })));
 // Import UserList directly instead of lazy loading to prevent Suspense fallback on tab switch
@@ -24,6 +24,7 @@ import { followService } from "@/services/followService";
 import { ProfileHeader } from "./components/ProfileHeader";
 import { ProfileTabs } from "./components/ProfileTabs";
 import { EditPinsModal } from "./components/EditPinsModal";
+import { MyBookings } from "./components/MyBookings";
 import { useRequestCancellationOnChange } from "@/hooks/useRequestCancellation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { toast } from "sonner";
@@ -36,7 +37,7 @@ import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import "./ProfilePage.css";
 import "../CollectionsPage.css"; // Import collection card styles
 
-type TabType = 'photos' | 'following' | 'followers' | 'collections' | 'stats';
+type TabType = 'photos' | 'following' | 'followers' | 'collections' | 'stats' | 'bookings';
 
 // Profile tab IDs
 const TABS = {
@@ -45,6 +46,7 @@ const TABS = {
     FOLLOWERS: 'followers',
     COLLECTIONS: 'collections',
     STATS: 'stats',
+    BOOKINGS: 'bookings',
 } as const;
 
 function ProfilePage() {
@@ -79,14 +81,14 @@ function ProfilePage() {
         const currentUsernamePath = username ? `/@${username}` : '';
         if (previousPathname.current && previousPathname.current.startsWith(currentUsernamePath) && currentUsernamePath) {
             // Username hasn't changed, just extract tab from current pathname
-            const tabMatch = location.pathname.match(/^\/@[^/]+\/(following|followers|collections|stats)$/);
+            const tabMatch = location.pathname.match(/^\/@[^/]+\/(following|followers|collections|stats|bookings)$/);
             const tab = tabMatch ? (tabMatch[1] as TabType) : undefined;
             return { username, tab };
         }
         
         // Username changed or first load - extract both
         previousPathname.current = location.pathname;
-        const match = location.pathname.match(/^\/@([^/]+)(?:\/(following|followers|collections|stats))?$/);
+        const match = location.pathname.match(/^\/@([^/]+)(?:\/(following|followers|collections|stats|bookings))?$/);
         if (match) {
             return { username: match[1], tab: match[2] as TabType | undefined };
         }
@@ -607,7 +609,7 @@ function ProfilePage() {
         Promise.all([
             fetchUserImagesWrapper(false, cancelSignal),
             fetchFollowStatsWrapper(cancelSignal),
-        ]).catch((error) => {
+        ]).catch((_error) => {
             // Ignore cancellation errors - these are expected when navigating away
             // Silently handle cancellation errors - these are expected when navigating away
         });
@@ -1105,6 +1107,10 @@ function ProfilePage() {
                                     })}
                                 </div>
                             )}
+                        </div>
+
+                        <div style={{ display: activeTab === TABS.BOOKINGS ? 'block' : 'none' }}>
+                            {isOwnProfile && <MyBookings />}
                         </div>
 
                         {/* Stats Tab - Keep mounted to preserve state */}

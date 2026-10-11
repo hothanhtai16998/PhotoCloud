@@ -1,6 +1,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { openBookingModal } from '@/utils/bookingModalEvent';
 import { t } from '@/i18n';
 import "./ContactButton.css";
 import facebookIcon from '@/assets/social-icon/facebook.svg?url';
@@ -63,6 +64,7 @@ export const ContactButton = () => {
             </button>
 
             <div className="contact-social-menu">
+                    <button type="button" className="contact-booking-link" onClick={openBookingModal}>Đặt lịch chụp</button>
                     {authorInfo.social.facebook && (
                         <a
                             href={authorInfo.social.facebook}

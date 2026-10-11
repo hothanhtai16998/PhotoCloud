@@ -1,7 +1,7 @@
-import { Camera, Users, Folder, BarChart3, UserPlus } from "lucide-react";
+import { Camera, Users, Folder, BarChart3, UserPlus, CalendarDays } from "lucide-react";
 import { t } from "@/i18n";
 
-type TabType = 'photos' | 'following' | 'followers' | 'collections' | 'stats';
+type TabType = 'photos' | 'following' | 'followers' | 'collections' | 'stats' | 'bookings';
 
 interface ProfileTabsProps {
     activeTab: TabType;
@@ -56,6 +56,15 @@ export function ProfileTabs({
                 <span className="tab-label">{t('profile.collections')}</span>
                 <span className="tab-count">{collectionsCount}</span>
             </button>
+            {isOwnProfile && (
+                <button
+                    className={`profile-tab ${activeTab === 'bookings' ? 'active' : ''}`}
+                    onClick={() => onTabChange('bookings')}
+                >
+                    <CalendarDays size={18} className="tab-icon" />
+                    <span className="tab-label">Lịch đặt</span>
+                </button>
+            )}
             {/* Statistics tab - Only visible for own profile */}
             {isOwnProfile && (
                 <button

@@ -23,6 +23,7 @@ import collectionVersionRoute from './routes/collectionVersionRoute.js';
 import reportRoute from './routes/reportRoute.js';
 import followRoute from './routes/followRoute.js';
 import searchRoute from './routes/searchRoute.js';
+import bookingRoute from './routes/bookingRoute.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { apiLimiter } from './middlewares/rateLimiter.js';
 import { requestDeduplication } from './middlewares/requestDeduplication.js';
@@ -267,6 +268,7 @@ app.use('/api/collection-versions', collectionVersionRoute);
 app.use('/api/reports', reportRoute);
 app.use('/api/follows', followRoute);
 app.use('/api/search', searchRoute);
+app.use('/api/bookings', bookingRoute);
 
 // Social media sharing route - must be before static file serving
 // This handles /photos/:slug for social media scrapers (Facebook, Twitter, etc.)

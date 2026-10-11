@@ -16,6 +16,7 @@ import CategoryNavigation from "./CategoryNavigation"
 import { SearchResultsNavigation } from "./SearchResultsNavigation"
 import { TextLogo } from "./TextLogo"
 import { LanguageSwitcher } from "./LanguageSwitcher"
+import { openBookingModal } from '@/utils/bookingModalEvent'
 import { LANGUAGE_SWITCHER_ENABLED } from "@/config/features"
 import { useLocation } from "react-router-dom"
 import { useIsMobile } from "@/hooks/useIsMobile"
@@ -264,6 +265,13 @@ export const Header = memo(function Header() {
                 alignItems: 'center',
                 gap: '20px'
               }}>
+                <Button
+                  variant="ghost"
+                  onClick={openBookingModal}
+                  className="header-link header-booking-button"
+                >
+                  Đặt lịch chụp
+                </Button>
                 <Button
                   variant="ghost"
                   onClick={(e) => {

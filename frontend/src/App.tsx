@@ -8,6 +8,7 @@ import { useIsMobile } from "./hooks/useIsMobile";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";
 import { ContactButton } from "./components/ContactButton";
+import { BookingModal } from "./components/BookingModal";
 import ImagePageSidebar from "./components/ImagePageSidebar";
 import Header from "./components/Header";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -39,6 +40,8 @@ const ImagePage = lazy(() => import("./pages/ImagePage"));
 const CollectionsPage = lazy(() => import("./pages/CollectionsPage"));
 const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDetailPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
+const BookingPage = lazy(() => import("./pages/BookingPage"));
+const BookingDetailPage = lazy(() => import("./pages/BookingDetailPage"));
 
 
 // Loading animation fallback for lazy-loaded routes
@@ -199,6 +202,7 @@ function App() {
 
       {/* Floating Contact Button - Always visible */}
       <ContactButton />
+      <BookingModal />
 
       {/* Global Loading Overlay - Single spinner for all loading states */}
       <GlobalLoadingOverlay />
@@ -218,6 +222,10 @@ function App() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/booking" element={<BookingPage />} />
+            <Route path="/booking/:bookingId" element={<BookingDetailPage />} />
+          </Route>
           <Route path="/test/visual-art-slider" element={<VisualArtFormsSlider />} />
           {/* Fallback route for users without username */}
           <Route path="/profile/user/:userId" element={<ProfilePage />} />
