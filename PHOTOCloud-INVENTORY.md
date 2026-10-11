@@ -514,3 +514,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Grid trang chủ giữ danh sách hiện tại đến khi 12 ảnh ưu tiên danh mục mới được chuẩn bị; bỏ kết quả danh mục cũ khi chuyển nhanh.~~ 11/10/2026, fallback3s khi mạngchậm, navigation dùngdanh sáchđanghiện.
 
 - ~~Grid trang chủ bỏ Motion layout transform và layer GPU ép buộc từng card; slide giữ nguyên.~~ 11/10/2026, QA trangthật Du lịch/Kiến trúc/Du lịch loaded6/pending0, buildpass. Chưa đo frame-by-frame nhấp nháy.
+
+- ~~Khôi phục animation Tất cả↔danh mục; grid giữ DOM ba danh sách gần nhất để quay lại không remount ảnh.~~ 11/10/2026, supersede fb18062; browserdesktop/mobile+buildpass.

@@ -15,6 +15,7 @@ import { useInfiniteScroll } from './hooks/useInfiniteScroll';
 type ExtendedImage = Image & { categoryName?: string; category?: string; isPinned?: boolean };
 
 export interface NoFlashGridProps {
+    containerId?: string | null;
     images: ExtendedImage[];
     compactMobile?: boolean;
     loading?: boolean;
@@ -31,7 +32,7 @@ export interface NoFlashGridProps {
     onLoadMore?: () => Promise<void>; // Handler for loading more images (infinite scroll)
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore, compactMobile = false }: NoFlashGridProps) {
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore, compactMobile = false, containerId = 'image-grid-container' }: NoFlashGridProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
     const compactLayout = compactMobile && isMobile;
@@ -248,7 +249,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     // This prevents duplicate spinners and provides consistent UX
 
     return (
-        <div id="image-grid-container" className={`no-flash-grid-container ${compactMobile ? 'compact-related-grid' : ''} ${className}`}>
+        <div id={containerId || undefined} className={`no-flash-grid-container ${compactMobile ? 'compact-related-grid' : ''} ${className}`}>
             {/* Global spinner handles all loading states - no local spinner needed */}
             {/* Always render grid (global spinner shows as overlay when loading) */}
             <>

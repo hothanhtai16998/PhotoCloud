@@ -1,5 +1,6 @@
-import { LayoutGroup } from 'motion/react';
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { CATEGORY_NAVIGATION_EVENT } from '@/utils/categoryNavigationEvent';
+import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
 import './HomePageLayouts.css';
 import { useEffect, useContext, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +9,7 @@ import { useSliderStore } from "@/stores/useSliderStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
-import { NoFlashGrid } from "@/components/NoFlashGrid";
+import { RetainedCategoryGrid } from '@/components/RetainedCategoryGrid';
 import { VisualArtFormsSlider } from "@/components/VisualArtFormsSlider";
 import { useImageGridCategory } from "@/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
@@ -23,6 +24,8 @@ import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
 
 function HomePage() {
     const [sliderCollapsed, setSliderCollapsed] = useState(false);
+    const reducedMotion = useReducedMotion();
+    const sliderTransition = reducedMotion ? { duration: 0 } : sliderLayoutTransition;
     useEffect(() => {
         const handleCategory = (event: Event) => setSliderCollapsed(Boolean((event as CustomEvent<string>).detail));
         const handleHistory = () => {
@@ -234,9 +237,9 @@ function HomePage() {
                     <p>Những góc nhìn mới, những khoảnh khắc đáng lưu giữ.</p>
                     {pagination && currentCategory === getCategoryParam(category) && <small>{pagination.total} ảnh để khám phá</small>}
                 </section>}
-                <div className="category-grid" style={{position: 'relative', overflowAnchor: 'none'}}>
+                <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
                 <ActiveFiltersIndicator filters={filters} />
-                <NoFlashGrid
+                <RetainedCategoryGrid
                     images={visibleImages}
                     loading={loading}
                     onLoadData={loadData}
@@ -244,7 +247,7 @@ function HomePage() {
                     pagination={visibleImages === images && category !== null && currentCategory === getCategoryParam(category) ? pagination : null}
                     onLoadMore={loadMore}
                 />
-                </div>
+                </motion.div>
                 </LayoutGroup>
             </main>
         </>

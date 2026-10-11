@@ -1,13 +1,12 @@
 .layout-preview { position: relative; overflow-anchor: none; }
-
-/* Static category photos do not need a compositor layer for every card.
-   Keeping the grid out of layout transforms avoids repainting its image layers. */
-.homepage .no-flash-grid,
-.homepage .grid-item-wrapper {
-  will-change: auto;
-}
-.homepage .grid-item-wrapper {
-  transform: none;
+.retained-category-grid { position: relative; }
+.retained-category-view[data-active='false'] {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
 }
 .layout-preview.is-compact { --preview-column: calc((min(1296px, 100%) - 80px) / 3); }
 .layout-preview.is-compact .visual-art-slider-collapsed { width: var(--preview-column); height: 260px; margin-left: max(16px, calc((100% - 1296px) / 2 + 16px)); margin-bottom: 16px; border-radius: 12px; }
