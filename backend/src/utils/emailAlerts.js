@@ -183,7 +183,7 @@ export async function reinitializeTransporter() {
  * @param {string} htmlContent - HTML email content
  * @param {string} textContent - Plain text email content
  */
-async function sendUserEmail(userEmail, subject, htmlContent, textContent) {
+export async function sendUserEmail(userEmail, subject, htmlContent, textContent) {
     try {
         // Initialize transporter if not already done
         if (!transporter) {

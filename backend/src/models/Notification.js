@@ -55,6 +55,8 @@ const notificationSchema = new mongoose.Schema(
                 'user_unfollowed',
                 'booking_created',
                 'booking_status_changed',
+                'booking_reschedule_requested',
+                'booking_reminder',
             ],
             index: true,
         },

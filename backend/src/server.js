@@ -33,6 +33,7 @@ import { setCacheHeaders } from './middlewares/cacheHeaders.js';
 import { logger } from './utils/logger.js';
 import { startSessionCleanup, stopSessionCleanup } from './utils/sessionCleanup.js';
 import { startPreUploadCleanup, stopPreUploadCleanup } from './utils/preUploadCleanup.js';
+import { startBookingReminders, stopBookingReminders } from './utils/bookingReminders.js';
 import { checkSocialScraper } from './controllers/socialShareController.js';
 import { initializeSocketServer } from './utils/socketServer.js';
 import { createServer } from 'http';
@@ -370,6 +371,7 @@ const startServer = async () => {
         
         // Start pre-upload cleanup scheduler
         startPreUploadCleanup();
+        startBookingReminders();
         
         // Start system monitoring and alerting
         const { startMonitoring } = await import('./utils/alertMonitor.js');
@@ -394,6 +396,7 @@ const startServer = async () => {
             logger.info('SIGTERM received, shutting down gracefully...');
             stopSessionCleanup();
             stopPreUploadCleanup();
+            stopBookingReminders();
             const { stopMonitoring } = await import('./utils/alertMonitor.js');
             stopMonitoring();
             process.exit(0);

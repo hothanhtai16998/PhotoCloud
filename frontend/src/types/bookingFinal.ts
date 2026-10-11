@@ -1,0 +1,2 @@
+export interface BookingReview { _id: string; booking: string | { bookingCode: string; packageSnapshot: { name: string } }; rating: number; title?: string; comment?: string; adminReply?: string; createdAt: string; }
+export interface BookingPolicy { allowClientCancellation: boolean; allowOneReschedule: boolean; rescheduleDeadlineHours: number; weatherRescheduleAllowed: boolean; cancellationRules: Array<{ minimumHoursBefore: number; refundPercent: number; label: string }>; }

@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 import Booking from '../models/Booking.js';
 import BookingPackage from '../models/BookingPackage.js';
+import BookingAvailability from '../models/BookingAvailability.js';
+import { sendBookingEmail } from '../utils/bookingEmails.js';
+import BookingPolicy from '../models/BookingPolicy.js';
 import Notification from '../models/Notification.js';
 import User from '../models/User.js';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
@@ -115,6 +118,12 @@ export const createBooking = asyncHandler(async (req, res) => {
 
     if (!selectedPackage) return res.status(400).json({ success: false, message: 'Gói chụp không hợp lệ' });
     if (!requestedDate) return res.status(400).json({ success: false, message: 'Ngày chụp phải là ngày hôm nay hoặc trong tương lai' });
+    const availability = await BookingAvailability.findOne({ key: 'default' }).lean();
+    if (availability) {
+        const blocked = availability.blockedDates?.some((item) => item.date.toISOString().slice(0, 10) === requestedDate.toISOString().slice(0, 10));
+        const weekly = availability.weekly?.find((item) => item.weekday === requestedDate.getUTCDay());
+        if (blocked || weekly?.enabled === false) return res.status(409).json({ success: false, message: 'Ngày này hiện không nhận lịch, vui lòng chọn ngày khác' });
+    }
     if (!TIME_SLOTS.has(timeSlot)) return res.status(400).json({ success: false, message: 'Khung giờ không hợp lệ' });
     if (!LOCATION_TYPES.has(locationType) || !address) return res.status(400).json({ success: false, message: 'Vui lòng nhập địa điểm chụp' });
     if (!Number.isInteger(participants) || participants < 1 || participants > selectedPackage.includedPeople) {
@@ -166,6 +175,7 @@ export const createBooking = asyncHandler(async (req, res) => {
         logger.error('Failed to notify admins about booking', error);
     }
 
+    await sendBookingEmail('created', booking).catch((error) => logger.warn('Booking email failed', { error: error.message }));
     res.status(201).json({ success: true, message: 'Đã gửi yêu cầu đặt lịch', booking });
 });
 
@@ -186,16 +196,32 @@ export const getMyBooking = asyncHandler(async (req, res) => {
     res.json({ success: true, booking });
 });
 
+export const requestReschedule = asyncHandler(async (req, res) => {
+    const booking = await Booking.findOne({ _id: req.params.bookingId, client: req.user._id });
+    if (!booking) return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu đặt lịch' });
+    if (!['confirmed', 'rescheduled'].includes(booking.status)) return res.status(409).json({ success: false, message: 'Booking chưa thể yêu cầu đổi lịch' });
+    const requestedDate = parseFutureDate(req.body?.requestedDate);
+    if (!requestedDate || !TIME_SLOTS.has(req.body?.requestedTimeSlot)) return res.status(400).json({ success: false, message: 'Ngày hoặc khung giờ đổi lịch không hợp lệ' });
+    booking.rescheduleRequest = { requestedDate, requestedTimeSlot: req.body.requestedTimeSlot, note: cleanString(req.body?.note, 500), requestedAt: new Date() };
+    await booking.save();
+    await Notification.create({ recipient: booking.client, actor: req.user._id, type: 'booking_reschedule_requested', metadata: { bookingId: booking._id.toString(), bookingCode: booking.bookingCode } });
+    res.json({ success: true, message: 'Đã gửi yêu cầu đổi lịch', booking });
+});
+
 export const cancelMyBooking = asyncHandler(async (req, res) => {
     const booking = await Booking.findOne({ _id: req.params.bookingId, client: req.user._id });
     if (!booking) return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu đặt lịch' });
-    if (!['pending', 'reviewing', 'needs_information'].includes(booking.status)) {
+    if (!['pending', 'reviewing', 'needs_information', 'confirmed', 'rescheduled'].includes(booking.status)) {
         return res.status(409).json({ success: false, message: 'Yêu cầu này không thể hủy ở trạng thái hiện tại' });
     }
+    const policy = await BookingPolicy.findOne({ key: 'default' }).lean();
+    const scheduledDate = booking.confirmedDate || booking.requestedDate;
+    const hoursBefore = (scheduledDate.getTime() - Date.now()) / 3600000;
+    const rule = policy?.cancellationRules?.find((item) => hoursBefore >= item.minimumHoursBefore) || { refundPercent: 0 };
     const previousStatus = booking.status;
     booking.status = 'cancelled_by_client';
     booking.cancellationReason = cleanString(req.body?.reason, 500);
-    booking.statusHistory.push({ from: previousStatus, to: booking.status, changedBy: req.user._id, note: booking.cancellationReason });
+    booking.statusHistory.push({ from: previousStatus, to: booking.status, changedBy: req.user._id, note: `${booking.cancellationReason}${rule.refundPercent ? ` · Chính sách hoàn cọc: ${rule.refundPercent}%` : ''}` });
     await booking.save();
     res.json({ success: true, message: 'Đã hủy yêu cầu đặt lịch', booking });
 });
@@ -227,6 +253,10 @@ export const updateAdminBooking = asyncHandler(async (req, res) => {
     if (status === 'rejected' && !cleanString(note, 500)) return res.status(400).json({ success: false, message: 'Cần nhập lý do từ chối' });
     const previousStatus = booking.status;
     booking.status = status;
+    if (status === 'rescheduled' && booking.rescheduleRequest?.requestedDate) {
+        booking.confirmedDate = booking.rescheduleRequest.requestedDate;
+        booking.rescheduleRequest = undefined;
+    }
     if (confirmedDate) booking.confirmedDate = parseFutureDate(confirmedDate) || booking.confirmedDate;
     if (confirmedStartTime) booking.confirmedStartTime = cleanString(confirmedStartTime, 10);
     if (confirmedEndTime) booking.confirmedEndTime = cleanString(confirmedEndTime, 10);
@@ -239,5 +269,6 @@ export const updateAdminBooking = asyncHandler(async (req, res) => {
         type: 'booking_status_changed',
         metadata: { bookingId: booking._id.toString(), bookingCode: booking.bookingCode, status, note: cleanString(note, 500) },
     });
+    await sendBookingEmail('status_changed', booking).catch((error) => logger.warn('Booking status email failed', { error: error.message }));
     res.json({ success: true, message: 'Đã cập nhật booking', booking });
 });

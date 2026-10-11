@@ -313,7 +313,18 @@
 .admin-package-row strong, .admin-package-row small { display:block; }
 .admin-package-row small { margin-top:4px; }
 .admin-package-row div:last-child { display:flex; gap:6px; flex:none; }
-.admin-bookings small {
+.admin-availability { background:#fff; border:1px solid #e5e5de; padding:22px; max-width:760px; }
+.admin-availability h2 { margin:0 0 7px; font-size:20px; font-weight:500; }
+.admin-availability>p, .admin-availability-blocked p { color:#777; font-size:12px; margin:0 0 18px; }
+.admin-availability-row { display:grid; grid-template-columns:1fr 105px 20px 105px; gap:9px; align-items:center; padding:11px 0; border-bottom:1px solid #eee; font-size:12px; }
+.admin-availability-row label { display:flex; gap:8px; align-items:center; }
+.admin-availability-row input[type='time'], .admin-availability-blocked input[type='date'] { border:1px solid #d8d8d0; padding:8px; font:inherit; font-size:12px; }
+.admin-availability-blocked { margin-top:25px; padding-top:18px; border-top:1px solid #ddd; }
+.admin-availability-blocked h3 { margin:0 0 5px; font-size:15px; font-weight:500; }
+.admin-availability-blocked>div { padding:8px 0; font-size:12px; }
+.admin-availability-blocked button { border:0; background:none; color:#a33; cursor:pointer; margin-left:10px; }
+.admin-availability-save { margin-top:20px; border:0; background:#222; color:#fff; padding:11px 16px; font:inherit; font-size:12px; cursor:pointer; }
+.admin-reviews,.admin-policy{background:#fff;border:1px solid #e5e5de;padding:22px}.admin-review-row{padding:14px 0;border-bottom:1px solid #eee}.admin-review-row:last-child{border-bottom:0}.admin-review-row p{font-size:13px;color:#555}.admin-review-row small{color:#777;font-size:11px}.admin-review-reply input{width:100%;border:1px solid #d8d8d0;padding:9px;font:inherit;font-size:12px;margin-top:12px}.admin-policy{display:grid;gap:13px;max-width:680px}.admin-policy h2{margin:0 0 5px;font-size:19px;font-weight:500}.admin-policy label{display:flex;gap:8px;align-items:center;font-size:12px}.admin-policy input[type='number']{border:1px solid #d8d8d0;padding:8px;font:inherit;margin-left:10px}.admin-policy-rule{display:flex;align-items:center;gap:10px;font-size:12px}.admin-policy>button{border:0;background:#222;color:#fff;padding:11px 14px;font:inherit;font-size:12px;cursor:pointer;width:max-content}.admin-bookings small {
   display: block;
   color: var(--muted-foreground, #777);
   font-size: 11px;

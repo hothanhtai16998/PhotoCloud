@@ -66,6 +66,16 @@ const bookingSchema = new mongoose.Schema(
         internalNotes: { type: String, trim: true, maxlength: 2000 },
         statusHistory: { type: [statusHistorySchema], default: [] },
         cancellationReason: { type: String, trim: true, maxlength: 500 },
+        rescheduleRequest: {
+            requestedDate: { type: Date },
+            requestedTimeSlot: { type: String, enum: ['morning', 'afternoon', 'evening', 'flexible'] },
+            note: { type: String, trim: true, maxlength: 500 },
+            requestedAt: { type: Date },
+        },
+        remindersSent: {
+            sevenDays: { type: Date },
+            oneDay: { type: Date },
+        },
     },
     { timestamps: true }
 );
