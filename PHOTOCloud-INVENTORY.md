@@ -480,3 +480,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~ImagePage — ba nút biểu tượng cùng hàng trên mobile (11/10/2026)~~: Lưu/Bộ sưu tập/Tải xuống, giữ aria-label/title, vùng chạm 44px; desktop giữ chữ.
 
 - ~~ImagePage — cleanup timer popup tác giả (11/10/2026)~~: hủy mở/đóng/fade khi quay lại, đổi ảnh hoặc unmount; giữ popup khi hover/focus bên trong. Bàn phím/touch của popup còn cần kiểm tra riêng.
+
+- ~~ImagePage — popup tác giả: bàn phím, nút chạm và responsive (11/10/2026)~~: Tab/focus, Enter mở hồ sơ, nút Info mở/đóng popup, ảnh preview dùng Enter/Space; Escape đóng, chạm ngoài đóng. Popup kiểm tra 320/390x320/768/1024 không vượt viewport. Toàn ImagePage chưa xong; tiếp theo EditImageModal và component con.

@@ -25,7 +25,7 @@ import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
-import { Heart, Share2, Download, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle } from 'lucide-react';
+import { Heart, Share2, Download, Info, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
@@ -827,7 +827,7 @@ function ImagePage() {
     }
   }, []);
 
-  const handleViewProfile = useCallback((e: React.MouseEvent) => {
+  const handleViewProfile = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (!image) return;
@@ -943,6 +943,41 @@ function ImagePage() {
       }, 200);
     }, 150);
   }, [clearAuthorTimers]);
+
+  const openAuthorPopup = (delay = 1000) => {
+    if (!image) return;
+    cancelAuthorHide();
+    authorTooltipTimeoutRef.current = setTimeout(async () => {
+      authorTooltipTimeoutRef.current = null;
+      if (!pageActiveRef.current || currentImageIdRef.current !== image._id) return;
+      setShowAuthorTooltip(true);
+      const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
+      if (userId && !loadingAuthorImages) {
+        setLoadingAuthorImages(true);
+        try {
+          const response = await imageFetchService.fetchUserImages(userId, { page: 1, limit: 3 });
+          if (pageActiveRef.current && currentImageIdRef.current === image._id) setAuthorImages(response.images || []);
+        } catch {
+          // Silently fail - author images are optional
+          if (pageActiveRef.current && currentImageIdRef.current === image._id) setAuthorImages([]);
+        } finally {
+          if (pageActiveRef.current && currentImageIdRef.current === image._id) setLoadingAuthorImages(false);
+        }
+      }
+    }, delay);
+  };
+
+  useEffect(() => {
+    if (!showAuthorTooltip) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Node && !authorAreaRef.current?.contains(event.target)) {
+        clearAuthorTimers();
+        setShowAuthorTooltip(false);
+      }
+    };
+    document.addEventListener('pointerdown', dismiss);
+    return () => document.removeEventListener('pointerdown', dismiss);
+  }, [showAuthorTooltip, clearAuthorTimers]);
 
   // Keep the author popup inside the viewport after resize/scroll.
   useLayoutEffect(() => {
@@ -1077,26 +1112,18 @@ function ImagePage() {
         <div
           ref={authorAreaRef}
           className="image-modal-author-area"
-          onMouseEnter={() => {
-            cancelAuthorHide();
-            authorTooltipTimeoutRef.current = setTimeout(async () => {
-              authorTooltipTimeoutRef.current = null;
-              if (!pageActiveRef.current || currentImageIdRef.current !== image._id) return;
-              setShowAuthorTooltip(true);
-              const userId = (image.uploadedBy as any)?._id || image.uploadedBy;
-              if (userId && !loadingAuthorImages) {
-                setLoadingAuthorImages(true);
-                try {
-                  const response = await imageFetchService.fetchUserImages(userId, { page: 1, limit: 3 });
-                  if (pageActiveRef.current && currentImageIdRef.current === image._id) setAuthorImages(response.images || []);
-                } catch {
-                  // Silently fail - author images are optional
-                  if (pageActiveRef.current && currentImageIdRef.current === image._id) setAuthorImages([]);
-                } finally {
-                  if (pageActiveRef.current && currentImageIdRef.current === image._id) setLoadingAuthorImages(false);
-                }
-              }
-            }, 1000);
+          onMouseEnter={() => openAuthorPopup()}
+          onFocus={event => { if (event.target === event.currentTarget) openAuthorPopup(); }}
+          onBlur={scheduleAuthorHide}
+          role="link"
+          tabIndex={0}
+          aria-label={authorName}
+          onKeyDown={event => {
+            if (event.key === 'Escape' && showAuthorTooltip) {
+              event.preventDefault(); event.stopPropagation(); clearAuthorTimers(); setShowAuthorTooltip(false);
+              return;
+            }
+            if (event.target === event.currentTarget && event.key === 'Enter') handleViewProfile(event);
           }}
           onMouseLeave={scheduleAuthorHide}
           onClick={handleViewProfile}
@@ -1109,12 +1136,28 @@ function ImagePage() {
             <div className="image-modal-author-name">{authorName}</div>
             <div className="image-modal-author-title">{image.imageTitle || t('imagePage.topInfo')}</div>
           </div>
+          <button
+            className="image-author-info-trigger"
+            aria-label={`${t('image.info')} ${authorName}`}
+            aria-expanded={showAuthorTooltip}
+            onClick={event => {
+              event.stopPropagation();
+              if (showAuthorTooltip) { clearAuthorTimers(); setShowAuthorTooltip(false); }
+              else openAuthorPopup(0);
+            }}
+          ><Info size={18} aria-hidden="true" /></button>
 
           {/* Author tooltip/popup */}
           {showAuthorTooltip && (
               <div
                 ref={authorTooltipRef}
                 data-author-tooltip
+                onKeyDown={event => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault(); event.stopPropagation(); clearAuthorTimers();
+                    setShowAuthorTooltip(false); authorAreaRef.current?.focus({ preventScroll: true }); clearAuthorTimers();
+                  }
+                }}
                 className={`image-modal-author-tooltip ${tooltipAnimating ? 'animating' : ''}`}
                 style={authorTooltipPosition}
                 onMouseEnter={cancelAuthorHide}
@@ -1145,6 +1188,14 @@ function ImagePage() {
                         <div
                           key={authorImg._id || idx}
                           className="image-modal-author-image-item"
+                          role="button"
+                          tabIndex={0}
+                          aria-label={authorImg.imageTitle || t('image.photo')}
+                          onKeyDown={event => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              event.preventDefault(); event.stopPropagation(); handleImageSelect(authorImg);
+                            }
+                          }}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleImageSelect(authorImg);
