@@ -307,3 +307,7 @@ QA browser fixture nhập CSS thực tế, hìnhSVG giả:1705x900 surfacewidth1
 
 ## Ảnh mobile sát mép — 11/10/2026
 Theo ảnh user: <=768 bỏ padding-inline16 của image-modal-image-wrapper ở ImagePage standalone và modal. Surface modal mobile width100% thayviewport-16. Desktop/gaprelated/paddingthôngtin giữ nguyên. Height ảnh đã được ResizeObserver đo container.clientWidth nên tự tính lại khi bỏpadding. Chỉ CSS hai thayđổi; diffcheckpass, không chạy lại build/browser cho chỉnh nhỏ để tiếtkiệmcredit. Không thayobject-fit/proportionalheight, khôngcropảnh. Commitkhôngpush/deploy.
+
+## Giữ trạng thái ảnh cache khi đổi danh mục — 11/10/2026
+User thấy ảnh tải lại khi đổi danh mục. Category data cache đã có (_refreshfalse ở HomePage); BlurUpImage vẫn khởi tạo loadedSrcnull khi card remount nên full image bị opacity0 rồi load/layout effect mới hiện, dù URL có trong isImageLoaded. Khởi tạo loadedSrc từ fullImageUrl đã cache để không lặp placeholder transition. URL mới/unresolved vẫnnull, đổiURL trên card đangmount vẫn yêu cầu onLoad đúngURL; onError vẫnresetnull. Không đổi API/cacheexpiry/NoFlashGrid/slider/responsive.
+Test initializer thực tế trích source:cached→URL, mới→null, chưaresolve→null. Buildpass warnings cũ/diffcheckpass. Chưa đoNetwork/browser category navigation nên không tuyênbố đã loại bỏ mọi request; browser HTTP cache vẫn quyết định refetch khi tài nguyên hết hạn. KhôngAPI/push/deploy.

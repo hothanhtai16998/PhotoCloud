@@ -508,3 +508,5 @@ Slide căn giữa — 10/10/2026: người dùng báo ảnh lệch phải. Grid 
 - ~~Modal xem ảnh hẹp hơn, bo hai góc trên12px khi cách mép16px; sát mép thì góc vuông, native scroll giữ nguyên.~~ 11/10/2026, QA CSS browser desktop1705/mobile390 không tràn, buildpass.
 
 - ~~Ảnh chính mobile sát hai mép: bỏ padding ngang wrapper và gutter surface modal; thông tin/nút/related vẫn có đệm riêng.~~ 11/10/2026, scoped<=768 cho standalone và modal.
+
+- ~~Ảnh grid đã cache giữ loadedSrc khi thẻ remount sau đổi danh mục; không chạy lại hiệu ứng placeholder cho URL đã tải.~~ 11/10/2026, ảnh mới vẫn lazy/preload như trước.

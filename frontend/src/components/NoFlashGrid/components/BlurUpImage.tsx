@@ -59,7 +59,11 @@ export function BlurUpImage({
     );
     const fullImageUrl = supportsAvif === null ? '' : getRegularImageUrl(image, supportsAvif);
     const [readySrc, setReadySrc] = useState<string | null>(null);
-    const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+    // Returning to a category remounts its cards. Keep cached photos visible
+    // immediately instead of replaying the placeholder-to-photo transition.
+    const [loadedSrc, setLoadedSrc] = useState<string | null>(() =>
+        fullImageUrl && isImageLoaded(fullImageUrl) ? fullImageUrl : null
+    );
     const [isInView, setIsInView] = useState(priority);
     const canLoad = priority || isInView;
     // Cache reads are pure: never create an Image or start requests during render.
