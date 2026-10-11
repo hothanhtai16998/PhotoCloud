@@ -158,21 +158,32 @@
 .image-page-modal .image-modal-container {
   width: 100%;
   max-width: 100%;
-  height: calc(100dvh - 16px);
+  height: 100dvh;
+  margin-top: 0 !important;
+  border-radius: 0;
+  transition: none;
   min-width: 0;
   background: transparent;
 }
 
 /* The transparent gutters belong to the same native scroll viewport as the photo. */
 .image-page-modal .image-modal-surface {
-  width: min(1600px, calc(100% - 112px));
-  margin: 0 auto;
-  min-height: 100%;
+  width: min(1480px, calc(100% - 144px));
+  margin: 16px auto 0;
+  min-height: calc(100% - 16px);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: inherit;
+  border-radius: 12px 12px 0 0;
+}
+
+.image-page-modal .image-modal-top-info {
+  border-radius: 12px 12px 0 0;
+}
+
+.image-page-modal .image-modal-container.scrolled :is(.image-modal-surface, .image-modal-top-info) {
+  border-radius: 0;
 }
 
 .image-page .image-modal-surface {
@@ -240,7 +251,7 @@
 }
 
 @media (max-width: 768px) {
-  .image-page-modal .image-modal-surface { width: 100%; }
+  .image-page-modal .image-modal-surface { width: calc(100% - 16px); }
   .image-page-modal .image-modal-container {
     width: 100%;
     height: 100dvh;

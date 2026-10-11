@@ -519,7 +519,7 @@ function ImagePage() {
     let secondFrame = 0;
     isImageChangingRef.current = true;
     setIsImageChanging(true);
-    setIsScrolled(restoredTop > 0);
+    setIsScrolled(showModalStyle ? restoredTop >= 16 : restoredTop > 0);
     setShouldAnimate(false);
     scrollPosRef.current = restoredTop;
     setShowDownloadMenu(false);
@@ -546,7 +546,7 @@ function ImagePage() {
       if (scroller) scroller.style.overflow = previousOverflow;
       isImageChangingRef.current = false;
     };
-  }, [loading, image?._id, locationWithState, clearAuthorTimers]);
+  }, [loading, image?._id, locationWithState, clearAuthorTimers, showModalStyle]);
   useImagePageScrollRestore(locationWithState, scrollRef, !loading && Boolean(image), isBackgroundRoute, image?._id, images.length);
   useImageDialogFocus(imageDialogRef, showModalStyle && !loading && Boolean(image) && !isBackgroundRoute, showEditModal || showCollectionModal);
   // Measure the actual frame, including toolbar wrapping and viewport changes.
@@ -1100,11 +1100,11 @@ function ImagePage() {
         
         const top = (e.currentTarget as HTMLDivElement).scrollTop;
         const prevTop = scrollPosRef.current;
-        const wasScrolled = prevTop > 0;
+        const wasScrolled = showModalStyle ? prevTop >= 16 : prevTop > 0;
         scrollPosRef.current = top;
 
         // Check if scrolled past the initial spacer (16px)
-        const nowScrolled = top > 0;
+        const nowScrolled = showModalStyle ? top >= 16 : top > 0;
 
         // Only update state if it actually changed
         if (nowScrolled !== wasScrolled) {
