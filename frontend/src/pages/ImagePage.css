@@ -255,7 +255,7 @@
   to { transform: rotate(360deg); }
 }
 
-:is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-download-button):disabled {
+:is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-download-button, .image-modal-share-button):disabled {
   cursor: wait;
   opacity: 0.65;
 }

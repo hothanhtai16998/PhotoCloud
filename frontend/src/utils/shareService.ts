@@ -88,6 +88,7 @@ export const shareService = {
       } else {
         // Fallback for older browsers
         const textArea = document.createElement('textarea');
+        const previousFocus = document.activeElement;
         textArea.value = text;
         textArea.style.position = 'fixed';
         textArea.style.left = '-999999px';
@@ -97,11 +98,14 @@ export const shareService = {
         textArea.select();
         try {
           const successful = document.execCommand('copy');
-          document.body.removeChild(textArea);
           return successful;
         } catch (_err) {
-          document.body.removeChild(textArea);
           return false;
+        } finally {
+          textArea.remove();
+          if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+            previousFocus.focus({ preventScroll: true });
+          }
         }
       }
     } catch (error) {

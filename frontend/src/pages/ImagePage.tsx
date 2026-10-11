@@ -19,7 +19,7 @@ import { useImageStatsStore } from '@/stores/useImageStatsStore';
 // Register the downloadCompleted listener even when opening this route directly.
 import '@/stores/useDownloadHistoryStore';
 import { captureImageActionSession } from '@/utils/imageActionSession';
-import { shareService } from '@/utils/shareService';
+import { sharePhotoLink } from '@/utils/sharePhotoLink';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { translateTags } from '@/utils/tagTranslations';
@@ -203,6 +203,8 @@ function ImagePage() {
   const favoritePendingRef = useRef(false);
   const downloadPendingRef = useRef(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const sharePendingRef = useRef(false);
+  const [isSharing, setIsSharing] = useState(false);
   
   // Favorite count state
   const updateFavoriteCount = useImageFavoriteCountStore(state => state.updateFavoriteCount);
@@ -222,6 +224,7 @@ function ImagePage() {
   // Download menu state
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
+  const downloadButtonRef = useRef<HTMLButtonElement>(null);
 
   useLayoutEffect(() => {
     if (!showDownloadMenu) return;
@@ -238,9 +241,16 @@ function ImagePage() {
       menu.style.maxHeight = `${openAbove ? above : below}px`;
     };
     positionMenu();
+    downloadMenuRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus({ preventScroll: true });
+    const observer = new ResizeObserver(positionMenu);
+    const menu = downloadMenuRef.current;
+    const trigger = menu?.parentElement?.querySelector('button');
+    if (menu) observer.observe(menu);
+    if (trigger) observer.observe(trigger);
     window.addEventListener('resize', positionMenu);
     window.addEventListener('scroll', positionMenu, true);
     return () => {
+      observer.disconnect();
       window.removeEventListener('resize', positionMenu);
       window.removeEventListener('scroll', positionMenu, true);
     };
@@ -768,26 +778,46 @@ function ImagePage() {
     }
   }, [user, image, updateFavoriteCount, isFavorited, navigate]);
 
-  const handleShare = useCallback(() => {
-    if (!image?._id) return;
-    const slug = generateImageSlug(image.imageTitle || t('image.untitled'), image._id);
-    const shareUrl = `${window.location.origin}/photos/${slug}`;
-    if (navigator.share) {
-      navigator.share({
+  const handleShare = useCallback(async () => {
+    if (!image?._id || sharePendingRef.current) return;
+    sharePendingRef.current = true;
+    setIsSharing(true);
+    const selectedId = image._id;
+    const slug = generateImageSlug(image.imageTitle || t('image.untitled'), selectedId);
+    try {
+      const result = await sharePhotoLink({
         title: image.imageTitle || t('image.photo'),
         text: t('imagePage.shareText', { title: image.imageTitle || t('image.untitled') }),
-        url: shareUrl,
-      }).catch(() => { });
-    } else {
-      shareService.copyToClipboard(shareUrl).then((success) => {
-        if (success) {
-          toast.success(t('share.linkCopied'));
-        } else {
-          toast.error(t('share.linkCopyFailed'));
-        }
+        url: window.location.origin + '/photos/' + slug,
       });
+      if (!pageActiveRef.current || currentImageIdRef.current !== selectedId) return;
+      if (result === 'copied') toast.success(t('share.linkCopied'));
+      if (result === 'failed') toast.error(t('share.linkCopyFailed'));
+    } finally {
+      sharePendingRef.current = false;
+      if (pageActiveRef.current) setIsSharing(false);
     }
   }, [image]);
+
+  const handleDownloadMenuKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+    const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    let nextIndex: number | undefined;
+    if (event.key === 'ArrowDown') nextIndex = (index + 1) % buttons.length;
+    if (event.key === 'ArrowUp') nextIndex = (index - 1 + buttons.length) % buttons.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = buttons.length - 1;
+    if (nextIndex !== undefined && buttons.length) {
+      event.preventDefault();
+      event.stopPropagation();
+      buttons[nextIndex]?.focus();
+    } else if (event.key === 'Escape' || event.key === 'Tab') {
+      if (event.key === 'Escape') event.preventDefault();
+      event.stopPropagation();
+      setShowDownloadMenu(false);
+      downloadButtonRef.current?.focus({ preventScroll: true });
+    }
+  }, []);
 
   const handleViewProfile = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -823,6 +853,15 @@ function ImagePage() {
     if (isBackgroundRoute) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.defaultPrevented || showEditModal || showCollectionModal) return;
+      if (showDownloadMenu) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setShowDownloadMenu(false);
+          downloadButtonRef.current?.focus({ preventScroll: true });
+        }
+        return;
+      }
+      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
       // Don't handle navigation if user is typing in an input, textarea, or contenteditable element
       const target = e.target as HTMLElement;
       const isInputElement = target.tagName === 'INPUT' ||
@@ -853,12 +892,15 @@ function ImagePage() {
       } else if (e.key === 'Escape') {
         e.preventDefault();
         handleClose();
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        void handleToggleFavorite();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isBackgroundRoute, currentImageIndex, images, handleImageSelect, handleClose, showEditModal, showCollectionModal]);
+  }, [isBackgroundRoute, currentImageIndex, images, handleImageSelect, handleClose, handleToggleFavorite, showEditModal, showCollectionModal, showDownloadMenu]);
 
   // Handle related image hover - preload on hover for instant click
   // This is like Unsplash: preload when user hovers, so click is instant
@@ -1204,10 +1246,19 @@ function ImagePage() {
           {/* Download button with dropdown */}
           <div className="image-modal-download-menu-wrapper" data-download-menu>
             <button
+              ref={downloadButtonRef}
               onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+              onKeyDown={(event) => {
+                if (!isDownloading && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setShowDownloadMenu(true);
+                }
+              }}
               disabled={isDownloading}
               aria-busy={isDownloading}
               aria-expanded={showDownloadMenu}
+              aria-haspopup="menu"
               className="image-modal-download-button"
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
@@ -1222,6 +1273,9 @@ function ImagePage() {
             {showDownloadMenu && (
               <div
                 ref={downloadMenuRef}
+                role="menu"
+                aria-label={t('image.download')}
+                onKeyDown={handleDownloadMenuKeyDown}
                 className="image-modal-download-menu"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -1233,6 +1287,7 @@ function ImagePage() {
                 ].map((option) => (
                   <button
                     key={option.value}
+                    role="menuitem"
                     onClick={() => void handleDownload(option.value)}
                     disabled={isDownloading}
                     className="image-modal-download-menu-item"
@@ -1300,9 +1355,11 @@ function ImagePage() {
               <div className="image-modal-actions-container">
                 <button
                   onClick={handleShare}
+                  disabled={isSharing}
+                  aria-busy={isSharing}
                   className="image-modal-share-button"
                 >
-                  <Share2 size={16} />
+                  {isSharing ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <Share2 size={16} />}
                   <span>{t('share.share')}</span>
                 </button>
                 <ImageModalInfo image={chartImage || image} />

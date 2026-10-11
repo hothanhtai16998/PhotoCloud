@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { authService } from '@/services/authService';
-// Logger removed - info calls are no-ops, removed for performance
+import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
 
 interface UseWebSocketOptions {
@@ -50,7 +50,7 @@ interface UseWebSocketOptions {
 // Global WebSocket instance - singleton pattern
 let globalSocket: Socket | null = null;
 let globalSubscribers = 0;
-const eventHandlers = new Map<string, Set<Function>>();
+const eventHandlers = new Map<string, Set<(...args: any[]) => void>>();
 const connectionStateCallbacks = new Set<() => void>();
 let isRefreshingToken = false;
 let refreshAttempts = 0;
@@ -64,7 +64,6 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 	const { accessToken, setAccessToken, clearAuth } = useAuthStore();
 	const [isConnected, setIsConnected] = useState(globalSocket?.connected || false);
 	const [reconnectAttempts, setReconnectAttempts] = useState(0);
-	const optionsRef = useRef(options);
 	const handlersRef = useRef<{
 		onNotification?: (notification: any) => void;
 		onUnreadCount?: (count: number) => void;
@@ -163,7 +162,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 				connectionStateCallbacks.forEach(callback => callback());
 				// Only log disconnect if it's not a normal close or auth error
 				if (reason !== 'io client disconnect' && !reason.includes('Authentication')) {
-					logger.warn('WebSocket disconnected:', reason);
+					logger.warn('WebSocket disconnected:', { data: reason });
 					// Show warning toast for unexpected disconnects
 					if (reason !== 'io client disconnect') {
 						toast.warning('Real-time updates disconnected', { duration: 3000 });
@@ -212,7 +211,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 						// The useEffect will handle the actual reconnection
 						refreshAttempts = 0; // Reset attempts
 					} catch (refreshError) {
-						logger.error('Failed to refresh token for WebSocket:', refreshError);
+						logger.error('Failed to refresh token for WebSocket:', { data: refreshError });
 						refreshAttempts = MAX_REFRESH_ATTEMPTS; // Stop retrying
 						
 						// Clear auth state if refresh fails
@@ -229,7 +228,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 					}
 				} else if (!isAuthError) {
 					// Non-auth errors
-					logger.error('WebSocket connection error:', error.message || error);
+					logger.error('WebSocket connection error:', { data: error.message || error });
 					eventHandlers.get('error')?.forEach(handler => handler(error));
 				} else if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
 					// Auth error but max attempts reached
@@ -322,7 +321,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 				setReconnectAttempts(attemptNumber);
 			});
 
-			socket.io.on('reconnect', (attemptNumber) => {
+			socket.io.on('reconnect', () => {
 				// logger.info (removed - no-op)(`WebSocket reconnected after ${attemptNumber} attempts`);
 				setReconnectAttempts(0);
 			});
@@ -439,7 +438,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 	useEffect(() => {
 		if (typeof window === 'undefined') return;
 
-		const handlePageHide = (event: PageTransitionEvent) => {
+		const handlePageHide = () => {
 			// Close WebSocket when page is being cached (bfcache)
 			// This allows the page to enter bfcache for faster back/forward navigation
 			if (globalSocket?.connected) {
@@ -488,8 +487,6 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 		const tokenExpiry = decodeToken(accessToken);
 		if (!tokenExpiry) return;
 
-		const now = Date.now();
-		const timeUntilExpiry = tokenExpiry - now;
 		const refreshThreshold = 5 * 60 * 1000; // Refresh 5 minutes before expiry
 
 		const checkAndRefresh = () => {
@@ -506,7 +503,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 						// logger.info (removed - no-op)('Token refreshed proactively');
 					})
 					.catch(error => {
-						logger.error('Proactive token refresh failed:', error);
+						logger.error('Proactive token refresh failed:', { data: error });
 					});
 			}
 		};

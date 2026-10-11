@@ -70,7 +70,7 @@ assert.equal(navigation.options.state.images.length,3);
 assert.equal(navigation.options.state.image._id,outside._id);
 let listeners=0;
 const keyboard=extract('  // Keyboard navigation','  // Handle related image hover');
-const keyboardContext={useEffect:fn=>fn(),isBackgroundRoute:true,currentImageIndex:0,images:[photoA,photoB],handleImageSelect:()=>{},handleClose:()=>{},showEditModal:false,showCollectionModal:false,window:{addEventListener:()=>listeners++,removeEventListener:()=>{}}};
+const keyboardContext={useEffect:fn=>fn(),isBackgroundRoute:true,currentImageIndex:0,images:[photoA,photoB],handleImageSelect:()=>{},handleClose:()=>{},handleToggleFavorite:()=>{},showDownloadMenu:false,showEditModal:false,showCollectionModal:false,window:{addEventListener:()=>listeners++,removeEventListener:()=>{}}};
 vm.runInNewContext(keyboard,keyboardContext);
 assert.equal(listeners,0,'background photo must not receive Escape or arrow navigation');
 vm.runInNewContext(keyboard,{...keyboardContext,isBackgroundRoute:false});

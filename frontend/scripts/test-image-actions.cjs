@@ -60,12 +60,13 @@ function harness() {
   assert.equal(auth.listeners.size,0);assert.equal(user.listeners.size,0);
   const menuEffect=source.slice(source.indexOf('  useLayoutEffect(() => {', source.indexOf('const downloadMenuRef')),source.indexOf('  // Edit modal state'));
   let cleanup;const events=new Map(),rect={top:200,bottom:236};
-  const menu={style:{},scrollHeight:276,parentElement:{querySelector:()=>({getBoundingClientRect:()=>rect})}};
-  const layout={showDownloadMenu:true,downloadMenuRef:{current:menu},useLayoutEffect:fn=>cleanup=fn(),window:{innerHeight:320,addEventListener:(key,fn)=>events.set(key,fn),removeEventListener:key=>events.delete(key)}};
+  const menu={style:{},scrollHeight:276,querySelector:()=>null,parentElement:{querySelector:()=>({getBoundingClientRect:()=>rect})}};
+  let observerDisconnected=false;
+  const layout={showDownloadMenu:true,downloadMenuRef:{current:menu},ResizeObserver:class{observe(){}disconnect(){observerDisconnected=true;}},useLayoutEffect:fn=>cleanup=fn(),window:{innerHeight:320,addEventListener:(key,fn)=>events.set(key,fn),removeEventListener:key=>events.delete(key)}};
   vm.runInNewContext(compile(menuEffect),layout);
   assert.equal(menu.style.bottom,'calc(100% + 8px)');assert.equal(menu.style.maxHeight,'180px');
   layout.window.innerHeight=844;events.get('resize')();assert.equal(menu.style.top,'100%');assert.equal(menu.style.maxHeight,'588px');
   rect.top=30;rect.bottom=66;events.get('scroll')();assert.equal(menu.style.maxHeight,'758px');
-  cleanup();assert.equal(events.size,0);
+  cleanup();assert.equal(events.size,0);assert.equal(observerDisconnected,true);
   console.log('Image actions: duplicate locks, success-only tracking, stale photo/session, rollback and cleanup passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});
