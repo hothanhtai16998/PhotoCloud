@@ -257,8 +257,11 @@
 		--studio-accent-copper: #B8865B;
 		--studio-accent-copper-dark: #9A6F49;
 		--studio-status-confirmed: #7A8B5C;
+		--studio-status-confirmed-text: #4F5D38;
 		--studio-status-pending: #C9A14A;
+		--studio-status-pending-text: #8A6A1B;
 		--studio-status-danger: #A6453C;
+		--studio-status-danger-text: #8A2A23;
 		--studio-shadow-card: 0 1px 2px rgba(27, 27, 25, 0.04), 0 8px 24px rgba(27, 27, 25, 0.04);
 		--studio-shadow-hover: 0 2px 4px rgba(27, 27, 25, 0.06), 0 16px 40px rgba(27, 27, 25, 0.08);
 		--studio-radius-card: 16px;

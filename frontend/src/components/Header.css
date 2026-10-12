@@ -303,6 +303,22 @@
   }
 }
 
+@media (min-width: 1024px) {
+  /* Mobile: Header should be full width (no sidebar visible) */
+  .unsplash-header {
+    left: 64px;
+    width: calc(100% - 64px);
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Tablet & Mobile: header full width (no sidebar) */
+  .unsplash-header {
+    left: 0;
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   /* Mobile: Header should be full width (no sidebar visible) */
   .unsplash-header {
@@ -518,7 +534,9 @@
   }
 }
 
-/* Equal side columns keep the search centered on wide desktop screens. */
+/* Equal side columns keep the search centered on wide desktop screens.
+   Grid 3-cột: logo / search / actions. StudioNavMenu đặt cùng cột với actions
+   (grid-column: 3) và xếp TRƯỚC bằng `order: -1`. */
 @media (min-width: 1200px) {
   .unsplash-header .header-container {
     display: grid;

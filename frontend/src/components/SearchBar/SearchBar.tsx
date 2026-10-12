@@ -216,6 +216,25 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
         }, 200);
     }, []);
 
+    // Click-outside to close suggestions — more reliable than blur-based approach
+    useEffect(() => {
+        if (!showSuggestions) return;
+
+        const handleMouseDown = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            const searchContainer = inputRef.current?.closest('.search-bar-container');
+            // Close if click is outside the entire search bar
+            if (searchContainer && !searchContainer.contains(target)) {
+                setShowSuggestions(false);
+                setIsFocused(false);
+                setSelectedIndex(-1);
+            }
+        };
+
+        document.addEventListener('mousedown', handleMouseDown, true); // capture phase to intercept before any element's own handlers
+        return () => document.removeEventListener('mousedown', handleMouseDown, true);
+    }, [showSuggestions]);
+
     // Helper function to build fetch params from filters
     const buildFetchParams = useCallback((newFilters: typeof filters) => {
         return buildFilterParams(newFilters, {

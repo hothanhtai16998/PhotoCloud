@@ -16,7 +16,7 @@
   flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .image-page-sidebar {
     display: flex;
     position: fixed; /* Fixed to viewport */

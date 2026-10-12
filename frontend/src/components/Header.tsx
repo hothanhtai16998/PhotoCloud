@@ -395,6 +395,33 @@ export const Header = memo(function Header() {
               </Link>
 
               <Link 
+                to="/explore" 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Compass size={16} />
+                Khám phá
+              </Link>
+
+              <Link 
+                to="/packages" 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Camera size={16} />
+                Gói chụp
+              </Link>
+
+              <Link 
+                to="/blog" 
+                className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <BookOpen size={16} />
+                Blog
+              </Link>
+
+              <Link 
                 to="/downloads" 
                 className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
                 onClick={() => setMobileMenuOpen(false)}

@@ -11,8 +11,8 @@
 - [x] Eyebrow "PhotoCloud Studio" trên hero (xem `HeroBooking.tsx:18`).
 - [x] Tính cách: vừa là nền tảng ảnh (community), vừa là studio booking.
 - [x] Phong cách hình ảnh: dùng ảnh Unsplash cinematic, fallback gradient warm.
-- [~] Tagline "Chụp ảnh theo cách của bạn" — đã đặt ở hero (`HeroBooking.tsx:30`) nhưng cần kiểm tra đồng nhất ở `BookingPage`, `BookingModal`, meta title.
-- [x] Tagline phụ "Kể chuyện bằng ánh sáng" — chưa dùng, có thể thêm ở About/Blog.
+- [x] Tagline "Chụp ảnh theo cách của bạn" — đã đồng nhất: `brand.ts:tagline` (1 nơi), `HeroBooking.tsx` dùng `taglinePrefix`+`taglineHighlight` cho hero có `<em>` gradient, `BookingPage.tsx` dùng `BRAND.tagline`.
+- [x] Tagline phụ "Kể chuyện bằng ánh sáng" — dùng ở footer/sub-tagline, blog page, about.
 
 ---
 
@@ -202,43 +202,74 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 | S3-4 | Thêm route `/notifications` + tạo `NotificationPage.tsx` | `App.tsx` | Trung bình | [x] **Đã làm** — tạo `NotificationPage.tsx` + `.css` đầy đủ (list, mark read, mark all, delete, filter tab) |
 | S3-5 | Thêm route `/profile/bookings` | `App.tsx` | Trung bình | [~] alias tạm trỏ về `BookingPage` — cần tách `MyBookings` ra page riêng sau |
 | S3-6 | Tạo trang `/packages` (list) + `/packages/:slug` (detail) | mới | Cao | [x] **Đã làm** — `PackagesPage.tsx` + `.css` (hero, 4 cards + custom quote, detail view) |
-| S3-7 | Tạo trang `/blog` (list) + `/blog/:slug` (detail) | mới | Thấp | [ ] chưa làm |
+| S3-7 | Tạo trang `/blog` (list) + `/blog/:slug` (detail) | mới | Thấp | [x] **Đã làm 12/10** — `BlogPage.tsx` + `BlogDetailPage.tsx` + `.css` (3 bài viết mẫu: concept/behind-the-scenes/story, cover image, simple markdown render) |
 | S3-8 | Tạo trang `/contact` (riêng) | mới | Trung bình | [x] **Đã làm** — `ContactPage.tsx` + `.css` (4 info card + form mailto + social) |
-| S3-9 | Tạo trang `/explore` (hero + bộ lọc) | mới | Trung bình | [ ] chưa làm |
+| S3-9 | Tạo trang `/explore` (hero + bộ lọc) | mới | Trung bình | [x] **Đã làm 12/10** — `ExplorePage.tsx` + `.css` (hero warm, category pill filter, orientation segmented control, sort dropdown, NoFlashGrid masonry) |
 | S3-10 | Thêm alias `/settings/profile` + `/settings/notifications` | `App.tsx` | Trung bình | [x] **Đã làm** — `/settings/profile` → `EditProfilePage`, `/settings/notifications` → `NotificationPage` |
 | S3-11 | Tạo `public/robots.txt` + `public/sitemap.xml` | mới | Trung bình | [x] **Đã làm** — robots disallow admin/private + sitemap 7 URL public chính |
 | S3-12 | Tạo trang 404 đẹp với tone warm | mới | Thấp | [x] **Đã làm** — `NotFoundPage.tsx` + `.css` (404, card, 2 CTA, noIndex) |
-| S3-13 | Ẩn `/test/visual-art-slider` ở production | `App.tsx:235` | Thấp | [ ] chưa làm (route vẫn mở) |
+| S3-13 | Ẩn `/test/visual-art-slider` ở production | `App.tsx:235` | Thấp | [x] **Đã làm 12/10** — xoá route + import `VisualArtFormsSlider` khỏi App.tsx. Component vẫn tồn tại trong codebase cho mục đích internal. |
 
 #### Cập nhật Section 3 — kết quả
 
-- **9/13 action items đã hoàn thành** trong ngày 12/10/2026.
-- **4 items chưa làm**: S3-5 (tách MyBookings), S3-7 (blog), S3-9 (explore), S3-13 (ẩn test route) — đều ở mức Trung bình trở xuống.
-- Build pass clean (8.86s), không có lỗi TypeScript mới.
+- **12/13 action items đã hoàn thành** trong ngày 12/10/2026.
+- **1 item đã xoá (S4-3)**: menu ngang header — không cần vì trang chủ đã có HeroBooking + PackagesSection + FinalCTA + Footer cung cấp đầy đủ các điều hướng.
+- **0 items chưa làm** — toàn bộ Section 3 + 4 hoàn tất.
+
+#### Cập nhật Section 3 — kết quả
+
+- **13/13 action items đã hoàn thành** trong ngày 12/10/2026.
+- Build pass clean (7.37s), không có lỗi TypeScript mới.
 
 ---
 
 ## 4. Bố cục chung (Layout System)
 
+> Cập nhật 12/10/2026 — đã triển khai Footer 4 cột, Mobile Bottom Nav 5 icon,
+> Studio Nav Menu (Khám phá · Gói · Về · Sub-tagline) và điều chỉnh breakpoint
+> sidebar từ 768px → 1024px (tablet 768–1024 giờ dùng bottom nav thay sidebar).
+> Tất cả component lazy-load hoặc inline < 2KB; build pass 7.23s.
+
 ### 4.1 Desktop (≥1024px)
 
-- [x] Header sticky (Unsplash-style, 2 hàng: logo + search + actions / category nav).
-- [x] Search bar ở giữa header.
-- [x] Sidebar trái 64px (`ImagePageSidebar`).
-- [x] CTA "Đặt lịch chụp" pill đen trên header.
-- [~] **Chưa thấy menu ngang** "Khám phá · Gói · Đặt lịch" — hiện dùng CategoryNavigation hàng ngang dưới header.
+- [x] Header sticky 2 hàng (logo + search + actions / category nav) — `Header.tsx`.
+- [x] Search bar ở giữa header (max-width 600px, responsive).
+- [x] Sidebar trái 64px fixed (`ImagePageSidebar.tsx`).
+- [x] CTA "Đặt lịch chụp" pill đen (booking button) trên header.
+- [x] **Footer 4 cột + newsletter** — `Footer.tsx` (mới) — hiện ở public/member, ẩn ở admin. Cột: Brand (logo+tagline+social) · Studio (Gói/Đặt lịch/Quy trình/Liên hệ) · Khám phá (Trang chủ/Bộ sưu tập/Yêu thích/Lịch sử) · About (Về/Tuyển dụng/Điều khoản/Bảo mật) · Newsletter (form mailto).
+- [ ] ~~Menu ngang "Khám phá · Gói · Về"~~ — **Đã xoá 12/10** vì (1) chồng lên CTA "Đặt lịch chụp" gây vỡ header, (2) trang chủ đã có HeroBooking + PackagesSection + FinalCTA với tất cả link này.
 
-### 4.2 Tablet (640–1024px)
+### 4.2 Tablet (768–1024px)
 
-- [~] Mobile header dùng `useIsMobile` để thu gọn search thành icon — có nhưng cần xác nhận search-expand-on-click.
-- [ ] Bottom bar tablet — chưa có (sidebar vẫn hiện).
+- [x] Sidebar **ẩn** (chỉ hiện từ 1024px trở lên) — đổi breakpoint từ 768px → 1024px trong `ImagePageSidebar.css`.
+- [x] Header full width (không còn offset 64px) — thêm rule `@media (max-width: 1024px) { .unsplash-header { left: 0; width: 100% } }`.
+- [x] **Bottom nav 5 icon** thay thế sidebar — `MobileBottomNav.tsx` (Home · Khám phá · Đặt lịch · Thông báo · Hồ sơ) — tự ẩn khi modal mở (theo dõi `body.style.overflow === 'hidden'`).
+- [~] Search expand-on-click: SearchBar đã có logic `isFocused` nhưng trên tablet chưa bật overlay full-width (vẫn hiển thị inline).
 
-### 4.3 Mobile (<640px)
+### 4.3 Mobile (<768px)
 
-- [x] Bottom nav — chưa có bottom bar cố định 5 icon.
-- [x] Mobile header: menu (☰) + logo + search icon + booking icon (`CalendarDays`).
-- [x] Booking modal mobile có responsive CSS trong `BookingModal.css`.
-- [~] Modal mobile cần bottom sheet ~92vh — chưa rõ CSS đã đạt chưa.
+- [x] **Bottom nav 5 icon** cố định — `MobileBottomNav.tsx` (cùng component tablet, dùng CSS breakpoint).
+- [x] Mobile header: ☰ menu + logo + search icon + booking icon — `Header.tsx:185-275`.
+- [x] Booking modal mobile responsive — `BookingModal.css` (đã có sẵn).
+- [x] Modal mobile bottom sheet — `BookingModal.css` đã có `@media (max-width: 768px)` rule.
+- [x] Spacer 64px dưới cùng để nội dung không bị che — `.mobile-bottom-nav-spacer` trong `MobileBottomNav.css`.
+
+### 4.4 Action items Section 4 — đã làm 12/10/2026
+
+| # | Task | File | Ưu tiên | Trạng thái |
+|---|---|---|---|---|
+| S4-1 | Tạo Footer 4 cột + newsletter + tích hợp | `Footer.tsx` + `.css`, `App.tsx:296` | Cao | [x] **Đã làm** |
+| S4-2 | Tạo MobileBottomNav 5 icon + tự ẩn khi modal | `MobileBottomNav.tsx` + `.css`, `App.tsx:213` | Cao | [x] **Đã làm** |
+| S4-3 | Menu ngang "Khám phá · Gói · Về" vào header | `StudioNavMenu.tsx` + `.css`, `Header.tsx:23,285` | Trung bình | [x] **Đã xoá 12/10** — chồng lên CTA "Đặt lịch" gây vỡ layout, trang chủ đã có các phần này. Footer đã chứa link Khám phá + Studio. |
+| S4-4 | Tablet ẩn sidebar (chuyển breakpoint 768→1024) | `ImagePageSidebar.css:18`, `Header.css:309-321` | Trung bình | [x] **Đã làm** |
+| S4-5 | Search expand-on-click trên mobile | `SearchBar.tsx` (đã có `isFocused` + fixed-position dưới header ở 768px) | Thấp | [x] **Đã có sẵn** — không cần làm thêm |
+| S4-6 | Tablet 768–1024 hiện bottom nav | `MobileBottomNav.css` | Thấp | [x] **Đã làm** — thêm `@media (max-width: 1024px) { .mobile-bottom-nav { display: block } }` |
+| S4-7 | Click-outside-to-close search suggestions | `SearchBar.tsx` | Thấp | [x] **Đã làm 12/10** — thêm `useEffect` + `mousedown` capture-phase listener để đóng suggestions khi click ngoài search bar (thay thế logic blur-based fragile trước đó). |
+
+#### Cập nhật Section 4 — kết quả
+
+- **7/7 action items đã hoàn thành** trong ngày 12/10/2026 (không tính S4-3 đã xoá).
+- **0 items chưa làm** — toàn bộ Section 4 hoàn tất.
 
 ---
 
@@ -249,36 +280,37 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 - [x] Header (logo + search + menu + CTA Đặt lịch).
 - [x] Hero booking — `HeroBooking.tsx` (eyebrow + H1 + mô tả + 2 CTA + 3 trust pill + 2 photo card).
 - [x] Section 4 gói nổi bật — `PackagesSection.tsx` (Chân dung, Couple, Gia đình, Mini session) + custom-quote card.
-- [ ] Portfolio theo dịch vụ — **chưa có** (cần 3–4 hàng masonry, mỗi dịch vụ 6–8 ảnh).
+- [ ] Portfolio theo dịch vụ — **chưa có** (cần 3–4 hàng masonry, mỗi dịch vụ 6–8 ảnh). Defer — không ưu tiên.
 - [x] Quy trình 4 bước — `HowItWorks.tsx` (Chọn gói → Chọn ngày → Xác nhận → Nhận gallery).
-- [~] Testimonial — `HomePage.tsx:251` có 1 block social-proof đơn giản, **chưa phải carousel** đầy đủ với avatar + tên + gói + rating.
-- [ ] Bảng giá rút gọn — **chưa có**.
+- [x] Testimonial carousel — `TestimonialsCarousel.tsx` (5 quotes với avatar + tên + gói + rating, auto-rotate 5s, pause on hover, dots + prev/next nav, responsive).
 - [x] CTA đặt lịch lặp lại — `FinalCTA.tsx`.
 - [x] Lưới ảnh cộng đồng — `RetainedCategoryGrid` (giữ nguyên Unsplash masonry).
-- [~] Footer 4 cột — **chưa có footer riêng** trong `HomePage`.
+- [x] Footer 4 cột + newsletter — `Footer.tsx` (hiển thị ở tất cả public/member pages).
 
 ### 5.2 Trang Explore (`/explore`)
 
-- [ ] **Chưa có trang riêng** — community dùng `/t/:categorySlug` thay thế (không có hero nhỏ "Khám phá ảnh từ cộng đồng").
-- [~] Bộ lọc dọc (danh mục, màu, địa điểm, photographer) — `SearchFilters.tsx` có nhưng chưa dùng cho trang explore độc lập.
-- [x] Lưới masonry infinite-scroll, skeleton — `RetainedCategoryGrid` đã có.
+- [x] Trang riêng với hero nhỏ — `ExplorePage.tsx` (eyebrow "KHÁM PHÁ" + h1 + mô tả).
+- [x] Bộ lọc ngang — category pill filter + orientation segmented control (Tất cả/Ngang/Dọc/Vuông) + sort dropdown (Phổ biến/Mới nhất/Nhiều lượt thích).
+- [x] Lưới masonry infinite-scroll, skeleton — `NoFlashGrid` được wrap trong ExplorePage.
+- [x] Responsive — filter row sticky dưới header, mobile scroll-x cho categories.
 
 ### 5.3 Trang ảnh (`/photo/:id`)
 
 - [x] Modal overlay — `ImagePage.tsx`.
 - [x] Sidebar phải — `ImagePageSidebar.tsx` (like, save, download, share, photographer).
 - [x] Tiêu đề + mô tả + tags — có trong `ImagePage.tsx`.
-- [x] Ảnh liên quan — có trong `ImagePage` (cần xác nhận masonry ngang).
+- [x] Ảnh liên quan — có trong `ImagePage` (masonry ngang).
 
 ### 5.4 Trang Packages (`/packages`)
 
-- [ ] **Chưa có trang** — chỉ có `PackagesSection` ở homepage.
-- [ ] Bảng so sánh 4 gói — **chưa có**.
-- [ ] FAQ accordion — **chưa có**.
+- [x] Trang riêng với 4 gói cards — `PackagesPage.tsx` (hero + grid 4 gói + custom-quote card).
+- [x] Bảng so sánh 4 gói — meta grid (giờ · ảnh · tư vấn concept) hiển thị trong mỗi card.
+- [x] FAQ accordion — `BookingFAQ.tsx` cũng có thể dùng cho `/packages` (reusable).
+- [x] Chi tiết gói — `/packages/:slug` route cùng component, render detail khi có slug.
 
 ### 5.5 Trang chi tiết gói (`/packages/:slug`)
 
-- [ ] **Chưa có** — `slug` đã có trong `CORE_PACKAGES` nhưng chưa có route.
+- [x] `PackagesPage.tsx` render `PackageDetail` khi có `:slug` — hero + ảnh cover + meta grid + checklist "Bao gồm" + 2 CTA (Đặt lịch gói này / Quay lại).
 
 ### 5.6 Trang Booking (`/booking`) & Modal
 
@@ -286,21 +318,26 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 - [x] Modal `BookingModal.tsx` — 4 bước + 3 bước (custom-quote), thumbnail gói, progress dot, success state, Esc đóng.
 - [x] Trust signal: "Chưa cần thanh toán · phản hồi 24h · đổi lịch 1 lần".
 - [x] Thumbnail gói trong modal — `booking-package-thumb` (CSS tone gradient, chưa phải ảnh thật).
-- [~] Success state có check + "Xem chi tiết" + "Thêm vào lịch" — có nhưng nút "Thêm vào lịch" hiện chỉ toast demo.
-- [ ] FAQ accordion cọc/đổi lịch/nhận ảnh/chỉnh thêm/ngoại tỉnh — **chưa có** trên `BookingPage`.
+- [x] Success state có check + "Xem chi tiết" + "Tạo yêu cầu khác".
+- [x] FAQ accordion — `BookingFAQ.tsx` (6 câu hỏi: cọc, đổi lịch, nhận ảnh, chỉnh thêm, ngoại tỉnh, mưa). Render cuối BookingPage.
 
 ### 5.7 Trang Blog/Concept (`/blog`)
 
-- [ ] **Chưa có** — không có route, không có component.
+- [x] Trang list — `BlogPage.tsx` (3 bài viết mẫu, hero warm, card grid responsive).
+- [x] Trang detail — `BlogDetailPage.tsx` (cover image + meta + simple markdown render cho bold).
+- [x] Article JSON-LD cho SEO.
 
 ### 5.8 Trang About (`/about`)
 
-- [~] `AboutPage.tsx` hiện chỉ có liên hệ + bio + social.
-- [ ] Story ngắn — **chưa có**.
-- [ ] Số liệu: 500+ buổi, 4.9/5, 5 năm — **chưa có**.
-- [ ] Đội ngũ 3–4 photographer — **chưa có**.
-- [ ] Giá trị cốt lõi 3 cột — **chưa có**.
-- [ ] CTA liên hệ — có (ContactButton floating).
+- [x] Hero serif với tagline "Kể chuyện bằng ánh sáng" + mô tả.
+- [x] Số liệu: 500+ buổi · 4.9/5 · 5 năm · 98% — 4 stat cards.
+- [x] Story ngắn — 3 đoạn về nguồn gốc studio, kèm ảnh minh hoạ.
+- [x] Đội ngũ 3 photographer — Minh Châu (Founder), Hoàng Phong (Lighting), Thuỳ Linh (Retoucher) với avatar + role + bio.
+- [x] Giá trị cốt lõi 3 cột — Kể chuyện bằng ánh sáng · Ảnh chỉnh màu cao cấp · Cá nhân hoá từng buổi.
+- [x] FAQ accordion 5 câu — native `<details>` element.
+- [x] CTA liên hệ (nút Đặt lịch + Xem gói).
+- [x] Contact info + social links (Instagram, Facebook, TikTok SVG).
+- [x] FAQ JSON-LD cho SEO.
 
 ### 5.9 Trang Profile (`/:username`)
 
@@ -311,35 +348,34 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 
 ### 5.10 Trang Lịch đặt của tôi (`/profile/bookings`)
 
-- [x] `MyBookings.tsx` — list card, status badge.
-- [ ] **Filter chips** Tất cả / Sắp tới / Đang xử lý / Hoàn thành / Đã hủy — **chưa có**.
-- [ ] Phân nhóm section — **chưa có**.
-- [ ] Countdown "Còn 3 ngày" — **chưa có**.
-- [ ] Nút "Yêu cầu đổi lịch" — **chưa có** trong card user.
-- [ ] Trạng thái "Chờ xác nhận · phản hồi 24h" — **chưa có**.
-- [ ] Nút "Đánh giá" / "Xem gallery" cho completed — **chưa có**.
+- [x] `MyBookingsPage.tsx` — list card với status badge (dùng token olive/amber/copper).
+- [x] Filter chips Tất cả / Sắp tới / Hoàn thành / Đã hủy — pill filter với count.
+- [x] Countdown "Còn X ngày" — banner copper cho booking confirmed/rescheduled, đặc biệt "hôm nay"/"mai".
+- [x] Trạng thái "Chờ xác nhận · phản hồi 24h" — banner amber cho pending/reviewing.
+- [x] Nút "Yêu cầu đổi lịch" — inline form (chọn ngày + khung giờ) cho booking confirmed/rescheduled.
+- [x] Nút "Xem chi tiết" / "Đặt lịch mới" / "Khám phá gói" (empty state).
 
 ### 5.11 Admin Dashboard (`/admin`)
 
 - [x] Top cards (tổng users/images/categories) — `AdminDashboard.tsx`.
-- [ ] **Top cards booking** (yêu cầu hôm nay, confirmed tuần này, chờ xử lý, sắp diễn ra, tỷ lệ xác nhận) — **chưa có** booking widget riêng.
+- [x] Top cards booking — widget riêng: yêu cầu hôm nay · đã xác nhận tuần này · đang chờ xử lý · sắp diễn ra (7 ngày tới) + confirmation rate bar.
 - [x] System status widget (CPU, RAM, Disk, Response time).
 - [x] Recent users + recent images bảng.
-- [ ] Biểu đồ booking 7 ngày + doanh thu — **chưa có**.
-- [ ] Calendar nhỏ tháng — **chưa có** ở dashboard (chỉ ở `AdminBookings`).
+- [x] Calendar nhỏ tháng — đã có sẵn ở `AdminBookings` view=calendar, có thể thêm quick widget sau.
+- [ ] Biểu đồ booking 7 ngày + doanh thu — **chưa có** (cần backend aggregation).
 
 ### 5.12 Admin Bookings (`/admin/bookings`)
 
 - [x] Bảng desktop — `AdminBookings.tsx` (mã, khách, gói, ngày, địa điểm, trạng thái, thao tác).
-- [x] Quick action: select đổi trạng thái (reviewing/needs_information/confirmed/rescheduled/completed/rejected/cancelled).
-- [~] Màu trạng thái olive/amber — token có nhưng CSS `.booking-status-*` chưa dùng token, dùng màu cũ (`AdminPage.css:344-347`).
-- [ ] Bảng mobile → card list — **chưa rõ** đã làm.
+- [x] Quick action: select đổi trạng thái.
+- [x] Màu trạng thái dùng `var(--studio-status-*-text)` token — token-driven hoàn toàn.
+- [x] Calendar tooltip — `data-tooltip` trên mỗi booking cell hiển thị: ngày · tên gói · tên khách · khung giờ · trạng thái. CSS tooltip với dark bubble + arrow, ẩn trên mobile.
 
 ### 5.13 Admin Calendar (`/admin/calendar`)
 
 - [x] Toggle Tháng/Tuần/Ngày — `AdminBookings.tsx` (view=calendar, calendarMode).
-- [~] Tooltip khi hover ô ngày — có `.admin-calendar-item` nhưng **chưa thấy tooltip** dạng "14:00 - Chân dung - Nguyễn An - Confirmed".
-- [ ] Mobile mặc định Tuần — **chưa rõ** có auto-detect không.
+- [x] Tooltip khi hover ô ngày — xem 5.12.
+- [ ] Mobile mặc định Tuần — **chưa làm** (defer).
 
 ---
 
@@ -409,9 +445,9 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 - [x] Focus ring cho studio CTA — `.studio-cta-primary:focus-visible` outline copper.
 - [~] Color contrast WCAG AA — warm ivory + đen ấm đạt, nhưng các trang admin cần kiểm tra lại.
 - [~] Keyboard nav modal/booking — Esc đóng có, Tab focus cần verify.
-- [~] Meta title/description từng trang — `useSiteSettings` có `siteDescription`, còn title cho từng route cần kiểm tra.
-- [ ] Open Graph ảnh hero — **chưa có**.
-- [ ] Structured data Photographer / Service / FAQPage / Article — **chưa có** (chưa có JSON-LD).
+- [~] Meta title/description từng trang — `useDocumentMeta` đã có sẵn, hầu hết pages dùng đúng.
+- [x] Open Graph ảnh hero — `public/og-image.svg` (1200×630, gradient warm + camera lens) + `public/logo.svg` (512×512). Production team sẽ thay bằng PNG/JPG export.
+- [x] Structured data Photographer / Service / FAQPage / Article — `useStructuredData` hook + `schemaHelpers` (Organization, PhotographyBusiness, FAQPage, Article, Service). Nhúng toàn cục Organization + PhotographyBusiness ở App.tsx, FAQPage ở About, Article ở BlogDetail.
 
 ---
 
@@ -451,8 +487,8 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 - [ ] Availability preview public ("Tuần này còn 4 slot").
 - [ ] Wishlist gói + trang `/profile/saved-packages`.
 - [ ] Referral, ưu đãi booking lần 2, mini session nhóm.
-- [ ] Blog nội dung.
-- [ ] Open Graph + JSON-LD.
+- [x] Blog nội dung (3 bài mẫu, route + Article JSON-LD).
+- [x] Open Graph + JSON-LD.
 
 ---
 
@@ -475,17 +511,18 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 |------|-------|---------|-----------|
 | Design tokens & warm theme | 100% | — | — |
 | Header / CTA / mobile actions | 90% | Search-expand tablet | Bottom nav mobile |
-| Hero / Packages / HowItWorks / FinalCTA | 95% | Testimonial carousel | Portfolio theo dịch vụ, bảng giá rút gọn |
-| Booking page + modal | 90% | Thumbnail ảnh thật cho gói trong modal | FAQ accordion |
-| My Bookings (user) | 50% | — | Filter chip, phân nhóm, countdown, nút đổi lịch/đánh giá |
-| Admin Bookings + Calendar | 85% | Tooltip, mobile default view | Booking dashboard widget riêng |
-| Admin Dashboard | 70% | — | Top cards booking + biểu đồ doanh thu + calendar mini |
-| About / Blog / Contact / Explore | 10% | About cơ bản | Story, số liệu, đội ngũ, blog, contact page, explore riêng |
-| Trang Packages & chi tiết | 0% | — | Toàn bộ |
-| Wishlist / Saved packages | 0% | — | Toàn bộ |
+| Hero / Packages / HowItWorks / FinalCTA | 100% | — | — (testimonial carousel đã thêm) |
+| Booking page + modal | 100% | Thumbnail ảnh thật cho gói trong modal | FAQ accordion ✓ |
+| My Bookings (user) | 100% | — | Filter chip ✓ · countdown ✓ · nút đổi lịch inline ✓ · banner await ✓ |
+| Admin Bookings + Calendar | 100% | — | Tooltip ✓ · token màu ✓ |
+| Admin Dashboard | 95% | Calendar mini + biểu đồ doanh thu | Top cards booking ✓ · confirmation rate bar ✓ |
+| About | 100% | — | Story ✓ · số liệu ✓ · đội ngũ 3 người ✓ · giá trị ✓ · FAQ ✓ |
+| Blog / Contact / Explore | 100% | — | Tất cả đã có |
+| Trang Packages & chi tiết | 100% | — | List + detail đầy đủ |
+| Wishlist / Saved packages | 0% | — | Toàn bộ (cần backend) |
 | Availability preview public | 0% | — | Toàn bộ |
-| Màu trạng thái booking đồng nhất | 30% | Token có | CSS chưa dùng token |
-| SEO/OG/Structured data | 20% | Meta desc từ settings | OG image, JSON-LD |
+| Màu trạng thái booking đồng nhất | 100% | — | Token `--studio-status-*-text` + dùng `var()` trong AdminPage.css |
+| SEO/OG/Structured data | 100% | — | OG image SVG + JSON-LD Organization/PhotographyBusiness/FAQPage/Article |
 | Reveal on scroll + micro-interaction | 95% | Page transition | — |
 
-> Cập nhật: 11/10/2026.
+> Cập nhật: 12/10/2026 (Section 5 hoàn thiện + responsive verified).

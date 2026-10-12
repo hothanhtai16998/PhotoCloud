@@ -113,8 +113,8 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                 </div>
 
                 <h1 id="home-booking-title" className="hero-title">
-                    <span className="hero-title-line">Chụp ảnh</span>
-                    <span className="hero-title-line"><em>theo cách</em> của bạn</span>
+                    <span className="hero-title-line">{BRAND.taglinePrefix}</span>
+                    <span className="hero-title-line"><em>{BRAND.taglineHighlight}</em></span>
                 </h1>
 
                 <p className="hero-sub">

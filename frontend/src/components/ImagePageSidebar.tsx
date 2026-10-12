@@ -1,4 +1,4 @@
-import { Home, Bookmark, Heart, Info, Download, Shield } from 'lucide-react';
+import { Home, Bookmark, Heart, Info, Download, Shield, Compass, Camera, BookOpen } from 'lucide-react';
 import { WebSocketStatus } from './WebSocketStatus';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -209,6 +209,38 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
 
       {/* Middle section - Main Navigation */}
       <div className="sidebar-section sidebar-section-middle">
+        <Link
+          to="/explore"
+          className={getNavItemClass('/explore')}
+          aria-label={currentLocale === 'vi' ? 'Khám phá' : 'Explore'}
+          data-tooltip={currentLocale === 'vi' ? 'Khám phá' : 'Explore'}
+          aria-current={isActive('/explore') ? 'page' : undefined}
+        >
+          <Compass className="sidebar-icon" />
+        </Link>
+
+        <Link
+          to="/packages"
+          className={getNavItemClass('/packages')}
+          aria-label={currentLocale === 'vi' ? 'Gói chụp' : 'Packages'}
+          data-tooltip={currentLocale === 'vi' ? 'Gói chụp' : 'Packages'}
+          aria-current={isActive('/packages') ? 'page' : undefined}
+        >
+          <Camera className="sidebar-icon" />
+        </Link>
+
+        <Link
+          to="/blog"
+          className={getNavItemClass('/blog')}
+          aria-label={currentLocale === 'vi' ? 'Blog' : 'Blog'}
+          data-tooltip={currentLocale === 'vi' ? 'Blog' : 'Blog'}
+          aria-current={isActive('/blog') ? 'page' : undefined}
+        >
+          <BookOpen className="sidebar-icon" />
+        </Link>
+
+        <div className="sidebar-separator" />
+
         <Link
           to="/collections"
           className={getNavItemClass('/collections')}

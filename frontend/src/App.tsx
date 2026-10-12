@@ -6,11 +6,13 @@ import { PageViewTracker } from "./components/PageViewTracker";
 import { ActualLocationContext, BackgroundRouteContext } from "./contexts/ActualLocationContext";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useSiteSettings } from "./hooks/useSiteSettings";
-import { VisualArtFormsSlider } from "./components/VisualArtFormsSlider";
+import { useStructuredData, schemaHelpers } from "./hooks/useStructuredData";
 import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
 import ImagePageSidebar from "./components/ImagePageSidebar";
 import Header from "./components/Header";
+import { Footer } from "./components/Footer";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { GlobalLoadingOverlay } from "./components/ui/GlobalLoadingOverlay";
 import { syncGlobalLoading } from "./stores/helpers/syncGlobalLoading";
@@ -42,10 +44,14 @@ const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDet
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const BookingPage = lazy(() => import("./pages/BookingPage"));
 const BookingDetailPage = lazy(() => import("./pages/BookingDetailPage"));
+const MyBookingsPage = lazy(() => import("./pages/MyBookingsPage"));
+const ExplorePage = lazy(() => import("./pages/ExplorePage"));
 const UploadPage = lazy(() => import("./pages/UploadPage"));
 const NotificationPage = lazy(() => import("./pages/NotificationPage"));
 const PackagesPage = lazy(() => import("./pages/PackagesPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const BlogDetailPage = lazy(() => import("./pages/BlogDetailPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 
@@ -81,6 +87,10 @@ function App() {
   const isMobile = useIsMobile();
   // Load site settings to update document title and meta tags
   const { settings } = useSiteSettings();
+
+  // Global structured data (Organization + PhotographyBusiness) — persists across routes
+  useStructuredData(schemaHelpers.organization());
+  useStructuredData(schemaHelpers.photographyBusiness());
 
   // Prefetch CSRF token early to avoid critical request chaining
   useEffect(() => {
@@ -197,6 +207,9 @@ function App() {
                             !location.pathname.startsWith('/signup') &&
                             !location.pathname.startsWith('/auth/google/callback');
 
+  // Footer: show ở public/member pages, KHÔNG hiện ở admin (admin có layout riêng)
+  const shouldShowFooter = shouldShowHeader && !location.pathname.startsWith('/admin');
+
   return (
     <ActualLocationContext.Provider value={location}>
       {/* Header - Unsplash-style: Always visible, even during loading */}
@@ -208,6 +221,9 @@ function App() {
       {/* Floating Contact Button - Always visible */}
       <ContactButton />
       <BookingModal />
+
+      {/* Mobile Bottom Nav - ẩn tự động khi modal mở */}
+      {shouldShowHeader && <MobileBottomNav />}
 
       {/* Global Loading Overlay - Single spinner for all loading states */}
       <GlobalLoadingOverlay />
@@ -235,6 +251,9 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/packages/:slug" element={<PackagesPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogDetailPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
           {/* Public collections — anyone can browse, login required to interact */}
           <Route path="/collections" element={<CollectionsPage />} />
           <Route path="/collections/:collectionId" element={<CollectionDetailPage />} />
@@ -242,7 +261,6 @@ function App() {
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/booking/:bookingId" element={<BookingDetailPage />} />
           </Route>
-          <Route path="/test/visual-art-slider" element={<VisualArtFormsSlider />} />
           {/* Fallback route for users without username */}
           <Route path="/profile/user/:userId" element={<ProfilePage />} />
 
@@ -261,7 +279,7 @@ function App() {
             <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
             <Route path="/downloads" element={<DownloadHistoryPage />} />
             <Route path="/notifications" element={<NotificationPage />} />
-            <Route path="/profile/bookings" element={<BookingPage />} />
+            <Route path="/profile/bookings" element={<MyBookingsPage />} />
           </Route>
 
           {/**admin routes */}
@@ -282,7 +300,10 @@ function App() {
             <Route path="/photos/:slug" element={<ImagePage />} />
           </Routes>
         )}
-        
+
+        {/* Studio Footer - hiện ở public/member, ẩn ở admin */}
+        {shouldShowFooter && <Footer />}
+
         {/* PWA Install Prompt */}
         <PWAInstallPrompt />
       </Suspense>

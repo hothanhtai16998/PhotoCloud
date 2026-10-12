@@ -304,7 +304,11 @@
 .admin-calendar-weekday, .admin-calendar-day { min-height:86px; border-right:1px solid #e5e5de; border-bottom:1px solid #e5e5de; padding:8px; font-size:11px; }
 .admin-calendar-weekday { min-height:auto; text-align:center; color: var(--text-muted, #8A8A82); font-weight:600; }
 .admin-calendar-day.muted { background:#fafaf8; color:#aaa; }
-.admin-calendar-item { margin-top:5px; padding:4px; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.admin-calendar-item { margin-top:5px; padding:4px; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; position:relative; cursor:help; border-radius:4px; transition:transform .15s ease; }
+.admin-calendar-item:hover { transform:translateY(-1px); }
+.admin-calendar-item:hover::after { content:attr(data-tooltip); position:absolute; left:50%; bottom:calc(100% + 6px); transform:translateX(-50%); background:var(--studio-text-primary, #1B1B19); color:#fff; padding:8px 10px; border-radius:8px; font-size:11px; font-weight:500; white-space:pre-line; line-height:1.45; z-index:10; pointer-events:none; min-width:180px; max-width:240px; box-shadow:0 8px 24px rgba(27,27,25,0.18); }
+.admin-calendar-item:hover::before { content:''; position:absolute; left:50%; bottom:calc(100% + 1px); transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--studio-text-primary, #1B1B19); z-index:10; pointer-events:none; }
+@media (max-width:768px) { .admin-calendar-item:hover::after { display:none; } }
 .admin-packages { display:grid; grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr); gap:18px; }
 .admin-package-form, .admin-package-list { background: var(--bg-card, #FFFFFF); border:1px solid #e5e5de; padding:20px; }
 .admin-package-form h2 { margin:0 0 18px; font-size:18px; font-weight:500; }
@@ -347,16 +351,38 @@
   color: inherit;
 }
 
-/* Booking status colors — PhotoCloud warm brand tokens */
-.booking-status-pending { background: rgba(201, 161, 74, 0.16); color: #8A6A1B; }
-.booking-status-reviewing, .booking-status-needs_information { background: rgba(184, 134, 91, 0.16); color: #8A5A2A; }
-.booking-status-confirmed { background: rgba(122, 139, 92, 0.18); color: #4F5D38; }
-.booking-status-rescheduled { background: rgba(184, 134, 91, 0.16); color: #8A5A2A; }
-.booking-status-completed { background: rgba(60, 60, 56, 0.10); color: var(--studio-text-primary); }
+/* Booking status colors — PhotoCloud warm brand tokens (all driven by --studio-*) */
+.booking-status-pending {
+  background: rgba(201, 161, 74, 0.16);
+  color: var(--studio-status-pending-text, #8A6A1B);
+}
+.booking-status-reviewing,
+.booking-status-needs_information {
+  background: rgba(184, 134, 91, 0.16);
+  color: var(--studio-accent-copper-dark, #8A5A2A);
+}
+.booking-status-confirmed {
+  background: rgba(122, 139, 92, 0.18);
+  color: var(--studio-status-confirmed-text, #4F5D38);
+}
+.booking-status-rescheduled {
+  background: rgba(184, 134, 91, 0.16);
+  color: var(--studio-accent-copper-dark, #8A5A2A);
+}
+.booking-status-completed {
+  background: rgba(27, 27, 25, 0.10);
+  color: var(--studio-text-primary);
+}
 .booking-status-rejected,
 .booking-status-cancelled_by_client,
-.booking-status-cancelled_by_photographer { background: rgba(166, 69, 60, 0.14); color: #8A2A23; }
-.booking-status-expired { background: rgba(107, 107, 102, 0.14); color: #4A4A45; }
+.booking-status-cancelled_by_photographer {
+  background: rgba(166, 69, 60, 0.14);
+  color: var(--studio-status-danger-text, #8A2A23);
+}
+.booking-status-expired {
+  background: rgba(107, 107, 102, 0.14);
+  color: var(--studio-text-muted);
+}
 
 .admin-loading { 
   text-align: center;
@@ -5279,6 +5305,60 @@
   background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
   color: var(--text-primary, #1B1B19);
   box-shadow: 0 8px 32px rgba(168, 237, 234, 0.3);
+}
+
+/* PhotoCloud warm brand variants — dùng cho booking widget */
+.admin-stat-card-amber {
+  background: linear-gradient(135deg, #C9A14A 0%, #8A6A1B 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(201, 161, 74, 0.3);
+}
+
+.admin-stat-card-copper {
+  background: linear-gradient(135deg, #B8865B 0%, #8A5A2A 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(184, 134, 91, 0.3);
+}
+
+/* Confirmation rate bar */
+.admin-confirmation-rate {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--studio-border-soft, #E8E2D6);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.admin-confirmation-rate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: var(--studio-text-muted, #6B6B66);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-confirmation-rate-header strong {
+  font-family: var(--studio-font-display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--studio-text-primary, #1B1B19);
+}
+
+.admin-confirmation-rate-bar {
+  height: 8px;
+  background: var(--studio-bg-cream, #F2EEE7);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.admin-confirmation-rate-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--studio-status-confirmed, #7A8B5C) 0%, var(--studio-accent-copper, #B8865B) 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
 }
 
 .admin-stat-card-indigo .admin-stat-icon {

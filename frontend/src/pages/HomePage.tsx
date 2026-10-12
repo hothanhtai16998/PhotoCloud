@@ -4,7 +4,6 @@ import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
 import './HomePageLayouts.css';
 import { useEffect, useContext, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, CalendarDays } from 'lucide-react';
 import { useImageStore } from "@/stores/useImageStore";
 import { useSliderStore } from "@/stores/useSliderStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
@@ -12,6 +11,7 @@ import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { RetainedCategoryGrid } from '@/components/RetainedCategoryGrid';
 import { VisualArtFormsSlider } from "@/components/VisualArtFormsSlider";
+import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { useImageGridCategory } from "@/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
 import type { Image } from "@/types/image";
@@ -244,15 +244,7 @@ function HomePage() {
                         <HeroBooking onViewPackages={scrollToPackages} />
                         <PackagesSection />
                         <HowItWorks />
-                        <section className="home-social-proof" aria-label="Đánh giá khách hàng">
-                            <div>
-                                <span><Star size={16} /> 4.9/5 từ khách đã đặt lịch</span>
-                                <p>“Buổi chụp nhẹ nhàng, hướng dẫn tạo dáng dễ hiểu và gallery nhận đúng hẹn.”</p>
-                            </div>
-                            <button type="button" className="studio-cta-primary" onClick={openBookingModal}>
-                                <CalendarDays size={17} /> Đặt lịch chụp
-                            </button>
-                        </section>
+                        <TestimonialsCarousel />
                         <VisualArtFormsSlider collapsed={sliderCollapsed} />
                     </>
                 )}

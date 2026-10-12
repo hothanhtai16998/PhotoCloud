@@ -342,6 +342,62 @@ export function AdminDashboard({ stats, loading }: AdminDashboardProps) {
                 </div>
             </div>
 
+            {/* Booking stats (yêu cầu hôm nay + confirmed tuần này) */}
+            <div className="admin-stats-grid">
+                <div className="admin-stat-card admin-stat-card-amber">
+                    <div className="admin-stat-icon">
+                        <span>📩</span>
+                    </div>
+                    <div className="admin-stat-content">
+                        <div className="admin-stat-value">{stats.bookingStats?.requestsToday ?? 0}</div>
+                        <div className="admin-stat-label">Yêu cầu đặt lịch hôm nay</div>
+                    </div>
+                </div>
+                <div className="admin-stat-card admin-stat-card-green">
+                    <div className="admin-stat-icon">
+                        <span>✅</span>
+                    </div>
+                    <div className="admin-stat-content">
+                        <div className="admin-stat-value">{stats.bookingStats?.confirmedThisWeek ?? 0}</div>
+                        <div className="admin-stat-label">Đã xác nhận tuần này</div>
+                    </div>
+                </div>
+                <div className="admin-stat-card admin-stat-card-red">
+                    <div className="admin-stat-icon">
+                        <span>⏳</span>
+                    </div>
+                    <div className="admin-stat-content">
+                        <div className="admin-stat-value">{stats.bookingStats?.pending ?? 0}</div>
+                        <div className="admin-stat-label">Đang chờ xử lý</div>
+                    </div>
+                </div>
+                <div className="admin-stat-card admin-stat-card-copper">
+                    <div className="admin-stat-icon">
+                        <span>📅</span>
+                    </div>
+                    <div className="admin-stat-content">
+                        <div className="admin-stat-value">{stats.bookingStats?.upcoming ?? 0}</div>
+                        <div className="admin-stat-label">Sắp diễn ra (7 ngày tới)</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Confirmation rate */}
+            {stats.bookingStats && (
+                <div className="admin-confirmation-rate">
+                    <div className="admin-confirmation-rate-header">
+                        <span>Tỷ lệ xác nhận (30 ngày qua)</span>
+                        <strong>{stats.bookingStats.confirmationRate}%</strong>
+                    </div>
+                    <div className="admin-confirmation-rate-bar">
+                        <div
+                            className="admin-confirmation-rate-fill"
+                          style={{ width: `${Math.min(100, Math.max(0, stats.bookingStats.confirmationRate))}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Category Stats */}
             <div className="admin-section">
                 <h2 className="admin-section-title">Top Categories</h2>

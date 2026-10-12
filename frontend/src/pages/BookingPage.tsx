@@ -7,6 +7,7 @@ import { bookingService } from '@/services/bookingService';
 import { useUserStore } from '@/stores/useUserStore';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { BRAND } from '@/constants/brand';
+import { BookingFAQ } from '@/components/booking/BookingFAQ';
 import type { BookingPackage, BookingPayload, BookingTimeSlot, BookingLocationType } from '@/types/booking';
 import './BookingPage.css';
 
@@ -105,7 +106,7 @@ function BookingPage() {
       <header className="booking-hero">
         <div>
           <p className="booking-eyebrow">{BRAND.nameLong.toUpperCase()}</p>
-          <h1>Chụp ảnh theo cách của bạn</h1>
+          <h1>{BRAND.tagline}</h1>
           <p>Chọn gói phù hợp, chia sẻ ý tưởng và để {BRAND.nameLong} cùng bạn tạo nên một buổi chụp đáng nhớ.</p>
           <p className="booking-hero-tagline">{BRAND.subTagline}</p>
         </div>
@@ -170,6 +171,8 @@ function BookingPage() {
           <div className="booking-policy-note"><strong>Lưu ý</strong><p>Chưa cần thanh toán ở bước này. Đội ngũ sẽ liên hệ để xác nhận lịch, tư vấn chi tiết và báo giá cuối cùng nếu có phụ phí.</p></div>
         </aside>
       </div>
+
+      <BookingFAQ />
     </main>
   );
 }

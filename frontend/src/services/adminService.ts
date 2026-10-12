@@ -10,6 +10,14 @@ export interface DashboardStats {
     };
     recentUsers: User[];
     recentImages: AdminImage[];
+    /** Booking widget — tóm tắt booking cho dashboard (optional vì backend có thể chưa trả về) */
+    bookingStats?: {
+        requestsToday: number;
+        confirmedThisWeek: number;
+        pending: number;
+        upcoming: number;
+        confirmationRate: number;
+    };
 }
 
 export interface User {

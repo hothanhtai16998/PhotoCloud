@@ -19,6 +19,14 @@ export const BRAND = {
   /** Tagline chính — đồng nhất giữa Hero / BookingPage / BookingModal / meta title */
   tagline: 'Chụp ảnh theo cách của bạn',
 
+  /** Tách tagline thành 2 phần để dùng cho hero có phần `<em>` highlight gradient.
+   *  - taglinePrefix    : phần đầu (bình thường) — "Chụp ảnh"
+   *  - taglineHighlight : phần in nghiêng gradient  — "theo cách của bạn"
+   *  Tổng 2 phần = `tagline`. Đảm bảo đồng nhất khi đổi wording ở 1 chỗ duy nhất.
+   */
+  taglinePrefix: 'Chụp ảnh',
+  taglineHighlight: 'theo cách của bạn',
+
   /** Tagline phụ — dùng ở About, Blog, footer, hero mở rộng */
   subTagline: 'Kể chuyện bằng ánh sáng',
 
@@ -34,7 +42,7 @@ export const BRAND = {
   themeColor: '#FAF8F4',
 
   /** Open Graph defaults (dùng khi route không có og riêng) */
-  ogImage: '/og-image.jpg',
+  ogImage: '/og-image.svg',
   ogType: 'website',
   locale: 'vi_VN',
   siteUrl: 'https://photocloud.vn',
@@ -46,6 +54,21 @@ export const BRAND = {
       'Kể chuyện bằng ánh sáng — giúp mỗi khách hàng sở hữu bộ ảnh đúng chất riêng của mình.',
     promise:
       'Đặt lịch online, phản hồi trong 24h, đổi lịch 1 lần, ảnh chỉnh màu cao cấp giao trong 5–7 ngày.',
+  },
+
+  /** Thông tin liên hệ public — dùng cho JSON-LD + footer */
+  phone: '+84 9xx xxx xxx',
+  email: 'contact@photocloud.vn',
+  social: {
+    instagram: 'https://www.instagram.com/photocloud.studio',
+    facebook: 'https://www.facebook.com/photocloud.studio',
+    tiktok: 'https://www.tiktok.com/@photocloud.studio',
+  },
+
+  /** Số liệu cho JSON-LD (aggregateRating) */
+  stats: {
+    bookingsCompleted: 500,
+    averageRating: 4.9,
   },
 } as const;
 

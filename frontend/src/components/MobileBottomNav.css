@@ -1,0 +1,115 @@
+/* Mobile Bottom Nav */
+.mobile-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1450; /* Dưới header (1500) và sidebar (1501) */
+    background: rgba(250, 248, 244, 0.92);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-top: 1px solid var(--studio-border-soft);
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 16px rgba(27, 27, 25, 0.05);
+    pointer-events: auto;
+    display: none; /* Ẩn mặc định */
+}
+
+/* Bottom nav hiện từ tablet (≤1024px) trở xuống — thay thế sidebar trên tablet */
+@media (max-width: 1024px) {
+    .mobile-bottom-nav {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: block;
+    }
+}
+
+.mobile-bottom-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.mobile-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    color: var(--studio-text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: color 0.2s ease, background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    font-family: var(--studio-font-body);
+}
+
+.mobile-bottom-nav-item:hover,
+.mobile-bottom-nav-item:active {
+    color: var(--studio-text-primary);
+    background: rgba(184, 134, 91, 0.06);
+}
+
+.mobile-bottom-nav-item.is-active {
+    color: var(--studio-accent-copper);
+}
+
+.mobile-bottom-nav-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.mobile-bottom-nav-item.is-active .mobile-bottom-nav-icon {
+    background: rgba(184, 134, 91, 0.12);
+    transform: translateY(-1px);
+}
+
+.mobile-bottom-nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+}
+
+.mobile-bottom-nav-item.is-active .mobile-bottom-nav-label {
+    font-weight: 700;
+}
+
+/* Spacer bên dưới = chiều cao bottom nav (~60px) để nội dung cuối trang không bị che */
+.mobile-bottom-nav-spacer {
+    display: block;
+    height: 64px;
+}
+
+@media (min-width: 769px) {
+    .mobile-bottom-nav-spacer {
+        display: none;
+    }
+}
+
+/* Tablet vẫn dùng bottom nav, kết hợp với sidebar ẩn (nếu đã xử lý) */
+@media (prefers-reduced-motion: reduce) {
+    .mobile-bottom-nav-item,
+    .mobile-bottom-nav-icon {
+        transition: none;
+    }
+}
