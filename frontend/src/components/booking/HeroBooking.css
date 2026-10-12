@@ -148,9 +148,9 @@
   align-items: center;
   gap: 8px;
   color: #8a6b2d;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
   text-transform: uppercase;
   background: linear-gradient(
     90deg,
@@ -220,20 +220,38 @@
   background: rgba(122, 139, 92, 0.12);
   border: 1px solid rgba(122, 139, 92, 0.3);
   color: #5a6e44;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   text-transform: uppercase;
   -webkit-text-fill-color: initial;
 }
 
 .hero-live-dot {
-  width: 6px;
-  height: 6px;
+  position: relative;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #7A8B5C;
-  box-shadow: 0 0 6px rgba(122, 139, 92, 0.8);
-  animation: heroLiveDot 1.4s ease-in-out infinite;
+  background: #438044;
+  box-shadow: 0 0 5px rgba(67, 128, 68, 0.45);
+}
+
+.hero-live-dot::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid #438044;
+  background: rgba(67, 128, 68, 0.18);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: heroBookingPulse 2.2s ease-out infinite;
+}
+
+@keyframes heroBookingPulse {
+  0% { transform: scale(0.8); opacity: 0.9; }
+  35% { opacity: 0.65; }
+  80%, 100% { transform: scale(2.4); opacity: 0; }
 }
 
 @keyframes heroLiveDot {
@@ -244,9 +262,9 @@
 .hero-title {
   margin: 14px 0 12px;
   color: #1B1B19;
-  font-size: clamp(36px, 5.2vw, 64px);
-  line-height: 0.98;
-  letter-spacing: -0.06em;
+  font-size: 68px;
+  line-height: 1.05;
+  letter-spacing: 0;
   font-family: var(--studio-font-display, 'Fraunces', Georgia, serif);
   font-weight: 500;
 }
@@ -281,8 +299,8 @@
 
 .hero-sub {
   color: #68645d;
-  font-size: clamp(15px, 1.5vw, 18px);
-  line-height: 1.65;
+  font-size: 20px;
+  line-height: 1.55;
   margin: 0;
   max-width: 620px;
   animation: heroFadeUp 0.8s 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
@@ -299,12 +317,17 @@
   margin: 14px 0 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
   gap: 6px;
-  max-width: 540px;
+  width: max-content;
+  max-width: 100%;
 }
 
 .hero-highlight {
+  min-width: 0;
+  cursor: default;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -313,15 +336,12 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(184, 134, 91, 0.22);
-  border-radius: 999px;
+  border-radius: 0;
   color: #2A2A26;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
   position: relative;
-  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1),
-              background 0.25s ease,
-              border-color 0.25s ease;
   opacity: 0;
   transform: translateX(-12px);
   animation: heroHighlightIn 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
@@ -345,12 +365,6 @@
   transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.hero-highlight:hover {
-  transform: translateX(4px);
-  background: rgba(255, 255, 255, 0.92);
-  border-color: var(--accent-color, #B8865B);
-}
-
 .hero-highlight:hover::before {
   transform: scaleY(1);
 }
@@ -369,10 +383,6 @@
   transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.hero-highlight:hover .hero-highlight-icon {
-  transform: scale(1.1) rotate(-6deg);
-}
-
 .hero-highlight-check {
   margin-left: auto;
   color: var(--accent-color, #B8865B);
@@ -380,11 +390,6 @@
   transform: scale(0.5);
   transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
   flex-shrink: 0;
-}
-
-.hero-highlight:hover .hero-highlight-check {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .hero-actions {
@@ -404,8 +409,8 @@
   padding: 14px 22px;
   border-radius: 999px;
   font: inherit;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   border: 1px solid transparent;
@@ -489,9 +494,9 @@
   border: 1px solid rgba(166, 69, 60, 0.22);
   border-radius: 999px;
   color: #6F2D26;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: -0.005em;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
   width: fit-content;
   animation: heroFadeUp 0.8s 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -554,8 +559,8 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: #5f5a52;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
@@ -906,6 +911,15 @@
 }
 
 /* ---------- Responsive ---------- */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .hero-title {
+    font-size: 52px;
+  }
+  .hero-sub {
+    font-size: 18px;
+  }
+}
+
 @media (max-width: 900px) {
   .hero-section {
     grid-template-columns: 1fr;
@@ -934,7 +948,7 @@
     margin: 8px 0;
   }
   .hero-sub {
-    font-size: 15px;
+    font-size: 17px;
     line-height: 1.4;
   }
   .hero-eyebrow-wrap {
@@ -953,7 +967,7 @@
 
 @media (max-width: 600px) {
   .hero-title {
-    font-size: clamp(36px, 12vw, 60px);
+    font-size: 42px;
   }
   .hero-actions {
     flex-direction: column;
@@ -986,6 +1000,10 @@
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
+  .hero-live-dot::after {
+    animation: none;
+    opacity: 0;
+  }
   .hero-section,
   .hero-sub,
   .hero-actions,
