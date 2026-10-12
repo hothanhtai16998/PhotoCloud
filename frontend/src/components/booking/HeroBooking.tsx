@@ -1,20 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowRight,
   CalendarDays,
   Camera,
   CheckCircle2,
-  Clock3,
   Images,
   ScanSearch,
-  ShieldCheck,
   Sparkles,
-  Star,
   Zap,
 } from 'lucide-react';
 import { openBookingModal } from '@/utils/bookingModalEvent';
-import { TRUST_STATS } from '@/constants/packages';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { getHeroCollections, type HeroCollection } from '@/services/heroService';
 import { HeaderMarquee } from '../HeaderMarquee';
@@ -25,9 +21,9 @@ interface HeroBookingProps {
 }
 
 const HIGHLIGHTS = [
-    { icon: Zap, text: 'Đặt lịch 60 giây', accent: '#B8865B' },
-    { icon: CheckCircle2, text: 'Ảnh chỉnh màu cao cấp 5–7 ngày', accent: '#7A8B5C' },
-    { icon: ShieldCheck, text: 'Hoàn tiền nếu không hài lòng', accent: '#A6453C' },
+    { icon: Zap, title: 'Đặt lịch online', detail: '', accent: '#B8865B' },
+    { icon: CheckCircle2, title: 'Nhận ảnh chỉnh màu', detail: ' sau 5–7 ngày', accent: '#7A8B5C' },
+    { icon: Camera, title: 'Chọn gói chụp', detail: ' phù hợp với bạn', accent: '#A6453C' },
 ];
 
 // Note: the brand ribbon that scrolls the marquee words now lives in
@@ -44,6 +40,7 @@ function pickImageUrl(c: HeroCollection): string | null {
 }
 
 export function HeroBooking({ onViewPackages }: HeroBookingProps) {
+    const scrollHintRef = useRef<HTMLDivElement>(null);
     const [copyRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.1 });
     const [visualRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.05, delay: 150 });
 
@@ -51,6 +48,25 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
     const [collections, setCollections] = useState<HeroCollection[]>([]);
     const [isAdminPicked, setIsAdminPicked] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        let frame = 0;
+        const updateHint = () => {
+            frame = 0;
+            if (scrollHintRef.current) {
+                scrollHintRef.current.style.opacity = String(Math.max(0, 1 - window.scrollY / 100));
+            }
+        };
+        const onScroll = () => {
+            if (!frame) frame = window.requestAnimationFrame(updateHint);
+        };
+        updateHint();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.cancelAnimationFrame(frame);
+        };
+    }, []);
 
     useEffect(() => {
         let mounted = true;
@@ -72,21 +88,6 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
         };
     }, []);
 
-    // Realtime slot counter (urgency)
-    const [slotsLeft, setSlotsLeft] = useState(3);
-    const [recentlyBooked, setRecentlyBooked] = useState('Hà Nội');
-    const [flash, setFlash] = useState(false);
-    useEffect(() => {
-        const cities = ['Hà Nội', 'TP.HCM', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
-        const interval = setInterval(() => {
-            setSlotsLeft((prev) => (prev > 1 ? prev - 1 : 3));
-            setRecentlyBooked(cities[Math.floor(Math.random() * cities.length)]);
-            setFlash(true);
-            window.setTimeout(() => setFlash(false), 600);
-        }, 7000);
-        return () => clearInterval(interval);
-    }, []);
-
     return (
         <section className="hero-section" aria-labelledby="home-booking-title">
             {/* Brand marquee ribbon — sits INSIDE the hero card so it follows
@@ -96,11 +97,6 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
             <div className="hero-marquee-wrap">
                 <HeaderMarquee />
             </div>
-
-            {/* Decorative orbs (floating animation) */}
-            <span className="hero-orb hero-orb--copper" aria-hidden="true" />
-            <span className="hero-orb hero-orb--gold" aria-hidden="true" />
-            <span className="hero-orb hero-orb--cream" aria-hidden="true" />
 
             <div ref={copyRef} className="hero-copy">
                 <div className="hero-eyebrow-wrap">
@@ -116,7 +112,8 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                 </div>
 
                 <h1 id="home-booking-title" className="hero-title">
-                    Chụp ảnh <em>theo cách</em> của bạn
+                    <span className="hero-title-line">Chụp ảnh</span>
+                    <span className="hero-title-line"><em>theo cách</em> của bạn</span>
                 </h1>
 
                 <p className="hero-sub">
@@ -131,12 +128,12 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                             <li
                                 key={i}
                                 className="hero-highlight"
-                                style={{ ['--highlight-accent']: h.accent } as React.CSSProperties}
+                                style={{ ['--highlight-accent']: h.accent, ['--highlight-index']: i } as React.CSSProperties}
                             >
                                 <span className="hero-highlight-icon">
                                     <Icon size={13} />
                                 </span>
-                                <span>{h.text}</span>
+                                <span><strong>{h.title}</strong>{h.detail}</span>
                             </li>
                         );
                     })}
@@ -162,25 +159,6 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                     </button>
                 </div>
 
-                <div className="hero-slot" aria-live="polite" aria-atomic="true">
-                    <span className="hero-slot-dot" aria-hidden="true" />
-                    <span>
-                        Còn <strong className={flash ? 'flash' : ''}>{slotsLeft} slot</strong> cuối tuần này · vừa đặt từ{' '}
-                        <strong>{recentlyBooked}</strong>
-                    </span>
-                </div>
-
-                <div className="hero-trust" aria-label="Thông tin tin cậy">
-                    <span className="hero-trust-pill">
-                        <Camera size={15} /> {TRUST_STATS.sessions} buổi chụp
-                    </span>
-                    <span className="hero-trust-pill">
-                        <Star size={15} /> {TRUST_STATS.rating} đánh giá
-                    </span>
-                    <span className="hero-trust-pill">
-                        <Clock3 size={15} /> Giao ảnh {TRUST_STATS.delivery}
-                    </span>
-                </div>
             </div>
 
             {/* 4 collections 2x2 — tên nằm phía trên mỗi card */}
@@ -270,7 +248,7 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
             </div>
 
             {/* Scroll indicator (suggests more below) */}
-            <div className="hero-scroll-hint" aria-hidden="true">
+            <div ref={scrollHintRef} className="hero-scroll-hint" aria-hidden="true">
                 <span className="mouse" />
                 <span>Cuộn xuống</span>
                 <ArrowDown size={12} />

@@ -19,7 +19,7 @@
     height: 28px;
     display: flex;
     overflow: hidden;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 1; /* hero orbs use z-index: -1, so 1 keeps the ribbon above them */
     background: linear-gradient(90deg,
         rgba(184, 134, 91, 0.10),
@@ -52,7 +52,7 @@
     letter-spacing: 0.24em;
     text-transform: uppercase;
     color: rgba(27, 27, 25, 0.62);
-    animation: headerMarquee 28s linear infinite;
+    animation: headerMarquee 45s linear infinite;
     padding-right: 32px;
     will-change: transform;
 }
@@ -75,6 +75,10 @@
 @keyframes headerMarquee {
     from { transform: translateX(0); }
     to   { transform: translateX(-50%); }
+}
+
+.header-marquee:hover .header-marquee-track {
+    animation-play-state: paused;
 }
 
 /* Respect users who prefer reduced motion */

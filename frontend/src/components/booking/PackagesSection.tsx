@@ -6,7 +6,6 @@ import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 
 export function PackagesSection() {
   const [headerRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.2 });
-  const [gridRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.1, delay: 100 });
   const [customRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.15, delay: 200 });
 
   return (
@@ -19,9 +18,9 @@ export function PackagesSection() {
           đội ngũ sẽ phản hồi báo giá trong 24h.
         </p>
       </div>
-      <div ref={gridRef} className="home-package-grid">
-        {CORE_PACKAGES.map((pkg) => (
-          <PackageCard key={pkg.id} pkg={pkg} />
+      <div className="home-package-grid">
+        {CORE_PACKAGES.map((pkg, index) => (
+          <PackageCard key={pkg.id} pkg={pkg} revealIndex={index} />
         ))}
       </div>
       <div ref={customRef} className="home-package-custom" role="complementary" aria-label="Báo giá riêng">

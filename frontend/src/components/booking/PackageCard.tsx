@@ -1,14 +1,19 @@
 import { ArrowRight, Camera, Clock3, Sparkles, Star } from 'lucide-react';
+import type { CSSProperties } from 'react';
+import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { formatPackageDuration, formatPackagePhotos, formatPackagePrice, type StudioPackage } from '@/constants/packages';
 
 interface PackageCardProps {
   pkg: StudioPackage;
+  revealIndex?: number;
 }
 
-export function PackageCard({ pkg }: PackageCardProps) {
+export function PackageCard({ pkg, revealIndex = 0 }: PackageCardProps) {
+  const [ref] = useRevealOnScroll<HTMLElement>({ threshold: 0.1 });
   return (
-    <article className="home-package-card studio-card is-hoverable" data-accent={pkg.accent}>
+    <article ref={ref} className="home-package-card studio-card is-hoverable" data-accent={pkg.accent}
+      style={{ '--package-reveal-delay': `${revealIndex * 70}ms` } as CSSProperties}>
       <div className="home-package-image studio-package-image">
         {pkg.popular && <span className="home-package-badge"><Star size={11} /> Phổ biến</span>}
         <img

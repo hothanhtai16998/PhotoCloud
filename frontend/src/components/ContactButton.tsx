@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { t } from '@/i18n';
@@ -29,22 +29,10 @@ const authorInfo: AuthorInfo = {
 
 export const ContactButton = () => {
     const location = useLocation();
-    const [isShaking, setIsShaking] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const isAuthPage =
         location.pathname === "/signin" || location.pathname === "/signup";
-
-    useEffect(() => {
-        if (isAuthPage) return;
-
-        const interval = setInterval(() => {
-            setIsShaking(true);
-            setTimeout(() => setIsShaking(false), 3000);
-        }, 13000);
-
-        return () => clearInterval(interval);
-    }, [isAuthPage]);
 
     if (isAuthPage) {
         return null;
@@ -54,11 +42,11 @@ export const ContactButton = () => {
         <>
             <div ref={containerRef} className="contact-button-container">
                 <button
-                    className={`contact-button ${isShaking ? "bloom" : ""}`}
+                    className="contact-button"
                     aria-label="Contact"
                     data-contact-button="true"
                 >
-                <span className={`contact-button-text ${isShaking ? "shaking" : ""}`}>
+                <span className="contact-button-text">
                     {t('common.contact')}
                 </span>
             </button>

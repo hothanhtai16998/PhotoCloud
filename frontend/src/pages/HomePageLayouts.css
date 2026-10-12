@@ -21,6 +21,22 @@
   padding: 32px 0 18px;
 }
 
+.home-package-section .studio-reveal {
+  transition: opacity 500ms ease-out, transform 500ms ease-out;
+}
+
+.home-package-section .home-package-card.studio-reveal {
+  transition-delay: var(--package-reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-package-section .studio-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .home-section-heading {
   display: grid;
   gap: 10px;
