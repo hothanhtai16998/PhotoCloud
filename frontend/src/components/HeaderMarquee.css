@@ -35,8 +35,10 @@
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     /* Push the rest of the hero content down so the ribbon doesn't
-       overlap the headline / copy. */
-    margin: 0 0 14px;
+       overlap the headline / copy. Reduced to a tight 8px so the
+       eyebrow sits close to the ribbon instead of leaving a big
+       empty cream gap. */
+    margin: 0 0 8px;
 }
 
 .header-marquee-track {

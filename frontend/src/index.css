@@ -222,6 +222,7 @@
 		   Desktop: 66px (header-top) + 48px (category nav) = 114px
 		   Mobile:  44px (header-top) + 42px (category nav) = 86px
 		   These are also used by <main> in App.tsx to keep page content below the fixed header. */
+		--homepage-header-height: 80px;
 		--header-height: 114px;
 		--header-height-mobile: 86px;
 
@@ -512,6 +513,7 @@
 	/* Mobile: use the smaller fixed header height (44px header-top + 42px category nav). */
 	@media (max-width: 768px) {
 		:root {
+			--homepage-header-height: 52px;
 			--header-height: 86px;
 		}
 	}
@@ -1010,6 +1012,11 @@
 	background: transparent;
 }
 
+/* Reserve the homepage header height plus a small gap before the ribbon. */
+.app-body:has(> .homepage) {
+	padding-top: calc(var(--homepage-header-height) + 8px);
+}
+
 /* First child sits flush against the bottom of the fixed header.
    - Strip the top margin so there is no visible gap.
    - Strip the top border-radius so the first card's top edge is a clean
@@ -1026,4 +1033,3 @@ body:has(.app-body) .app-body {
 	position: relative;
 	z-index: 1;
 }
-

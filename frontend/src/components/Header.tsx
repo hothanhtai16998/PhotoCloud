@@ -151,7 +151,7 @@ export const Header = memo(function Header() {
   }
 
   return (
-    <header className="unsplash-header">
+    <header className={`unsplash-header${location.pathname === '/' ? ' homepage-header' : ''}`}>
       <div className="header-top">
         <div className="header-container">
           {/* Logo */}

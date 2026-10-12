@@ -10,7 +10,8 @@
   isolation: isolate;
   margin-top: 0;
   margin-bottom: 26px;
-  padding: 0 clamp(20px, 3vw, 32px) clamp(20px, 3vw, 28px);
+  /* Keep the collection grid above the scroll indicator's footer area. */
+  padding: 0 clamp(20px, 3vw, 32px) 90px;
   border: 1px solid var(--border-color, #E8E2D6);
   /* Flush on the left/right edges (full-bleed look) — only the top/bottom
      of the card have a slight curve, matching the header above and the
@@ -22,19 +23,17 @@
     linear-gradient(135deg, #FAF8F4 0%, #F2EEE7 56%, #EDE5D6 100%);
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  /* grid-template-rows: auto auto auto auto — let grid auto-place;
-     .hero-marquee-wrap uses grid-column: 1 / -1 to span the full
-     top row, then .hero-copy and .hero-visual sit side-by-side
-     below it. */
-  grid-template-rows: auto;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: clamp(16px, 2.4vw, 28px);
   /* align-items: start so the left column (copy) doesn't get stretched
      to match the taller right column (visual: 2x2 collection grid).
      This removes the empty cream-colored gap above the eyebrow. */
   align-items: start;
   overflow: hidden;
-  /* Let the card size to its content instead of forcing a full-viewport
-     min-height. The page is still scrollable below the fold. */
+  /* Include the ribbon and account for the gap below the fixed header. */
+  box-sizing: border-box;
+  height: calc(100vh - var(--homepage-header-height, 80px) - 8px);
+  height: calc(100dvh - var(--homepage-header-height, 80px) - 8px);
   min-height: auto;
   box-shadow:
       0 1px 0 rgba(27, 27, 25, 0.02),
@@ -44,19 +43,13 @@
 }
 
 /* The marquee wrap is the first grid row — span both columns so the
-   ribbon sits flush at the very top of the card. The top padding the
-   hero card used to provide moves here so content below still has
-   breathing room. */
+   ribbon sits flush at the very top of the card. No top padding — the
+   ribbon itself is the visual top of the card. */
 .hero-marquee-wrap {
   grid-column: 1 / -1;
   grid-row: 1;
   margin: 0 calc(-1 * clamp(20px, 3vw, 32px));
-  /* Top padding replaces the card's old padding-top: 30px so the
-     ribbon itself still has visual breathing room from the card edge. */
-  padding-top: 14px;
-  /* No border-radius: the hero card is now full-bleed (no left/right
-     rounded corners), so the ribbon spans the full width flush with
-     the card edges. */
+  padding-top: 0;
   border-radius: 0;
   /* Bottom space below the ribbon is provided by the ribbon's own
      margin (see HeaderMarquee.css). */
@@ -586,6 +579,7 @@
   flex-direction: column;
   gap: 16px; /* tăng khoảng cách giữa heading và grid */
   min-height: 0; /* cho phép co lại theo parent */
+  height: 100%;
   z-index: 2;
   animation: heroFadeUp 0.8s 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
@@ -641,7 +635,7 @@
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 10px;
   min-height: 0;
 }
@@ -678,6 +672,7 @@
 
 /* Label phía trên (ngoài card) — bạn yêu cầu */
 .hero-collection-label {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -747,6 +742,8 @@
 }
 
 .hero-collection-card img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -913,16 +910,45 @@
   .hero-section {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
-    padding: 24px;
+    padding: 24px 24px 90px;
     /* Tablet: không ép khít viewport nữa, vẫn cho phép scroll */
     min-height: auto;
+    height: auto;
     max-height: none;
   }
   .hero-visual {
     min-height: 320px;
+    height: 360px;
     order: 2;
   }
   /* .hero-marquee removed — ribbon now lives in <HeaderMarquee /> */
+}
+
+@media (min-width: 901px) and (max-height: 650px) {
+  .hero-section {
+    gap: 12px;
+    padding-bottom: 90px;
+  }
+  .hero-title {
+    font-size: 40px;
+    margin: 8px 0;
+  }
+  .hero-sub {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .hero-eyebrow-wrap {
+    margin-bottom: 6px;
+  }
+  .hero-highlights,
+  .hero-actions,
+  .hero-slot,
+  .hero-trust {
+    margin-top: 8px;
+  }
+  .hero-cta {
+    padding: 10px 16px;
+  }
 }
 
 @media (max-width: 600px) {
