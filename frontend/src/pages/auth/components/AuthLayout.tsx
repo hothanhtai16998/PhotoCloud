@@ -64,6 +64,13 @@ function PullLamp() {
 export function AuthLayout({ children }: { children: ReactNode }) {
     return <main className="auth-layout">
         <section className="auth-scene" aria-label="Đèn studio tương tác">
+            <div className="auth-scene-art" aria-hidden="true">
+                <div className="auth-viewfinder"><i /><i /><i /><i /></div>
+                <span className="auth-frame-number">01 / LIGHT STUDY</span>
+                <span className="auth-exposure">f / 1.8 &nbsp; · &nbsp; ISO 100</span>
+                <div className="auth-contour auth-contour-one" />
+                <div className="auth-contour auth-contour-two" />
+            </div>
             <Link to="/" className="auth-brand">photocloud<span>STUDIO</span></Link>
             <PullLamp />
             <div className="auth-scene-copy"><p>MỖI KHUNG HÌNH, MỘT CÂU CHUYỆN</p><h2>Kể chuyện<br /><em>bằng ánh sáng.</em></h2></div>
