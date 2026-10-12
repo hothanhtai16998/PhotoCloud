@@ -207,7 +207,15 @@ function App() {
       {/* Global Loading Overlay - Single spinner for all loading states */}
       <GlobalLoadingOverlay />
 
-      <Suspense fallback={<PageLoader />}>
+      {/* App body wrapper: clears the fixed header so page content is never
+          covered. --header-height is set in index.css (114px desktop / 86px mobile)
+          and already accounts for the header-top row + the CategoryNavigation row
+          that lives inside <Header />. Only rendered when the header is visible
+          (auth pages render directly without the wrapper so they keep full-bleed
+          layouts). */}
+      {shouldShowHeader ? (
+        <div className="app-body">
+        <Suspense fallback={<PageLoader />}>
         <PageViewTracker />
         {/* Primary routes. If background exists, render using the background location */}
         <ActualLocationContext.Provider value={backgroundLocation || location}>
@@ -218,9 +226,6 @@ function App() {
           <Route path="/t/:categorySlug" element={<HomePage />} />
           <Route path="/s/photos/:query" element={<SearchResultsPage />} />
           <Route path="/photos/:slug" element={<ImagePage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/booking" element={<BookingPage />} />
@@ -263,6 +268,21 @@ function App() {
         {/* PWA Install Prompt */}
         <PWAInstallPrompt />
       </Suspense>
+        </div>
+      ) : (
+        <Suspense fallback={<PageLoader />}>
+          <PageViewTracker />
+          <Routes location={location}>
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+            {/* Other routes also need to be reachable when the header is hidden
+                (defensive fallback). */}
+            <Route path="/*" element={<ProfileRouteHandler />} />
+          </Routes>
+          <PWAInstallPrompt />
+        </Suspense>
+      )}
     </ActualLocationContext.Provider>
   )
 }

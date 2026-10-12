@@ -30,7 +30,7 @@
   min-height: 100vh;
   background: var(--admin-bg);
   padding: 20px;
-  padding-top: calc(var(--header-height, 65px) + 20px);
+  padding-top: 20px;
   margin-top: 0;
   transition: background 0.3s ease;
 }

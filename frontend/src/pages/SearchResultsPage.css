@@ -1,8 +1,8 @@
 .search-results-page {
     min-height: 100vh;
     background: var(--bg-card, #FFFFFF);
-    padding: 0;
-    padding-top: calc(var(--header-height, 65px) + 48px); /* Header + SearchResultsNavigation */
+  padding: 0;
+  padding-top: 48px; /* Header + SearchResultsNavigation */
     margin-top: 0;
     /* Prevent layout shift during navigation */
     contain: layout style;

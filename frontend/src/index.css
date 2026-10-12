@@ -218,8 +218,12 @@
 		--z-tooltip: 3000;
 		--z-max: 9999;
 
-		/* Header height - standardized */
-		--header-height: 56px;
+		/* Header height - full height of fixed header (header-top + category nav)
+		   Desktop: 66px (header-top) + 48px (category nav) = 114px
+		   Mobile:  44px (header-top) + 42px (category nav) = 86px
+		   These are also used by <main> in App.tsx to keep page content below the fixed header. */
+		--header-height: 114px;
+		--header-height-mobile: 86px;
 
 		/* Homepage color variables */
 		--color-bg-primary: #fff;
@@ -503,6 +507,13 @@
 		/* Hide scrollbar but keep functionality - use !important to override Tailwind */
 		scrollbar-width: auto !important; /* Firefox */
 		-ms-overflow-style: auto !important; /* IE and Edge */
+	}
+
+	/* Mobile: use the smaller fixed header height (44px header-top + 42px category nav). */
+	@media (max-width: 768px) {
+		:root {
+			--header-height: 86px;
+		}
 	}
 
 	/* Prevent layout shifts when modal is open */
@@ -979,5 +990,40 @@
 		outline: 2px solid var(--studio-accent-copper);
 		outline-offset: 3px;
 	}
+}
+
+/* App body wrapper — reserves space for the fixed header (header-top +
+   category nav). The variable is updated in the @media (max-width: 768px)
+   block above so mobile gets the smaller 86px height.
+
+   The first direct child of .app-body is always flush with the bottom of the
+   fixed header (no top margin / no top border-radius) so page content never
+   appears to "float" below the header. The original margin and corner
+   radius is preserved on subsequent children and on the bottom of the
+   first child. */
+.app-body {
+	padding-top: var(--header-height, 114px);
+	/* Pages render their own internal top spacing; this wrapper just
+	   guarantees the fixed header never overlaps page content. */
+	box-sizing: border-box;
+	border-radius: 0;
+	background: transparent;
+}
+
+/* First child sits flush against the bottom of the fixed header.
+   - Strip the top margin so there is no visible gap.
+   - Strip the top border-radius so the first card's top edge is a clean
+     straight line against the header. */
+.app-body > *:first-child {
+	margin-top: 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
+/* Modal page — when a photo modal is open we want the body wrapper to stay
+   transparent so the background page is still visible behind the modal. */
+body:has(.app-body) .app-body {
+	position: relative;
+	z-index: 1;
 }
 

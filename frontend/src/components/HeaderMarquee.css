@@ -1,0 +1,83 @@
+/* ============================================================
+   HeaderMarquee — brand ribbon that lives INSIDE .hero-section
+   so it follows the card's rounded corners (overflow:hidden +
+   border-radius: 24px) instead of running as a full-bleed fixed
+   strip outside the layout. The ribbon is the first child of the
+   hero card so it sits flush against the top edge.
+
+   The old fixed-ribbon rules were removed; if you need a standalone
+   fixed ribbon in the future, restore them and mount <HeaderMarquee />
+   in App.tsx instead of inside HeroBooking.
+   ============================================================ */
+
+.header-marquee {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: 100%;
+    height: 28px;
+    display: flex;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 1; /* hero orbs use z-index: -1, so 1 keeps the ribbon above them */
+    background: linear-gradient(90deg,
+        rgba(184, 134, 91, 0.10),
+        rgba(184, 134, 91, 0.18) 50%,
+        rgba(184, 134, 91, 0.10)
+    );
+    border-bottom: 1px solid rgba(184, 134, 91, 0.22);
+    box-shadow: 0 4px 12px -8px rgba(27, 27, 25, 0.10);
+    align-items: center;
+    /* No border-radius: the hero card is now full-bleed (no left/right
+       rounded corners), so the ribbon spans the full width flush with
+       the card edges. */
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    /* Push the rest of the hero content down so the ribbon doesn't
+       overlap the headline / copy. */
+    margin: 0 0 14px;
+}
+
+.header-marquee-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 32px;
+    white-space: nowrap;
+    font-family: var(--studio-font-display, 'Fraunces', Georgia, serif);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(27, 27, 25, 0.62);
+    animation: headerMarquee 28s linear infinite;
+    padding-right: 32px;
+    will-change: transform;
+}
+
+.header-marquee-track span {
+    display: inline-flex;
+    align-items: center;
+    gap: 32px;
+}
+
+.header-marquee-track .dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent, #B8865B);
+    flex-shrink: 0;
+}
+
+@keyframes headerMarquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .header-marquee-track {
+        animation: none;
+    }
+}

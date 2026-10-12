@@ -8,29 +8,58 @@
 .hero-section {
   position: relative;
   isolation: isolate;
-  margin-top: 20px;
+  margin-top: 0;
   margin-bottom: 26px;
-  padding: 30px clamp(20px, 3vw, 32px) clamp(20px, 3vw, 28px);
+  padding: 0 clamp(20px, 3vw, 32px) clamp(20px, 3vw, 28px);
   border: 1px solid var(--border-color, #E8E2D6);
-  border-radius: 24px;
+  /* Flush on the left/right edges (full-bleed look) — only the top/bottom
+     of the card have a slight curve, matching the header above and the
+     next section below. */
+  border-radius: 0;
   background:
     radial-gradient(ellipse 80% 60% at 80% 0%, rgba(184, 134, 91, 0.12), transparent 60%),
     radial-gradient(ellipse 70% 70% at 0% 100%, rgba(217, 164, 65, 0.10), transparent 65%),
     linear-gradient(135deg, #FAF8F4 0%, #F2EEE7 56%, #EDE5D6 100%);
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  grid-template-rows: auto auto 1fr auto;
+  /* grid-template-rows: auto auto auto auto — let grid auto-place;
+     .hero-marquee-wrap uses grid-column: 1 / -1 to span the full
+     top row, then .hero-copy and .hero-visual sit side-by-side
+     below it. */
+  grid-template-rows: auto;
   gap: clamp(16px, 2.4vw, 28px);
-  align-items: stretch;
+  /* align-items: start so the left column (copy) doesn't get stretched
+     to match the taller right column (visual: 2x2 collection grid).
+     This removes the empty cream-colored gap above the eyebrow. */
+  align-items: start;
   overflow: hidden;
-  /* Mục tiêu: vừa 1 viewport (100vh - header - page margins) */
-  /* Dùng min-height để không bị clip khi content hơi dài */
-  min-height: calc(100vh - var(--header-height, 56px) - 40px);
+  /* Let the card size to its content instead of forcing a full-viewport
+     min-height. The page is still scrollable below the fold. */
+  min-height: auto;
   box-shadow:
-    0 1px 0 rgba(27, 27, 25, 0.02),
+      0 1px 0 rgba(27, 27, 25, 0.02),
     0 8px 24px -4px rgba(27, 27, 25, 0.05),
     0 24px 64px -16px rgba(27, 27, 25, 0.08);
   animation: heroFadeUp 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* The marquee wrap is the first grid row — span both columns so the
+   ribbon sits flush at the very top of the card. The top padding the
+   hero card used to provide moves here so content below still has
+   breathing room. */
+.hero-marquee-wrap {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin: 0 calc(-1 * clamp(20px, 3vw, 32px));
+  /* Top padding replaces the card's old padding-top: 30px so the
+     ribbon itself still has visual breathing room from the card edge. */
+  padding-top: 14px;
+  /* No border-radius: the hero card is now full-bleed (no left/right
+     rounded corners), so the ribbon spans the full width flush with
+     the card edges. */
+  border-radius: 0;
+  /* Bottom space below the ribbon is provided by the ribbon's own
+     margin (see HeaderMarquee.css). */
 }
 
 @keyframes heroFadeUp {
@@ -89,60 +118,13 @@
   50%      { transform: translate(-20px, 20px) scale(1.1); opacity: 0.55; }
 }
 
-/* ---------- Marquee ribbon ---------- */
-.hero-marquee {
-  position: absolute;
-  top: 10px;
-  left: 8px;
-  right: 8px;
-  display: flex;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 3;
-  height: 24px;
-  align-items: center;
-  background: linear-gradient(90deg,
-    rgba(184, 134, 91, 0.08),
-    rgba(184, 134, 91, 0.16) 50%,
-    rgba(184, 134, 91, 0.08)
-  );
-  border-bottom: 1px solid rgba(184, 134, 91, 0.2);
-}
-
-.hero-marquee-track {
-  display: inline-flex;
-  align-items: center;
-  gap: 32px;
-  white-space: nowrap;
-  font-family: var(--studio-font-display, 'Fraunces', Georgia, serif);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: rgba(27, 27, 25, 0.55);
-  animation: heroMarquee 28s linear infinite;
-  padding-right: 32px;
-}
-
-.hero-marquee-track span {
-  display: inline-flex;
-  align-items: center;
-  gap: 32px;
-}
-
-.hero-marquee-track .dot {
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--accent, #B8865B);
-  flex-shrink: 0;
-}
-
-@keyframes heroMarquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
-}
+/* ---------- Marquee ribbon ----------
+   The brand ribbon that scrolls the marquee words now lives in
+   <HeaderMarquee /> (rendered as the first child of the hero card)
+   so the ribbon follows the card's rounded corners and the page
+   content area never starts with a gap above the hero. The wrapper
+   adds the top padding that the hero card used to provide so the
+   ribbon still has breathing room before the orbs/grid. */
 
 /* ---------- Copy block ---------- */
 .hero-copy {
@@ -151,7 +133,10 @@
   min-height: 0; /* cho phép co lại theo parent trong grid */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* No vertical centring — content sits at the top of the column so
+     there's no empty cream gap above the eyebrow when the right
+     column (visual: 2x2 collection grid) is taller. */
+  justify-content: flex-start;
 }
 
 /* ---------- Eyebrow (LED + Sparkle) ---------- */
@@ -160,7 +145,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 16px; /* chừa chỗ cho marquee ở trên */
+  margin-top: 0;
   margin-bottom: 12px;
   animation: heroFadeUp 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
@@ -605,7 +590,7 @@
   animation: heroFadeUp 0.8s 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-/* Accent strip nhỏ phía trên heading — điểm nhấn */
+  /* Accent strip nhỏ phía trên heading — điểm nhấn */
 .hero-visual::before {
   content: '';
   display: block;
@@ -615,7 +600,7 @@
   border-radius: 2px;
   margin-bottom: -4px;
   animation: heroFadeUp 0.8s 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-}
+  }
 
 .hero-visual-heading {
   display: inline-flex;
@@ -937,9 +922,7 @@
     min-height: 320px;
     order: 2;
   }
-  .hero-marquee {
-    top: 12px;
-  }
+  /* .hero-marquee removed — ribbon now lives in <HeaderMarquee /> */
 }
 
 @media (max-width: 600px) {
@@ -984,7 +967,6 @@
   .hero-visual,
   .hero-scroll-hint,
   .hero-title em::after,
-  .hero-marquee-track,
   .hero-eyebrow,
   .hero-sparkle-icon,
   .hero-led,

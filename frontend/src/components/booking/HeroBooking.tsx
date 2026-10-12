@@ -17,6 +17,7 @@ import { openBookingModal } from '@/utils/bookingModalEvent';
 import { TRUST_STATS } from '@/constants/packages';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { getHeroCollections, type HeroCollection } from '@/services/heroService';
+import { HeaderMarquee } from '../HeaderMarquee';
 import './HeroBooking.css';
 
 interface HeroBookingProps {
@@ -29,16 +30,9 @@ const HIGHLIGHTS = [
     { icon: ShieldCheck, text: 'Hoàn tiền nếu không hài lòng', accent: '#A6453C' },
 ];
 
-const MARQUEE_WORDS = [
-    'CHỤP ẢNH CHÂN DUNG',
-    'COUPLE SESSION',
-    'GIA ĐÌNH',
-    'MINI SESSION',
-    'WEDDING',
-    'EDITORIAL',
-    'CHỤP ẢNH DOANH NGHIỆP',
-    'BOOKING NHANH',
-];
+// Note: the brand ribbon that scrolls the marquee words now lives in
+// <HeaderMarquee /> (fixed directly under the fixed header) instead of
+// inside this hero card. See components/HeaderMarquee.tsx.
 
 /**
  * Lấy URL ảnh — ưu tiên thumbnail, fallback về url gốc.
@@ -95,22 +89,18 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
 
     return (
         <section className="hero-section" aria-labelledby="home-booking-title">
+            {/* Brand marquee ribbon — sits INSIDE the hero card so it follows
+                the rounded corners (hero-section has overflow:hidden + 24px
+                border-radius) instead of running as a full-bleed fixed strip
+                outside the layout. */}
+            <div className="hero-marquee-wrap">
+                <HeaderMarquee />
+            </div>
+
             {/* Decorative orbs (floating animation) */}
             <span className="hero-orb hero-orb--copper" aria-hidden="true" />
             <span className="hero-orb hero-orb--gold" aria-hidden="true" />
             <span className="hero-orb hero-orb--cream" aria-hidden="true" />
-
-            {/* Marquee ribbon (subtle top ticker) */}
-            <div className="hero-marquee" aria-hidden="true">
-                <div className="hero-marquee-track">
-                    {[...MARQUEE_WORDS, ...MARQUEE_WORDS].map((word, i) => (
-                        <span key={i}>
-                            {word}
-                            <span className="dot" />
-                        </span>
-                    ))}
-                </div>
-            </div>
 
             <div ref={copyRef} className="hero-copy">
                 <div className="hero-eyebrow-wrap">
