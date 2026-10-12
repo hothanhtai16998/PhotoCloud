@@ -1,105 +1,56 @@
-/* BookingFAQ — accordion */
-
-.booking-faq {
-  max-width: 1100px;
-  margin: 56px auto 0;
-  padding: 40px 32px;
-  background: var(--studio-bg-card);
-  border: 1px solid var(--studio-border-soft);
-  border-radius: 24px;
-  box-shadow: var(--studio-shadow-card);
+.home-booking-faq {
+  padding: 64px 32px;
+  margin-top: 32px;
+  border-top: 1px solid var(--studio-border-soft, #E8E2D6);
+  border-bottom: 1px solid var(--studio-border-soft, #E8E2D6);
+  background: var(--bg-primary, #FAF8F4);
 }
 
-.booking-faq h2 {
-  font-family: var(--studio-font-display);
-  font-weight: 500;
-  font-size: clamp(24px, 3vw, 32px);
-  letter-spacing: -0.02em;
-  color: var(--studio-text-primary);
-  margin: 8px 0 24px;
+.home-faq-inner {
+  max-width: 1296px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 64px;
 }
 
-.booking-faq-list {
-  display: flex;
-  flex-direction: column;
+.home-faq-eyebrow {
+  color: var(--studio-accent-copper-dark, #966339);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.booking-faq-item {
-  border-bottom: 1px solid var(--studio-border-soft);
+.home-faq-heading h2 {
+  margin: 16px 0;
+  font: 500 38px/1.2 var(--studio-font-display, Georgia, serif);
+  letter-spacing: 0;
+  color: var(--studio-text-primary, #1B1B19);
 }
 
-.booking-faq-item:first-child {
-  border-top: 1px solid var(--studio-border-soft);
+.home-faq-heading h2 em { color: var(--studio-accent-copper-dark, #966339); }
+.home-faq-heading p { max-width: 360px; color: var(--studio-text-muted, #68645D); font-size: 15px; line-height: 1.7; }
+.home-faq-contact { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 8px 0; color: var(--studio-text-primary, #1B1B19); font-size: 14px; font-weight: 600; text-decoration: none; }
+.home-faq-contact svg { transition: transform 180ms ease; }
+.home-faq-contact:hover svg { transform: translate(2px, -2px); }
+.home-faq-item { border-bottom: 1px solid var(--studio-border-soft, #E8E2D6); }
+.home-faq-item:first-child { border-top: 1px solid var(--studio-border-soft, #E8E2D6); }
+.home-faq-item h3 { margin: 0; }
+.home-faq-item button { width: 100%; min-height: 72px; padding: 18px 0; display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px; gap: 16px; align-items: center; text-align: left; border: 0; background: transparent; color: var(--studio-text-primary, #1B1B19); font: inherit; font-size: 16px; font-weight: 600; line-height: 1.5; cursor: pointer; transition: color 180ms ease; }
+.home-faq-number { font-size: 12px; color: var(--studio-text-muted, #68645D); font-weight: 500; }
+.home-faq-toggle { transition: transform 200ms ease; }
+.home-faq-item.is-open .home-faq-toggle { transform: rotate(45deg); }
+.home-faq-item button:hover, .home-faq-item.is-open button { color: var(--studio-accent-copper-dark, #966339); }
+.home-faq-answer { overflow: hidden; }
+.home-faq-answer p { margin: 0; padding: 0 36px 22px 44px; color: var(--studio-text-muted, #68645D); font-size: 15px; line-height: 1.8; }
+.home-faq-contact:focus-visible, .home-faq-item button:focus-visible { outline: 2px solid #966339; outline-offset: 4px; }
+
+@media (max-width: 900px) {
+  .home-faq-inner { grid-template-columns: 1fr; gap: 28px; }
+  .home-booking-faq { padding: 40px 20px; }
+  .home-faq-heading h2 { font-size: 32px; }
 }
 
-.booking-faq-question {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 0;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  font-family: var(--studio-font-body);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--studio-text-primary);
-  text-align: left;
-  transition: color 0.2s ease;
-}
-
-.booking-faq-question:hover {
-  color: var(--studio-accent-copper-dark);
-}
-
-.booking-faq-chevron {
-  flex-shrink: 0;
-  color: var(--studio-text-muted);
-  transition: transform 0.3s ease;
-}
-
-.booking-faq-item.is-open .booking-faq-chevron {
-  transform: rotate(180deg);
-  color: var(--studio-accent-copper);
-}
-
-.booking-faq-answer {
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
-}
-
-.booking-faq-item.is-open .booking-faq-answer {
-  max-height: 320px;
-  opacity: 1;
-  padding-bottom: 20px;
-}
-
-.booking-faq-answer p {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.65;
-  color: var(--studio-text-muted);
-  max-width: 700px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .booking-faq {
-    margin: 40px 16px 0;
-    padding: 28px 22px;
-    border-radius: 18px;
-  }
-
-  .booking-faq-question {
-    font-size: 15px;
-    padding: 16px 0;
-  }
-
-  .booking-faq-answer p {
-    font-size: 14px;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .home-faq-toggle, .home-faq-contact svg, .home-faq-item button { transition: none; }
+  .home-faq-contact:hover svg { transform: none; }
 }

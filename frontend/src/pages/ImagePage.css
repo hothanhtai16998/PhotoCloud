@@ -1,4 +1,11 @@
 /* Image Page - Base styles */
+.image-page-modal .image-page-close {
+  background: #FFFFFF;
+  color: #1B1B19;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
 .image-page {
   position: relative;
   width: 100%;

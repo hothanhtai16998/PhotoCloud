@@ -5,12 +5,10 @@ import './HomePageLayouts.css';
 import { useEffect, useContext, useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useImageStore } from "@/stores/useImageStore";
-import { useSliderStore } from "@/stores/useSliderStore";
 import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { RetainedCategoryGrid } from '@/components/RetainedCategoryGrid';
-import { VisualArtFormsSlider } from "@/components/VisualArtFormsSlider";
 import { TestimonialsCarousel } from "@/components/TestimonialsCarousel";
 import { useImageGridCategory } from "@/hooks/useImageGridCategory";
 import { generateImageSlug } from "@/lib/utils";
@@ -27,6 +25,7 @@ import { HeroBooking } from '@/components/booking/HeroBooking';
 import { PackagesSection } from '@/components/booking/PackagesSection';
 import { HowItWorks } from '@/components/booking/HowItWorks';
 import { FinalCTA } from '@/components/booking/FinalCTA';
+import { BookingFAQ } from '@/components/booking/BookingFAQ';
 
 function HomePage() {
     const [sliderCollapsed, setSliderCollapsed] = useState(false);
@@ -43,9 +42,8 @@ function HomePage() {
     }, []);
     const { currentSearch, currentCategory, images, loading, pagination, fetchImages } = useImageStore();
     const visibleImages = usePreparedGridImages(images);
-    const sliderLoading = useSliderStore(state => state.loading);
-    const slideCount = useSliderStore(state => state.slides.length);
     const actualLocation = useContext(ActualLocationContext);
+    const isCategoryPage = Boolean(actualLocation?.pathname.startsWith('/t/'));
     const { category } = useImageGridCategory();
     const { filters } = useSearchFilters();
     const navigate = useNavigate();
@@ -58,7 +56,7 @@ function HomePage() {
     }, [filters]);
     const [gridHasLoaded, setGridHasLoaded] = useState(false);
     useEffect(() => { if (!loading && !gridHasLoaded) setGridHasLoaded(true); }, [loading, gridHasLoaded]);
-    const isHomePageLoading = !gridHasLoaded || (loading && images.length === 0) || (sliderLoading && slideCount === 0);
+    const isHomePageLoading = isCategoryPage && (!gridHasLoaded || (loading && images.length === 0));
 
     // Use ref to track previous state and prevent rapid toggling
     const prevLoadingRef = useRef(isHomePageLoading);
@@ -88,10 +86,10 @@ function HomePage() {
 
     // Scroll to top when search is activated to show results immediately
     useEffect(() => {
-        if (currentSearch) {
+        if (isCategoryPage && currentSearch) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    }, [currentSearch]);
+    }, [currentSearch, isCategoryPage]);
 
     // Restore scroll position when returning from ImagePage
     useEffect(() => {
@@ -164,11 +162,11 @@ function HomePage() {
     }, []);
 
     useEffect(() => {
-        if (category === null) return;
+        if (!isCategoryPage || category === null) return;
         const controller = new AbortController();
         void fetchImages(buildFilterParams(filtersRef.current, {page: 1, limit: 20, category: getCategoryParam(category), _refresh: false}), controller.signal);
         return () => controller.abort();
-    }, [category, fetchImages, getCategoryParam]);
+    }, [category, fetchImages, getCategoryParam, isCategoryPage]);
 
     // Load data callback for NoFlashGrid
     const loadData = useCallback(async () => {
@@ -237,23 +235,22 @@ function HomePage() {
 
     return (
         <>
-            <main className={`homepage layout-preview layout-intro${sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
+            <main className={`homepage layout-preview layout-intro${isCategoryPage && sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
                 <LayoutGroup>
-                {!currentSearch && (
+                {(!isCategoryPage || !currentSearch) && (
                     <>
                         <HeroBooking onViewPackages={scrollToPackages} />
                         <PackagesSection />
                         <HowItWorks />
                         <TestimonialsCarousel />
-                        <VisualArtFormsSlider collapsed={sliderCollapsed} />
                     </>
                 )}
-                {sliderCollapsed && !currentSearch && <section className="category-intro">
+                {isCategoryPage && sliderCollapsed && !currentSearch && <section className="category-intro">
                     <span>KHÁM PHÁ PHOTOCLOUD</span><h1>{category && category !== 'all' ? category : 'Khám phá ảnh'}</h1>
                     <p>Những góc nhìn mới, những khoảnh khắc đáng lưu giữ.</p>
                     {pagination && currentCategory === getCategoryParam(category) && <small>{pagination.total} ảnh để khám phá</small>}
                 </section>}
-                <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
+                {isCategoryPage && <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
                 <ActiveFiltersIndicator filters={filters} />
                 <RetainedCategoryGrid
                     images={visibleImages}
@@ -263,9 +260,9 @@ function HomePage() {
                     pagination={visibleImages === images && category !== null && currentCategory === getCategoryParam(category) ? pagination : null}
                     onLoadMore={loadMore}
                 />
-                </motion.div>
+                </motion.div>}
                 </LayoutGroup>
-                {!currentSearch && !sliderCollapsed && <FinalCTA />}
+                {(!isCategoryPage || (!currentSearch && !sliderCollapsed)) && <><BookingFAQ /><FinalCTA /></>}
             </main>
         </>
     );

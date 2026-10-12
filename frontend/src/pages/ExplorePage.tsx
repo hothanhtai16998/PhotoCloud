@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Compass, Camera } from 'lucide-react';
 import { useImageStore } from '@/stores/useImageStore';
 import { categoryService, type Category } from '@/services/categoryService';
 import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlug';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
+import { ActualLocationContext } from '@/contexts/ActualLocationContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import { generateImageSlug } from '@/lib/utils';
+import { saveScrollPosition, setModalActive, prepareModalNavigationState } from '@/utils/modalNavigation';
+import type { Image } from '@/types/image';
 import { SearchBar } from '@/components/SearchBar';
 import { useSearchFilters } from '@/components/SearchBar/hooks/useSearchFilters';
 import { buildFilterParams } from '@/utils/buildFilterParams';
@@ -31,6 +36,8 @@ const SORTS = [
 
 export default function ExplorePage() {
   const navigate = useNavigate();
+  const actualLocation = useContext(ActualLocationContext);
+  const isMobile = useIsMobile();
   useDocumentMeta({
     title: 'Khám phá',
     description: `Khám phá bộ sưu tập ảnh từ cộng đồng ${BRAND.nameLong}. Lọc theo danh mục, bố cục và phong cách.`,
@@ -40,6 +47,28 @@ export default function ExplorePage() {
   const images = useImageStore((s) => s.images);
   const loading = useImageStore((s) => s.loading);
   const hasMore = useImageStore((s) => s.hasMore);
+
+  const handleImageClick = useCallback((image: Image) => {
+    const targetPath = `/photos/${generateImageSlug(image.imageTitle || 'Untitled', image._id)}`;
+    const imageState = { images, image, fromGrid: true };
+    if (isMobile) {
+      navigate(targetPath, { state: imageState });
+      return;
+    }
+
+    saveScrollPosition();
+    setModalActive();
+    const background = {
+      pathname: actualLocation?.pathname || '/explore',
+      search: actualLocation?.search || '',
+      hash: actualLocation?.hash || '',
+      state: null,
+      key: actualLocation?.key || 'default',
+    };
+    navigate(targetPath, {
+      state: { ...prepareModalNavigationState(background), ...imageState },
+    });
+  }, [navigate, images, actualLocation, isMobile]);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -52,8 +81,8 @@ export default function ExplorePage() {
   useEffect(() => {
     let active = true;
     categoryService
-      .getCategories()
-      .then((data) => { if (active) setCategories(data.categories || []); })
+      .fetchCategories()
+      .then((data) => { if (active) setCategories(data || []); })
       .catch(() => {/* ignore */});
     return () => { active = false; };
   }, []);
@@ -193,7 +222,7 @@ export default function ExplorePage() {
             onLoadMore={async () => {
               await fetchImages({ sortBy: sort, order: 'desc', page: 1, limit: 30 });
             }}
-            onImageClick={(image) => navigate(`/photos/${(image as { slug?: string }).slug ?? image._id}`)}
+            onImageClick={handleImageClick}
           />
         )}
       </section>

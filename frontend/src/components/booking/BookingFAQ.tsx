@@ -1,87 +1,77 @@
-import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useId, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { ArrowUpRight, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import './BookingFAQ.css';
 
-export interface FAQItem {
-  q: string;
-  a: string;
-}
-
-export const DEFAULT_FAQ: FAQItem[] = [
+const QUESTIONS = [
   {
-    q: 'Đặt cọc bao nhiêu?',
-    a: 'Hiện tại PhotoCloud không yêu cầu đặt cọc. Bạn chỉ gửi yêu cầu, đội ngũ sẽ liên hệ tư vấn và báo giá. Thanh toán sẽ được thống nhất sau khi xác nhận lịch.',
+    question: 'Không biết tạo dáng có chụp được không?',
+    answer: 'Bạn không cần chuẩn bị sẵn các dáng chụp. Hãy chia sẻ phong cách bạn thích và những điều khiến bạn chưa tự tin khi trao đổi concept; studio sẽ cùng bạn thống nhất cách chụp phù hợp.',
   },
   {
-    q: 'Có thể đổi lịch không?',
-    a: 'Có. Mỗi booking được đổi lịch 1 lần miễn phí nếu báo trước 48h. Sau 48h hoặc đổi lần 2 sẽ có phụ phí 200.000đ.',
+    question: 'Cần chuẩn bị trang phục thế nào?',
+    answer: 'Ưu tiên trang phục vừa vặn, thoải mái và phù hợp với bối cảnh. Bạn có thể gửi ảnh các bộ đồ dự định mặc khi trao đổi với studio. Với buổi chụp couple hoặc gia đình, nên phối màu hài hòa giữa các thành viên.',
   },
   {
-    q: 'Bao lâu thì nhận ảnh?',
-    a: 'Ảnh chỉnh màu cao cấp được gửi qua gallery riêng trong 5–7 ngày làm việc sau buổi chụp. Đối với gói event/wedding, thời gian có thể từ 7–14 ngày.',
+    question: 'Giá gói chụp bao gồm những gì?',
+    answer: 'Mỗi gói có thời lượng, số lượng ảnh chỉnh màu và các hạng mục riêng, được ghi trong phần chi tiết gói chụp. Các nhu cầu thêm như makeup, thuê địa điểm hoặc concept riêng cần được trao đổi và xác nhận trong báo giá trước buổi chụp.',
   },
   {
-    q: 'Có chỉnh sửa thêm sau khi nhận ảnh không?',
-    a: 'Mỗi gói bao gồm 1 vòng chỉnh sửa thêm miễn phí. Ví dụ: thay nền, điều chỉnh tone màu, crop lại. Retouch body/body edit có phụ phí 80.000đ/ảnh.',
+    question: 'Bao lâu tôi nhận được ảnh?',
+    answer: 'Thời gian giao ảnh phụ thuộc vào gói chụp; nhiều gói có thời gian dự kiến 5–7 ngày. Hãy xem mốc giao ảnh trong chi tiết gói và xác nhận với studio khi chốt lịch, đặc biệt nếu bạn cần ảnh cho một dịp cụ thể.',
   },
   {
-    q: 'Có chụp ngoại tỉnh không?',
-    a: 'Có. Đối với buổi chụp ngoại tỉnh, phụ phí đi lại + ăn ở 2 ngày cho photographer tính theo thực tế. Vui lòng ghi rõ trong yêu cầu đặt lịch để chúng tôi báo giá chính xác.',
+    question: 'Nếu cần đổi lịch hoặc gặp trời mưa thì sao?',
+    answer: 'Hãy liên hệ studio sớm để trao đổi ngày thay thế hoặc phương án chụp phù hợp. Khả năng đổi lịch, chi phí phát sinh và phương án khi thời tiết xấu cần được xác nhận với studio theo buổi chụp của bạn.',
   },
   {
-    q: 'Nếu trời mưa thì sao?',
-    a: 'Buổi chụp ngoài trời sẽ được dời lịch nếu thời tiết xấu, hoặc chuyển sang chụp trong studio/quán cafe. Không tính phí đổi lịch khi do thời tiết.',
+    question: 'Tôi muốn một concept riêng thì làm thế nào?',
+    answer: 'Bạn có thể gửi yêu cầu báo giá riêng, kèm ảnh tham khảo, số người tham gia, địa điểm và thời gian mong muốn. Những thông tin này giúp studio tư vấn phương án và báo giá sát với ý tưởng của bạn.',
   },
 ];
 
-interface BookingFAQProps {
-  items?: FAQItem[];
-  title?: string;
-  eyebrow?: string;
-  id?: string;
-}
-
-export function BookingFAQ({
-  items = DEFAULT_FAQ,
-  title = 'Câu hỏi thường gặp',
-  eyebrow = 'THẮC MẮC',
-  id = 'booking-faq',
-}: BookingFAQProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+export function BookingFAQ() {
+  const [ref] = useRevealOnScroll<HTMLElement>({ threshold: 0.08 });
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const id = useId();
+  const reducedMotion = useReducedMotion();
 
   return (
-    <section className="booking-faq" id={id} aria-label={title}>
-      <p className="booking-eyebrow">{eyebrow}</p>
-      <h2>{title}</h2>
-      <div className="booking-faq-list">
-        {items.map((item, index) => {
-          const isOpen = openIndex === index;
-          return (
-            <div
-              key={index}
-              className={`booking-faq-item${isOpen ? ' is-open' : ''}`}
-            >
-              <button
-                type="button"
-                className="booking-faq-question"
-                aria-expanded={isOpen}
-                aria-controls={`${id}-answer-${index}`}
-                onClick={() => setOpenIndex(isOpen ? null : index)}
-              >
-                <span>{item.q}</span>
-                <ChevronDown size={18} className="booking-faq-chevron" aria-hidden />
-              </button>
-              <div
-                id={`${id}-answer-${index}`}
-                className="booking-faq-answer"
-                role="region"
-                aria-hidden={!isOpen}
-              >
-                <p>{item.a}</p>
+    <section ref={ref} className="home-booking-faq" aria-labelledby={`${id}-title`}>
+      <div className="home-faq-inner">
+        <div className="home-faq-heading">
+          <span className="home-faq-eyebrow">TRƯỚC BUỔI CHỤP</span>
+          <h2 id={`${id}-title`}>Một chút chuẩn bị,<br /><em>thật nhiều an tâm.</em></h2>
+          <p>Những câu hỏi thường gặp trước khi bạn chọn gói và gửi yêu cầu đặt lịch.</p>
+          <Link to="/contact" className="home-faq-contact">Trao đổi với studio <ArrowUpRight size={17} aria-hidden="true" /></Link>
+        </div>
+        <div className="home-faq-list">
+          {QUESTIONS.map((item, index) => {
+            const open = openIndex === index;
+            return (
+              <div key={item.question} className={`home-faq-item${open ? ' is-open' : ''}`}>
+                <h3>
+                  <button type="button" id={`${id}-question-${index}`} aria-expanded={open}
+                    aria-controls={`${id}-answer-${index}`} onClick={() => setOpenIndex(open ? null : index)}>
+                    <span className="home-faq-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                    <span>{item.question}</span>
+                    <Plus size={20} className="home-faq-toggle" aria-hidden="true" />
+                  </button>
+                </h3>
+                <AnimatePresence initial={false}>
+                  {open && <motion.div key="answer" id={`${id}-answer-${index}`} role="region"
+                    aria-labelledby={`${id}-question-${index}`}
+                    initial={{ height: reducedMotion ? 'auto' : 0, opacity: reducedMotion ? 1 : 0 }}
+                    animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeInOut' }}
+                    className="home-faq-answer"><p>{item.answer}</p></motion.div>}
+                </AnimatePresence>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ActualLocationContext, BackgroundRouteContext } from '@/contexts/ActualLocationContext';
 import { imageService } from '@/services/imageService';
@@ -25,7 +26,7 @@ import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
-import { Heart, Share2, Download, Info, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle } from 'lucide-react';
+import { Heart, Share2, Download, Info, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle, X } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
@@ -36,7 +37,6 @@ import { detectAvifSupport } from '@/utils/avifSupport';
 import { getRegularDisplayUrl, getOriginalDisplayUrl } from '@/utils/imageUrlUtils';
 import leftArrowIcon from '@/assets/left-arrow.svg';
 import rightArrowIcon from '@/assets/right-arrow.svg';
-import closeIcon from '@/assets/close.svg';
 import cameraIcon from '@/assets/camera.svg';
 import dateIcon from '@/assets/date.svg';
 import './ImagePage.css';
@@ -1559,6 +1559,7 @@ function ImagePage() {
 
       {showModalStyle ? (
         // Modal-style: Overlay with container inside (like NoFlashGrid ImageModal)
+        createPortal(
         <div
           ref={imageDialogRef}
           role="dialog"
@@ -1581,12 +1582,9 @@ function ImagePage() {
             handleClose();
           }}
           className="image-modal-close-button image-page-close"
+          aria-label={t('common.close')}
         >
-          <img
-            src={closeIcon}
-            alt="Close"
-            className="image-modal-close-icon"
-          />
+          <X size={22} aria-hidden="true" />
         </button>
       )}
 
@@ -1636,7 +1634,7 @@ function ImagePage() {
         </button>
       )}
 
-        </div>
+        </div>, document.body)
        ) : (
          // Regular page: Wrapper (sidebar is now rendered globally in App.tsx)
          <div className="image-page">
