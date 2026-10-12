@@ -228,13 +228,10 @@
 		--z-tooltip: 3000;
 		--z-max: 9999;
 
-		/* Header height - full height of fixed header (header-top + category nav)
-		   Desktop: 66px (header-top) + 48px (category nav) = 114px
-		   Mobile:  44px (header-top) + 42px (category nav) = 86px
-		   These are also used by <main> in App.tsx to keep page content below the fixed header. */
+		/* Shared single-row header: 80px desktop, 52px mobile. */
 		--homepage-header-height: 80px;
-		--header-height: 114px;
-		--header-height-mobile: 86px;
+		--header-height: 80px;
+		--header-height-mobile: 52px;
 
 		/* Homepage color variables */
 		--color-bg-primary: #fff;
@@ -525,11 +522,11 @@
 		-ms-overflow-style: auto !important; /* IE and Edge */
 	}
 
-	/* Mobile: use the smaller fixed header height (44px header-top + 42px category nav). */
+	/* Shared mobile header height. */
 	@media (max-width: 768px) {
 		:root {
 			--homepage-header-height: 52px;
-			--header-height: 86px;
+			--header-height: 52px;
 		}
 	}
 
@@ -1019,9 +1016,7 @@
 	}
 }
 
-/* App body wrapper — reserves space for the fixed header (header-top +
-   category nav). The variable is updated in the @media (max-width: 768px)
-   block above so mobile gets the smaller 86px height.
+/* App body wrapper reserves the shared header height plus an 8px gap.
 
    The first direct child of .app-body is always flush with the bottom of the
    fixed header (no top margin / no top border-radius) so page content never
@@ -1029,7 +1024,7 @@
    radius is preserved on subsequent children and on the bottom of the
    first child. */
 .app-body {
-	padding-top: var(--header-height, 114px);
+	padding-top: calc(var(--header-height, 80px) + 8px);
 	/* Pages render their own internal top spacing; this wrapper just
 	   guarantees the fixed header never overlaps page content. */
 	box-sizing: border-box;
@@ -1057,4 +1052,15 @@
 body:has(.app-body) .app-body {
 	position: relative;
 	z-index: 1;
+}
+
+/* The app shell reserves the header once; content pages add only local spacing. */
+.app-body > :is(.collections-page, .favorites-page, .favorite-collections-page,
+  .download-history-page, .collection-detail-page, .search-results-page,
+  .profile-page, .edit-profile-page, .upload-page, .image-page, .my-bookings-page) {
+	padding-top: 32px;
+}
+
+.app-body :is(.about-hero, .explore-hero, .blog-hero) {
+	padding-top: 48px;
 }

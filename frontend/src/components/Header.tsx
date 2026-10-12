@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { User, Menu, Heart, Download, Shield, Info, CalendarDays } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
-import { SearchBar } from "./SearchBar"
 import { getSessionItem, setSessionItem, removeSessionItem } from "@/utils/safeStorage"
 import { Avatar } from "./Avatar"
 import NotificationBell from "./NotificationBell"
@@ -12,8 +11,6 @@ import LOGO_CONFIG from "@/config/logo"
 import { updateFaviconWithImage } from "@/utils/faviconUpdater"
 import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
-import CategoryNavigation from "./CategoryNavigation"
-import { SearchResultsNavigation } from "./SearchResultsNavigation"
 import { TextLogo } from "./TextLogo"
 import { LanguageSwitcher } from "./LanguageSwitcher"
 import { openBookingModal } from '@/utils/bookingModalEvent'
@@ -51,8 +48,6 @@ export const Header = memo(function Header() {
   const [mobileMenuTop, setMobileMenuTop] = useState(0)
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null)
   
-  // Check if we're on a search results page
-  const isSearchPage = location.pathname.startsWith('/s/')
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   
   // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
@@ -164,7 +159,7 @@ export const Header = memo(function Header() {
         <div className="header-container">
           {/* Logo */}
           <div className="header-logo-container">
-            <Link to="/" className="header-logo" onClick={handleLogoClick}>
+            <Link to="/" className="header-logo" onClick={handleLogoClick} aria-label="PhotoCloud - Trang chủ">
               {LOGO_CONFIG.type === 'text' ? (
                 <TextLogo 
                   text={LOGO_CONFIG.textLogo.text}
@@ -274,7 +269,11 @@ export const Header = memo(function Header() {
           </div>}
 
           {/* Search Bar */}
-          <SearchBar />
+          <nav className="header-studio-nav" aria-label="Điều hướng studio">
+            <Link to="/packages" aria-current={location.pathname.startsWith('/packages') ? 'page' : undefined}>Gói chụp</Link>
+            <Link to="/collections" aria-current={location.pathname.startsWith('/collections') ? 'page' : undefined}>Bộ sưu tập</Link>
+            <Link to="/about" aria-current={location.pathname === '/about' ? 'page' : undefined}>Về studio</Link>
+          </nav>
 
           {/* Right Actions - Desktop */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
@@ -353,9 +352,6 @@ export const Header = memo(function Header() {
           </div>}
         </div>
       </div>
-
-      {/* Category Navigation or Search Results Navigation - Second row in header */}
-      {isSearchPage ? <SearchResultsNavigation /> : <CategoryNavigation />}
 
       {/* Upload Modal - Lazy loaded, only render when open */}
       {uploadModalOpen && isAdmin && (

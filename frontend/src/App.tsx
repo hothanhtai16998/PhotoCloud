@@ -229,9 +229,8 @@ function App() {
       <GlobalLoadingOverlay />
 
       {/* App body wrapper: clears the fixed header so page content is never
-          covered. --header-height is set in index.css (114px desktop / 86px mobile)
-          and already accounts for the header-top row + the CategoryNavigation row
-          that lives inside <Header />. Only rendered when the header is visible
+          covered. --header-height is set in index.css (80px desktop / 52px mobile).
+          Only rendered when the header is visible
           (auth pages render directly without the wrapper so they keep full-bleed
           layouts). */}
       {shouldShowHeader ? (

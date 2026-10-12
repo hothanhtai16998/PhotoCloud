@@ -433,9 +433,11 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 14px 22px;
-  border-radius: 999px;
+  border-radius: 6px;
+  min-height: 52px;
+  box-sizing: border-box;
   font: inherit;
   font-size: 16px;
   font-weight: 700;
@@ -448,16 +450,19 @@
 .hero-cta--primary {
   background: var(--studio-text-primary);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(27, 27, 25, 0.15);
+  border-color: #383832;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 4px 12px rgba(27, 27, 25, 0.14);
 }
 
 .hero-cta--primary:hover {
+  border-color: #B8865B;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(27, 27, 25, 0.2);
   animation: none;
 }
 
 .hero-cta--primary svg:first-child {
+  color: #DFC29F;
   flex-shrink: 0;
 }
 
@@ -498,14 +503,16 @@
 .hero-cta--secondary {
   background: rgba(255, 255, 255, 0.78);
   color: var(--studio-text-primary);
-  border-color: var(--border-strong, #D8D1C5);
+  border-color: #CFC6B9;
+  box-shadow: 0 2px 4px rgba(27, 27, 25, 0.03);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-cta--secondary:hover {
   background: #ffffff;
-  border-color: var(--studio-text-primary);
+  border-color: #B8865B;
+  color: #966339;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(27, 27, 25, 0.1);
 }
@@ -515,7 +522,23 @@
 }
 
 .hero-cta--secondary:hover .hero-cta-arrow {
-  transform: translateX(4px);
+  transform: translateX(3px);
+}
+
+.hero-cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta,
+  .hero-cta .hero-cta-arrow {
+    transition: none;
+  }
+  .hero-cta:hover,
+  .hero-cta:active,
+  .hero-cta:hover .hero-cta-arrow {
+    transform: none;
+  }
 }
 
 /* ---------- Trust pills ---------- */

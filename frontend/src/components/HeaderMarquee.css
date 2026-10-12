@@ -21,13 +21,9 @@
     overflow: hidden;
     pointer-events: auto;
     z-index: 1; /* hero orbs use z-index: -1, so 1 keeps the ribbon above them */
-    background: linear-gradient(90deg,
-        rgba(184, 134, 91, 0.10),
-        rgba(184, 134, 91, 0.18) 50%,
-        rgba(184, 134, 91, 0.10)
-    );
-    border-bottom: 1px solid rgba(184, 134, 91, 0.22);
-    box-shadow: 0 4px 12px -8px rgba(27, 27, 25, 0.10);
+    background: rgba(184, 134, 91, 0.04);
+    border-bottom: 1px solid rgba(184, 134, 91, 0.12);
+    box-shadow: none;
     align-items: center;
     /* No border-radius: the hero card is now full-bleed (no left/right
        rounded corners), so the ribbon spans the full width flush with

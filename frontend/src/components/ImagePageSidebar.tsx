@@ -1,4 +1,4 @@
-import { Home, Bookmark, Heart, Info, Download, Shield, Compass, Camera, BookOpen } from 'lucide-react';
+import { Bookmark, Heart, Info, Download, Shield, Compass, Camera, BookOpen } from 'lucide-react';
 import { WebSocketStatus } from './WebSocketStatus';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -194,19 +194,6 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
 
   return (
     <aside className="image-page-sidebar">
-      {/* Top section - Home */}
-      <div className="sidebar-section sidebar-section-top">
-        <Link
-          to="/"
-          className={getNavItemClass('/')}
-          aria-label={currentLocale === 'vi' ? 'Trang chủ studio' : 'Studio home'}
-          data-tooltip={currentLocale === 'vi' ? 'Trang chủ studio' : 'Studio home'}
-          aria-current={isActive('/') ? 'page' : undefined}
-        >
-          <Home className="sidebar-icon" />
-        </Link>
-      </div>
-
       {/* Middle section - Main Navigation */}
       <div className="sidebar-section sidebar-section-middle">
         <Link

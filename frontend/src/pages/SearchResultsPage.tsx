@@ -5,6 +5,7 @@ import { useGlobalKeyboardShortcuts } from "@/hooks/useGlobalKeyboardShortcuts";
 import { triggerSearchFocus } from "@/utils/searchFocusEvent";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import { NoFlashGrid } from "@/components/NoFlashGrid";
+import { SearchBar } from '@/components/SearchBar';
 import { useSearchFilters } from "@/components/SearchBar/hooks/useSearchFilters";
 import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
@@ -490,6 +491,9 @@ function SearchResultsPage() {
     return (
         <>
             <main className={`search-results-page ${isTransitioning ? 'transitioning' : ''}`}>
+                <div className="page-photo-search">
+                    <SearchBar />
+                </div>
                 {/* Search Query Heading and Tags - positioned right below navigation bar */}
                 {/* Always render to reserve space and prevent layout shift */}
                 <div className="search-results-content">

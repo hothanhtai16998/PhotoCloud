@@ -5,6 +5,9 @@ import { useImageStore } from '@/stores/useImageStore';
 import { categoryService, type Category } from '@/services/categoryService';
 import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlug';
 import { NoFlashGrid } from '@/components/NoFlashGrid';
+import { SearchBar } from '@/components/SearchBar';
+import { useSearchFilters } from '@/components/SearchBar/hooks/useSearchFilters';
+import { buildFilterParams } from '@/utils/buildFilterParams';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { BRAND } from '@/constants/brand';
 import { t, getLocale } from '@/i18n';
@@ -19,9 +22,11 @@ const ORIENTATIONS = [
 ];
 
 const SORTS = [
-  { value: 'popular', label: 'Phổ biến' },
+  { value: 'views', label: 'Phổ biến' },
   { value: 'date', label: 'Mới nhất' },
-  { value: 'likes', label: 'Nhiều lượt thích' },
+  { value: 'favorites', label: 'Nhiều lượt thích' },
+  { value: 'downloads', label: 'Nhiều lượt tải' },
+  { value: 'relevance', label: 'Liên quan' },
 ];
 
 export default function ExplorePage() {
@@ -38,8 +43,9 @@ export default function ExplorePage() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [orientation, setOrientation] = useState<string>('all');
-  const [sort, setSort] = useState<string>('popular');
+  const { filters, setFilters } = useSearchFilters();
+  const orientation = filters.orientation;
+  const sort = filters.sortBy || 'date';
   const [locale, setLocale] = useState<'vi' | 'en'>(getLocale());
 
   // Load categories
@@ -66,17 +72,16 @@ export default function ExplorePage() {
         ? undefined
         : getCategoryNameFromSlug(activeCategory, categories) ?? undefined;
 
-    const params: Record<string, string | number | undefined> = {
-      sortBy: sort === 'popular' ? 'popular' : sort,
-      order: sort === 'date' ? 'desc' : 'desc',
+    const params = {
+      ...buildFilterParams(filters, { page: 1, category: categoryName }),
+      sortBy: sort,
+      order: filters.order || 'desc',
       page: 1,
       limit: 30,
     };
-    if (categoryName) params.category = categoryName;
-    if (orientation !== 'all') params.orientation = orientation;
 
     fetchImages(params);
-  }, [activeCategory, orientation, sort, categories, fetchImages]);
+  }, [activeCategory, orientation, sort, filters, categories, fetchImages]);
 
   const translatedCategories = useMemo(
     () =>
@@ -104,6 +109,9 @@ export default function ExplorePage() {
       </section>
 
       <section className="explore-filters">
+        <div className="page-photo-search">
+          <SearchBar />
+        </div>
         <div className="explore-filter-row">
           <h2 className="explore-filter-label">
             <Compass size={15} aria-hidden /> Danh mục
@@ -143,7 +151,7 @@ export default function ExplorePage() {
                   key={opt.value}
                   type="button"
                   className={`explore-segmented-btn${orientation === opt.value ? ' is-active' : ''}`}
-                  onClick={() => setOrientation(opt.value)}
+                  onClick={() => setFilters({ ...filters, orientation: opt.value as typeof filters.orientation })}
                 >
                   {opt.label}
                 </button>
@@ -156,7 +164,7 @@ export default function ExplorePage() {
             <select
               className="explore-select"
               value={sort}
-              onChange={(e) => setSort(e.target.value)}
+              onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as typeof filters.sortBy })}
             >
               {SORTS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
