@@ -7,8 +7,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: none !important;
   outline: none !important;
@@ -33,19 +33,19 @@
 
 .notification-bell-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 2px;
+  right: 2px;
   background: #A6453C;
   color: var(--bg-card, #FFFFFF);
-  font-size: 0.75rem;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 7px;
+  padding: 2px 4px;
   border-radius: 12px;
-  min-width: 20px;
+  min-width: 16px;
   text-align: center;
   line-height: 1.4;
   box-shadow: 0 2px 4px rgba(166, 69, 60, 0.3);
-  animation: pulse 2s ease-in-out infinite;
+  animation: none;
 }
 
 @keyframes pulse {

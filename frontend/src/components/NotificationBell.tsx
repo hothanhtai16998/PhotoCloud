@@ -488,7 +488,7 @@ export default function NotificationBell() {
 			>
 				<Bell size={28} />
 				{displayUnreadCount > 0 && (
-					<span className="notification-bell-badge">{displayUnreadCount > 99 ? '99+' : displayUnreadCount}</span>
+					<span className="notification-bell-badge">{displayUnreadCount > 9 ? '9+' : displayUnreadCount}</span>
 				)}
 			</button>
 

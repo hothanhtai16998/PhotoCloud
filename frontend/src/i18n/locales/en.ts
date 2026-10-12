@@ -278,7 +278,7 @@ export const en = {
 
   // Search
   search: {
-    placeholder: 'Search photos, illustrations...',
+    placeholder: 'Search photography...',
     label: 'Search photos',
     clear: 'Clear search',
     hint: 'Enter keywords to search photos. Use arrow keys to navigate, Enter to select, Escape to close.',

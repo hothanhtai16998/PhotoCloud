@@ -12,7 +12,7 @@
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  z-index: 20;
+  z-index: 1501;
   flex-shrink: 0;
 }
 
@@ -69,8 +69,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
   border-radius: 8px;
   color: var(--text-secondary, #6B6B66);
   text-decoration: none;
@@ -92,14 +93,14 @@
 
 .sidebar-nav-item.active {
   color: var(--text-primary, #1B1B19); /* gray-900 */
-  background: var(--hover-bg, #F2EEE7); /* gray-100 */
+  background: #EDE5DA;
 }
 
 /* Active state - left border indicator */
 .sidebar-nav-item.active::before {
   content: '';
   position: absolute;
-  left: -16px;
+  left: -10px;
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
@@ -156,8 +157,9 @@
 }
 
 /* Tooltip on hover (using title attribute, can be enhanced with custom tooltip component later) */
-.sidebar-nav-item[title]:hover::after {
-  content: attr(title);
+.sidebar-nav-item[data-tooltip]:hover::after,
+.sidebar-nav-item[data-tooltip]:focus-visible::after {
+  content: attr(data-tooltip);
   position: absolute;
   left: calc(100% + 12px);
   top: 50%;
@@ -172,7 +174,26 @@
   z-index: 1000;
   pointer-events: none;
   opacity: 0;
-  animation: tooltipFadeIn 0.2s ease 0.3s forwards;
+  animation: tooltipFadeIn 0.15s ease 0.2s forwards;
+}
+
+.sidebar-nav-item:focus-visible {
+  outline: 2px solid #966339;
+  outline-offset: 3px;
+}
+
+.sidebar-section-middle .sidebar-separator,
+.sidebar-section-bottom .sidebar-separator {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-nav-item { transition: none; }
+  .sidebar-nav-item[data-tooltip]:hover::after,
+  .sidebar-nav-item[data-tooltip]:focus-visible::after {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 @keyframes tooltipFadeIn {

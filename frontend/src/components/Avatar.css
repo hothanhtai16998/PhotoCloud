@@ -9,12 +9,12 @@
 
 .header-user-avatar,
 .header-user-avatar-placeholder {
-  width: 50px !important;
-  height: 50px !important;
-  min-width: 50px !important;
-  min-height: 50px !important;
-  max-width: 50px !important;
-  max-height: 50px !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  min-height: 42px !important;
+  max-width: 42px !important;
+  max-height: 42px !important;
   border-radius: 50%;
   flex-shrink: 0;
 }

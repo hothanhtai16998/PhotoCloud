@@ -278,7 +278,7 @@ export const vi = {
 
   // Search
   search: {
-    placeholder: 'Tìm kiếm ảnh, minh họa...',
+    placeholder: 'Tìm ảnh chụp...',
     label: 'Tìm kiếm ảnh',
     clear: 'Xóa tìm kiếm',
     hint: 'Nhập từ khóa để tìm kiếm ảnh. Sử dụng phím mũi tên để điều hướng, Enter để chọn, Escape để đóng.',

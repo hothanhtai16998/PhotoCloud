@@ -199,8 +199,9 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
         <Link
           to="/"
           className={getNavItemClass('/')}
-          aria-label={t('common.all')}
-          title={t('common.all')}
+          aria-label={currentLocale === 'vi' ? 'Trang chủ studio' : 'Studio home'}
+          data-tooltip={currentLocale === 'vi' ? 'Trang chủ studio' : 'Studio home'}
+          aria-current={isActive('/') ? 'page' : undefined}
         >
           <Home className="sidebar-icon" />
         </Link>
@@ -212,7 +213,8 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
           to="/collections"
           className={getNavItemClass('/collections')}
           aria-label={t('collections.title')}
-          title={t('collections.title')}
+          data-tooltip={t('collections.title')}
+          aria-current={isActive('/collections') ? 'page' : undefined}
         >
           <Bookmark className="sidebar-icon" />
         </Link>
@@ -225,7 +227,8 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
               to="/favorites"
               className={getNavItemClass('/favorites')}
               aria-label={t('header.favorites')}
-              title={t('header.favorites')}
+              data-tooltip={`${t('header.favorites')} · ${favoriteTotal}`}
+              aria-current={isActive('/favorites') ? 'page' : undefined}
             >
               {favoriteThumbnail ? (
                 <div className="sidebar-favorite-thumbnail">
@@ -254,7 +257,8 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
               to="/downloads"
               className={getNavItemClass('/downloads')}
               aria-label={t('profile.downloadHistory')}
-              title={t('profile.downloadHistory')}
+              data-tooltip={t('profile.downloadHistory')}
+              aria-current={isActive('/downloads') ? 'page' : undefined}
             >
               <Download className="sidebar-icon" />
             </Link>
@@ -268,7 +272,8 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
           to="/about"
           className={getNavItemClass('/about')}
           aria-label={t('header.about')}
-          title={t('header.about')}
+          data-tooltip={currentLocale === 'vi' ? 'Giới thiệu PhotoCloud' : 'About PhotoCloud'}
+          aria-current={isActive('/about') ? 'page' : undefined}
         >
           <Info className="sidebar-icon" />
         </Link>
@@ -281,7 +286,8 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
               to="/admin"
               className={getNavItemClass('/admin')}
               aria-label="Admin"
-              title="Admin"
+              data-tooltip={currentLocale === 'vi' ? 'Quản lý studio' : 'Studio management'}
+              aria-current={isActive('/admin') ? 'page' : undefined}
             >
               <Shield className="sidebar-icon" />
             </Link>
@@ -302,7 +308,7 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
           className="sidebar-nav-item sidebar-language-toggle"
           onClick={handleLanguageToggle}
           aria-label={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
-          title={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
+          data-tooltip={`Switch to ${LANGUAGE_LABELS[nextLocale]}`}
         >
           <img 
             src={nextLocale === 'vi' ? vietnamFlag : americaFlag} 

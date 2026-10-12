@@ -37,6 +37,14 @@ export const Header = memo(function Header() {
   const navigate = useNavigate()
   const location = useLocation()
   const isMobile = useIsMobile()
+  const isAdmin = Boolean(user?.isAdmin)
+  const [isScrolled, setIsScrolled] = useState(false)
+  useEffect(() => {
+    const update = () => setIsScrolled(window.scrollY > 12)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
+  }, [])
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mobileMenuAnimating, setMobileMenuAnimating] = useState(false)
@@ -151,7 +159,7 @@ export const Header = memo(function Header() {
   }
 
   return (
-    <header className={`unsplash-header${location.pathname === '/' ? ' homepage-header' : ''}`}>
+    <header className={`unsplash-header${location.pathname === '/' ? ' homepage-header' : ''}${isScrolled ? ' is-scrolled' : ''}`}>
       <div className="header-top">
         <div className="header-container">
           {/* Logo */}
@@ -201,7 +209,7 @@ export const Header = memo(function Header() {
                   user={user}
                   onSignOut={handleSignOut}
                   align="start"
-                  onUpload={() => setUploadModalOpen(true)}
+                  onUpload={isAdmin ? () => setUploadModalOpen(true) : undefined}
                   trigger={
                     <Avatar
                       user={user}
@@ -254,9 +262,14 @@ export const Header = memo(function Header() {
             
             {/* Sign In Link - only visible when not authenticated and not initializing */}
             {!showPlaceholder && !stableHasAuth && (
+              <>
+              <button type="button" className="mobile-header-icon" aria-label="Đặt lịch chụp" onClick={openBookingModal}>
+                <CalendarDays size={18} />
+              </button>
               <Link to="/signin" className="mobile-header-icon" aria-label={t('auth.signIn')}>
                 <User size={20} />
               </Link>
+              </>
             )}
           </div>}
 
@@ -271,7 +284,7 @@ export const Header = memo(function Header() {
               <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
-                gap: '20px'
+                gap: '12px'
               }}>
                 <Button
                   onClick={openBookingModal}
@@ -281,7 +294,7 @@ export const Header = memo(function Header() {
                   <CalendarDays size={16} />
                   <span>Đặt lịch chụp</span>
                 </Button>
-                <Button
+                {isAdmin && <Button
                   variant="ghost"
                   onClick={(e) => {
                     e.preventDefault();
@@ -291,17 +304,17 @@ export const Header = memo(function Header() {
                   className="header-link header-upload-button"
                 >
                   {t('header.addImage')}
-                </Button>
+                </Button>}
                 <NotificationBell />
                 <UserMenu
                   user={user}
                   onSignOut={handleSignOut}
                   align="end"
-                  onUpload={() => setUploadModalOpen(true)}
+                  onUpload={isAdmin ? () => setUploadModalOpen(true) : undefined}
                   trigger={
                     <Avatar
                       user={user}
-                      size={50}
+                      size={42}
                       className="header-user-avatar"
                       fallbackClassName="header-user-avatar-placeholder"
                     />
@@ -334,7 +347,7 @@ export const Header = memo(function Header() {
                 gap: '20px'
               }}>
                 <Link to="/signin" className="header-link">{t('auth.signIn')}</Link>
-                <Button onClick={() => navigate('/signin')} className="header-button">{t('header.addImage')}</Button>
+                <Button onClick={openBookingModal} className="header-booking-button"><CalendarDays size={16} /><span>Đặt lịch chụp</span></Button>
               </div>
             )}
           </div>}
@@ -345,7 +358,7 @@ export const Header = memo(function Header() {
       {isSearchPage ? <SearchResultsNavigation /> : <CategoryNavigation />}
 
       {/* Upload Modal - Lazy loaded, only render when open */}
-      {uploadModalOpen && (
+      {uploadModalOpen && isAdmin && (
         <Suspense fallback={null}>
           <UploadModal
             isOpen={uploadModalOpen}
