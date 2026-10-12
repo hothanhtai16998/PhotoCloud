@@ -63,7 +63,7 @@
   border-radius: 12px 0 0 12px;
 }
 
-/* Dropdown mode - positioned below button (like Unsplash) */
+/* Dropdown mode - positioned below button (like PHOTOCLOUD) */
 .collection-modal-dropdown {
   position: absolute;
   top: 100%;
@@ -201,7 +201,7 @@
   overflow-y: auto;
 }
 
-/* Search Bar - Unsplash style */
+/* Search Bar - PHOTOCLOUD style */
 .collection-modal-search {
   position: relative;
   display: flex;
@@ -562,7 +562,7 @@
   opacity: 0.8;
 }
 
-/* Collection List Item - Simplified Unsplash style */
+/* Collection List Item - Simplified PHOTOCLOUD style */
 .collection-modal-item {
   display: flex;
   align-items: center;
@@ -716,7 +716,7 @@
   opacity: 1;
 }
 
-/* Create New Collection Button at Bottom - Unsplash style */
+/* Create New Collection Button at Bottom - PHOTOCLOUD style */
 .collection-modal-create-bottom {
   padding: 16px 20px;
   border-top: 1px solid #f0f0f0;

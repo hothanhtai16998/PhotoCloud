@@ -452,7 +452,7 @@ export const getAllImages = asyncHandler(async (req, res) => {
         });
     }
 
-    // Set cache headers for better performance (like Unsplash)
+    // Set cache headers for better performance (like PHOTOCLOUD)
     // Check if there's a cache-busting parameter
     const hasCacheBust = req.query._t;
     if (hasCacheBust) {

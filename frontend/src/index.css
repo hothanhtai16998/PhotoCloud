@@ -724,7 +724,7 @@
 		animation: fadeIn 0.3s ease-out forwards;
 	}
 
-	/* Unsplash-style refresh visual feedback */
+	/* PHOTOCLOUD-style refresh visual feedback */
 	body.refreshing {
 		cursor: wait !important;
 		position: relative;
@@ -1016,7 +1016,7 @@
 	}
 }
 
-/* App body wrapper reserves the shared header height plus an 8px gap.
+/* App body wrapper reserves the shared header height.
 
    The first direct child of .app-body is always flush with the bottom of the
    fixed header (no top margin / no top border-radius) so page content never
@@ -1024,7 +1024,7 @@
    radius is preserved on subsequent children and on the bottom of the
    first child. */
 .app-body {
-	padding-top: calc(var(--header-height, 80px) + 8px);
+	padding-top: var(--header-height, 80px);
 	/* Pages render their own internal top spacing; this wrapper just
 	   guarantees the fixed header never overlaps page content. */
 	box-sizing: border-box;
@@ -1032,9 +1032,9 @@
 	background: transparent;
 }
 
-/* Reserve the homepage header height plus a small gap before the ribbon. */
+/* Reserve the homepage header height before the ribbon. */
 .app-body:has(> .homepage) {
-	padding-top: calc(var(--homepage-header-height) + 8px);
+	padding-top: var(--homepage-header-height);
 }
 
 /* First child sits flush against the bottom of the fixed header.

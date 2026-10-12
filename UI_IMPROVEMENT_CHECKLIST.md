@@ -6,7 +6,7 @@
 
 ## Nguyên tắc giữ lại
 
-- [x] Layout kiểu Unsplash (header + sidebar + search + lưới ảnh)
+- [x] Layout kiểu PHOTOCLOUD (header + sidebar + search + lưới ảnh)
 - [x] Lazy-load / skeleton / blur-up image
 - [x] Modal xem ảnh (overlay, like/collection/download, Esc/click ngoài)
 - [x] Admin có cấu trúc (sidebar, analytics, booking, calendar, gói)
@@ -133,7 +133,7 @@
 - [ ] ~~Animation chữ từng ký tự toàn trang~~
 - [ ] ~~Lenis smooth scroll nếu chưa tối ưu mobile~~
 - [ ] ~~Masonry animation quá nhiều~~
-- [ ] ~~Phá layout Unsplash / khoảng trắng / typography tối giản~~
+- [ ] ~~Phá layout PHOTOCLOUD / khoảng trắng / typography tối giản~~
 
 ---
 

@@ -309,7 +309,7 @@
   border-radius: 12px 12px 0 0;
 }
 
-/* Unsplash-style layout: main image on left, thumbnails on right (if 2+ images) */
+/* PHOTOCLOUD-style layout: main image on left, thumbnails on right (if 2+ images) */
 .collection-card-images {
   display: flex;
   width: 100%;

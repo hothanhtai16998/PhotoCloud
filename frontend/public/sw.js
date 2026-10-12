@@ -1,4 +1,4 @@
-// Service Worker for Aggressive Image Preloading and Caching (Unsplash Technique)
+// Service Worker for Aggressive Image Preloading and Caching (PHOTOCLOUD Technique)
 // This service worker preloads images before they're needed to prevent flashing
 
 const CACHE_NAME = 'photo-app-images-v3';
@@ -42,7 +42,7 @@ self.addEventListener('fetch', (event) => {
 
   // Intercept navigation requests (page refreshes)
   // Service Workers CAN intercept navigation and delay them!
-  // This is how Unsplash delays the refresh button - the page stays visible!
+  // This is how PHOTOCLOUD delays the refresh button - the page stays visible!
   // CRITICAL: Must check for navigate mode FIRST before other checks
   const isNavigation = event.request.mode === 'navigate' || 
                        event.request.destination === 'document' ||

@@ -212,10 +212,10 @@ function App() {
 
   return (
     <ActualLocationContext.Provider value={location}>
-      {/* Header - Unsplash-style: Always visible, even during loading */}
+      {/* Header - PHOTOCLOUD-style: Always visible, even during loading */}
       {shouldShowHeader && <Header />}
 
-      {/* Sidebar - Unsplash-style: Always visible, even during loading */}
+      {/* Sidebar - PHOTOCLOUD-style: Always visible, even during loading */}
       {shouldShowSidebar && <ImagePageSidebar />}
 
       {/* Floating Contact Button - Always visible */}

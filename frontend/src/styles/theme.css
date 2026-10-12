@@ -44,7 +44,7 @@
   min-height: 100vh;
 }
 
-.dark-theme .unsplash-header {
+.dark-theme .PHOTOCLOUD-header {
   background: var(--bg-primary);
   border-bottom-color: var(--border-color);
 }

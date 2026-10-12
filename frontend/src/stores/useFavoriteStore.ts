@@ -4,7 +4,7 @@ import { favoriteService } from '@/services/favoriteService';
 import type { FavoriteState } from '@/types/store';
 import type { Image } from '@/types/image';
 
-// Unsplash-style: 1 minute stale threshold (matches Unsplash behavior)
+// PHOTOCLOUD-style: 1 minute stale threshold (matches PHOTOCLOUD behavior)
 const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
 
 export const useFavoriteStore = create(

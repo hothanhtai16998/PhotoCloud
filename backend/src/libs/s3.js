@@ -238,7 +238,7 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 		const originalExtension = imageFormat === 'png' ? 'png' : imageFormat === 'jpeg' ? 'jpg' : 'jpg';
 		const originalContentType = contentType || (imageFormat === 'png' ? 'image/png' : 'image/jpeg');
 		
-		// Generate tiny base64 PNG for instant blur-up (like Unsplash uses BMP)
+		// Generate tiny base64 PNG for instant blur-up (like PHOTOCLOUD uses BMP)
 		// Generate tiny thumbnail preserving aspect ratio (max 20px on longest side)
 		// Very small file size (1-2 KB), loads instantly
 		// Using PNG instead of BMP since Sharp doesn't support BMP output
@@ -311,7 +311,7 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
 			smallUrl: smallWebp,
 			regularUrl: regularWebp,
 			imageUrl: original, // True original file (JPG/PNG)
-			base64Thumbnail, // Tiny base64 PNG for instant blur-up (like Unsplash)
+			base64Thumbnail, // Tiny base64 PNG for instant blur-up (like PHOTOCLOUD)
 			// AVIF variants will be null initially, generated in background
 			imageAvifUrl: null,
 			thumbnailAvifUrl: null,

@@ -78,8 +78,8 @@ function FavoritesPage() {
             // Don't check for stale data on mount - use cached data immediately
             // Stale data will be refreshed via visibility change or periodic checks
             if (!hasLoaded) {
-                // Unsplash-style: Use requestIdleCallback to make requests after initial render
-                // This naturally keeps requests pending during page load phase (like Unsplash)
+                // PHOTOCLOUD-style: Use requestIdleCallback to make requests after initial render
+                // This naturally keeps requests pending during page load phase (like PHOTOCLOUD)
                 const scheduleFetch = () => {
                     if ('requestIdleCallback' in window) {
                         requestIdleCallback(() => {
@@ -101,7 +101,7 @@ function FavoritesPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInitializing, accessToken]); // Re-run when auth state changes
 
-    // Unsplash-style: Refresh when tab becomes visible after being away for 1+ minute
+    // PHOTOCLOUD-style: Refresh when tab becomes visible after being away for 1+ minute
     useEffect(() => {
         if (!hasLoaded) return;
 

@@ -168,7 +168,7 @@
   color: var(--text-primary, #1B1B19);
 }
 
-/* Tags container (Unsplash-style rounded buttons) */
+/* Tags container (PHOTOCLOUD-style rounded buttons) */
 .search-bar-container .suggestions-tags {
   display: flex;
   flex-wrap: wrap;
@@ -415,12 +415,12 @@
 
 @media (min-width: 769px) {
 
-  .unsplash-header .header-search {
+  .PHOTOCLOUD-header .header-search {
     min-width: 0;
     box-sizing: border-box;
   }
 
-  .unsplash-header .search-input {
+  .PHOTOCLOUD-header .search-input {
     flex: 1 1 0;
     width: 0;
   }
@@ -457,7 +457,7 @@
   flex-shrink: 0;
 }
 
-.unsplash-header .search-input {
+.PHOTOCLOUD-header .search-input {
   flex: 1;
   min-width: 0;
   border: none;

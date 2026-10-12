@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { t } from '@/i18n';
 import type { Image } from '@/types/image';
 
-// Unsplash-style: 1 minute stale threshold (matches Unsplash behavior)
+// PHOTOCLOUD-style: 1 minute stale threshold (matches PHOTOCLOUD behavior)
 const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
 
 export interface DownloadHistoryState {

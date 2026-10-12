@@ -272,7 +272,7 @@ export const en = {
     legal: 'Legal',
     submitImage: 'Submit an image',
     logIn: 'Log in',
-    newToUnsplash: 'New to Unsplash?',
+    newToPHOTOCLOUD: 'New to PHOTOCLOUD?',
     signUpFree: 'Sign up for free',
   },
 

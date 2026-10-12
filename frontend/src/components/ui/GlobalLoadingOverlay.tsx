@@ -5,7 +5,7 @@ import './GlobalLoadingOverlay.css';
 /**
  * Check if we're currently in a refresh delay period
  * During refresh delay, we should NOT show the loading overlay
- * because the page should stay visible (Unsplash behavior)
+ * because the page should stay visible (PHOTOCLOUD behavior)
  */
 const isInRefreshDelay = (): boolean => {
   if (typeof window === 'undefined') return false;
@@ -45,7 +45,7 @@ export function GlobalLoadingOverlay() {
   const hasShownRef = useRef(false);
   
   // Check if we're in refresh delay - if so, don't show overlay
-  // During refresh delay, page should stay visible (Unsplash behavior)
+  // During refresh delay, page should stay visible (PHOTOCLOUD behavior)
   const inRefreshDelay = isInRefreshDelay();
   const shouldShowLoading = isLoading && !inRefreshDelay;
 

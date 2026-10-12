@@ -1,6 +1,9 @@
 /* TestimonialsCarousel */
 
 .testimonials-carousel {
+  width: min(1296px, calc(100% - 32px));
+  box-sizing: border-box;
+  margin-inline: auto;
   margin-bottom: 26px;
   background: var(--studio-bg-card);
   border: 1px solid var(--studio-border-soft);

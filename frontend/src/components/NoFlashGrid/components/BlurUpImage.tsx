@@ -48,7 +48,7 @@ export function BlurUpImage({
     currentIndex,
     minimal = false,
 }: BlurUpImageProps) {
-    // Use base64 thumbnail for instant placeholder (like Unsplash) - no network request needed
+    // Use base64 thumbnail for instant placeholder (like PHOTOCLOUD) - no network request needed
     const base64Placeholder = image.base64Thumbnail || null;
     const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
     const placeholderInitial = base64Placeholder || networkPlaceholder;

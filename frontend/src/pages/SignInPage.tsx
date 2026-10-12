@@ -9,7 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { signInSchema, type SignInFormValue } from "@/types/forms";
 import { t } from "@/i18n";
-import "./SignInPage.css";
+import { AuthLayout } from "./auth/components/AuthLayout";
 
 function SignInPage() {
     const { signIn } = useAuthStore();
@@ -64,70 +64,21 @@ function SignInPage() {
     };
 
     return (
-        <div className="signin-page">
-            {/* Background Image */}
-            <div className="signin-background">
-                <div className="background-overlay"></div>
-                <div className="background-logo">
-                    <span className="logo-text">Be PhotoApp</span>
-                </div>
-            </div>
-
-            {/* Signin Modal */}
-            <div className="signin-modal">
-                <div className="signin-modal-content">
-                    <div className="signin-header">
-                        <h1 className="signin-title">{t('auth.welcome')}</h1>
-                        <p className="signin-subtitle">{t('auth.signInToStart')}</p>
-                    </div>
-
-                    {/* Social Login Buttons */}
-                    <div className="social-login-section">
-                        <button
-                            type="button"
-                            className="social-btn google-btn"
-                            onClick={() => handleSocialLogin('google')}
-                        >
-                            <span className="social-icon">G</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="social-btn apple-btn"
-                            onClick={() => handleSocialLogin('facebook')}
-                        >
-                            <span className="social-icon facebook-btn">F</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="social-btn apple-btn"
-                            onClick={() => handleSocialLogin('apple')}
-                        >
-                            <span className="social-icon">A</span>
-                        </button>
-                    </div>
-
-                    {/* Separator */}
-                    <div className="signin-separator">
-                        <div className="separator-line"></div>
-                        <span className="separator-text">{t('auth.or')}</span>
-                        <div className="separator-line"></div>
-                    </div>
-
-                    {/* Email Signin Form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="signin-form">
-                        <div className="signin-form-header">
-                            <h2 className="form-subtitle">{t('auth.signInWithAccount')}</h2>
-                            <p className="form-switch">
-                                {t('auth.noAccount')}{" "}
-                                <Link to="/signup" className="form-link">
-                                    {t('auth.signUp')}
-                                </Link>
-                            </p>
-                        </div>
+        <AuthLayout>
+            <h1>{t('auth.welcome')}</h1>
+            <p className="auth-subtitle">{t('auth.signInToStart')}</p>
+            <button type="button" className="social-btn" onClick={() => handleSocialLogin('google')}>
+                <span className="social-icon" aria-hidden="true">G</span> Tiếp tục với Google
+            </button>
+            <div className="auth-separator">{t('auth.or')}</div>
+                    <form onSubmit={handleSubmit(onSubmit)} className="signin-form" aria-busy={isSubmitting}>
+                        <p className="form-switch">{t('auth.noAccount')} <Link to="/signup" className="form-link">{t('auth.signUp')}</Link></p>
 
                         {/* Username */}
                         <div className="form-group">
+                            <label htmlFor="username">{t('auth.username')}</label>
                             <Input
+                                autoComplete="username"
                                 type="text"
                                 id="username"
                                 placeholder={t('auth.username')}
@@ -141,10 +92,12 @@ function SignInPage() {
 
                         {/* Password */}
                         <div className="form-group">
+                            <label htmlFor="password">{t('auth.password')}</label>
                             <div className="password-input-wrapper">
                                 <Input
                                     type={showPassword ? "text" : "password"}
                                     id="password"
+                                    autoComplete="current-password"
                                     placeholder={t('auth.password')}
                                     {...register('password')}
                                     className={errors.password ? 'error' : ''}
@@ -152,6 +105,7 @@ function SignInPage() {
                                 <button
                                     type="button"
                                     className="password-toggle"
+                                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -170,22 +124,7 @@ function SignInPage() {
                             {isSubmitting ? t('auth.signingIn') : t('auth.signIn')}
                         </Button>
                     </form>
-                </div>
-            </div>
-
-            {/* Footer */}
-            {/* <footer className="signin-footer">
-                <p className="footer-text">
-                    Copyright © 2025 PhotoApp. All rights reserved.
-                </p>
-                <div className="footer-links">
-                    <a href="#" className="footer-link">Terms of Use</a>
-                    <a href="#" className="footer-link">Cookie preferences</a>
-                    <a href="#" className="footer-link">Privacy</a>
-                    <a href="#" className="footer-link">Do not sell or share my personal information</a>
-                </div>
-            </footer> */}
-        </div>
+        </AuthLayout>
     );
 }
 

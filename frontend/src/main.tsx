@@ -10,7 +10,7 @@ import AuthInitializer from './components/auth/AuthInitializer.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 // Import verification utility (makes it available globally in dev mode)
 import './utils/verifyAppearanceSettings';
-// Initialize Unsplash-style refresh handler
+// Initialize PHOTOCLOUD-style refresh handler
 import { initRefreshHandler } from './utils/refreshHandler';
 // Import test utility (dev mode only)
 if (import.meta.env.DEV) {

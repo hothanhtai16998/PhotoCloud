@@ -10,7 +10,7 @@
 - [x] Tên thương hiệu: **PhotoCloud** (đã có trong toàn bộ app).
 - [x] Eyebrow "PhotoCloud Studio" trên hero (xem `HeroBooking.tsx:18`).
 - [x] Tính cách: vừa là nền tảng ảnh (community), vừa là studio booking.
-- [x] Phong cách hình ảnh: dùng ảnh Unsplash cinematic, fallback gradient warm.
+- [x] Phong cách hình ảnh: dùng ảnh PHOTOCLOUD cinematic, fallback gradient warm.
 - [x] Tagline "Chụp ảnh theo cách của bạn" — đã đồng nhất: `brand.ts:tagline` (1 nơi), `HeroBooking.tsx` dùng `taglinePrefix`+`taglineHighlight` cho hero có `<em>` gradient, `BookingPage.tsx` dùng `BRAND.tagline`.
 - [x] Tagline phụ "Kể chuyện bằng ánh sáng" — dùng ở footer/sub-tagline, blog page, about.
 
@@ -242,7 +242,7 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 ### 4.2 Tablet (768–1024px)
 
 - [x] Sidebar **ẩn** (chỉ hiện từ 1024px trở lên) — đổi breakpoint từ 768px → 1024px trong `ImagePageSidebar.css`.
-- [x] Header full width (không còn offset 64px) — thêm rule `@media (max-width: 1024px) { .unsplash-header { left: 0; width: 100% } }`.
+- [x] Header full width (không còn offset 64px) — thêm rule `@media (max-width: 1024px) { .PHOTOCLOUD-header { left: 0; width: 100% } }`.
 - [x] **Bottom nav 5 icon** thay thế sidebar — `MobileBottomNav.tsx` (Home · Khám phá · Đặt lịch · Thông báo · Hồ sơ) — tự ẩn khi modal mở (theo dõi `body.style.overflow === 'hidden'`).
 - [~] Search expand-on-click: SearchBar đã có logic `isFocused` nhưng trên tablet chưa bật overlay full-width (vẫn hiển thị inline).
 
@@ -284,7 +284,7 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 - [x] Quy trình 4 bước — `HowItWorks.tsx` (Chọn gói → Chọn ngày → Xác nhận → Nhận gallery).
 - [x] Testimonial carousel — `TestimonialsCarousel.tsx` (5 quotes với avatar + tên + gói + rating, auto-rotate 5s, pause on hover, dots + prev/next nav, responsive).
 - [x] CTA đặt lịch lặp lại — `FinalCTA.tsx`.
-- [x] Lưới ảnh cộng đồng — `RetainedCategoryGrid` (giữ nguyên Unsplash masonry).
+- [x] Lưới ảnh cộng đồng — `RetainedCategoryGrid` (giữ nguyên PHOTOCLOUD masonry).
 - [x] Footer 4 cột + newsletter — `Footer.tsx` (hiển thị ở tất cả public/member pages).
 
 ### 5.2 Trang Explore (`/explore`)
@@ -432,7 +432,7 @@ Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio
 
 | Nhóm | Tone | Trạng thái |
 |---|---|---|
-| Trang chủ / Explore / Ảnh | Hiện đại tối giản | [~] Hero booking warm đã áp, gallery giữ trắng Unsplash — chưa đồng nhất warm |
+| Trang chủ / Explore / Ảnh | Hiện đại tối giản | [~] Hero booking warm đã áp, gallery giữ trắng PHOTOCLOUD — chưa đồng nhất warm |
 | Booking / Packages / About / Blog | Ấm, cao cấp, riêng tư | [~] `BookingPage` dùng serif + warm, AboutPage vẫn làm contact info thuần |
 | Profile | Hơi ấm, cá nhân | [x] Có |
 | Admin | Dashboard chuyên nghiệp | [x] Dùng sans, density cao |

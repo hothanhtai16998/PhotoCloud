@@ -75,14 +75,14 @@ export function MobileBottomNav() {
             icon: Search,
             action: () => {
                 // Open search bar — focus existing search input if available
-                const input = document.querySelector<HTMLInputElement>('.unsplash-header .search-input');
+                const input = document.querySelector<HTMLInputElement>('.PHOTOCLOUD-header .search-input');
                 if (input) {
                     input.focus();
                     input.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 } else {
                     navigate('/');
                     setTimeout(() => {
-                        document.querySelector<HTMLInputElement>('.unsplash-header .search-input')?.focus();
+                        document.querySelector<HTMLInputElement>('.PHOTOCLOUD-header .search-input')?.focus();
                     }, 200);
                 }
             },

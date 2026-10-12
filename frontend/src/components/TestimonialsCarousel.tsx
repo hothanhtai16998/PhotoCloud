@@ -50,7 +50,7 @@ const TESTIMONIALS: Testimonial[] = [
 ];
 
 export function TestimonialsCarousel() {
-  useRevealOnScroll();
+  const [revealRef] = useRevealOnScroll<HTMLElement>({ threshold: 0.1 });
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -76,6 +76,7 @@ export function TestimonialsCarousel() {
 
   return (
     <section
+      ref={revealRef}
       className="testimonials-carousel studio-reveal"
       aria-label="Đánh giá từ khách hàng"
       onMouseEnter={() => setPaused(true)}

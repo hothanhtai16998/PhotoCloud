@@ -39,7 +39,7 @@ body:has(.homepage-header) .image-page-sidebar::before {
     display: flex;
     position: fixed; /* Fixed to viewport */
     left: 0;
-    top: 0; /* Start from top - Unsplash style */
+    top: 0; /* Start from top - PHOTOCLOUD style */
     bottom: 0;
     height: 100vh; /* Full viewport height */
     min-height: 100vh;

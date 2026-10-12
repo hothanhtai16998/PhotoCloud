@@ -68,7 +68,7 @@ export const Header = memo(function Header() {
   
   const stableHasAuth = Boolean(accessToken) || (isInitializing && hadAuthOnMount);
   
-  // Unsplash-style: Optimistically show icons during initialization
+  // PHOTOCLOUD-style: Optimistically show icons during initialization
   // Only show placeholder if we're initializing AND never had auth before
   // This prevents flash while still allowing icons to appear immediately
   const showPlaceholder = isInitializing && !accessToken && !stableHasAuth;
@@ -154,7 +154,7 @@ export const Header = memo(function Header() {
   }
 
   return (
-    <header className={`unsplash-header${location.pathname === '/' ? ' homepage-header' : ''}${isScrolled ? ' is-scrolled' : ''}`}>
+    <header className={`PHOTOCLOUD-header${location.pathname === '/' ? ' homepage-header' : ''}${isScrolled ? ' is-scrolled' : ''}`}>
       <div className="header-top">
         <div className="header-container">
           {/* Logo */}

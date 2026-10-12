@@ -1,6 +1,6 @@
 /**
- * Unsplash-style refresh handler
- * Delays page refresh to prevent 429 errors and match Unsplash behavior
+ * PHOTOCLOUD-style refresh handler
+ * Delays page refresh to prevent 429 errors and match PHOTOCLOUD behavior
  * 
  * Strategy:
  * 1. Intercept refresh button click (using MutationObserver)
@@ -23,7 +23,7 @@ import { consumeImmediateReload } from './immediateReload';
  * Uses config value, with safety bounds
  * 
  * Industry Standard:
- * - Unsplash: ~2.5 seconds (fixed)
+ * - PHOTOCLOUD: ~2.5 seconds (fixed)
  * - Gmail: ~2-3 seconds (fixed)
  * - X (Twitter): ~2-3 seconds (fixed)
  * - Facebook: ~2-3 seconds (fixed)

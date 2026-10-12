@@ -88,7 +88,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname, isInitializing, accessToken]);
 
-    // Unsplash-style: Periodic check for stale data (every minute)
+    // PHOTOCLOUD-style: Periodic check for stale data (every minute)
     useEffect(() => {
         if (!hasLoaded || location.pathname !== '/downloads') return;
         

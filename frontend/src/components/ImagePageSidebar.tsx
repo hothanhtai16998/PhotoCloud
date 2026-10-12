@@ -22,7 +22,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 // Instead, we use optimistic rendering based on isInitializing and accessToken state
 
 /**
- * Hybrid-style sidebar for all pages, inspired by Unsplash.
+ * Hybrid-style sidebar for all pages, inspired by PHOTOCLOUD.
  * Icon-only with tooltips, active state indicators, and proper navigation.
  */
 const ImagePageSidebar = memo(function ImagePageSidebar() {
@@ -93,7 +93,7 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
     return () => window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
   }, [showAuthIcons, userId]);
 
-  // Fetch thumbnail on initial load (for new sessions/refresh) - like Unsplash
+  // Fetch thumbnail on initial load (for new sessions/refresh) - like PHOTOCLOUD
   // Only runs if store has no data yet
   const fetchInitialThumbnail = useCallback(async (signal?: AbortSignal) => {
     try {

@@ -6,7 +6,7 @@ import type { CollectionsListState } from '@/types/store';
 import type { Collection } from '@/types/collection';
 import type { ApiErrorResponse } from '@/types/errors';
 
-// Unsplash-style: 5 minutes stale threshold
+// PHOTOCLOUD-style: 5 minutes stale threshold
 const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
 
 export const useCollectionsListStore = create(

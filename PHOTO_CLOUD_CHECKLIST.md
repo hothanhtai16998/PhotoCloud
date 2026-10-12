@@ -4,7 +4,7 @@ Checklist theo dõi cải thiện PhotoCloud, ưu tiên tăng khả năng đặt
 
 ## P0 — Giữ nền tảng hiện có
 
-- [ ] Giữ layout tổng thể theo phong cách Unsplash: rõ ràng, tối giản, tập trung vào ảnh.
+- [ ] Giữ layout tổng thể theo phong cách PHOTOCLOUD: rõ ràng, tối giản, tập trung vào ảnh.
 - [ ] Giữ header luôn hiển thị để người dùng dễ tìm kiếm, đặt lịch và truy cập tài khoản.
 - [ ] Giữ sidebar trái cho điều hướng chính, nhưng giảm các icon ít quan trọng nếu gây nhiễu thị giác.
 - [ ] Giữ search bar ở vị trí trung tâm hoặc vị trí dễ thấy nhất trên desktop.
@@ -155,7 +155,7 @@ Checklist theo dõi cải thiện PhotoCloud, ưu tiên tăng khả năng đặt
 - [ ] Người dùng hiểu quy trình booking trước khi gửi form.
 - [ ] Người dùng mobile có thể đặt lịch dễ dàng, không bị kẹt trong modal dài.
 - [ ] Người dùng không mất context khi đóng modal ảnh hoặc booking modal.
-- [ ] Homepage không còn chỉ giống gallery Unsplash thuần túy mà có lớp “studio” rõ ràng.
+- [ ] Homepage không còn chỉ giống gallery PHOTOCLOUD thuần túy mà có lớp “studio” rõ ràng.
 - [ ] CTA booking nổi bật nhưng không phá phong cách tối giản của website ảnh.
 - [ ] Package card, portfolio và testimonial hỗ trợ trực tiếp cho conversion.
 - [ ] Profile giúp người dùng theo dõi booking sắp tới, đang xử lý và hoàn thành rõ ràng.

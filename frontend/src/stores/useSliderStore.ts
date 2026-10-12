@@ -42,7 +42,7 @@ function toSlides(images: Image[]): SlideData[] {
   }));
 }
 
-// Unsplash-style: 15 minutes stale threshold (slider changes less frequently)
+// PHOTOCLOUD-style: 15 minutes stale threshold (slider changes less frequently)
 const STALE_THRESHOLD = 15 * 60 * 1000; // 15 minutes
 
 export interface SliderState {

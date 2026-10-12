@@ -5,14 +5,14 @@ import { adminService } from '@/services/adminService';
 /**
  * Component to track page views for analytics
  * Automatically tracks page views when route changes
- * Implements Unsplash-style rate limiting with exponential backoff
+ * Implements PHOTOCLOUD-style rate limiting with exponential backoff
  */
 export function PageViewTracker() {
     const location = useLocation();
     const lastTrackedRef = useRef<string>('');
     const lastTrackTimeRef = useRef<number>(0);
     const retryCountRef = useRef<number>(0);
-    const throttleDelay = 3000; // Minimum 3 seconds between tracking calls (Unsplash-style)
+    const throttleDelay = 3000; // Minimum 3 seconds between tracking calls (PHOTOCLOUD-style)
     const maxRetryDelay = 60000; // Maximum 60 seconds delay
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export function PageViewTracker() {
                 // Reset retry count on success
                 retryCountRef.current = 0;
                 
-                // Respect rate limit headers (Unsplash-style)
+                // Respect rate limit headers (PHOTOCLOUD-style)
                 const retryAfter = response?.headers?.['retry-after'];
                 if (retryAfter) {
                     const delay = parseInt(retryAfter, 10) * 1000; // Convert to milliseconds
@@ -55,7 +55,7 @@ export function PageViewTracker() {
                 // 429 (rate limit) and 401/403 errors are expected and should be silent
                 const status = error?.response?.status;
                 if (status === 429) {
-                    // Unsplash-style: Exponential backoff with Retry-After header support
+                    // PHOTOCLOUD-style: Exponential backoff with Retry-After header support
                     const retryAfter = error?.response?.headers?.['retry-after'];
                     let delay: number;
                     

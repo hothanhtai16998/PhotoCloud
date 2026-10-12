@@ -257,7 +257,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                         ref={gridRef}
                         className="no-flash-grid"
                         style={{
-                            // Unsplash-style: Fixed columns with dynamic row spans
+                            // PHOTOCLOUD-style: Fixed columns with dynamic row spans
                             gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
                             gap: `${gap}px`,
                             // Base row height for row span calculations - MUST be a string with units
@@ -287,7 +287,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                 >
                                     <div
                                         onMouseEnter={() => {
-                                            // Preload on hover for instant click (like Unsplash)
+                                            // Preload on hover for instant click (like PHOTOCLOUD)
                                             if (onImageHover) {
                                                 onImageHover(image);
                                             }

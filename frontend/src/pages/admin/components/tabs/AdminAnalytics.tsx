@@ -194,7 +194,7 @@ export function AdminAnalytics() {
         const firstDataIndex = chartData.findIndex(d => d.value > 0);
         const filteredData = firstDataIndex >= 0 ? chartData.slice(firstDataIndex) : chartData;
 
-        // Calculate Y-axis domain - use absolute max scaling like Unsplash
+        // Calculate Y-axis domain - use absolute max scaling like PHOTOCLOUD
         // Charts with different max values will have proportionally different heights
         const calculateDomain = (data: Array<{ value: number }>) => {
             if (data.length === 0) return ['auto', 'auto'];

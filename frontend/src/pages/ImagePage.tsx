@@ -930,7 +930,7 @@ function ImagePage() {
   }, [isBackgroundRoute, currentImageIndex, images, handleImageSelect, handleClose, handleToggleFavorite, showEditModal, showCollectionModal, showDownloadMenu]);
 
   // Handle related image hover - preload on hover for instant click
-  // This is like Unsplash: preload when user hovers, so click is instant
+  // This is like PHOTOCLOUD: preload when user hovers, so click is instant
   // Preload AVIF URL (getRegularUrl already prefers AVIF)
   const handleRelatedImageHover = useCallback((relatedImage: Image) => {
     // Get AVIF URL (getRegularUrl prefers AVIF when supported)
@@ -1373,7 +1373,7 @@ function ImagePage() {
               height: displayHeight,
               minHeight: displayHeight,
               maxHeight: displayHeight,
-              // Unsplash-style: background color with dominant color
+              // PHOTOCLOUD-style: background color with dominant color
               backgroundColor: (image as any).dominantColor || '#f3f4f6',
               overflow: 'hidden',
             }}
@@ -1532,7 +1532,7 @@ function ImagePage() {
       {/* Related images section */}
       {relatedImages.length > 0 && (
         <div className="image-modal-related-section" style={{ padding: '32px 16px', background: '#fff', position: 'relative' }}>
-          {/* REMOVED: Loading indicator - navigation is now immediate (like Unsplash) */}
+          {/* REMOVED: Loading indicator - navigation is now immediate (like PHOTOCLOUD) */}
           {/* Image is already preloaded on hover, so no loading indicator needed */}
           <div style={{ maxWidth: '1296px', margin: '0 auto', width: '100%' }}>
             <h2 className="image-modal-related-title" style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px', color: '#111' }}>

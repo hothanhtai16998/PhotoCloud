@@ -152,7 +152,7 @@ export function Footer({ compact = false }: FooterProps) {
                 <div className="studio-footer-meta">
                     <p>© {year} {BRAND.nameLong}. Đã đăng ký bản quyền.</p>
                     <p className="studio-footer-meta-sub">
-                        Ảnh minh họa sử dụng từ Unsplash theo giấy phép Unsplash License. {BRAND.subTagline}.
+                        Ảnh minh họa sử dụng từ PHOTOCLOUD theo giấy phép PHOTOCLOUD License. {BRAND.subTagline}.
                     </p>
                 </div>
             </div>

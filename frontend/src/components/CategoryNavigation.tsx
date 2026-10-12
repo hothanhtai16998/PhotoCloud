@@ -16,7 +16,7 @@ export const CategoryNavigation = memo(function CategoryNavigation() {
   if (
     pathname === '/' ||
     pathname.startsWith('/t/') ||
-    pathname.includes('UnsplashGridTestPage')
+    pathname.includes('PHOTOCLOUDGridTestPage')
   ) {
     return null;
   }
@@ -104,7 +104,7 @@ const CategoryNavigationContent = memo(function CategoryNavigationContent() {
     }
   }, [categoryObjects, locale, checkScrollButtons])
 
-  // Scroll handlers - match Unsplash's smooth scrolling behavior
+  // Scroll handlers - match PHOTOCLOUD's smooth scrolling behavior
   const scrollLeft = useCallback(() => {
     if (!categoryNavElementRef.current) return
     const nav = categoryNavElementRef.current
@@ -153,7 +153,7 @@ const CategoryNavigationContent = memo(function CategoryNavigationContent() {
 
   const handleCategoryClick = (categoryNameVi: string) => {
     notifyCategoryNavigation(categoryNameVi);
-    if (location.pathname.includes('UnsplashGridTestPage')) {
+    if (location.pathname.includes('PHOTOCLOUDGridTestPage')) {
       setSearchParams({ category: categoryNameVi || 'all' })
     } else {
       const target = categoryNameVi ? `/t/${categoryNameToSlug(categoryNameVi)}` : '/'

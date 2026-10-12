@@ -8,7 +8,7 @@ import { useSignUpValidation } from "./auth/hooks/useSignUpValidation";
 import { createSignUpSchema, type SignUpFormValue } from "@/types/forms";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { t } from "@/i18n";
-import "./SignUpPage.css";
+import { AuthLayout } from "./auth/components/AuthLayout";
 
 function SignUpPage() {
     const { signUp } = useAuthStore();
@@ -68,55 +68,13 @@ function SignUpPage() {
     };
 
     return (
-        <div className="signup-page">
-            {/* Background Image */}
-            <div className="signup-background">
-                <div className="background-overlay"></div>
-                <div className="background-logo">
-                    <span className="logo-text">Be PhotoApp</span>
-                </div>
-            </div>
-
-            {/* Signup Modal */}
-            <div className="signup-modal">
-                <div className="signup-modal-content">
-                    <div className="signup-header">
-                        <h1 className="signup-title">{t('auth.createAccount')}</h1>
-                    </div>
-
-                    {/* Social Login Buttons */}
-                    <div className="social-login-section">
-                        <button
-                            type="button"
-                            className="social-btn google-btn"
-                            onClick={() => handleSocialLogin('google')}
-                        >
-                            <span className="social-icon">G</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="social-btn facebook-btn"
-                            onClick={() => handleSocialLogin('facebook')}
-                        >
-                            <span className="social-icon">F</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="social-btn apple-btn"
-                            onClick={() => handleSocialLogin('apple')}
-                        >
-                            <span className="social-icon">M</span>
-                        </button>
-                    </div>
-
-                    {/* Separator */}
-                    <div className="signup-separator">
-                        <div className="separator-line"></div>
-                        <span className="separator-text">{t('auth.or')}</span>
-                        <div className="separator-line"></div>
-                    </div>
-
-                    {/* Email Signup Form */}
+        <AuthLayout>
+            <h1>{t('auth.createAccount')}</h1>
+            <p className="auth-subtitle">Lưu giữ cảm hứng, kết nối cùng PhotoCloud.</p>
+            <button type="button" className="social-btn" onClick={() => handleSocialLogin('google')}>
+                <span className="social-icon" aria-hidden="true">G</span> Tiếp tục với Google
+            </button>
+            <div className="auth-separator">{t('auth.or')}</div>
                     <SignUpForm
                         register={register}
                         handleSubmit={handleSubmit}
@@ -134,9 +92,7 @@ function SignUpPage() {
                             requireSpecialChar: settings.passwordRequireSpecialChar ?? false,
                         }}
                     />
-                </div>
-            </div>
-        </div>
+        </AuthLayout>
     );
 }
 

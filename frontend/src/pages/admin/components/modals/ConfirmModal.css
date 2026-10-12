@@ -96,7 +96,7 @@
     border-top: 1px solid #e5e5e5;
 }
 
-/* Cancel button - Unsplash style */
+/* Cancel button - PHOTOCLOUD style */
 .confirm-modal-actions button[data-slot="button"][class*="outline"] {
     background: var(--bg-card, #FFFFFF) !important;
     border: 1px solid var(--border-strong, #D8D1C5) !important;
@@ -108,7 +108,7 @@
     box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05);
 }
 
-/* Cancel button hover - Unsplash style with higher specificity to override global styles */
+/* Cancel button hover - PHOTOCLOUD style with higher specificity to override global styles */
 .confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover,
 .confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover:not([disabled]),
 .confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover[class*="border-ring"],

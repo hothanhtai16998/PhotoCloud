@@ -64,7 +64,7 @@
   font-size: 0.875rem;
   font-weight: 400; /* Normal weight for all categories */
   color: var(--color-text-primary, #111); /* Same color for all */
-  opacity: 0.6; /* Low opacity for inactive (Unsplash style) */
+  opacity: 0.6; /* Low opacity for inactive (PHOTOCLOUD style) */
   text-decoration: none;
   background: transparent !important; /* Override any global button styles */
   border: none !important; /* Override global button border */
@@ -88,7 +88,7 @@
 }
 
 .category-nav-link.active {
-  opacity: 1; /* Full opacity for active (Unsplash style) */
+  opacity: 1; /* Full opacity for active (PHOTOCLOUD style) */
   color: var(--color-text-primary, #111);
   font-weight: 400; /* Same weight, not bold */
 }
@@ -188,7 +188,7 @@
   }
 }
 
-/* Mobile - Using mobileBreakpoint (768px) - Match Unsplash Design */
+/* Mobile - Using mobileBreakpoint (768px) - Match PHOTOCLOUD Design */
 @media (max-width: 768px) {
   .category-navigation-container {
     position: fixed !important; /* Fixed below search bar */
@@ -240,8 +240,8 @@
   }
 
   .category-navigation {
-    gap: 24px; /* Match Unsplash spacing */
-    padding: 0 16px !important; /* Match Unsplash padding */
+    gap: 24px; /* Match PHOTOCLOUD spacing */
+    padding: 0 16px !important; /* Match PHOTOCLOUD padding */
     padding-left: 16px !important; /* Override global padding-left */
     padding-right: 16px !important; /* Override global padding-right */
     height: 100%; /* Full height for vertical centering */
@@ -256,17 +256,17 @@
   }
 
   .category-nav-link {
-    font-size: 0.875rem !important; /* 14px - Match Unsplash font size */
+    font-size: 0.875rem !important; /* 14px - Match PHOTOCLOUD font size */
     padding: 0 !important; /* No padding at all */
     height: 100% !important; /* Full height for vertical centering */
     min-height: 40px !important; /* Match container height */
     display: flex !important;
     align-items: center !important; /* Vertical centering */
-    justify-content: flex-start !important; /* Left align text like Unsplash */
+    justify-content: flex-start !important; /* Left align text like PHOTOCLOUD */
     pointer-events: auto;
-    opacity: 0.6 !important; /* Low opacity for inactive (Unsplash style) */
+    opacity: 0.6 !important; /* Low opacity for inactive (PHOTOCLOUD style) */
     font-weight: 400 !important; /* Normal weight - same for all */
-    color: var(--text-primary, #1B1B19) !important; /* Match Unsplash: #111 for all */
+    color: var(--text-primary, #1B1B19) !important; /* Match PHOTOCLOUD: #111 for all */
     line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
     transition: opacity 0.2s ease !important;
     margin: 0 !important; /* Remove any default margin */
@@ -280,7 +280,7 @@
   }
 
   .category-nav-link.active {
-    opacity: 1 !important; /* Full opacity for active (Unsplash style) */
+    opacity: 1 !important; /* Full opacity for active (PHOTOCLOUD style) */
     font-weight: 400 !important; /* Same weight, not bold */
   }
 
@@ -350,7 +350,7 @@
 
   .category-navigation {
     gap: 20px; /* Slightly smaller gap on very small screens */
-    padding: 0 12px !important; /* Match Unsplash padding on small screens */
+    padding: 0 12px !important; /* Match PHOTOCLOUD padding on small screens */
     padding-left: 12px !important; /* Override global padding-left */
     padding-right: 12px !important; /* Override global padding-right */
     height: 100%; /* Full height for vertical centering */
@@ -365,16 +365,16 @@
   }
 
   .category-nav-link {
-    font-size: 0.875rem !important; /* 14px - Match Unsplash font size */
+    font-size: 0.875rem !important; /* 14px - Match PHOTOCLOUD font size */
     padding: 0 !important; /* No padding at all */
     height: 100% !important; /* Full height for vertical centering */
     min-height: 40px !important; /* Match container height */
     display: flex !important;
     align-items: center !important; /* Vertical centering */
-    justify-content: flex-start !important; /* Left align text like Unsplash */
-    opacity: 0.6 !important; /* Low opacity for inactive (Unsplash style) */
+    justify-content: flex-start !important; /* Left align text like PHOTOCLOUD */
+    opacity: 0.6 !important; /* Low opacity for inactive (PHOTOCLOUD style) */
     font-weight: 400 !important; /* Normal weight - same for all */
-    color: var(--text-primary, #1B1B19) !important; /* Match Unsplash: #111 for all */
+    color: var(--text-primary, #1B1B19) !important; /* Match PHOTOCLOUD: #111 for all */
     line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
     transition: opacity 0.2s ease !important;
     margin: 0 !important; /* Remove any default margin */
@@ -388,7 +388,7 @@
   }
 
   .category-nav-link.active {
-    opacity: 1 !important; /* Full opacity for active (Unsplash style) */
+    opacity: 1 !important; /* Full opacity for active (PHOTOCLOUD style) */
     font-weight: 400 !important; /* Same weight, not bold */
   }
 

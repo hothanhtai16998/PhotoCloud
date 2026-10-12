@@ -102,13 +102,13 @@ export default function CollectionsPage() {
 
 			loadCollections();
 		} else {
-			// Unsplash-style: Silent background refresh if stale
+			// PHOTOCLOUD-style: Silent background refresh if stale
 			checkAndRefreshIfStale();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [accessToken, isInitializing]);
 
-	// Unsplash-style: Periodic check for stale data (every 2 minutes)
+	// PHOTOCLOUD-style: Periodic check for stale data (every 2 minutes)
 	useEffect(() => {
 		if (!hasLoaded || !accessToken) return;
 		

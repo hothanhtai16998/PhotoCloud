@@ -74,9 +74,8 @@ export const SignUpForm = ({
   }, [password, passwordRequirements]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="signup-form">
+    <form onSubmit={handleSubmit(onSubmit)} className="signup-form" aria-busy={isSubmitting}>
       <div className="signup-form-header">
-        <h2 className="form-subtitle">{t('auth.signInWithAccount')}</h2>
         <p className="form-switch">
           {t('auth.hasAccount')}{" "}
           <Link to="/signin" className="form-link">
@@ -87,10 +86,12 @@ export const SignUpForm = ({
 
       {/* Username */}
       <div className="form-group">
+        <label htmlFor="username">{t('auth.username')}</label>
         <div className="username-input-wrapper">
           <Input
             type="text"
             id="username"
+            autoComplete="username"
             placeholder={t('auth.username')}
             {...register('username')}
             className={
@@ -109,9 +110,11 @@ export const SignUpForm = ({
       {/* First Name and Last Name */}
       <div className="form-group-row">
         <div className="form-group">
+          <label htmlFor="firstName">{t('auth.lastName')}</label>
           <Input
             type="text"
             id="firstName"
+            autoComplete="family-name"
             placeholder={t('auth.lastName')}
             {...register('firstName')}
             className={errors.firstName ? 'error' : ''}
@@ -121,9 +124,11 @@ export const SignUpForm = ({
           )}
         </div>
         <div className="form-group">
+          <label htmlFor="lastName">{t('auth.firstName')}</label>
           <Input
             type="text"
             id="lastName"
+            autoComplete="given-name"
             placeholder={t('auth.firstName')}
             {...register('lastName')}
             className={errors.lastName ? 'error' : ''}
@@ -136,10 +141,12 @@ export const SignUpForm = ({
 
       {/* Email */}
       <div className="form-group">
+        <label htmlFor="email">{t('auth.email')}</label>
         <div className="email-input-wrapper">
           <Input
             type="email"
             id="email"
+            autoComplete="email"
             placeholder={t('auth.email')}
             {...register('email')}
             className={
@@ -157,10 +164,12 @@ export const SignUpForm = ({
 
       {/* Password */}
       <div className="form-group">
+        <label htmlFor="password">{t('auth.password')}</label>
         <div className="password-input-wrapper">
           <Input
             type={showPassword ? "text" : "password"}
             id="password"
+            autoComplete="new-password"
             placeholder={t('auth.password')}
             {...register('password')}
             className={errors.password ? 'error' : ''}
@@ -168,6 +177,7 @@ export const SignUpForm = ({
           <button
             type="button"
             className="password-toggle"
+            aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -228,10 +238,12 @@ export const SignUpForm = ({
 
       {/* Confirm Password */}
       <div className="form-group">
+        <label htmlFor="confirmPassword">{t('auth.confirmPassword')}</label>
         <div className="password-input-wrapper">
           <Input
             type={showPassword ? "text" : "password"}
             id="confirmPassword"
+            autoComplete="new-password"
             placeholder={t('auth.confirmPassword')}
             {...register('confirmPassword')}
             className={errors.confirmPassword ? 'error' : ''}

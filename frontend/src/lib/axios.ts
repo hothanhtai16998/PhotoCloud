@@ -26,7 +26,7 @@ const api = axios.create({
 });
 
 /**
- * Unsplash-style: Global request cancellation on page refresh
+ * PHOTOCLOUD-style: Global request cancellation on page refresh
  * Track all pending requests and cancel them when page is about to unload
  */
 const pendingRequests = new Set<AbortController>();
@@ -84,7 +84,7 @@ const getCsrfTokenFromCookie = (): string | null => {
 };
 
 /**
- * Request Interceptor #0: Add AbortController for request cancellation (Unsplash-style)
+ * Request Interceptor #0: Add AbortController for request cancellation (PHOTOCLOUD-style)
  * Every request gets an AbortController that can be cancelled on page refresh
  */
 api.interceptors.request.use(
@@ -208,7 +208,7 @@ api.interceptors.response.use(
       originalRequest._cleanupAbort();
     }
 
-    // Silently ignore aborted requests (Unsplash-style: no console spam)
+    // Silently ignore aborted requests (PHOTOCLOUD-style: no console spam)
     if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED' || error.message === 'canceled') {
       return Promise.reject(error);
     }
@@ -224,7 +224,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 429 - rate limit with exponential backoff (Unsplash-style)
+    // Handle 429 - rate limit with exponential backoff (PHOTOCLOUD-style)
     if (error.response?.status === 429) {
       // Rate limited - respect Retry-After header if present
       const retryAfter = error.response?.headers?.['retry-after'];

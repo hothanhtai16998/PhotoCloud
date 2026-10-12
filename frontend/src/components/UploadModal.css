@@ -19,7 +19,7 @@
   backface-visibility: hidden;
 }
 
-/* Pre-upload Overlay (Unsplash-style) */
+/* Pre-upload Overlay (PHOTOCLOUD-style) */
 .pre-upload-overlay {
   position: fixed;
   top: 0;
@@ -894,7 +894,7 @@
   font-weight: 600;
 }
 
-/* Add More Images Card - Unsplash Style */
+/* Add More Images Card - PHOTOCLOUD Style */
 .upload-add-more-card {
   border: 2px dashed #d1d1d1;
   border-radius: 8px;

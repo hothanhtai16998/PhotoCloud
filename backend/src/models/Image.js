@@ -24,7 +24,7 @@ const imageSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        // Multiple image sizes for progressive loading (like Unsplash)
+        // Multiple image sizes for progressive loading (like PHOTOCLOUD)
         thumbnailUrl: {
             type: String,
             // Optional - will fallback to imageUrl if not set
@@ -54,7 +54,7 @@ const imageSchema = new mongoose.Schema(
             type: String,
             // Optional - AVIF version of original
         },
-        // Base64 thumbnail for instant blur-up (like Unsplash)
+        // Base64 thumbnail for instant blur-up (like PHOTOCLOUD)
         base64Thumbnail: {
             type: String,
             // Optional - Tiny base64 BMP (20x20px, 1-2 KB) for instant placeholder

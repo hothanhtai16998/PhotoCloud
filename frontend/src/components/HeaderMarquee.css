@@ -16,13 +16,17 @@
     left: auto;
     right: auto;
     width: 100%;
-    height: 28px;
+    height: 36px;
+    box-sizing: border-box;
     display: flex;
     overflow: hidden;
     pointer-events: auto;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
     z-index: 1; /* hero orbs use z-index: -1, so 1 keeps the ribbon above them */
-    background: rgba(184, 134, 91, 0.04);
-    border-bottom: 1px solid rgba(184, 134, 91, 0.12);
+    background: transparent;
+    border-bottom: 1px solid rgba(150, 99, 57, 0.12);
     box-shadow: none;
     align-items: center;
     /* No border-radius: the hero card is now full-bleed (no left/right
@@ -42,12 +46,12 @@
     align-items: center;
     gap: 32px;
     white-space: nowrap;
-    font-family: var(--studio-font-display, 'Fraunces', Georgia, serif);
-    font-size: 10px;
+    font-family: var(--studio-font-body, 'Roboto', sans-serif);
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.24em;
+    letter-spacing: 0;
     text-transform: uppercase;
-    color: rgba(27, 27, 25, 0.62);
+    color: var(--text-secondary, #545450);
     animation: headerMarquee 45s linear infinite;
     padding-right: 32px;
     will-change: transform;
@@ -59,12 +63,24 @@
     gap: 32px;
 }
 
+.header-marquee-track > span {
+    height: 36px;
+    transition: color 200ms ease, text-shadow 200ms ease;
+}
+
+@media (hover: hover) {
+    .header-marquee-track > span:hover {
+        color: #b87932;
+        text-shadow: 0 0 10px rgba(217, 164, 65, 0.24);
+    }
+}
+
 .header-marquee-track .dot {
     display: inline-block;
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background: var(--accent, #B8865B);
+    background: var(--studio-accent-copper-dark, #966339);
     flex-shrink: 0;
 }
 
@@ -81,5 +97,9 @@
 @media (prefers-reduced-motion: reduce) {
     .header-marquee-track {
         animation: none;
+    }
+
+    .header-marquee-track > span {
+        transition: none;
     }
 }

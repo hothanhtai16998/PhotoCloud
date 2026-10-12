@@ -41,14 +41,12 @@
   animation: heroFadeUp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-/* The marquee wrap is the first grid row — span both columns so the
-   ribbon sits flush at the very top of the card. No top padding — the
-   ribbon itself is the visual top of the card. */
+/* The marquee spans both columns with breathing room below the header. */
 .hero-marquee-wrap {
   grid-column: 1 / -1;
   grid-row: 1;
   margin: 0 calc(-1 * clamp(20px, 3vw, 32px));
-  padding-top: 0;
+  padding-top: 8px;
   border-radius: 0;
   /* Bottom space below the ribbon is provided by the ribbon's own
      margin (see HeaderMarquee.css). */

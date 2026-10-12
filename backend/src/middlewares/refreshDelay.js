@@ -10,7 +10,7 @@
  * 3. Keep request pending (shows X icon in browser)
  * 4. After delay, process request normally
  * 
- * This works like Unsplash/Gmail - requests stay pending during delay,
+ * This works like PHOTOCLOUD/Gmail - requests stay pending during delay,
  * showing the browser's cancel (X) icon, preventing rapid refresh spam.
  */
 
@@ -18,7 +18,7 @@
  * Refresh delay configuration
  * 
  * Industry Standard: 2-3 seconds (fixed, not dynamic)
- * - Unsplash: ~2.5 seconds
+ * - PHOTOCLOUD: ~2.5 seconds
  * - Gmail: ~2-3 seconds  
  * - X (Twitter): ~2-3 seconds
  * - Facebook: ~2-3 seconds
