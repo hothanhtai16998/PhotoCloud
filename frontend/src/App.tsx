@@ -42,6 +42,11 @@ const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDet
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const BookingPage = lazy(() => import("./pages/BookingPage"));
 const BookingDetailPage = lazy(() => import("./pages/BookingDetailPage"));
+const UploadPage = lazy(() => import("./pages/UploadPage"));
+const NotificationPage = lazy(() => import("./pages/NotificationPage"));
+const PackagesPage = lazy(() => import("./pages/PackagesPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 
 // Loading animation fallback for lazy-loaded routes
@@ -227,6 +232,12 @@ function App() {
           <Route path="/s/photos/:query" element={<SearchResultsPage />} />
           <Route path="/photos/:slug" element={<ImagePage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
+          <Route path="/packages/:slug" element={<PackagesPage />} />
+          {/* Public collections — anyone can browse, login required to interact */}
+          <Route path="/collections" element={<CollectionsPage />} />
+          <Route path="/collections/:collectionId" element={<CollectionDetailPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/booking/:bookingId" element={<BookingDetailPage />} />
@@ -240,11 +251,17 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<ProfileRedirect />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/settings/profile" element={<EditProfilePage />} />
+            <Route path="/settings/notifications" element={<NotificationPage />} />
+            <Route path="/upload" element={<UploadPage />} />
             <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/favorites/photos" element={<FavoritesPage />} />
+            <Route path="/favorites/collections" element={<FavoriteCollectionsPage />} />
+            {/* Legacy alias — redirect to /favorites/collections */}
             <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
             <Route path="/downloads" element={<DownloadHistoryPage />} />
-            <Route path="/collections" element={<CollectionsPage />} />
-            <Route path="/collections/:collectionId" element={<CollectionDetailPage />} />
+            <Route path="/notifications" element={<NotificationPage />} />
+            <Route path="/profile/bookings" element={<BookingPage />} />
           </Route>
 
           {/**admin routes */}
@@ -252,6 +269,7 @@ function App() {
             <Route path="/admin" element={<AdminPage />} />
           </Route>
           
+          <Route path="/404" element={<NotFoundPage />} />
           {/* Catch-all route for /@username - must be last to only match unmatched paths */}
           <Route path="/*" element={<ProfileRouteHandler />} />
         </Routes>

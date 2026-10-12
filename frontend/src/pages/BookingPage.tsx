@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { bookingService } from '@/services/bookingService';
 import { useUserStore } from '@/stores/useUserStore';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
+import { BRAND } from '@/constants/brand';
 import type { BookingPackage, BookingPayload, BookingTimeSlot, BookingLocationType } from '@/types/booking';
 import './BookingPage.css';
 
@@ -30,6 +32,11 @@ function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
+
+  useDocumentMeta({
+    title: 'Đặt lịch chụp',
+    description: `Đặt lịch chụp ảnh theo yêu cầu tại ${BRAND.nameLong}. Chọn gói, chọn ngày, gửi yêu cầu — phản hồi trong 24h.`,
+  });
 
   useEffect(() => {
     let active = true;
@@ -97,9 +104,10 @@ function BookingPage() {
     <main className="booking-page">
       <header className="booking-hero">
         <div>
-          <p className="booking-eyebrow">PHOTO CLOUD SERVICES</p>
-          <h1>Đặt lịch chụp ảnh theo cách của bạn</h1>
-          <p>Chọn gói phù hợp, chia sẻ ý tưởng và để chúng tôi cùng bạn tạo nên một buổi chụp đáng nhớ.</p>
+          <p className="booking-eyebrow">{BRAND.nameLong.toUpperCase()}</p>
+          <h1>Chụp ảnh theo cách của bạn</h1>
+          <p>Chọn gói phù hợp, chia sẻ ý tưởng và để {BRAND.nameLong} cùng bạn tạo nên một buổi chụp đáng nhớ.</p>
+          <p className="booking-hero-tagline">{BRAND.subTagline}</p>
         </div>
         <div className="booking-hero-note"><CalendarDays size={19} /><span>Đây là yêu cầu đặt lịch. Lịch chỉ được xác nhận sau khi đội ngũ phản hồi.</span></div>
       </header>

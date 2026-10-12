@@ -1,0 +1,100 @@
+/* Not Found (404) */
+.notfound-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 40px 20px;
+    background: var(--studio-bg-warm);
+    color: var(--studio-text-primary);
+    font-family: var(--studio-font-body);
+}
+
+.notfound-container {
+    max-width: 520px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: var(--studio-bg-card);
+    border: 1px solid var(--studio-border-soft);
+    border-radius: var(--studio-radius-card);
+    padding: 48px 32px;
+    box-shadow: var(--studio-shadow-card);
+}
+
+.notfound-icon {
+    width: 72px;
+    height: 72px;
+    display: grid;
+    place-items: center;
+    background: var(--studio-bg-cream);
+    color: var(--studio-accent-copper);
+    border-radius: 50%;
+    margin-bottom: 6px;
+}
+
+.notfound-code {
+    font-family: var(--studio-font-display);
+    font-size: 72px;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    color: var(--studio-accent-copper-dark);
+    line-height: 1;
+    margin: 0;
+}
+
+.notfound-container h1 {
+    font-family: var(--studio-font-display);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--studio-text-primary);
+    margin: 4px 0 0;
+}
+
+.notfound-subtitle {
+    margin: 0;
+    color: var(--studio-text-muted);
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 420px;
+}
+
+.notfound-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.notfound-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    background: var(--studio-text-primary);
+    color: var(--studio-bg-card);
+    border: 1px solid var(--studio-text-primary);
+    border-radius: var(--studio-radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.notfound-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(27, 27, 25, 0.18);
+}
+
+.notfound-cta--secondary {
+    background: var(--studio-bg-card);
+    color: var(--studio-text-primary);
+}
+
+.notfound-cta--secondary:hover {
+    background: var(--studio-text-primary);
+    color: var(--studio-bg-card);
+}

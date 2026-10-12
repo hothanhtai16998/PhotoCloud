@@ -13,6 +13,7 @@ import {
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { getHeroCollections, type HeroCollection } from '@/services/heroService';
+import { BRAND } from '@/constants/brand';
 import { HeaderMarquee } from '../HeaderMarquee';
 import './HeroBooking.css';
 
@@ -103,7 +104,7 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                     <span className="hero-eyebrow">
                         <span className="hero-led" aria-hidden="true" />
                         <Sparkles size={14} className="hero-sparkle-icon" />
-                        PhotoCloud Studio
+                        {BRAND.nameLong}
                     </span>
                     <span className="hero-live" aria-live="polite">
                         <span className="hero-live-dot" aria-hidden="true" />
@@ -119,6 +120,10 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                 <p className="hero-sub">
                     Studio nhận chụp <strong>chân dung, couple, gia đình, mini session</strong> và
                     doanh nghiệp — đặt lịch online, nhận ảnh đã chỉnh màu cao cấp.
+                </p>
+                <p className="hero-sub-tagline">
+                    <Sparkles size={12} aria-hidden="true" />
+                    {BRAND.subTagline}
                 </p>
 
                 <ul className="hero-highlights" aria-label="Điểm nổi bật">

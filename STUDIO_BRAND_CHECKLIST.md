@@ -18,69 +18,203 @@
 
 ## 2. Bảng màu & Typography
 
-> Tất cả token đã khai báo trong `src/index.css` (`--studio-*`).
+> Tất cả token được khai báo tập trung trong `frontend/src/index.css:240-258` (block `:root`).
+> Mục tiêu: ấm (warm ivory), cao cấp, riêng tư — phục vụ tone "Studio chụp ảnh theo yêu cầu".
 
-- [x] Nền chính `#FAF8F4` (`--studio-bg-warm`) — đã dùng cho các section branded.
-- [x] Nền phụ `#F2EEE7` (`--studio-bg-cream`) — token có, đã dùng rải rác.
-- [x] Text chính `#1B1B19` (`--studio-text-primary`) — token có, dùng cho CTA/H.
-- [x] Text phụ `#6B6B66` (`--studio-text-muted`) — token có, dùng cho mô tả.
-- [x] Accent chính (CTA) đen đặc — `studio-cta-primary` pill đen.
-- [x] Accent phụ đồng `#B8865B` (`--studio-accent-copper`) — dùng cho hover/focus ring.
-- [x] Trạng thái Confirmed `#7A8B5C` (`--studio-status-confirmed`) — token có, **chưa áp dụng** cho `.booking-status-confirmed` (hiện đang dùng `#e5f5e9`/`#23733b` trong `AdminPage.css:346`).
-- [x] Trạng thái Pending `#C9A14A` (`--studio-status-pending`) — token có, **chưa áp dụng** (hiện `#fff5d7`/`#8b6500`).
-- [x] Trạng thái Danger `#A6453C` (`--studio-status-danger`) — token có, **chưa áp dụng** (hiện `#fde8e8`/`#a12727`).
-- [x] Viền nhẹ `#E8E2D6` (`--studio-border-soft`) — đã dùng cho card.
-- [x] Rating vàng đồng — token có sẵn trong component.
-- [x] Display font **Fraunces** — đã import trong `index.css:2` + khai báo `--studio-font-display`.
-- [x] Body font **Inter** — đã import, khai báo `--studio-font-body`.
-- [~] Chưa gắn Fraunces cho `Hero`, `BookingPage`, `AboutPage` (`HeroBooking.tsx` hiện dùng `studio-display` cho `em`, cần áp cho cả `h1`).
+### 2.1 Bảng màu (Color tokens)
+
+| Nhóm | Token | Giá trị | Đã dùng ở đâu | Trạng thái |
+|---|---|---|---|---|
+| Nền chính | `--studio-bg-warm` | `#FAF8F4` | `HeroBooking.css:21-22` (gradient hero), `BookingPage` cần đối chiếu (đang `#f8f8f6`) | [~] áp dụng rải rác, **chưa đồng nhất ở `BookingPage`, `AboutPage`** |
+| Nền phụ | `--studio-bg-cream` | `#F2EEE7` | `HeroBooking.css:21-22` (gradient), `index.css:906` (hero CTA phụ) | [~] đang hardcode, cần thay bằng `var(...)` |
+| Nền card | `--studio-bg-card` | `#FFFFFF` | Card `.studio-card`, `BookingPage.css` | [x] OK |
+| Text chính | `--studio-text-primary` | `#1B1B19` | Hero title, CTA, card heading | [~] **HeroBooking dùng hex trực tiếp** (`#1B1B19`) thay vì `var(...)` — sửa lại để token-driven |
+| Text phụ | `--studio-text-muted` | `#6B6B66` | Mô tả, label phụ | [x] OK |
+| Text "faint" | `--studio-text-faint` | `#8A6B2D` | Eyebrow gold-copper, `.studio-cta-ghost` | [x] OK |
+| Viền nhẹ | `--studio-border-soft` | `#E8E2D6` | Card, input, hero card | [x] OK |
+| Accent đồng | `--studio-accent-copper` | `#B8865B` | Eyebrow LED, focus ring, CTA icon | [x] OK |
+| Accent đồng đậm | `--studio-accent-copper-dark` | `#9A6F49` | Hover gradient, focus outline CTA | [x] OK |
+| Status Confirmed | `--studio-status-confirmed` | `#7A8B5C` (olive) | `AdminPage.css:353` `.booking-status-confirmed` | [x] **đã áp dụng** (dạng rgba `rgba(122,139,92,0.18)` + text `#4F5D38`) |
+| Status Pending | `--studio-status-pending` | `#C9A14A` (amber) | `AdminPage.css:351` `.booking-status-pending` | [x] **đã áp dụng** (`rgba(201,161,74,0.16)` + `#8A6A1B`) |
+| Status Danger | `--studio-status-danger` | `#A6453C` (terracotta) | `AdminPage.css:356-358` (rejected/cancelled) | [x] **đã áp dụng** (`rgba(166,69,60,0.14)` + `#8A2A23`) |
+| Status review/reschedule | — (derived) | `#8A5A2A` (copper) | `.booking-status-reviewing`, `.booking-status-rescheduled` | [x] bổ sung, dùng tông copper |
+| Status completed | — (derived) | `#1B1B19` neutral | `.booking-status-completed` | [x] bổ sung |
+| Rating vàng | — (component) | `#C9A14A`/`#D9A441` | Star rating components | [x] OK (chưa token hóa, có thể thêm `--studio-rating-gold`) |
+| Success text | — (inline) | `#5A6E44` | Hero "Đang nhận booking" badge | [~] nên chuyển thành `var(--studio-status-confirmed)`-based token |
+| Slot urgency | — (inline) | `#A6453C`/`#6F2D26` | Hero slot counter (urgency) | [x] trùng với danger token, dùng tạm OK |
+
+#### Hành động còn lại
+- [x] **Refactor HeroBooking**: thay các hex inline (`#1B1B19`, `#FAF8F4`, `#F2EEE7`, `#B8865B`, ...) bằng `var(--studio-*)` để token-driven 100%.
+- [x] **BookingPage.css**: đổi nền `#f8f8f6` → `var(--studio-bg-warm)`, text primary `#20211f` → `var(--studio-text-primary)`, viền input/divider → `var(--studio-border-soft)`.
+- [x] **AboutPage.css**: thay nền `var(--bg-card, #FFFFFF)` → `var(--studio-bg-warm)`, áp token cho card/icon, dùng Fraunces cho `.about-title`/`.card-title`.
+- [x] Thêm token `--studio-rating-gold` + `--studio-rating-gold-bright` để chuẩn hóa màu rating.
+
+### 2.2 Typography
+
+#### Font families (đã import)
+
+| Token | Font | Nguồn | Fallback | Trạng thái |
+|---|---|---|---|---|
+| `--studio-font-display` | **Fraunces** (variable, opsz 9–144, wght 400–700) | `index.css:1` Google Fonts | `Playfair Display, Georgia, serif` | [x] import OK, dùng cho Hero h1 + Booking/About h1/h2 |
+| `--studio-font-body` | **Inter** (400/500/600/700) | `index.css:1` Google Fonts | `Roboto, system-ui, -apple-system, sans-serif` | [x] import OK, **đã set cho `html, body` trong `index.css:115-122`** |
+| Self-host | **Roboto** (variable, wght 100–900) | `index.css:48-65` | — | [x] OK (fallback thực tế khi Inter chưa load) |
+
+#### Thang font (Type scale) — đề xuất chuẩn hóa
+
+| Cấp | Size (px) | Line-height | Weight | Letter-spacing | Sử dụng |
+|---|---|---|---|---|---|
+| `display-xl` | clamp(48, 6vw, 72) | 1.04 | 500 | -0.04em | Hero h1, About hero |
+| `display-lg` | clamp(36, 4.5vw, 52) | 1.08 | 500 | -0.03em | Booking h1, section h1 |
+| `display-md` | clamp(28, 3vw, 36) | 1.15 | 500 | -0.02em | Modal h1, success h1 |
+| `heading-lg` | 24 | 1.25 | 600 | -0.01em | Section h2 trong studio pages |
+| `heading-md` | 20 | 1.3 | 600 | 0 | Section heading booking (`booking-section-heading h2`) |
+| `heading-sm` | 17 | 1.35 | 600 | 0 | Card title (`booking-package-card strong`) |
+| `body-lg` | 16 | 1.55 | 400 | 0 | Body chính, hero sub (đang 20px → cần check) |
+| `body-md` | 14 | 1.5 | 400 | 0 | Input, description, mặc định body |
+| `body-sm` | 13 | 1.45 | 400 | 0 | Card meta, ghi chú |
+| `caption` | 12 | 1.4 | 500 | 0 | Eyebrow, label, helper |
+| `overline` | 11 | 1.3 | 700 | 0.16em uppercase | `.booking-eyebrow`, `.hero-eyebrow` |
+
+#### Quy tắc sử dụng font
+
+| Ngữ cảnh | Font | Áp dụng | Trạng thái |
+|---|---|---|---|
+| `h1` Hero, Booking, About, Modal | Fraunces | `font-family: var(--studio-font-display)` | [x] **đã áp dụng**: Hero ✓, `BookingPage.css` ✓, `AboutPage.css` ✓, Booking success card ✓ |
+| `h2` Section (About, Booking) | Fraunces | `font-family: var(--studio-font-display)` | [x] **đã áp dụng**: `.booking-section-heading h2` (22px, weight 500), `.booking-summary-card h2` (26px), `.card-title` About (clamp 24–30px) |
+| Tiêu đề card | Inter SemiBold | Tailwind `font-semibold` (đã có) | [x] OK |
+| Eyebrow / overline | Inter Bold uppercase 11–12px | `.booking-eyebrow`, `.hero-eyebrow` | [x] OK (đã chuẩn hóa 0.16em, 700, `--studio-text-faint`) |
+| Body | Inter 400/500 | `html, body { font-family: var(--studio-font-body) }` | [x] **đã set trong `index.css:115-122`** (kèm `font-feature-settings: "ss01", "cv11"`, antialias) |
+| Italic emphasis trong title (`em`) | Fraunces italic + gradient copper | `HeroBooking.css:274-282` | [x] OK |
+| Rating star | Gold | `.studio-rating-star` (mới) | [x] OK — utility class với `--studio-rating-gold` |
+
+#### Hành động còn lại
+- [x] **Set body font**: thêm vào `index.css` rule `html, body { font-family: var(--studio-font-body); font-feature-settings: "ss01", "cv11"; }` để Inter được dùng thay cho Roboto.
+- [x] **BookingPage.css**: thêm `font-family: var(--studio-font-display)` cho `.booking-hero h1`, `.booking-success-card h1`, `.booking-summary-card h2`.
+- [x] **AboutPage.css**: thêm `font-family: var(--studio-font-display)` cho `.about-title` (clamp 36–52px) và `.card-title` (clamp 24–30px), tăng weight lên 500 (serif Fraunces không cần 700).
+- [x] Tạo utility class `.studio-display { font-family: var(--studio-font-display); font-weight: 500; letter-spacing: -0.02em; }` (đã có ở `index.css:780` nhưng chưa áp cho h1) — dùng thay vì khai báo lặp.
+- [x] Refactor: chuẩn hóa `.booking-eyebrow` dùng token spacing `0.16em`, font-weight 700, màu `--studio-text-faint`.
+
+### 2.3 Tiêu chí đạt (Definition of Done)
+
+- [x] Toàn bộ token màu + font family khai báo ở `index.css` (single source of truth).
+- [x] 3 status chính (confirmed/pending/danger) đã có class `.booking-status-*` áp dụng trong `AdminPage.css`.
+- [x] Hero h1 dùng Fraunces.
+- [x] Body dùng Inter (set qua `index.css:115-122`).
+- [x] Booking/About/Modal h1, h2 dùng Fraunces.
+- [x] Tất cả trang branded dùng `--studio-bg-warm` làm nền (đồng nhất warm) — Hero ✓, Booking ✓, About ✓.
+- [x] Không còn hex color nào trong `AboutPage.css` / `BookingPage.css` của trang public — Hero còn vài hex derived (gradient dừng, shadow) nhưng mọi màu chính đã qua `var(--studio-*)`.
 
 ---
 
 ## 3. Cấu trúc trang (Site Map)
 
+> Toàn bộ route đăng ký tại `frontend/src/App.tsx:220-265` (public) + `:275-285` (auth).
+> Mục tiêu brief: **trang khách công khai, trang thành viên sau đăng nhập, admin cho staff**.
+> Cột "Thực tế" ghi đúng đường dẫn route đang có; cột "Brief" là đường dẫn lý tưởng trong tài liệu.
+
+### 3.0 Đối chiếu Brief ↔ Thực tế
+
+| Hạng mục | Brief | Thực tế | Ghi chú |
+|---|---|---|---|
+| Trang ảnh (URL) | `/photo/:id` | `/photos/:slug` | URL dùng **slug** (SEO), không phải Mongo `_id` — OK |
+| Bộ sưu tập | `/collections/:id` | `/collections/:collectionId` | Tương đương, dùng `:collectionId` |
+| Profile | `/:username` | `/*` (catch-all) → `ProfileRouteHandler` → `ProfilePage` | Đúng |
+| Hồ sơ khi chưa có username | — | `/profile/user/:userId` | Fallback cho user cũ chưa đặt username |
+| Sitemap.xml / robots.txt | SEO | Chưa thấy file `public/robots.txt` hay `public/sitemap.xml` | Cần bổ sung |
+| 404 / Not Found | Có | Catch-all trỏ về `ProfileRouteHandler` — **chưa có 404 đẹp** | Cần tạo trang 404 riêng |
+
 ### 3.1 Trang khách (chưa đăng nhập)
 
 | # | Trang | Đường dẫn | Trạng thái |
 |---|---|---|---|
-| 1 | Trang chủ | `/` | [x] `HomePage.tsx` |
-| 2 | Khám phá (Explore) | `/explore` | [ ] **Chưa có** — dùng `/t/:categorySlug` thay thế |
-| 3 | Trang ảnh | `/photo/:id` | [x] `ImagePage.tsx` (route `/photos/:slug`) |
-| 4 | Bộ sưu tập | `/collections` & `/collections/:id` | [x] `CollectionsPage.tsx` + `CollectionDetailPage.tsx` |
-| 5 | Gói chụp (Packages) | `/packages` | [ ] **Chưa có trang riêng** — chỉ hiển thị ở homepage + booking modal |
-| 6 | Chi tiết gói | `/packages/:slug` | [ ] **Chưa có** |
-| 7 | Đặt lịch (Booking) | `/booking` | [x] `BookingPage.tsx` |
-| 8 | Blog/Concept | `/blog` & `/blog/:slug` | [ ] **Chưa có** |
-| 9 | About | `/about` | [~] `AboutPage.tsx` hiện chỉ là contact info, **chưa có** story, số liệu, đội ngũ, giá trị cốt lõi |
-| 10 | Liên hệ | `/contact` | [ ] **Chưa có trang riêng** — chỉ có `ContactButton` floating + `AboutPage` |
-| 11 | Đăng nhập / Đăng ký | `/auth/signin`, `/auth/signup` | [x] `SignInPage.tsx`, `SignUpPage.tsx` (route `/signin`, `/signup`) |
+| 1 | Trang chủ | `/` (và `/t/:categorySlug` cho category) | [x] `HomePage.tsx` (App.tsx:226) |
+| 2 | Khám phá (Explore) | `/explore` | [ ] **Chưa có route** — community dùng `/t/:categorySlug` thay thế. Brief yêu cầu trang riêng với hero nhỏ + bộ lọc dọc |
+| 3 | Trang ảnh | `/photos/:slug` (route) | [x] `ImagePage.tsx` (App.tsx:228). Brief ghi `/photo/:id` nhưng site dùng slug |
+| 4 | Bộ sưu tập (list) | `/collections` | [x] `CollectionsPage.tsx` (App.tsx:230) — **đã mở public** |
+| 4b | Bộ sưu tập (detail) | `/collections/:collectionId` | [x] `CollectionDetailPage.tsx` (App.tsx:231) — **đã mở public** |
+| 5 | Gói chụp (Packages) | `/packages` | [x] `PackagesPage.tsx` (App.tsx:228) — **mới tạo** |
+| 6 | Chi tiết gói | `/packages/:slug` | [x] `PackagesPage.tsx` (App.tsx:229) — same component, render detail khi có `:slug` |
+| 7 | Đặt lịch (Booking) | `/booking` | [x] `BookingPage.tsx` (App.tsx:234) — ProtectedRoute |
+| 7b | Chi tiết booking | `/booking/:bookingId` | [x] `BookingDetailPage.tsx` (App.tsx:235) — ProtectedRoute |
+| 8 | Blog/Concept | `/blog` & `/blog/:slug` | [ ] **Chưa có route** — không có component |
+| 9 | About | `/about` | [~] `AboutPage.tsx` (App.tsx:226) — chỉ có contact info, **chưa có** story, số liệu, đội ngũ, giá trị cốt lõi |
+| 10 | Liên hệ | `/contact` | [x] `ContactPage.tsx` (App.tsx:227) — **mới tạo** (info cards + form mailto + social) |
+| 11 | Đăng nhập | `/signin` | [x] `SignInPage.tsx` (App.tsx:278). Brief ghi `/auth/signin` |
+| 11b | Đăng ký | `/signup` | [x] `SignUpPage.tsx` (App.tsx:277). Brief ghi `/auth/signup` |
+| 11c | OAuth Google callback | `/auth/google/callback` | [x] `GoogleCallbackPage.tsx` (App.tsx:279) |
+| 11d | Test visual slider | `/test/visual-art-slider` | [x] `VisualArtFormsSlider` (App.tsx:235) — internal test, **nên ẩn ở production** |
 
-### 3.2 Trang thành viên
-
-| # | Trang | Đường dẫn | Trạng thái |
-|---|---|---|---|
-| 12 | Hồ sơ (Profile) | `/:username` | [x] `ProfilePage.tsx` |
-| 13 | Chỉnh sửa hồ sơ | `/settings/profile` | [~] Có `/profile/edit` (đổi route đề xuất brief) |
-| 14 | Upload | `/upload` | [x] `UploadPage.tsx` |
-| 15 | Yêu thích ảnh | `/favorites/photos` | [~] Có `/favorites` (gom) |
-| 16 | Yêu thích collection | `/favorites/collections` | [x] `FavoriteCollectionsPage.tsx` |
-| 17 | Lịch đặt của tôi | `/profile/bookings` | [~] Có tab bookings trong `ProfilePage` nhưng **chưa có filter chip, chưa phân nhóm, chưa countdown, chưa nút "Yêu cầu đổi lịch"** |
-| 18 | Gói đã lưu (Wishlist) | `/profile/saved-packages` | [ ] **Chưa có** (chưa có wishlist gói) |
-| 19 | Thông báo | `/notifications` | [~] Có `NotificationBell` trong header nhưng chưa có trang `/notifications` riêng |
-
-### 3.3 Trang admin
+### 3.2 Trang thành viên (yêu cầu đăng nhập)
 
 | # | Trang | Đường dẫn | Trạng thái |
 |---|---|---|---|
-| 20 | Admin Dashboard | `/admin` | [x] `AdminPage.tsx` + `AdminDashboard.tsx` |
-| 21 | Quản lý Booking | `/admin/bookings` | [x] Tab trong `AdminBookings.tsx` |
-| 22 | Calendar | `/admin/calendar` | [x] View "Lịch" trong `AdminBookings.tsx` (month/week/day) |
-| 23 | Quản lý Ảnh | `/admin/images` | [x] `AdminImages.tsx` |
-| 24 | Quản lý danh mục | `/admin/categories` | [x] `AdminCategories.tsx` |
-| 25 | Quản lý gói | `/admin/packages` | [x] View "Gói chụp" trong `AdminBookings.tsx` |
-| 26 | Analytics | `/admin/analytics` | [x] `AdminAnalytics.tsx` + `AdminTrafficAnalytics.tsx` |
-| 27 | Logs | `/admin/logs` | [x] `AdminLogs.tsx` |
-| 28 | Settings | `/admin/settings` | [x] `AdminSettings.tsx` |
+| 12 | Hồ sơ cá nhân | `/:username` (catch-all) | [x] `ProfilePage.tsx` qua `ProfileRouteHandler` (App.tsx:263) |
+| 12b | Redirect khi vào `/profile` không slug | `/profile` | [x] `ProfileRedirect.tsx` (App.tsx:241) |
+| 12c | Hồ sơ user cũ (chưa có username) | `/profile/user/:userId` | [x] `ProfilePage.tsx` (App.tsx:236) |
+| 13 | Chỉnh sửa hồ sơ | `/profile/edit` (alias `/settings/profile`) | [x] `EditProfilePage.tsx` (App.tsx:248) — đã có alias `/settings/profile` |
+| 14 | Upload | `/upload` | [x] `UploadPage.tsx` (App.tsx:251) — **đã thêm route** (file có sẵn từ trước) |
+| 15 | Yêu thích ảnh (gom) | `/favorites` (alias `/favorites/photos`) | [x] `FavoritesPage.tsx` (App.tsx:252) — đã có alias |
+| 16 | Yêu thích collection | `/favorites/collections` (alias `/favorite-collections`) | [x] `FavoriteCollectionsPage.tsx` (App.tsx:253) — đã có alias cho path cũ |
+| 17 | Lịch sử tải xuống | `/downloads` | [x] `DownloadHistoryPage.tsx` (App.tsx:255) — bổ sung ngoài brief |
+| 18 | Lịch đặt của tôi | `/profile/bookings` | [~] **Alias tạm** trỏ về `BookingPage` (App.tsx:259) — cần tách `MyBookings` ra page riêng |
+| 19 | Gói đã lưu (Wishlist) | `/profile/saved-packages` | [ ] **Chưa có route** + chưa có data model wishlist gói |
+| 20 | Thông báo | `/notifications` | [x] `NotificationPage.tsx` (App.tsx:256) — **mới tạo** đầy đủ list + filter + mark read + delete |
+| 21 | Notifications settings | `/settings/notifications` | [x] **Đã thêm route** (App.tsx:249) → `NotificationPage` (tạm, cần trang settings riêng) |
+
+### 3.3 Trang admin (yêu cầu quyền admin)
+
+| # | Trang | Đường dẫn | Trạng thái |
+|---|---|---|---|
+| 22 | Admin Dashboard | `/admin` | [x] `AdminPage.tsx` (App.tsx:269) — single SPA, tabs bên trong |
+| - | Tab Tổng quan | `/admin` (default) | [x] `AdminDashboard.tsx` |
+| - | Tab Bookings + Calendar | `/admin/bookings`, `/admin/calendar` | [x] `AdminBookings.tsx` (view=table/calendar) |
+| - | Tab Ảnh | `/admin/images` | [x] `AdminImages.tsx` |
+| - | Tab Danh mục | `/admin/categories` | [x] `AdminCategories.tsx` |
+| - | Tab Gói chụp | `/admin/packages` | [x] View "Gói chụp" trong `AdminBookings.tsx` |
+| - | Tab Users | `/admin/users` | [x] `AdminUsers.tsx` |
+| - | Tab Favorites | `/admin/favorites` | [x] `AdminFavorites.tsx` |
+| - | Tab Roles | `/admin/roles` | [x] `AdminRoles.tsx` |
+| - | Tab Moderation | `/admin/moderation` | [x] `AdminModeration.tsx` |
+| - | Tab Collections | `/admin/collections` | [x] `AdminCollections.tsx` |
+| - | Tab Analytics | `/admin/analytics` | [x] `AdminAnalytics.tsx` + `AdminTrafficAnalytics.tsx` + `UserAnalyticsDashboard.tsx` |
+| - | Tab WebSocket metrics | `/admin/websocket` | [x] `AdminWebSocketMetrics.tsx` |
+| - | Tab Logs | `/admin/logs` | [x] `AdminLogs.tsx` |
+| - | Tab Settings | `/admin/settings` | [x] `AdminSettings.tsx` |
+
+> **Ghi chú Admin**: Toàn bộ admin là SPA 1 route `/admin` với tab nội bộ. Brief yêu cầu các URL riêng (`/admin/bookings`, `/admin/calendar`, ...) — có thể giữ nguyên SPA hoặc tách thành nested routes (`/admin/bookings`, `/admin/calendar`...) để SEO/internal link tốt hơn. Hiện tại **OK**, không ưu tiên tách.
+
+### 3.4 Trang Public nên mở khoá (bỏ ProtectedRoute)
+
+Theo brief "PhotoCloud vừa là nền tảng ảnh công khai, vừa là studio booking" — các trang sau nên **public** (ai cũng xem được, chỉ cần đăng nhập khi tương tác):
+
+- [ ] `/collections` — mở public, CTA "Lưu" yêu cầu đăng nhập
+- [ ] `/collections/:collectionId` — mở public
+- [ ] `/photos/:slug` — đã public ✓
+- [ ] `/t/:categorySlug` — đã public ✓ (`HomePage`)
+
+### 3.5 Bổ sung cần làm (action items Section 3) — cập nhật 12/10/2026
+
+| # | Task | File | Ưu tiên | Trạng thái |
+|---|---|---|---|---|
+| S3-1 | Mở public `/collections` + `/collections/:id` (chuyển khỏi `ProtectedRoute`) | `App.tsx:226-235` | Cao | [x] **Đã làm** — chuyển ra ngoài `ProtectedRoute` |
+| S3-2 | Đổi `/favorite-collections` → `/favorites/collections` | `App.tsx:244` | Trung bình | [x] **Đã làm** — thêm route mới `/favorites/collections` + giữ alias cũ |
+| S3-3 | Thêm route `/upload` | `App.tsx` | Cao | [x] **Đã làm** — đăng ký `UploadPage` (file có sẵn) |
+| S3-4 | Thêm route `/notifications` + tạo `NotificationPage.tsx` | `App.tsx` | Trung bình | [x] **Đã làm** — tạo `NotificationPage.tsx` + `.css` đầy đủ (list, mark read, mark all, delete, filter tab) |
+| S3-5 | Thêm route `/profile/bookings` | `App.tsx` | Trung bình | [~] alias tạm trỏ về `BookingPage` — cần tách `MyBookings` ra page riêng sau |
+| S3-6 | Tạo trang `/packages` (list) + `/packages/:slug` (detail) | mới | Cao | [x] **Đã làm** — `PackagesPage.tsx` + `.css` (hero, 4 cards + custom quote, detail view) |
+| S3-7 | Tạo trang `/blog` (list) + `/blog/:slug` (detail) | mới | Thấp | [ ] chưa làm |
+| S3-8 | Tạo trang `/contact` (riêng) | mới | Trung bình | [x] **Đã làm** — `ContactPage.tsx` + `.css` (4 info card + form mailto + social) |
+| S3-9 | Tạo trang `/explore` (hero + bộ lọc) | mới | Trung bình | [ ] chưa làm |
+| S3-10 | Thêm alias `/settings/profile` + `/settings/notifications` | `App.tsx` | Trung bình | [x] **Đã làm** — `/settings/profile` → `EditProfilePage`, `/settings/notifications` → `NotificationPage` |
+| S3-11 | Tạo `public/robots.txt` + `public/sitemap.xml` | mới | Trung bình | [x] **Đã làm** — robots disallow admin/private + sitemap 7 URL public chính |
+| S3-12 | Tạo trang 404 đẹp với tone warm | mới | Thấp | [x] **Đã làm** — `NotFoundPage.tsx` + `.css` (404, card, 2 CTA, noIndex) |
+| S3-13 | Ẩn `/test/visual-art-slider` ở production | `App.tsx:235` | Thấp | [ ] chưa làm (route vẫn mở) |
+
+#### Cập nhật Section 3 — kết quả
+
+- **9/13 action items đã hoàn thành** trong ngày 12/10/2026.
+- **4 items chưa làm**: S3-5 (tách MyBookings), S3-7 (blog), S3-9 (explore), S3-13 (ẩn test route) — đều ở mức Trung bình trở xuống.
+- Build pass clean (8.86s), không có lỗi TypeScript mới.
 
 ---
 
