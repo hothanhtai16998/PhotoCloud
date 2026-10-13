@@ -1,48 +1,63 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Menu, X } from 'lucide-react';
+import { useLayoutEffect } from 'react';
 import './ImmersiveHomeChrome.css';
 
 export function ImmersiveHomeChrome() {
-  const [immersive, setImmersive] = useState(true);
-  const [open, setOpen] = useState(false);
-  const trigger = useRef<HTMLButtonElement>(null);
   useLayoutEffect(() => {
-    document.body.classList.add('home-cinematic-layout');
+    const body = document.body;
+    const header = document.querySelector<HTMLElement>('.PHOTOCLOUD-header');
+    const slider = document.querySelector<HTMLElement>('.visual-art-slider');
+    body.classList.add('home-cinematic-layout');
     let frame = 0;
+    let stageEnd = window.innerHeight;
+    let anchor = Math.max(0, window.scrollY);
+    let previous = anchor;
+    let direction = 0;
+    let hidden = false;
+    const measure = () => {
+      const stage = slider?.querySelector<HTMLElement>('.travel-stage') ?? slider;
+      stageEnd = stage ? stage.getBoundingClientRect().bottom + window.scrollY : window.innerHeight;
+    };
     const update = () => {
       frame = 0;
-      const stage = document.querySelector('.visual-art-slider .travel-stage');
-      const header = document.querySelector('.PHOTOCLOUD-header');
-      const active = !!stage && stage.getBoundingClientRect().bottom > (header?.getBoundingClientRect().height ?? 80);
-      document.body.classList.toggle('home-cinematic-active', active);
-      setImmersive(active);
-      if (!active) setOpen(false);
+      const scroll = Math.max(0, window.scrollY);
+      const nextDirection = Math.sign(scroll - previous);
+      if (nextDirection && nextDirection !== direction) {
+        anchor = previous;
+        direction = nextDirection;
+      }
+      // Accumulate intentional scrolling instead of toggling on wheel noise.
+      const interacting = header?.querySelector(':focus-visible, [aria-expanded="true"], [data-state="open"]');
+      if (scroll < stageEnd - 16 || interacting || body.classList.contains('scroll-locked') || body.hasAttribute('data-scroll-locked')) {
+        hidden = false;
+        anchor = scroll;
+      } else if (direction > 0 && scroll - anchor > 56) {
+        hidden = true;
+      } else if (direction < 0 && anchor - scroll > 24) {
+        hidden = false;
+      }
+      body.classList.toggle('home-header-hidden', hidden);
+      body.classList.toggle('home-cinematic-active', scroll < stageEnd - 16);
+      if (header) header.inert = hidden;
+      previous = scroll;
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    const resize = () => { measure(); schedule(); };
+    const observer = new ResizeObserver(resize);
+    if (slider) observer.observe(slider);
+    measure();
     update();
     window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
+    window.addEventListener('resize', resize);
+    header?.addEventListener('focusin', schedule);
     return () => {
       cancelAnimationFrame(frame);
+      observer.disconnect();
       window.removeEventListener('scroll', schedule);
-      window.removeEventListener('resize', schedule);
-      document.body.classList.remove('home-cinematic-layout', 'home-cinematic-active', 'home-cinematic-menu');
+      window.removeEventListener('resize', resize);
+      header?.removeEventListener('focusin', schedule);
+      body.classList.remove('home-cinematic-layout', 'home-cinematic-active', 'home-header-hidden');
+      if (header) header.inert = false;
     };
   }, []);
-  useLayoutEffect(() => {
-    document.body.classList.toggle('home-cinematic-menu', open);
-    const sidebar = document.querySelector<HTMLElement>('.image-page-sidebar');
-    if (sidebar) sidebar.inert = immersive && !open;
-    if (open) sidebar?.querySelector<HTMLElement>('a,button')?.focus();
-    const close = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setOpen(false); trigger.current?.focus(); }
-    };
-    window.addEventListener('keydown', close);
-    return () => { window.removeEventListener('keydown', close); if (sidebar) sidebar.inert = false; };
-  }, [open, immersive]);
-  return createPortal(immersive ? <>
-    <button ref={trigger} type="button" className="cinematic-menu-toggle" aria-label={open ? 'Đóng điều hướng' : 'Mở điều hướng'} aria-expanded={open} onClick={() => setOpen(value => !value)}>{open ? <X size={21} /> : <Menu size={21} />}</button>
-    {open && <button type="button" className="cinematic-menu-backdrop" aria-label="Đóng điều hướng" onClick={() => { setOpen(false); trigger.current?.focus(); }} />}
-  </> : null, document.body);
+  return null;
 }

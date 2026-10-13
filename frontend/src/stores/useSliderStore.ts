@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { imageService } from '@/services/imageService';
 import type { Image } from '@/types/image';
+import { getSessionItem, setSessionItem, removeSessionItem } from '@/utils/safeStorage';
 
 export interface SlideData {
 	id: string;
@@ -44,6 +45,39 @@ function toSlides(images: Image[]): SlideData[] {
 
 // PHOTOCLOUD-style: 15 minutes stale threshold (slider changes less frequently)
 const STALE_THRESHOLD = 15 * 60 * 1000; // 15 minutes
+const SLIDER_CACHE_KEY = 'photocloud-slider-v1';
+
+function readSliderCache(): { slides: SlideData[]; lastFetchedAt: number | null } {
+  try {
+    const cached = JSON.parse(getSessionItem(SLIDER_CACHE_KEY) || 'null');
+    if (!cached || !Number.isFinite(cached.lastFetchedAt) || cached.lastFetchedAt > Date.now() || Date.now() - cached.lastFetchedAt > STALE_THRESHOLD || !Array.isArray(cached.slides)) {
+      return { slides: [], lastFetchedAt: null };
+    }
+    const slides = cached.slides.filter((slide: SlideData) => slide &&
+      typeof slide.id === 'string' && typeof slide.title === 'string' &&
+      typeof slide.image === 'string' && slide.image.length > 0 &&
+      typeof slide.fullImage === 'string' &&
+      Number.isFinite(slide.width) && slide.width > 0 && Number.isFinite(slide.height) && slide.height > 0
+    ).slice(0, 10) as SlideData[];
+    return { slides, lastFetchedAt: slides.length ? cached.lastFetchedAt : null };
+  } catch {
+    removeSessionItem(SLIDER_CACHE_KEY);
+    return { slides: [], lastFetchedAt: null };
+  }
+}
+
+const initialCache = readSliderCache();
+// Start the first cached image before the lazy homepage mounts.
+if (initialCache.slides[0] && typeof window !== 'undefined') {
+  const firstImage = new window.Image();
+  firstImage.fetchPriority = 'high';
+  firstImage.src = initialCache.slides[0].image;
+}
+
+function saveSliderCache(slides: SlideData[], lastFetchedAt: number) {
+  if (slides.length) setSessionItem(SLIDER_CACHE_KEY, JSON.stringify({ slides, lastFetchedAt }));
+  else removeSessionItem(SLIDER_CACHE_KEY);
+}
 
 export interface SliderState {
 	slides: SlideData[];
@@ -58,10 +92,10 @@ export interface SliderState {
 
 export const useSliderStore = create(
 	immer<SliderState>((set, get) => ({
-		slides: [],
+		slides: initialCache.slides,
 		loading: false,
-		hasLoaded: false,
-		lastFetchedAt: null,
+		hasLoaded: initialCache.slides.length > 0,
+		lastFetchedAt: initialCache.lastFetchedAt,
 
 		fetchSlides: async (signal?: AbortSignal) => {
 			const currentState = get();
@@ -91,10 +125,12 @@ export const useSliderStore = create(
 					return;
 				}
 				
+				const fetchedAt = Date.now();
+				saveSliderCache(slideData, fetchedAt);
 				set((state) => {
 					state.slides = slideData;
 					state.hasLoaded = true;
-					state.lastFetchedAt = Date.now();
+					state.lastFetchedAt = fetchedAt;
 					state.loading = false;
 				});
 			} catch (error: unknown) {
@@ -113,7 +149,6 @@ export const useSliderStore = create(
 				}
 				if (!signal?.aborted) {
 					set((state) => {
-						state.slides = [];
 						state.loading = false;
 					});
 				}
@@ -130,6 +165,7 @@ export const useSliderStore = create(
 		},
 
 		clearSlides: () => {
+			removeSessionItem(SLIDER_CACHE_KEY);
 			set((state) => {
 				state.slides = [];
 				state.hasLoaded = false;
@@ -162,9 +198,11 @@ export const useSliderStore = create(
 				if (signal?.aborted) return;
 				const slideData = toSlides(response.images || []);
 
+				const fetchedAt = Date.now();
+				saveSliderCache(slideData, fetchedAt);
 				set((state) => {
 					state.slides = slideData;
-					state.lastFetchedAt = Date.now();
+					state.lastFetchedAt = fetchedAt;
 					// Don't set loading - this is a silent background refresh
 				});
 			} catch (error: unknown) {

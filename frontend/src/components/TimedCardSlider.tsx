@@ -9,10 +9,11 @@ const interval = 5500;
 const duration = 500;
 const decodedImages = new Map<string, Promise<HTMLImageElement>>();
 
-function loadImage(source: string) {
+function loadImage(source: string, priority: 'high' | 'low' | 'auto' = 'auto') {
   let ready = decodedImages.get(source);
   if (!ready) {
     const image = new Image();
+    image.fetchPriority = priority;
     image.src = source;
     ready = image.decode().then(() => image).catch(error => {
       decodedImages.delete(source);
@@ -130,8 +131,14 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
   useEffect(() => { if (current !== activeRef.current) void changeRef.current(current); }, [current]);
 
   useEffect(() => {
-    slides.forEach(item => { void loadImage(url(item.image)).catch(() => {}); });
-    return () => { pending.current?.cancel(); };
+    let cancelled = false;
+    const first = slides[activeRef.current];
+    if (first) {
+      void loadImage(url(first.image), 'high').catch(() => {}).then(() => {
+        if (!cancelled) slides.forEach(item => { void loadImage(url(item.image), 'low').catch(() => {}); });
+      });
+    }
+    return () => { cancelled = true; pending.current?.cancel(); };
   }, [slides]);
   useEffect(() => {
     const paint = () => {

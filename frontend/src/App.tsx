@@ -11,6 +11,7 @@ import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
 import ImagePageSidebar from "./components/ImagePageSidebar";
 import Header from "./components/Header";
+import HomePage from './pages/HomePage';
 import { Footer } from "./components/Footer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -25,7 +26,6 @@ import {
 
 
 // Lazy load pages for code splitting
-const HomePage = lazy(() => import('./pages/HomePage'));
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
@@ -216,7 +216,7 @@ function App() {
       {shouldShowHeader && <Header />}
 
       {/* Sidebar - PHOTOCLOUD-style: Always visible, even during loading */}
-      {shouldShowSidebar && <ImagePageSidebar />}
+      {shouldShowSidebar && location.pathname !== '/' && <ImagePageSidebar />}
 
       {/* Floating Contact Button - Always visible */}
       <ContactButton />
@@ -226,7 +226,7 @@ function App() {
       {shouldShowHeader && <MobileBottomNav />}
 
       {/* Global Loading Overlay - Single spinner for all loading states */}
-      <GlobalLoadingOverlay />
+      {location.pathname !== '/' && <GlobalLoadingOverlay />}
 
       {/* App body wrapper: clears the fixed header so page content is never
           covered. --header-height is set in index.css (80px desktop / 52px mobile).

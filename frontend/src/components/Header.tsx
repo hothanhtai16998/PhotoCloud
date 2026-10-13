@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect, lazy, Suspense } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { User, Menu, Heart, Download, Shield, Info, CalendarDays } from "lucide-react"
+import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
 import { getSessionItem, setSessionItem, removeSessionItem } from "@/utils/safeStorage"
@@ -18,6 +18,7 @@ import { LANGUAGE_SWITCHER_ENABLED } from "@/config/features"
 import { useLocation } from "react-router-dom"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import './Header.css'
+import ImagePageSidebar from './ImagePageSidebar'
 import './UserMenu.css'
 
 // Lazy load UploadModal to improve initial page load
@@ -37,10 +38,26 @@ export const Header = memo(function Header() {
   const isAdmin = Boolean(user?.isAdmin)
   const [isScrolled, setIsScrolled] = useState(false)
   useEffect(() => {
-    const update = () => setIsScrolled(window.scrollY > 12)
+    let frame = 0
+    let lastScrolled = window.scrollY > 12
+    setIsScrolled(lastScrolled)
+    const update = () => {
+      frame = 0
+      const nextScrolled = window.scrollY > 12
+      if (nextScrolled !== lastScrolled) {
+        lastScrolled = nextScrolled
+        setIsScrolled(nextScrolled)
+      }
+    }
+    const scheduleUpdate = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
     update()
-    window.addEventListener('scroll', update, { passive: true })
-    return () => window.removeEventListener('scroll', update)
+    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+    return () => {
+      cancelAnimationFrame(frame)
+      window.removeEventListener('scroll', scheduleUpdate)
+    }
   }, [])
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -182,6 +199,7 @@ export const Header = memo(function Header() {
           {/* Mobile Header Actions - Icons visible on mobile */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
           {isMobile && <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative', marginRight: 0, paddingRight: 0 }}>
+            {location.pathname === '/' && <ImagePageSidebar variant="header" />}
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
               <div style={{ 
@@ -193,7 +211,7 @@ export const Header = memo(function Header() {
                   type="button"
                   className="mobile-header-icon mobile-booking-shortcut"
                   aria-label="Đặt lịch chụp"
-                  onClick={openBookingModal}
+                  onClick={() => openBookingModal()}
                 >
                   <CalendarDays size={18} />
                 </button>
@@ -258,26 +276,33 @@ export const Header = memo(function Header() {
             {/* Sign In Link - only visible when not authenticated and not initializing */}
             {!showPlaceholder && !stableHasAuth && (
               <>
-              <button type="button" className="mobile-header-icon" aria-label="Đặt lịch chụp" onClick={openBookingModal}>
+              <button type="button" className="mobile-header-icon" aria-label="Đặt lịch chụp" onClick={() => openBookingModal()}>
                 <CalendarDays size={18} />
               </button>
               <Link to="/signin" className="mobile-header-icon" aria-label={t('auth.signIn')}>
                 <User size={20} />
               </Link>
+              <button ref={mobileMenuButtonRef} type="button" className="mobile-header-icon" aria-label="Menu" aria-expanded={mobileMenuOpen} aria-controls="header-mobile-navigation" onClick={(event) => {
+                setMobileMenuTop(event.currentTarget.getBoundingClientRect().bottom + 4)
+                setMobileMenuOpen(open => !open)
+              }}><Menu size={20} /></button>
               </>
             )}
           </div>}
 
           {/* Search Bar */}
           <nav className="header-studio-nav" aria-label="Điều hướng studio">
+            {location.pathname === '/' && <Link to="/explore">Khám phá</Link>}
             <Link to="/packages" aria-current={location.pathname.startsWith('/packages') ? 'page' : undefined}>Gói chụp</Link>
             <Link to="/collections" aria-current={location.pathname.startsWith('/collections') ? 'page' : undefined}>Bộ sưu tập</Link>
+            {location.pathname === '/' && <Link to="/blog">Câu chuyện</Link>}
             <Link to="/about" aria-current={location.pathname === '/about' ? 'page' : undefined}>Về studio</Link>
           </nav>
 
           {/* Right Actions - Desktop */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
           {!isMobile && <div className="header-actions desktop-only">
+            {location.pathname === '/' && <ImagePageSidebar variant="header" />}
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
               <div style={{ 
@@ -286,7 +311,7 @@ export const Header = memo(function Header() {
                 gap: '12px'
               }}>
                 <Button
-                  onClick={openBookingModal}
+                  onClick={() => openBookingModal()}
                   className="header-booking-button"
                   aria-label="Đặt lịch chụp"
                 >
@@ -346,7 +371,7 @@ export const Header = memo(function Header() {
                 gap: '20px'
               }}>
                 <Link to="/signin" className="header-link">{t('auth.signIn')}</Link>
-                <Button onClick={openBookingModal} className="header-booking-button"><CalendarDays size={16} /><span>Đặt lịch chụp</span></Button>
+                <Button onClick={() => openBookingModal()} className="header-booking-button"><CalendarDays size={16} /><span>Đặt lịch chụp</span></Button>
               </div>
             )}
           </div>}
@@ -381,6 +406,7 @@ export const Header = memo(function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="user-menu-items mobile-hamburger-menu">
+              <Link to="/collections" className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" onClick={() => setMobileMenuOpen(false)}><Camera size={16} />Bộ sưu tập</Link>
               <Link 
                 to="/favorites" 
                 className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 

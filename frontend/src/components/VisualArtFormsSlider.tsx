@@ -9,6 +9,7 @@ import './VisualArtFormsSlider.css';
 import { FixedSlideStage } from './FixedSlideStage';
 import { CardOpeningStage } from './CardOpeningStage';
 import { SliderZoomImage } from './SliderZoomImage';
+import { ImmersiveHomeChrome } from './ImmersiveHomeChrome';
 
 export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapsed = false}: {collapsed?: boolean}) {
   const slides = useSliderStore(state => state.slides);
@@ -77,6 +78,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
   if (!isDesktop && collapsed) return null;
   return <motion.div ref={sliderRef} layout layoutDependency={collapsed} initial={false} transition={transition}
     className={`visual-art-slider${collapsed ? ' visual-art-slider-collapsed' : ''}`} style={{originX: 0, originY: 0}}>
+    {!collapsed && <ImmersiveHomeChrome />}
     {slides.length ? collapsed ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
       collapsed={collapsed} select={selectSlide}
       zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />

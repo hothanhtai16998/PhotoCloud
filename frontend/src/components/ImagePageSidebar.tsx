@@ -1,4 +1,6 @@
-import { Bookmark, Heart, Info, Download, Shield, Compass, Camera, BookOpen } from 'lucide-react';
+import { Bookmark, Heart, Info, Download, Shield, Compass, Camera, BookOpen, X } from 'lucide-react';
+import * as Dialog from '@radix-ui/react-dialog';
+import { generateImageSlug } from '@/lib/utils';
 import { WebSocketStatus } from './WebSocketStatus';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -25,7 +27,18 @@ import { useIsMobile } from '@/hooks/useIsMobile';
  * Hybrid-style sidebar for all pages, inspired by PHOTOCLOUD.
  * Icon-only with tooltips, active state indicators, and proper navigation.
  */
-const ImagePageSidebar = memo(function ImagePageSidebar() {
+const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }: { variant?: 'sidebar' | 'header' }) {
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryError, setLibraryError] = useState(false);
+  const favoriteImages = useFavoriteStore(state => state.images);
+  const favoritesLoading = useFavoriteStore(state => state.loading);
+  useEffect(() => {
+    if (!libraryOpen) return;
+    let active = true;
+    setLibraryError(false);
+    void useFavoriteStore.getState().fetchFavorites().catch(() => { if (active) setLibraryError(true); });
+    return () => { active = false; };
+  }, [libraryOpen]);
   const isMobile = useIsMobile();
   const location = useLocation();
   const accessToken = useAuthStore(state => state.accessToken);
@@ -191,6 +204,37 @@ const ImagePageSidebar = memo(function ImagePageSidebar() {
   };
 
   const nextLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
+
+  if (variant === 'header') return showAuthIcons ? (
+    <div className="header-library-actions">
+      <Dialog.Root open={libraryOpen} onOpenChange={setLibraryOpen}>
+        <Dialog.Trigger asChild>
+          <button type="button" className="header-library-action" title={t('header.favorites')} aria-label={`${t('header.favorites')} (${favoriteTotal})`}>
+            <Heart size={19} /><span className="header-library-count">{favoriteTotal}</span>
+          </button>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="header-library-overlay" />
+          <Dialog.Content className="header-library-panel" aria-describedby={undefined}>
+            <div className="header-library-heading">
+              <Dialog.Title>{t('header.favorites')}</Dialog.Title>
+              <Dialog.Close className="header-library-action" aria-label="Đóng" title="Đóng"><X size={20} /></Dialog.Close>
+            </div>
+            <div className="header-library-grid">
+              {favoritesLoading && <p role="status">Đang tải ảnh…</p>}
+              {libraryError && <p role="alert">Không tải được ảnh. Vui lòng mở lại để thử lại.</p>}
+              {!favoritesLoading && !libraryError && favoriteImages.length === 0 && <p>Chưa có ảnh yêu thích.</p>}
+              {favoriteImages.map(image => <Link key={image._id} to={`/photos/${generateImageSlug(image.imageTitle || 'Untitled', image._id)}`} onClick={() => setLibraryOpen(false)}>
+                <img src={image.thumbnailUrl || image.smallUrl || image.imageUrl} alt={image.imageTitle || 'Ảnh yêu thích'} loading="lazy" />
+              </Link>)}
+            </div>
+            <Link className="header-library-view-all" to="/favorites" onClick={() => setLibraryOpen(false)}>Xem tất cả ảnh yêu thích</Link>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+      <Link to="/downloads" className="header-library-action" title={t('profile.downloadHistory')} aria-label={t('profile.downloadHistory')}><Download size={19} /></Link>
+    </div>
+  ) : null;
 
   return (
     <aside className="image-page-sidebar">
