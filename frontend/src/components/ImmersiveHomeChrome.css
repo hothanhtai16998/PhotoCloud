@@ -4,8 +4,7 @@ body.home-cinematic-layout .homepage-content-below-slider{margin-left:0;width:10
 body.home-cinematic-layout .visual-art-slider .travel-stage{height:100svh;min-height:0}
 body.home-cinematic-layout .visual-art-slider:not(.visual-art-slider-collapsed) .travel-empty{height:100svh;min-height:0;box-sizing:border-box;display:grid;place-items:center;margin:0}
 body.home-cinematic-layout .visual-art-slider .travel-header{display:none}
-body.home-cinematic-layout .PHOTOCLOUD-header{left:0;width:100%;transform:translate3d(0,0,0);transition:transform 320ms cubic-bezier(.22,.61,.36,1);will-change:transform}
-body.home-cinematic-layout.home-header-hidden .PHOTOCLOUD-header{transform:translate3d(0,-100%,0);pointer-events:none}
+body.home-cinematic-layout .PHOTOCLOUD-header{left:0;width:100%;transform:none;transition:background-color 180ms ease,box-shadow 180ms ease}
 body.home-cinematic-layout .PHOTOCLOUD-header .header-logo-container{transform:none}
 body.home-cinematic-layout .contact-button{bottom:12px!important;right:12px!important}
 body.home-cinematic-active .header-logo-image{filter:brightness(0) invert(1)}
