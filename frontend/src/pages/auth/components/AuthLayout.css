@@ -82,3 +82,14 @@
 }
 @media(max-width:359px) { .auth-lamp { right:-30px; } .auth-scene-copy { width:125px; } }
 @media(prefers-reduced-motion:reduce) { .auth-lamp-light,.auth-lamp-cord { transition:none; } }
+.auth-layout .auth-back { display:inline-flex; align-items:center; gap:8px; color:#73736c; font-size:12px; text-decoration:none; margin-bottom:28px; }
+.auth-layout .auth-back:hover { color:#252525; }
+.auth-layout .auth-switch-footer { margin:24px 0 0; padding-top:22px; border-top:1px solid #e0e3db; text-align:center; font-size:13px; color:#6b6b66; }
+.auth-layout .auth-submit-error { display:flex; align-items:flex-start; gap:8px; background:#fff0ed; border:1px solid #eec5bd; border-radius:6px; padding:12px; font-size:13px; color:#9c3f36; margin:0 0 20px; overflow-wrap:anywhere; }
+.auth-layout .auth-submit-error svg { flex-shrink:0; margin-top:2px; }
+.auth-layout .continue-btn { gap:10px; }
+.auth-layout input:-webkit-autofill { -webkit-box-shadow:0 0 0 1000px #f6f6f2 inset; -webkit-text-fill-color:#252925; }
+.auth-loading { animation:auth-spin 900ms linear infinite; }
+.auth-layout .auth-caps-warning { color:#966339; font-size:12px; margin:10px 0 0; }
+@keyframes auth-spin { to { transform:rotate(360deg); } }
+@media(prefers-reduced-motion:reduce) { .auth-loading { animation:none; } }

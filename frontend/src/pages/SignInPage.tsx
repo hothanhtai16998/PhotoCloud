@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ArrowRight, LoaderCircle, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { signInSchema, type SignInFormValue } from "@/types/forms";
 import { t } from "@/i18n";
@@ -17,6 +17,8 @@ function SignInPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+    const [capsLock, setCapsLock] = useState(false);
 
     const { register, handleSubmit, formState: { errors } } = useForm<SignInFormValue>({
         resolver: zodResolver(signInSchema),
@@ -35,6 +37,7 @@ function SignInPage() {
 
     const onSubmit = async (data: SignInFormValue) => {
         setIsSubmitting(true);
+        setSubmitError('');
         try {
             const username = data.username.trim();
             const password = data.password.trim();
@@ -45,8 +48,8 @@ function SignInPage() {
 
             await signIn(username, password);
             navigate("/");
-        } catch {
-            // Error is handled by the store
+        } catch (error: unknown) {
+            setSubmitError((error as { response?: { data?: { message?: string } } })?.response?.data?.message || t('auth.signInFailed'));
         } finally {
             setIsSubmitting(false);
         }
@@ -65,6 +68,7 @@ function SignInPage() {
 
     return (
         <AuthLayout>
+            <Link to="/" className="auth-back"><ArrowLeft size={16} /> Về trang chủ</Link>
             <h1>{t('auth.welcome')}</h1>
             <p className="auth-subtitle">{t('auth.signInToStart')}</p>
             <button type="button" className="social-btn" onClick={() => handleSocialLogin('google')}>
@@ -72,13 +76,17 @@ function SignInPage() {
             </button>
             <div className="auth-separator">{t('auth.or')}</div>
                     <form onSubmit={handleSubmit(onSubmit)} className="signin-form" aria-busy={isSubmitting}>
-                        <p className="form-switch">{t('auth.noAccount')} <Link to="/signup" className="form-link">{t('auth.signUp')}</Link></p>
+                        {submitError && <p className="auth-submit-error" role="alert"><AlertCircle size={16} />{submitError}</p>}
 
                         {/* Username */}
                         <div className="form-group">
                             <label htmlFor="username">{t('auth.username')}</label>
                             <Input
                                 autoComplete="username"
+                                autoCapitalize="none"
+                                spellCheck={false}
+                                aria-invalid={!!errors.username}
+                                aria-describedby={errors.username ? 'username-error' : undefined}
                                 type="text"
                                 id="username"
                                 placeholder={t('auth.username')}
@@ -86,7 +94,7 @@ function SignInPage() {
                                 className={errors.username ? 'error' : ''}
                             />
                             {errors.username && (
-                                <p className="error-message">{errors.username.message}</p>
+                                <p id="username-error" className="error-message">{errors.username.message}</p>
                             )}
                         </div>
 
@@ -98,21 +106,27 @@ function SignInPage() {
                                     type={showPassword ? "text" : "password"}
                                     id="password"
                                     autoComplete="current-password"
+                                    aria-invalid={!!errors.password}
+                                    aria-describedby={errors.password ? 'password-error' : undefined}
                                     placeholder={t('auth.password')}
                                     {...register('password')}
+                                    onKeyDown={event => setCapsLock(event.getModifierState('CapsLock'))}
+                                    onKeyUp={event => setCapsLock(event.getModifierState('CapsLock'))}
+                                    onBlur={event => { void register('password').onBlur(event); setCapsLock(false); }}
                                     className={errors.password ? 'error' : ''}
                                 />
                                 <button
                                     type="button"
                                     className="password-toggle"
                                     aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                                    aria-pressed={showPassword}
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
                             {errors.password && (
-                                <p className="error-message">{errors.password.message}</p>
+                                <p id="password-error" className="error-message">{errors.password.message}</p>
                             )}
                         </div>
 
@@ -122,8 +136,11 @@ function SignInPage() {
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? t('auth.signingIn') : t('auth.signIn')}
+                            {isSubmitting ? <LoaderCircle size={17} className="auth-loading" /> : <ArrowRight size={17} />}
                         </Button>
+                        {capsLock && <p className="auth-caps-warning" role="status">Caps Lock đang bật</p>}
                     </form>
+            <p className="auth-switch-footer">{t('auth.noAccount')} <Link to="/signup" className="form-link">{t('auth.signUp')}</Link></p>
         </AuthLayout>
     );
 }
