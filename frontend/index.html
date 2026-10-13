@@ -2,6 +2,20 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <script id="reload-scroll-reset">
+      (() => {
+        if (performance.getEntriesByType('navigation')[0]?.type !== 'reload') return;
+        const previousRestoration = history.scrollRestoration;
+        history.scrollRestoration = 'manual';
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        window.addEventListener('pageshow', () => {
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            history.scrollRestoration = previousRestoration;
+          });
+        }, { once: true });
+      })();
+    </script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover"

@@ -27,119 +27,18 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim(); // Take control of all pages immediately
 });
 
-// Track refresh requests to delay them
-const REFRESH_DELAY_MS = 1500; // 1.5 seconds - faster UX while still allowing cancellation
-const refreshDelays = new Map(); // URL -> timeout
-
-// Fetch event - aggressive caching strategy for images + refresh delay
+// Fetch event - caching without delaying navigation.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
-  
-  // Only handle requests from same origin
-  if (url.origin !== self.location.origin) {
-    return; // Let browser handle cross-origin requests
-  }
+  if (url.origin !== self.location.origin) return;
 
-  // Intercept navigation requests (page refreshes)
-  // Service Workers CAN intercept navigation and delay them!
-  // This is how PHOTOCLOUD delays the refresh button - the page stays visible!
-  // CRITICAL: Must check for navigate mode FIRST before other checks
-  const isNavigation = event.request.mode === 'navigate' || 
-                       event.request.destination === 'document' ||
-                       (event.request.headers.get('accept')?.includes('text/html'));
-  
-  if (isNavigation) {
-    // Check if this is a refresh (reload) request
-    // Multiple detection methods for reliability
-    const referrer = event.request.referrer;
-    const cacheControl = event.request.headers.get('cache-control');
-    const pragma = event.request.headers.get('pragma');
-    
-    // Check if referrer matches current URL (same page refresh)
-    let referrerMatches = false;
-    if (referrer) {
-      try {
-        const referrerUrl = new URL(referrer);
-        referrerMatches = referrerUrl.pathname === url.pathname && 
-                         referrerUrl.origin === url.origin;
-      } catch (e) {
-        // Invalid referrer URL
-      }
-    }
-    
-    // For navigation requests, if referrer is empty or same origin, it's likely a refresh
-    // The browser refresh button often sends empty referrer or same-origin referrer
-    const isRefresh = 
-      // Method 1: Referrer matches current URL exactly (same page refresh)
-      referrerMatches ||
-      // Method 2: Cache-control header indicates refresh
-      (cacheControl && (cacheControl.includes('no-cache') || cacheControl.includes('no-store'))) ||
-      // Method 3: Pragma header (older browsers)
-      (pragma && pragma.includes('no-cache')) ||
-      // Method 4: Empty referrer on navigation often means refresh (browser refresh button)
-      // OR same-origin referrer (user refreshed the page)
-      (event.request.mode === 'navigate' && (
-        !referrer || // Empty referrer = likely refresh
-        (referrer && new URL(referrer).origin === url.origin) // Same origin = likely refresh
-      ));
-    
-    if (isRefresh) {
-      // CRITICAL: Must call respondWith to intercept the navigation
-      // Delay the navigation response - this keeps the page visible!
-      // The browser's X icon will show because the request is pending
-      event.respondWith(
-        new Promise((resolve) => {
-          // Wait for the delay period
-          // During this time, the page stays visible and X icon shows
-          const timeoutId = setTimeout(() => {
-            // After delay, fetch the page normally
-            fetch(event.request, {
-              cache: 'no-cache', // Ensure fresh fetch
-            })
-              .then((response) => {
-                // Clone response for potential caching
-                if (response.ok) {
-                  const responseToCache = response.clone();
-                  caches.open(STATIC_CACHE).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                  });
-                }
-                resolve(response);
-              })
-              .catch((error) => {
-                // If fetch fails, try cache
-                caches.match(event.request).then((cached) => {
-                  if (cached) {
-                    resolve(cached);
-                  } else {
-                    resolve(new Response('Navigation failed', { status: 503 }));
-                  }
-                });
-              });
-          }, REFRESH_DELAY_MS);
-          
-          // Store timeout for potential cleanup
-          refreshDelays.set(event.request.url, timeoutId);
-          
-          // Clean up on client disconnect (user closes tab/navigates away)
-          // Note: Request.signal may not be available in all browsers
-          if (event.request.signal) {
-            event.request.signal.addEventListener('abort', () => {
-              clearTimeout(timeoutId);
-              refreshDelays.delete(event.request.url);
-            });
-          }
-          
-          // Also clean up on request close (alternative method)
-          if (event.request.body && typeof event.request.body.cancel === 'function') {
-            // Request was cancelled
-            clearTimeout(timeoutId);
-            refreshDelays.delete(event.request.url);
-          }
-        })
-      );
-      return;
-    }
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request).catch(async () =>
+        (await caches.match(event.request)) || new Response('Navigation failed', { status: 503 })
+      )
+    );
+    return;
   }
 
   // Priority order: API > Images > Static assets

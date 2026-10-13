@@ -3,7 +3,6 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { nonBlockingCSS } from './vite-plugin-non-blocking-css';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,8 +12,6 @@ export default defineConfig({
       jsxRuntime: 'automatic',
     }),
     tailwindcss(),
-    // Make CSS non-render-blocking to improve LCP
-    nonBlockingCSS(),
     // Bundle analyzer - generates stats.html in dist folder
     // Run with ANALYZE=true npm run build to generate analysis
     process.env.ANALYZE === 'true' &&
