@@ -1,0 +1,91 @@
+.sp-site{--stage-red:#dd293e;background:#f6f5f1;color:#222521}
+.sp-site .sp-header{background:#f6f5f1;height:74px;border-bottom:1px solid #d8d6cf}
+.sp-site .sp-button{background:#dd293e;color:#fff;border-radius:0}
+.sp-site .sp-button:hover{background:#bd1930}
+.sp-site .sp-button-light{background:#f6f5f1;color:#222521}
+.sp-site .sp-button-light:hover{background:#e6e3db}
+.sp-cinema{height:190svh;position:relative}
+.sp-cinema-sticky{height:calc(100svh - 110px);min-height:620px;position:sticky;top:74px;overflow:hidden;background:#edece8}
+.sp-photo-stage{position:absolute;inset:0;z-index:0}
+.sp-photo-stage canvas{display:block;width:100%;height:100%}
+.sp-photo-stage>img{width:100%;height:100%;object-fit:cover}
+.sp-cinema-copy{position:absolute;z-index:2;left:6%;top:17%;max-width:49%;pointer-events:none}
+.sp-cinema-copy .sp-eyebrow{color:#6a6a5f;font-size:10px}
+.sp-cinema-copy h1{font-size:94px;line-height:.99;font-weight:650;margin:30px 0 26px;overflow-wrap:normal}
+.sp-site main .sp-cinema-copy h1 span{display:block;font-size:94px;font-style:italic;font-weight:400;color:#dd293e}
+.sp-cinema-copy p{font-size:18px;line-height:1.65}
+.sp-cinema-copy .sp-hero-actions{pointer-events:inherit;margin-top:28px}
+.sp-cinema-copy .sp-hero-actions a{font-size:12px}
+.sp-cinema-bottom{position:absolute;bottom:22px;left:6%;right:6%;display:flex;justify-content:space-between;align-items:center;font-size:9px;letter-spacing:1px;z-index:3;gap:20px}
+.sp-cinema-chapter{position:absolute;left:6%;top:28%;width:34%;pointer-events:none;z-index:2}
+.sp-cinema-chapter h2{font-size:70px;line-height:1.05;font-weight:400;margin:25px 0}
+.sp-cinema-chapter h2 em{color:#dd293e}
+.sp-cinema-chapter button{pointer-events:inherit}
+.sp-film-band{overflow:hidden;background:#dd293e;color:#f6f5f1;padding:20px 0;transform:rotate(-1deg);position:relative;z-index:4;margin:0 -8px}
+.sp-film-band>div{display:flex;width:max-content;gap:50px;animation:sp-film 26s linear infinite;font-size:26px;font-weight:650}
+.sp-film-band span:nth-child(3n+2){font-family:'Times New Roman',serif;font-style:italic;font-weight:400}
+.sp-site .sp-intro{padding-top:65px;padding-bottom:65px}
+.sp-site .sp-portfolio{background:#202722;color:#f6f5f1;height:270svh}
+.sp-site .sp-story-sticky{top:74px;background:#202722;min-height:calc(100svh - 74px);padding-top:35px;padding-bottom:35px}
+.sp-site .sp-story-grid{grid-template-columns:1.7fr 1fr;gap:8%}
+.sp-site .sp-story-image{height:70svh;max-height:750px;transform:rotate(-1.5deg);box-shadow:14px 14px 0 #dd293e;overflow:clip}
+.sp-site .sp-story-image img{object-position:center 35%}
+.sp-site .sp-story-copy h2{font-size:58px}
+.sp-site .sp-story-copy p,.sp-site .sp-story-number,.sp-site .sp-section-top>span:last-child{color:#bbc4ba}
+.sp-site .sp-story-tabs button{color:#b5c0b6;border-color:#647367}
+.sp-site .sp-story-tabs button.active{border-color:#f56b73;color:#fff}
+.sp-site .sp-story-tabs button span{font-size:11px}
+.sp-site .sp-story-copy .sp-text-button{border-color:#708575;color:#f6f5f1}
+.sp-site .sp-packages{background:#f6f5f1}
+.sp-site .sp-package-heading h3{font-size:23px}
+.sp-site .sp-package-image{aspect-ratio:4/5}
+.sp-site .sp-package:nth-child(2){padding-top:55px}
+.sp-site .sp-package:nth-child(3){padding-top:110px}
+.sp-site .sp-package-image>span{background:#dd293e;color:#fff}
+.sp-site .sp-section h2{font-size:52px}
+.sp-site .sp-process{background:#e6ece3}
+.sp-site .sp-process-number{color:#dd293e;font-size:44px}
+.sp-site .sp-reviews{background:#eee4eb}
+.sp-site .sp-contact{background:#dd293e;color:#f6f5f1}
+.sp-site .sp-contact h2{font-size:84px}
+.sp-site .sp-contact footer{border-color:#f18a94}
+.sp-site .sp-preview-note{background:#f6f5f1}
+.sp-cinema-static{height:auto}
+.sp-cinema-static .sp-cinema-sticky{position:relative;top:0}
+@keyframes sp-film{to{transform:translateX(-50%)}}
+@media(min-width:1600px){.sp-cinema-copy h1,.sp-site main .sp-cinema-copy h1 span{font-size:116px}.sp-cinema-copy{top:20%}}
+@media(max-width:1050px){.sp-cinema-copy h1,.sp-site main .sp-cinema-copy h1 span{font-size:72px}.sp-cinema-copy{left:5%;max-width:55%}.sp-cinema-copy p{font-size:16px}.sp-cinema-chapter h2{font-size:60px}.sp-site .sp-story-copy h2{font-size:43px}}
+@media(max-width:700px){
+ .sp-site .sp-header{height:66px}.sp-site .sp-header nav.open{background:#f6f5f1}
+ .sp-cinema{height:150svh}.sp-cinema-sticky{height:calc(100svh - 165px);min-height:620px;top:66px}
+ .sp-photo-stage{top:185px;bottom:50px}
+ .sp-cinema-copy{top:25px;left:24px;right:24px;max-width:none;pointer-events:none}
+ .sp-cinema-copy h1{font-size:51px;margin:18px 0 14px}
+ .sp-site main .sp-cinema-copy h1 span{font-size:49px;display:block;margin-left:0}
+ .sp-cinema-copy p{font-size:13px;line-height:1.7}
+ .sp-cinema-copy .sp-hero-actions{margin-top:16px;gap:18px}
+ .sp-cinema-copy .sp-button{font-size:11px;padding:11px 15px;min-height:42px}
+ .sp-cinema-copy .sp-hero-actions a{font-size:10px}
+ .sp-cinema-copy .sp-eyebrow{font-size:8px}
+ .sp-cinema-bottom{font-size:7px;left:24px;right:24px;bottom:20px}
+ .sp-cinema-bottom>span:last-child{display:none}
+ .sp-cinema-chapter{left:24px;top:30px;width:75%}
+ .sp-cinema-chapter h2{font-size:44px;margin:18px 0}
+ .sp-cinema-chapter .sp-eyebrow{font-size:8px}
+ .sp-cinema-chapter button{width:220px}
+ .sp-film-band{padding:16px 0}.sp-film-band>div{font-size:20px;gap:30px}
+ .sp-site .sp-intro{padding-top:40px;padding-bottom:40px}
+ .sp-site .sp-portfolio{height:auto}
+ .sp-site .sp-story-sticky{position:relative;top:0;padding:38px 24px;min-height:0}
+ .sp-site .sp-story-grid{grid-template-columns:1fr;gap:36px}
+ .sp-site .sp-story-image{height:auto;aspect-ratio:4/5;min-height:0;box-shadow:7px 7px 0 #dd293e}
+ .sp-site .sp-story-copy h2{font-size:40px}
+ .sp-site .sp-package:nth-child(2),.sp-site .sp-package:nth-child(3){padding-top:0}
+ .sp-site .sp-package-image{aspect-ratio:4/4.3}
+ .sp-site .sp-section h2{font-size:38px}
+ .sp-site .sp-contact h2{font-size:47px}
+ .sp-site .sp-mobile-booking{background:#f6f5f1}
+ .sp-cinema-static{height:auto}.sp-cinema-static .sp-cinema-sticky{top:0}
+}
+@media(max-width:370px){.sp-cinema-copy h1,.sp-site main .sp-cinema-copy h1 span{font-size:43px}.sp-cinema-copy .sp-hero-actions{gap:12px}.sp-cinema-copy .sp-hero-actions a{font-size:9px}.sp-cinema-copy .sp-hero-actions .sp-button{gap:8px;padding:11px 12px}}
+@media(prefers-reduced-motion:reduce){.sp-cinema{height:auto}.sp-cinema-sticky{position:relative;top:0}.sp-site .sp-portfolio{height:auto}}
