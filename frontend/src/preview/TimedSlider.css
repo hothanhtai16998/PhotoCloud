@@ -5,8 +5,7 @@
 .destination-card{animation:none;transition:filter .2s;will-change:transform}
 .slide-progress{transition-duration:var(--transition-duration)}
 .top-timer,.timer-progress{animation-duration:var(--slide-interval)}
-.destination{animation-duration:1.2s}
-.is-moving .destination:has(h1){animation-duration:1.2s;animation-delay:.4s}
+.destination,.is-moving .destination:has(h1){animation:copy-in .42s cubic-bezier(.2,.7,.2,1) both;transition:none}
 @media(min-width:1600px){.destination-card{width:220px;left:calc(var(--position) * 244px);max-height:380px}.card-window{height:39%}}
 @media(max-width:900px){h1{font-size:64px}.destination{left:5%;width:42%}.destination-card{width:155px;left:calc(var(--position) * 173px)}.card-window{left:53%;top:46%;height:32%}.slider-controls{left:53%;gap:8px}.slider-controls button{width:36px;height:36px}.slider-controls button:nth-child(3){display:none}.description{font-size:11px}.header-caption{display:none}}
 @media(max-width:600px){.travel-stage{min-height:730px}.travel-header{top:25px;left:6%}.destination{top:15%;left:6%;width:88%}h1{font-size:61px}.location{font-size:14px}.destination-rule{margin-bottom:13px}.description{max-width:320px;margin:15px 0}.card-window{left:6%;top:auto;bottom:106px;height:205px}.destination-card{width:132px;left:calc(var(--position) * 146px)}.card-copy{padding:15px 12px}.card-copy strong{font-size:21px}.slider-controls{left:6%;right:6%;bottom:35px}.slider-controls button:nth-child(3){display:grid}.slide-number{font-size:35px}.shade{background:linear-gradient(90deg,#0008,#0002),linear-gradient(0deg,#0008,transparent)}}

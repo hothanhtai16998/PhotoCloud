@@ -7,6 +7,7 @@ import { t } from '@/i18n';
 import '@fontsource-variable/manrope';
 import './VisualArtFormsSlider.css';
 import { FixedSlideStage } from './FixedSlideStage';
+import { CardOpeningStage } from './CardOpeningStage';
 import { SliderZoomImage } from './SliderZoomImage';
 
 export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapsed = false}: {collapsed?: boolean}) {
@@ -15,6 +16,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
   const reducedMotion = useReducedMotion();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [playing, setPlaying] = useState(true);
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 769px)').matches);
   const sliderRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -26,6 +28,14 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
   const selectSlide = useCallback((index: number) => {
     if (slides.length) setCurrentSlide((index + slides.length) % slides.length);
   }, [slides.length]);
+
+  useEffect(() => {
+    if (!collapsed || !playing || isZoomed || slides.length < 2 || reducedMotion) return;
+    const timer = window.setTimeout(() => {
+      if (document.visibilityState === 'visible') selectSlide(currentSlide + 1);
+    }, 5500);
+    return () => window.clearTimeout(timer);
+  }, [playing, collapsed, isZoomed, slides.length, currentSlide, selectSlide, reducedMotion]);
 
   useEffect(() => {
     const media = window.matchMedia('(min-width: 769px)');
@@ -64,17 +74,17 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
     return () => window.removeEventListener('keydown', onKey);
   }, [isZoomed, closeZoom, selectSlide, currentSlide]);
 
-  if (!isDesktop) return null;
+  if (!isDesktop && collapsed) return null;
   return <motion.div ref={sliderRef} layout layoutDependency={collapsed} initial={false} transition={transition}
     className={`visual-art-slider${collapsed ? ' visual-art-slider-collapsed' : ''}`} style={{originX: 0, originY: 0}}>
-    {slides.length ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
+    {slides.length ? collapsed ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
       collapsed={collapsed} select={selectSlide}
       zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
+      : <CardOpeningStage slides={slides} current={Math.min(currentSlide, slides.length - 1)} select={selectSlide}
+        playing={playing} togglePlaying={() => setPlaying(value => !value)}
+        zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
       : <div className="travel-empty">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh nổi bật'}</div>}
-    {!collapsed && active && <div className="minimal-gallery-caption">
-      <strong>{active.title}</strong><span>{active.author ? `Ảnh của ${active.author}` : 'Bộ sưu tập ảnh nổi bật'}</span>
-    </div>}
-    <div className="travel-controls">
+    {collapsed && <div className="travel-controls">
       <button className="slider-previous" type="button" disabled={slides.length < 2} aria-label={t('visualArtSlider.previousSlide')} onClick={() => selectSlide(currentSlide - 1)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>
       </button>
@@ -91,7 +101,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
           data-distance={Math.min(Math.abs(index - currentSlide), 2)} onClick={() => selectSlide(index)} />)}
       </div>
     </div>}
-    </div>
+    </div>}
     {isZoomed && active && createPortal(<div className="zoom-overlay" role="dialog" aria-modal="true" aria-label={`Ảnh phóng to: ${active.title}`}
       onClick={event => {if (event.target === event.currentTarget) closeZoom();}}
       onKeyDown={event => {

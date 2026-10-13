@@ -22,6 +22,7 @@ import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
 import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { HeroBooking } from '@/components/booking/HeroBooking';
+import { VisualArtFormsSlider } from '@/components/VisualArtFormsSlider';
 import { PackagesSection } from '@/components/booking/PackagesSection';
 import { HowItWorks } from '@/components/booking/HowItWorks';
 import { FinalCTA } from '@/components/booking/FinalCTA';
@@ -236,6 +237,8 @@ function HomePage() {
     return (
         <>
             <main className={`homepage layout-preview layout-intro${isCategoryPage && sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
+                {(!isCategoryPage || !currentSearch) && <VisualArtFormsSlider />}
+                <div className="homepage-content-below-slider">
                 <LayoutGroup>
                 {(!isCategoryPage || !currentSearch) && (
                     <>
@@ -263,6 +266,7 @@ function HomePage() {
                 </motion.div>}
                 </LayoutGroup>
                 {(!isCategoryPage || (!currentSearch && !sliderCollapsed)) && <><BookingFAQ /><FinalCTA /></>}
+                </div>
             </main>
         </>
     );
