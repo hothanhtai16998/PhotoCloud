@@ -201,17 +201,15 @@ export function getErrorMessage(
   error: unknown,
   defaultMessage: string = 'An error occurred'
 ): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
   if (typeof error === 'object' && error !== null) {
     const axiosError = error as {
       response?: { data?: { message?: string } };
       message?: string;
     };
-    return (
-      axiosError.response?.data?.message ?? axiosError.message ?? defaultMessage
-    );
+    const serverMessage = axiosError.response?.data?.message;
+    if (typeof serverMessage === 'string' && serverMessage.trim()) return serverMessage;
+    if (axiosError.response) return defaultMessage;
+    return axiosError.message || defaultMessage;
   }
   return defaultMessage;
 }

@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import { authService } from '@/services/authService';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
+import api from '@/lib/axios';
+import { socketServerUrl } from '@/utils/socketServerUrl';
 
 interface UseWebSocketOptions {
 	onNotification?: (notification: any) => void;
@@ -107,21 +109,11 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			return;
 		}
 
-		// Get API URL - use same logic as axios config
-		// Socket.io connects to the base server URL (not /api)
-		let apiUrl: string;
-		if (import.meta.env.VITE_API_URL) {
-			// Remove /api suffix if present (Socket.io doesn't use /api)
-			apiUrl = import.meta.env.VITE_API_URL.trim().replace(/\/api\/?$/, '');
-		} else if (import.meta.env.MODE === 'development') {
-			// In development, frontend runs on 5173, backend on 3000
-			apiUrl = 'http://localhost:3000';
-		} else if (typeof window !== 'undefined') {
-			// In production, use same origin
-			apiUrl = window.location.origin;
-		} else {
-			apiUrl = 'http://localhost:3000';
-		}
+		// Follow the resolved HTTP configuration, including its dev-mode override.
+		const apiUrl = socketServerUrl(
+			api.defaults.baseURL,
+			typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+		);
 
 		// Connecting to WebSocket (// logger.info (removed - no-op) removed - no-op)
 

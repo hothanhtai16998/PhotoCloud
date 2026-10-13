@@ -1,0 +1,5857 @@
+[
+  {
+    "run": 0,
+    "mode": "cold",
+    "metrics": {
+      "lcp": [
+        {
+          "time": 324,
+          "size": 4726,
+          "url": ""
+        },
+        {
+          "time": 1008,
+          "size": 667000,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif"
+        }
+      ],
+      "longTasks": [
+        {
+          "time": 125.30000000074506,
+          "duration": 149
+        }
+      ],
+      "cls": 0,
+      "firstImageDecoded": 998.5,
+      "stageMounted": 518.6999999992549,
+      "nav": {
+        "name": "http://127.0.0.1:4174/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 125,
+        "navigationId": 1677,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "http/1.1",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "workerStart": 0,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 1.199999999254942,
+        "domainLookupStart": 1.199999999254942,
+        "domainLookupEnd": 1.199999999254942,
+        "connectStart": 1.199999999254942,
+        "secureConnectionStart": 0,
+        "connectEnd": 1.199999999254942,
+        "requestStart": 2.5,
+        "responseStart": 4.699999999254942,
+        "firstInterimResponseStart": 0,
+        "finalResponseHeadersStart": 4.699999999254942,
+        "responseEnd": 5.600000001490116,
+        "transferSize": 2755,
+        "encodedBodySize": 2455,
+        "decodedBodySize": 7684,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 0,
+        "unloadEventEnd": 0,
+        "domInteractive": 21,
+        "domContentLoadedEventStart": 107,
+        "domContentLoadedEventEnd": 107,
+        "domComplete": 124.69999999925494,
+        "loadEventStart": 124.80000000074506,
+        "loadEventEnd": 125,
+        "type": "navigate",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "low"
+        }
+      },
+      "paints": [
+        {
+          "name": "first-paint",
+          "entryType": "paint",
+          "startTime": 112,
+          "duration": 0,
+          "navigationId": 1677,
+          "paintTime": 45.400000002235174,
+          "presentationTime": 112
+        },
+        {
+          "name": "first-contentful-paint",
+          "entryType": "paint",
+          "startTime": 112,
+          "duration": 0,
+          "navigationId": 1677,
+          "paintTime": 45.400000002235174,
+          "presentationTime": 112
+        }
+      ],
+      "sw": true,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+          "start": 16.300000000745058,
+          "duration": 37.80000000074506,
+          "transfer": 293394,
+          "encoded": 293094
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+          "start": 16.5,
+          "duration": 13,
+          "transfer": 40682,
+          "encoded": 40382
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+          "start": 45,
+          "duration": 4.699999999254942,
+          "transfer": 210232,
+          "encoded": 209932
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+          "start": 173.10000000149012,
+          "duration": 106.89999999850988,
+          "transfer": 112212,
+          "encoded": 111912
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+          "start": 173.30000000074506,
+          "duration": 107.19999999925494,
+          "transfer": 30988,
+          "encoded": 30688
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+          "start": 173.69999999925494,
+          "duration": 106.5,
+          "transfer": 31044,
+          "encoded": 30744
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+          "start": 173.90000000223517,
+          "duration": 107,
+          "transfer": 108532,
+          "encoded": 108232
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+          "start": 174,
+          "duration": 107.19999999925494,
+          "transfer": 112612,
+          "encoded": 112312
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+          "start": 281.4000000022352,
+          "duration": 245.09999999776483,
+          "transfer": 49211,
+          "encoded": 48911
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+          "start": 281.5,
+          "duration": 261.30000000074506,
+          "transfer": 25293,
+          "encoded": 24993
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+          "start": 281.5,
+          "duration": 369.4000000022352,
+          "transfer": 71430,
+          "encoded": 71130
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+          "start": 281.69999999925494,
+          "duration": 395.20000000298023,
+          "transfer": 33647,
+          "encoded": 33347
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/csrf-token",
+          "start": 309.1000000014901,
+          "duration": 6.800000000745058,
+          "transfer": 0,
+          "encoded": 95
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/images",
+          "start": 317.1000000014901,
+          "duration": 198.59999999776483,
+          "transfer": 0,
+          "encoded": 27436
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/hero-collections",
+          "start": 317.4000000022352,
+          "duration": 180.89999999850988,
+          "transfer": 0,
+          "encoded": 2569
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/settings",
+          "start": 317.5,
+          "duration": 73.60000000149012,
+          "transfer": 0,
+          "encoded": 325
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/auth/refresh",
+          "start": 317.9000000022352,
+          "duration": 7.599999997764826,
+          "transfer": 0,
+          "encoded": 46
+        },
+        {
+          "url": "http://127.0.0.1:4174/favicon.ico",
+          "start": 329.5,
+          "duration": 3.300000000745058,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+          "start": 352.19999999925494,
+          "duration": 70.70000000298023,
+          "transfer": 0,
+          "encoded": 31
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+          "start": 501.4000000022352,
+          "duration": 656.5999999977648,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+          "start": 501.5,
+          "duration": 544.1000000014901,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+          "start": 509.9000000022352,
+          "duration": 514.2999999970198,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+          "start": 519.5,
+          "duration": 473.1000000014901,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+          "start": 520,
+          "duration": 517,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+          "start": 520.1000000014901,
+          "duration": 763.5999999977648,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+          "start": 520.1999999992549,
+          "duration": 630.4000000022352,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+          "start": 520.1999999992549,
+          "duration": 760.5,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+          "start": 520.3000000007451,
+          "duration": 828.6999999992549,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+          "start": 523.6000000014901,
+          "duration": 5.800000000745058,
+          "transfer": 0,
+          "encoded": 33148
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+          "start": 523.6999999992549,
+          "duration": 6.100000001490116,
+          "transfer": 0,
+          "encoded": 33032
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+          "start": 523.6999999992549,
+          "duration": 6.200000002980232,
+          "transfer": 0,
+          "encoded": 32944
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+          "start": 808.5,
+          "duration": 5.300000000745058,
+          "transfer": 0,
+          "encoded": 178518
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+          "start": 998.1999999992549,
+          "duration": 499,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+          "start": 998.3000000007451,
+          "duration": 533.8000000007451,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+          "start": 998.3000000007451,
+          "duration": 534,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+          "start": 998.4000000022352,
+          "duration": 534,
+          "transfer": 0,
+          "encoded": 0
+        }
+      ]
+    },
+    "requests": [
+      {
+        "url": "http://127.0.0.1:4174/",
+        "type": "document",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286329.985,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.287,
+          "responseStart": 2.658,
+          "responseEnd": 4.232
+        },
+        "size": 7684
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+        "type": "stylesheet",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286349.4128,
+          "domainLookupStart": 0.086,
+          "domainLookupEnd": 0.105,
+          "connectStart": 0.105,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.503,
+          "requestStart": 0.547,
+          "responseStart": 4.229,
+          "responseEnd": 13.009
+        },
+        "size": 209320
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+        "type": "script",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286348.8938,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.277,
+          "responseStart": 4.262,
+          "responseEnd": 37.849
+        },
+        "size": 918059
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286374.625,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.167,
+          "responseStart": 2.189,
+          "responseEnd": 4.756
+        },
+        "size": 209932
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286602.981,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.199,
+          "responseStart": 4.298,
+          "responseEnd": 108.637
+        },
+        "size": 111912
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286603.814,
+          "domainLookupStart": 0.061,
+          "domainLookupEnd": 0.066,
+          "connectStart": 0.066,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.583,
+          "requestStart": 0.738,
+          "responseStart": 4.043,
+          "responseEnd": 106.685
+        },
+        "size": 30744
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286603.397,
+          "domainLookupStart": 0.059,
+          "domainLookupEnd": 0.073,
+          "connectStart": 0.073,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.994,
+          "requestStart": 1.059,
+          "responseStart": 4.741,
+          "responseEnd": 107.327
+        },
+        "size": 30688
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286604.1292,
+          "domainLookupStart": 0.054,
+          "domainLookupEnd": 0.059,
+          "connectStart": 0.059,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.275,
+          "requestStart": 0.491,
+          "responseStart": 4.237,
+          "responseEnd": 106.939
+        },
+        "size": 108232
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286604.765,
+          "domainLookupStart": 0.06,
+          "domainLookupEnd": 0.065,
+          "connectStart": 0.065,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.264,
+          "requestStart": 0.291,
+          "responseStart": 3.906,
+          "responseEnd": 107.192
+        },
+        "size": 112312
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/auth/refresh",
+        "type": "xhr",
+        "status": 401,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286645.741,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.109,
+          "responseStart": 7.442,
+          "responseEnd": 7.69
+        },
+        "size": 46
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/csrf-token",
+        "type": "fetch",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286637.194,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.125,
+          "responseStart": 6.416,
+          "responseEnd": 6.86
+        },
+        "size": 95
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/settings",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286645.396,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.148,
+          "responseStart": 73.292,
+          "responseEnd": 73.542
+        },
+        "size": 325
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286680.081,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.14,
+          "responseStart": 70.587,
+          "responseEnd": 70.816
+        },
+        "size": 31
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/hero-collections",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286645.23,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.114,
+          "responseStart": 180.788,
+          "responseEnd": 181.044
+        },
+        "size": 2569
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/images",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286645.022,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.073,
+          "responseStart": 198.263,
+          "responseEnd": 198.695
+        },
+        "size": 27436
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286610.2358,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 137.246,
+          "responseStart": 179.882,
+          "responseEnd": 245.206
+        },
+        "size": 48911
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286851.469,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.076,
+          "responseStart": 5.204,
+          "responseEnd": 5.901
+        },
+        "size": 33148
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286610.899,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 47.132,
+          "connectStart": 47.685,
+          "secureConnectionStart": 88.662,
+          "connectEnd": 136.202,
+          "requestStart": 136.506,
+          "responseStart": 182.889,
+          "responseEnd": 261.381
+        },
+        "size": 24993
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286851.5232,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.195,
+          "responseStart": 5.349,
+          "responseEnd": 6.113
+        },
+        "size": 33032
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876286851.6638,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.116,
+          "responseStart": 5.386,
+          "responseEnd": 6.218
+        },
+        "size": 32944
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286611.0261,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 136.46,
+          "responseStart": 259.741,
+          "responseEnd": 369.383
+        },
+        "size": 71130
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286611.1492,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 136.387,
+          "responseStart": 367.225,
+          "responseEnd": 395.151
+        },
+        "size": 33347
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+        "type": "image",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876287136.38,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.086,
+          "responseStart": 4.449,
+          "responseEnd": 5.422
+        },
+        "size": 178518
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286847.666,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 57.097,
+          "connectStart": 58.349,
+          "secureConnectionStart": 185.531,
+          "connectEnd": 267.613,
+          "requestStart": 268.096,
+          "responseStart": 450.968,
+          "responseEnd": 473.157
+        },
+        "size": 12834
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286838.178,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 277.651,
+          "responseStart": 489.102,
+          "responseEnd": 514.193
+        },
+        "size": 11162
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286848.084,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 267.872,
+          "responseStart": 482.249,
+          "responseEnd": 517.164
+        },
+        "size": 12811
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286830.21,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 285.7,
+          "responseStart": 534.866,
+          "responseEnd": 544.153
+        },
+        "size": 6294
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286871.123,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 244.892,
+          "responseStart": 502.433,
+          "responseEnd": 630.278
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286829.643,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 286.214,
+          "responseStart": 649.457,
+          "responseEnd": 656.567
+        },
+        "size": 5448
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286871.007,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 244.978,
+          "responseStart": 642.366,
+          "responseEnd": 760.458
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876286848.256,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 267.788,
+          "responseStart": 631.01,
+          "responseEnd": 763.684
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876287320.4648,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.173,
+          "responseStart": 291.346,
+          "responseEnd": 828.596
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876287326.532,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.163,
+          "responseStart": 405.006,
+          "responseEnd": 498.927
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876287326.8708,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.546,
+          "responseStart": 404.966,
+          "responseEnd": 533.78
+        },
+        "size": 37491
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876287326.983,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.47,
+          "responseStart": 405.017,
+          "responseEnd": 533.933
+        },
+        "size": 12959
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876287327.081,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.398,
+          "responseStart": 351.836,
+          "responseEnd": 534.034
+        },
+        "size": 38813
+      }
+    ]
+  },
+  {
+    "run": 0,
+    "mode": "warm",
+    "metrics": {
+      "lcp": [
+        {
+          "time": 32,
+          "size": 3853,
+          "url": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%"
+        },
+        {
+          "time": 140,
+          "size": 667000,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif"
+        }
+      ],
+      "longTasks": [],
+      "cls": 0,
+      "firstImageDecoded": 142.90000000223517,
+      "stageMounted": 93.40000000223517,
+      "nav": {
+        "name": "http://127.0.0.1:4174/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 67.40000000223517,
+        "navigationId": 3755,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "workerStart": 1.7000000029802322,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 1.800000000745058,
+        "domainLookupStart": 1.800000000745058,
+        "domainLookupEnd": 1.800000000745058,
+        "connectStart": 1.800000000745058,
+        "secureConnectionStart": 0,
+        "connectEnd": 1.800000000745058,
+        "requestStart": 1.800000000745058,
+        "responseStart": 5.5,
+        "firstInterimResponseStart": 5.5,
+        "finalResponseHeadersStart": 0,
+        "responseEnd": 7.200000002980232,
+        "transferSize": 7984,
+        "encodedBodySize": 7684,
+        "decodedBodySize": 7684,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 7.700000002980232,
+        "unloadEventEnd": 7.700000002980232,
+        "domInteractive": 13.5,
+        "domContentLoadedEventStart": 51.80000000074506,
+        "domContentLoadedEventEnd": 51.900000002235174,
+        "domComplete": 67.30000000074506,
+        "loadEventStart": 67.30000000074506,
+        "loadEventEnd": 67.40000000223517,
+        "type": "reload",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "low"
+        }
+      },
+      "paints": [
+        {
+          "name": "first-paint",
+          "entryType": "paint",
+          "startTime": 32,
+          "duration": 0,
+          "navigationId": 3755,
+          "paintTime": 27.5,
+          "presentationTime": 32
+        },
+        {
+          "name": "first-contentful-paint",
+          "entryType": "paint",
+          "startTime": 32,
+          "duration": 0,
+          "navigationId": 3755,
+          "paintTime": 27.5,
+          "presentationTime": 32
+        }
+      ],
+      "sw": true,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+          "start": 10.300000000745058,
+          "duration": 29.600000001490116,
+          "transfer": 0,
+          "encoded": 918059
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+          "start": 10.5,
+          "duration": 11.100000001490116,
+          "transfer": 0,
+          "encoded": 209320
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+          "start": 27.300000000745058,
+          "duration": 4.300000000745058,
+          "transfer": 0,
+          "encoded": 209932
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+          "start": 51.400000002235174,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+          "start": 78.5,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+          "start": 78.70000000298023,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+          "start": 78.80000000074506,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+          "start": 78.90000000223517,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+          "start": 79,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+          "start": 84.20000000298023,
+          "duration": 6.699999999254942,
+          "transfer": 0,
+          "encoded": 108232
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+          "start": 84.30000000074506,
+          "duration": 2,
+          "transfer": 0,
+          "encoded": 33148
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+          "start": 84.40000000223517,
+          "duration": 7.099999997764826,
+          "transfer": 0,
+          "encoded": 111912
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+          "start": 84.5,
+          "duration": 2.600000001490116,
+          "transfer": 0,
+          "encoded": 33032
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+          "start": 84.70000000298023,
+          "duration": 2.399999998509884,
+          "transfer": 0,
+          "encoded": 32944
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+          "start": 84.80000000074506,
+          "duration": 6.800000000745058,
+          "transfer": 0,
+          "encoded": 30688
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+          "start": 85.20000000298023,
+          "duration": 6.5,
+          "transfer": 0,
+          "encoded": 30744
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+          "start": 85.40000000223517,
+          "duration": 7.199999999254942,
+          "transfer": 0,
+          "encoded": 112312
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+          "start": 113.60000000149012,
+          "duration": 1.300000000745058,
+          "transfer": 0,
+          "encoded": 48911
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+          "start": 113.70000000298023,
+          "duration": 1.7999999970197678,
+          "transfer": 0,
+          "encoded": 24993
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+          "start": 113.70000000298023,
+          "duration": 1.7999999970197678,
+          "transfer": 0,
+          "encoded": 71130
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+          "start": 113.80000000074506,
+          "duration": 2.199999999254942,
+          "transfer": 0,
+          "encoded": 33347
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/csrf-token",
+          "start": 140,
+          "duration": 1.800000000745058,
+          "transfer": 0,
+          "encoded": 95
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/settings",
+          "start": 140.90000000223517,
+          "duration": 1.5999999977648258,
+          "transfer": 0,
+          "encoded": 325
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/auth/refresh",
+          "start": 141.10000000149012,
+          "duration": 5.399999998509884,
+          "transfer": 0,
+          "encoded": 46
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+          "start": 151.40000000223517,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+          "start": 151.60000000149012,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+          "start": 151.60000000149012,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+          "start": 151.60000000149012,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+          "start": 154,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+          "start": 154.40000000223517,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+          "start": 154.60000000149012,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+          "start": 207.60000000149012,
+          "duration": 62.600000001490116,
+          "transfer": 0,
+          "encoded": 31
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+          "start": 640.1000000014901,
+          "duration": 1.1000000014901161,
+          "transfer": 0,
+          "encoded": 178518
+        }
+      ]
+    },
+    "requests": [
+      {
+        "url": "http://127.0.0.1:4174/",
+        "type": "document",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288346.7969,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.457,
+          "responseStart": 4.103,
+          "responseEnd": 6.108
+        },
+        "size": 7684
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+        "type": "stylesheet",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288356.102,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.181,
+          "responseStart": 9.845,
+          "responseEnd": 11.108
+        },
+        "size": 209320
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288373.0051,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.28,
+          "responseStart": 2.975,
+          "responseEnd": 4.186
+        },
+        "size": 209932
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+        "type": "script",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288356.068,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.077,
+          "responseStart": 5.811,
+          "responseEnd": 29.619
+        },
+        "size": 918059
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288396.772,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.094,
+          "responseEnd": 0.094
+        },
+        "size": 12834
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288423.87,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.103,
+          "responseEnd": 0.103
+        },
+        "size": 12811
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288424.0662,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.055,
+          "responseEnd": 0.055
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288424.181,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.051,
+          "responseEnd": 0.051
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288424.289,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.039,
+          "responseEnd": 0.039
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288424.3792,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.047,
+          "responseEnd": 0.047
+        },
+        "size": 36815
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288429.879,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.229,
+          "responseStart": 1.301,
+          "responseEnd": 2.036
+        },
+        "size": 33148
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288430.064,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.259,
+          "responseStart": 1.572,
+          "responseEnd": 2.538
+        },
+        "size": 33032
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288430.284,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.499,
+          "responseStart": 1.64,
+          "responseEnd": 2.436
+        },
+        "size": 32944
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288429.837,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.115,
+          "responseStart": 5.409,
+          "responseEnd": 6.794
+        },
+        "size": 108232
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288429.985,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.203,
+          "responseStart": 5.452,
+          "responseEnd": 7.095
+        },
+        "size": 111912
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288430.387,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.514,
+          "responseStart": 5.249,
+          "responseEnd": 6.841
+        },
+        "size": 30688
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288430.7192,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.462,
+          "responseStart": 5.093,
+          "responseEnd": 6.693
+        },
+        "size": 30744
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288430.989,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.666,
+          "responseStart": 6.495,
+          "responseEnd": 7.306
+        },
+        "size": 112312
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288459.939,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.071,
+          "responseStart": 0.144,
+          "responseEnd": 1.319
+        },
+        "size": 48911
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288460.4758,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.042,
+          "responseStart": 0.198,
+          "responseEnd": 1.833
+        },
+        "size": 24993
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288460.5798,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.026,
+          "responseStart": 0.227,
+          "responseEnd": 1.865
+        },
+        "size": 71130
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288461.16,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.04,
+          "responseStart": 0.08,
+          "responseEnd": 2.252
+        },
+        "size": 33347
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288496.777,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.168,
+          "responseEnd": 0.168
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288496.907,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.062,
+          "responseEnd": 0.062
+        },
+        "size": 37491
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288496.9739,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.047,
+          "responseEnd": 0.047
+        },
+        "size": 12959
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288497.043,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.047,
+          "responseEnd": 0.047
+        },
+        "size": 38813
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288499.33,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.998,
+          "responseEnd": 0.998
+        },
+        "size": 5448
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288499.7139,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.092,
+          "responseEnd": 0.092
+        },
+        "size": 6294
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876288499.979,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.076,
+          "responseEnd": 0.076
+        },
+        "size": 11162
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/settings",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288486.533,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.434,
+          "responseStart": 1.37,
+          "responseEnd": 1.61
+        },
+        "size": 325
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/auth/refresh",
+        "type": "xhr",
+        "status": 401,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288486.771,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.638,
+          "responseStart": 5.154,
+          "responseEnd": 5.377
+        },
+        "size": 46
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/csrf-token",
+        "type": "fetch",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288485.6428,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.081,
+          "responseStart": 1.327,
+          "responseEnd": 1.922
+        },
+        "size": 95
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288553.21,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.113,
+          "responseStart": 62.43,
+          "responseEnd": 62.694
+        },
+        "size": 31
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+        "type": "image",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876288985.767,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.083,
+          "responseStart": 0.809,
+          "responseEnd": 1.06
+        },
+        "size": 178518
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "mode": "cold",
+    "metrics": {
+      "lcp": [
+        {
+          "time": 48,
+          "size": 3853,
+          "url": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%"
+        },
+        {
+          "time": 268,
+          "size": 4726,
+          "url": ""
+        },
+        {
+          "time": 780,
+          "size": 57040,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif"
+        },
+        {
+          "time": 796,
+          "size": 667000,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif"
+        }
+      ],
+      "longTasks": [
+        {
+          "time": 109.09999999776483,
+          "duration": 142
+        }
+      ],
+      "cls": 0,
+      "firstImageDecoded": 770.6999999992549,
+      "stageMounted": 470.19999999925494,
+      "nav": {
+        "name": "http://127.0.0.1:4174/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 105.89999999850988,
+        "navigationId": 6188,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "http/1.1",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "workerStart": 0,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 1,
+        "domainLookupStart": 1,
+        "domainLookupEnd": 1,
+        "connectStart": 1,
+        "secureConnectionStart": 0,
+        "connectEnd": 1,
+        "requestStart": 1.7999999970197678,
+        "responseStart": 4,
+        "firstInterimResponseStart": 0,
+        "finalResponseHeadersStart": 4,
+        "responseEnd": 4.299999997019768,
+        "transferSize": 2755,
+        "encodedBodySize": 2455,
+        "decodedBodySize": 7684,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 0,
+        "unloadEventEnd": 0,
+        "domInteractive": 13,
+        "domContentLoadedEventStart": 91.09999999776483,
+        "domContentLoadedEventEnd": 91.09999999776483,
+        "domComplete": 105.59999999776483,
+        "loadEventStart": 105.59999999776483,
+        "loadEventEnd": 105.89999999850988,
+        "type": "navigate",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "low"
+        }
+      },
+      "paints": [
+        {
+          "name": "first-paint",
+          "entryType": "paint",
+          "startTime": 48,
+          "duration": 0,
+          "navigationId": 6188,
+          "paintTime": 37.19999999925494,
+          "presentationTime": 48
+        },
+        {
+          "name": "first-contentful-paint",
+          "entryType": "paint",
+          "startTime": 48,
+          "duration": 0,
+          "navigationId": 6188,
+          "paintTime": 37.19999999925494,
+          "presentationTime": 48
+        }
+      ],
+      "sw": true,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+          "start": 8.699999999254942,
+          "duration": 33,
+          "transfer": 293394,
+          "encoded": 293094
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+          "start": 8.799999997019768,
+          "duration": 11.400000002235174,
+          "transfer": 40682,
+          "encoded": 40382
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+          "start": 36.79999999701977,
+          "duration": 4.100000001490116,
+          "transfer": 210232,
+          "encoded": 209932
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+          "start": 156,
+          "duration": 100.29999999701977,
+          "transfer": 112212,
+          "encoded": 111912
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+          "start": 156.19999999925494,
+          "duration": 100.5,
+          "transfer": 30988,
+          "encoded": 30688
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+          "start": 156.5,
+          "duration": 100.5,
+          "transfer": 31044,
+          "encoded": 30744
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+          "start": 156.79999999701977,
+          "duration": 100.90000000223517,
+          "transfer": 108532,
+          "encoded": 108232
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+          "start": 156.89999999850988,
+          "duration": 100.39999999850988,
+          "transfer": 112612,
+          "encoded": 112312
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+          "start": 256.0999999977648,
+          "duration": 242.60000000149012,
+          "transfer": 25293,
+          "encoded": 24993
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+          "start": 256.0999999977648,
+          "duration": 417.6000000014901,
+          "transfer": 49211,
+          "encoded": 48911
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+          "start": 256.0999999977648,
+          "duration": 419.5,
+          "transfer": 66594,
+          "encoded": 66294
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+          "start": 256.19999999925494,
+          "duration": 291.5,
+          "transfer": 33541,
+          "encoded": 33241
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/csrf-token",
+          "start": 283.29999999701977,
+          "duration": 6,
+          "transfer": 0,
+          "encoded": 95
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/images",
+          "start": 290.5,
+          "duration": 176.89999999850988,
+          "transfer": 0,
+          "encoded": 27436
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/hero-collections",
+          "start": 290.69999999925494,
+          "duration": 165,
+          "transfer": 0,
+          "encoded": 2569
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/settings",
+          "start": 290.8999999985099,
+          "duration": 67,
+          "transfer": 0,
+          "encoded": 325
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/auth/refresh",
+          "start": 291.29999999701977,
+          "duration": 6.800000000745058,
+          "transfer": 0,
+          "encoded": 46
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+          "start": 323.79999999701977,
+          "duration": 63.600000001490116,
+          "transfer": 0,
+          "encoded": 31
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+          "start": 458.0999999977648,
+          "duration": 462.5,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+          "start": 458.19999999925494,
+          "duration": 313.80000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+          "start": 465.69999999925494,
+          "duration": 455,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+          "start": 470.79999999701977,
+          "duration": 294.9000000022352,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+          "start": 471.29999999701977,
+          "duration": 350.5,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+          "start": 471.3999999985099,
+          "duration": 281.30000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+          "start": 471.5999999977648,
+          "duration": 372.19999999925494,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+          "start": 471.5999999977648,
+          "duration": 401.9000000022352,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+          "start": 471.69999999925494,
+          "duration": 449.30000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+          "start": 475.0999999977648,
+          "duration": 6.800000000745058,
+          "transfer": 0,
+          "encoded": 33148
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+          "start": 475.19999999925494,
+          "duration": 6.399999998509884,
+          "transfer": 0,
+          "encoded": 33032
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+          "start": 475.29999999701977,
+          "duration": 6.700000002980232,
+          "transfer": 0,
+          "encoded": 32944
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+          "start": 770.5,
+          "duration": 188.09999999776483,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+          "start": 770.5999999977648,
+          "duration": 227.30000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+          "start": 770.5999999977648,
+          "duration": 282,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+          "start": 770.6999999992549,
+          "duration": 281.80000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+          "start": 781.3999999985099,
+          "duration": 5.5,
+          "transfer": 0,
+          "encoded": 178518
+        }
+      ]
+    },
+    "requests": [
+      {
+        "url": "http://127.0.0.1:4174/",
+        "type": "document",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289673.258,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.164,
+          "responseStart": 2.425,
+          "responseEnd": 3.317
+        },
+        "size": 7684
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+        "type": "stylesheet",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289685.101,
+          "domainLookupStart": 0.064,
+          "domainLookupEnd": 0.075,
+          "connectStart": 0.075,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.368,
+          "requestStart": 0.405,
+          "responseStart": 3.446,
+          "responseEnd": 11.44
+        },
+        "size": 209320
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+        "type": "script",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289684.681,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.176,
+          "responseStart": 3.594,
+          "responseEnd": 33.013
+        },
+        "size": 918059
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289710.072,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.154,
+          "responseStart": 1.977,
+          "responseEnd": 4.126
+        },
+        "size": 209932
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289923.239,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.21,
+          "responseStart": 4.246,
+          "responseEnd": 101.995
+        },
+        "size": 111912
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289923.7402,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.821,
+          "responseStart": 4.44,
+          "responseEnd": 100.62
+        },
+        "size": 30688
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289923.867,
+          "domainLookupStart": 0.048,
+          "domainLookupEnd": 0.061,
+          "connectStart": 0.061,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.793,
+          "requestStart": 0.839,
+          "responseStart": 4.594,
+          "responseEnd": 100.496
+        },
+        "size": 30744
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289924.9248,
+          "domainLookupStart": 0.057,
+          "domainLookupEnd": 0.063,
+          "connectStart": 0.063,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.259,
+          "requestStart": 0.286,
+          "responseStart": 3.774,
+          "responseEnd": 100.462
+        },
+        "size": 112312
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289924.282,
+          "domainLookupStart": 0.06,
+          "domainLookupEnd": 0.068,
+          "connectStart": 0.068,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.392,
+          "requestStart": 0.502,
+          "responseStart": 4.734,
+          "responseEnd": 100.907
+        },
+        "size": 108232
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/auth/refresh",
+        "type": "xhr",
+        "status": 401,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876289963.0251,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.129,
+          "responseStart": 6.701,
+          "responseEnd": 6.943
+        },
+        "size": 46
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/csrf-token",
+        "type": "fetch",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876289955.249,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.14,
+          "responseStart": 5.69,
+          "responseEnd": 6.131
+        },
+        "size": 95
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/settings",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876289962.762,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.089,
+          "responseStart": 66.681,
+          "responseEnd": 66.96
+        },
+        "size": 325
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876289995.664,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.107,
+          "responseStart": 63.387,
+          "responseEnd": 63.626
+        },
+        "size": 31
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/hero-collections",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876289962.53,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.118,
+          "responseStart": 164.731,
+          "responseEnd": 164.986
+        },
+        "size": 2569
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/images",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876289962.2942,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.1,
+          "responseStart": 176.649,
+          "responseEnd": 176.988
+        },
+        "size": 27436
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876290146.995,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.257,
+          "responseStart": 5.653,
+          "responseEnd": 6.339
+        },
+        "size": 33032
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876290146.936,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.081,
+          "responseStart": 5.931,
+          "responseEnd": 6.751
+        },
+        "size": 33148
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876290147.069,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.244,
+          "responseStart": 5.978,
+          "responseEnd": 6.746
+        },
+        "size": 32944
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289930.1792,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 41.16,
+          "connectStart": 41.437,
+          "secureConnectionStart": 100.01,
+          "connectEnd": 162.094,
+          "requestStart": 162.427,
+          "responseStart": 221.843,
+          "responseEnd": 242.658
+        },
+        "size": 24993
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289930.392,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 162.307,
+          "responseStart": 240.21,
+          "responseEnd": 291.486
+        },
+        "size": 33241
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289929.602,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 163.149,
+          "responseStart": 290.15,
+          "responseEnd": 417.66
+        },
+        "size": 48911
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876289930.299,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 162.375,
+          "responseStart": 289.257,
+          "responseEnd": 419.461
+        },
+        "size": 66294
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290143.4783,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 135.106,
+          "responseStart": 270.96,
+          "responseEnd": 281.304
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290142.9011,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 37.845,
+          "connectStart": 39.17,
+          "secureConnectionStart": 84.301,
+          "connectEnd": 135.082,
+          "requestStart": 135.515,
+          "responseStart": 281.888,
+          "responseEnd": 294.895
+        },
+        "size": 12834
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290130.852,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 147.758,
+          "responseStart": 293.754,
+          "responseEnd": 313.905
+        },
+        "size": 6294
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+        "type": "image",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876290453.286,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.086,
+          "responseStart": 4.368,
+          "responseEnd": 5.44
+        },
+        "size": 178518
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290143.2568,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 135.264,
+          "responseStart": 329.026,
+          "responseEnd": 350.572
+        },
+        "size": 12811
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290163.119,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 115.436,
+          "responseStart": 282.214,
+          "responseEnd": 372.329
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290163.2998,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 115.336,
+          "responseStart": 282.217,
+          "responseEnd": 401.879
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290130.286,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 148.195,
+          "responseStart": 315.346,
+          "responseEnd": 462.519
+        },
+        "size": 5448
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290138.2961,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 140.211,
+          "responseStart": 355.031,
+          "responseEnd": 455.075
+        },
+        "size": 11162
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290345.4648,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.181,
+          "responseStart": 169.836,
+          "responseEnd": 449.249
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290442.728,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.171,
+          "responseStart": 150.18,
+          "responseEnd": 188.178
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290443.12,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.308,
+          "responseStart": 187.382,
+          "responseEnd": 227.363
+        },
+        "size": 37491
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290443.3223,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.161,
+          "responseStart": 226.496,
+          "responseEnd": 281.941
+        },
+        "size": 38813
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876290443.229,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.23,
+          "responseStart": 278.059,
+          "responseEnd": 282.124
+        },
+        "size": 12959
+      }
+    ]
+  },
+  {
+    "run": 1,
+    "mode": "warm",
+    "metrics": {
+      "lcp": [
+        {
+          "time": 40,
+          "size": 3853,
+          "url": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%"
+        },
+        {
+          "time": 144,
+          "size": 667000,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif"
+        }
+      ],
+      "longTasks": [],
+      "cls": 0,
+      "firstImageDecoded": 141.69999999925494,
+      "stageMounted": 93.60000000149012,
+      "nav": {
+        "name": "http://127.0.0.1:4174/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 67.30000000074506,
+        "navigationId": 601,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "workerStart": 1.699999999254942,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 1.800000000745058,
+        "domainLookupStart": 1.800000000745058,
+        "domainLookupEnd": 1.800000000745058,
+        "connectStart": 1.800000000745058,
+        "secureConnectionStart": 0,
+        "connectEnd": 1.800000000745058,
+        "requestStart": 1.800000000745058,
+        "responseStart": 5.300000000745058,
+        "firstInterimResponseStart": 5.300000000745058,
+        "finalResponseHeadersStart": 0,
+        "responseEnd": 7.300000000745058,
+        "transferSize": 7984,
+        "encodedBodySize": 7684,
+        "decodedBodySize": 7684,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 7.800000000745058,
+        "unloadEventEnd": 7.800000000745058,
+        "domInteractive": 13.800000000745058,
+        "domContentLoadedEventStart": 52.100000001490116,
+        "domContentLoadedEventEnd": 52.19999999925494,
+        "domComplete": 67.19999999925494,
+        "loadEventStart": 67.19999999925494,
+        "loadEventEnd": 67.30000000074506,
+        "type": "reload",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "low"
+        }
+      },
+      "paints": [
+        {
+          "name": "first-paint",
+          "entryType": "paint",
+          "startTime": 40,
+          "duration": 0,
+          "navigationId": 601,
+          "paintTime": 31.199999999254942,
+          "presentationTime": 40
+        },
+        {
+          "name": "first-contentful-paint",
+          "entryType": "paint",
+          "startTime": 40,
+          "duration": 0,
+          "navigationId": 601,
+          "paintTime": 31.199999999254942,
+          "presentationTime": 40
+        }
+      ],
+      "sw": true,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+          "start": 10.600000001490116,
+          "duration": 29.5,
+          "transfer": 0,
+          "encoded": 918059
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+          "start": 10.899999998509884,
+          "duration": 10.800000000745058,
+          "transfer": 0,
+          "encoded": 209320
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+          "start": 31,
+          "duration": 3.800000000745058,
+          "transfer": 0,
+          "encoded": 209932
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+          "start": 51.69999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+          "start": 78.30000000074506,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+          "start": 78.5,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+          "start": 78.5,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+          "start": 78.69999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+          "start": 78.69999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+          "start": 84.10000000149012,
+          "duration": 5.399999998509884,
+          "transfer": 0,
+          "encoded": 108232
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+          "start": 84.19999999925494,
+          "duration": 1.199999999254942,
+          "transfer": 0,
+          "encoded": 33148
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+          "start": 84.19999999925494,
+          "duration": 6.5,
+          "transfer": 0,
+          "encoded": 111912
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+          "start": 84.30000000074506,
+          "duration": 1.8999999985098839,
+          "transfer": 0,
+          "encoded": 33032
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+          "start": 84.5,
+          "duration": 2,
+          "transfer": 0,
+          "encoded": 32944
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+          "start": 84.69999999925494,
+          "duration": 6.199999999254942,
+          "transfer": 0,
+          "encoded": 30688
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+          "start": 85,
+          "duration": 6.300000000745058,
+          "transfer": 0,
+          "encoded": 30744
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+          "start": 85.30000000074506,
+          "duration": 6.5,
+          "transfer": 0,
+          "encoded": 112312
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+          "start": 116.19999999925494,
+          "duration": 1.6000000014901161,
+          "transfer": 0,
+          "encoded": 48911
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+          "start": 116.30000000074506,
+          "duration": 2.399999998509884,
+          "transfer": 0,
+          "encoded": 24993
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+          "start": 116.30000000074506,
+          "duration": 2.5,
+          "transfer": 0,
+          "encoded": 66294
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+          "start": 116.39999999850988,
+          "duration": 2.300000000745058,
+          "transfer": 0,
+          "encoded": 33241
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/csrf-token",
+          "start": 140.39999999850988,
+          "duration": 2,
+          "transfer": 0,
+          "encoded": 95
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/settings",
+          "start": 141.30000000074506,
+          "duration": 2,
+          "transfer": 0,
+          "encoded": 325
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/auth/refresh",
+          "start": 141.5,
+          "duration": 5.699999999254942,
+          "transfer": 0,
+          "encoded": 46
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+          "start": 151.30000000074506,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+          "start": 151.39999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+          "start": 151.5,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+          "start": 151.5,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+          "start": 153.60000000149012,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+          "start": 153.89999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+          "start": 154.19999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+          "start": 182.69999999925494,
+          "duration": 65.80000000074506,
+          "transfer": 0,
+          "encoded": 31
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+          "start": 638.8999999985099,
+          "duration": 1,
+          "transfer": 0,
+          "encoded": 178518
+        }
+      ]
+    },
+    "requests": [
+      {
+        "url": "http://127.0.0.1:4174/",
+        "type": "document",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291464.429,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.396,
+          "responseStart": 3.899,
+          "responseEnd": 6.134
+        },
+        "size": 7684
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+        "type": "stylesheet",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291474.0342,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.181,
+          "responseStart": 9.604,
+          "responseEnd": 10.844
+        },
+        "size": 209320
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+        "type": "script",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291474,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.064,
+          "responseStart": 5.907,
+          "responseEnd": 29.483
+        },
+        "size": 918059
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291514.633,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.101,
+          "responseEnd": 0.101
+        },
+        "size": 12834
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291494.224,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.086,
+          "responseStart": 2.83,
+          "responseEnd": 3.851
+        },
+        "size": 209932
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291541.27,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.095,
+          "responseEnd": 0.095
+        },
+        "size": 12811
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291541.453,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.051,
+          "responseEnd": 0.051
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291541.5671,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.04,
+          "responseEnd": 0.04
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291541.6638,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.045,
+          "responseEnd": 0.045
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291541.759,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.039,
+          "responseEnd": 0.039
+        },
+        "size": 36815
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291547.3289,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.181,
+          "responseStart": 0.807,
+          "responseEnd": 1.323
+        },
+        "size": 33148
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291547.516,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.104,
+          "responseStart": 1.105,
+          "responseEnd": 1.893
+        },
+        "size": 33032
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291547.667,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.253,
+          "responseStart": 1.265,
+          "responseEnd": 1.982
+        },
+        "size": 32944
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291547.291,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.092,
+          "responseStart": 4.649,
+          "responseEnd": 5.53
+        },
+        "size": 108232
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291547.432,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.126,
+          "responseStart": 5.274,
+          "responseEnd": 6.451
+        },
+        "size": 111912
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291547.827,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.289,
+          "responseStart": 5.555,
+          "responseEnd": 6.354
+        },
+        "size": 30688
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291548.2222,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.437,
+          "responseStart": 5.446,
+          "responseEnd": 6.337
+        },
+        "size": 30744
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291548.456,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.71,
+          "responseStart": 5.429,
+          "responseEnd": 6.588
+        },
+        "size": 112312
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291580.284,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.095,
+          "responseStart": 0.184,
+          "responseEnd": 1.542
+        },
+        "size": 48911
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291580.967,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.059,
+          "responseStart": 0.329,
+          "responseEnd": 2.341
+        },
+        "size": 24993
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291581.09,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.029,
+          "responseStart": 0.365,
+          "responseEnd": 2.427
+        },
+        "size": 66294
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291581.1692,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.027,
+          "responseStart": 0.416,
+          "responseEnd": 2.335
+        },
+        "size": 33241
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291614.253,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.173,
+          "responseEnd": 0.173
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291614.385,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.057,
+          "responseEnd": 0.057
+        },
+        "size": 37491
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291614.4631,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.045,
+          "responseEnd": 0.045
+        },
+        "size": 12959
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291614.524,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.048,
+          "responseEnd": 0.048
+        },
+        "size": 38813
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291616.545,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.937,
+          "responseEnd": 0.937
+        },
+        "size": 5448
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291616.907,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.093,
+          "responseEnd": 0.093
+        },
+        "size": 6294
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876291617.159,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.078,
+          "responseEnd": 0.078
+        },
+        "size": 11162
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/settings",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291604.4841,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.54,
+          "responseStart": 1.819,
+          "responseEnd": 2.105
+        },
+        "size": 325
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/auth/refresh",
+        "type": "xhr",
+        "status": 401,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291604.6948,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.963,
+          "responseStart": 5.444,
+          "responseEnd": 5.655
+        },
+        "size": 46
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/csrf-token",
+        "type": "fetch",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291603.576,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.076,
+          "responseStart": 1.431,
+          "responseEnd": 2.137
+        },
+        "size": 95
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876291645.9692,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.11,
+          "responseStart": 65.525,
+          "responseEnd": 65.793
+        },
+        "size": 31
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+        "type": "image",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876292102.078,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.079,
+          "responseStart": 0.802,
+          "responseEnd": 1.048
+        },
+        "size": 178518
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "mode": "cold",
+    "metrics": {
+      "lcp": [
+        {
+          "time": 44,
+          "size": 3853,
+          "url": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%"
+        },
+        {
+          "time": 264,
+          "size": 4726,
+          "url": ""
+        },
+        {
+          "time": 904,
+          "size": 36580,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif"
+        },
+        {
+          "time": 952,
+          "size": 57040,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif"
+        },
+        {
+          "time": 1008,
+          "size": 667000,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif"
+        }
+      ],
+      "longTasks": [
+        {
+          "time": 108.10000000149012,
+          "duration": 141
+        }
+      ],
+      "cls": 0,
+      "firstImageDecoded": 994.3999999985099,
+      "stageMounted": 498.5,
+      "nav": {
+        "name": "http://127.0.0.1:4174/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 105,
+        "navigationId": 1270,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "http/1.1",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "workerStart": 0,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 0.8999999985098839,
+        "domainLookupStart": 0.8999999985098839,
+        "domainLookupEnd": 0.8999999985098839,
+        "connectStart": 0.8999999985098839,
+        "secureConnectionStart": 0,
+        "connectEnd": 0.8999999985098839,
+        "requestStart": 1.6000000014901161,
+        "responseStart": 3.699999999254942,
+        "firstInterimResponseStart": 0,
+        "finalResponseHeadersStart": 3.699999999254942,
+        "responseEnd": 4,
+        "transferSize": 2755,
+        "encodedBodySize": 2455,
+        "decodedBodySize": 7684,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 0,
+        "unloadEventEnd": 0,
+        "domInteractive": 12.300000000745058,
+        "domContentLoadedEventStart": 90.80000000074506,
+        "domContentLoadedEventEnd": 90.89999999850988,
+        "domComplete": 104.60000000149012,
+        "loadEventStart": 104.60000000149012,
+        "loadEventEnd": 105,
+        "type": "navigate",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "low"
+        }
+      },
+      "paints": [
+        {
+          "name": "first-paint",
+          "entryType": "paint",
+          "startTime": 44,
+          "duration": 0,
+          "navigationId": 1270,
+          "paintTime": 32.80000000074506,
+          "presentationTime": 44
+        },
+        {
+          "name": "first-contentful-paint",
+          "entryType": "paint",
+          "startTime": 44,
+          "duration": 0,
+          "navigationId": 1270,
+          "paintTime": 32.80000000074506,
+          "presentationTime": 44
+        }
+      ],
+      "sw": true,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+          "start": 8.100000001490116,
+          "duration": 33.69999999925494,
+          "transfer": 293394,
+          "encoded": 293094
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+          "start": 8.300000000745058,
+          "duration": 11.5,
+          "transfer": 40682,
+          "encoded": 40382
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+          "start": 32.5,
+          "duration": 4.300000000745058,
+          "transfer": 210232,
+          "encoded": 209932
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+          "start": 153.89999999850988,
+          "duration": 100.10000000149012,
+          "transfer": 112212,
+          "encoded": 111912
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+          "start": 154.10000000149012,
+          "duration": 100.19999999925494,
+          "transfer": 30988,
+          "encoded": 30688
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+          "start": 154.5,
+          "duration": 100,
+          "transfer": 31044,
+          "encoded": 30744
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+          "start": 154.69999999925494,
+          "duration": 100.30000000074506,
+          "transfer": 108532,
+          "encoded": 108232
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+          "start": 154.69999999925494,
+          "duration": 100.69999999925494,
+          "transfer": 112612,
+          "encoded": 112312
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+          "start": 255.39999999850988,
+          "duration": 298.70000000298023,
+          "transfer": 49211,
+          "encoded": 48911
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+          "start": 255.5,
+          "duration": 265.1000000014901,
+          "transfer": 25293,
+          "encoded": 24993
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+          "start": 255.5,
+          "duration": 349.3999999985099,
+          "transfer": 71430,
+          "encoded": 71130
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+          "start": 255.60000000149012,
+          "duration": 382.5,
+          "transfer": 33647,
+          "encoded": 33347
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/csrf-token",
+          "start": 280.6000000014901,
+          "duration": 6.199999999254942,
+          "transfer": 0,
+          "encoded": 95
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/images",
+          "start": 287.8999999985099,
+          "duration": 206.60000000149012,
+          "transfer": 0,
+          "encoded": 27436
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/hero-collections",
+          "start": 288.1000000014901,
+          "duration": 205.09999999776483,
+          "transfer": 0,
+          "encoded": 2569
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/settings",
+          "start": 288.30000000074506,
+          "duration": 61.399999998509884,
+          "transfer": 0,
+          "encoded": 325
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/auth/refresh",
+          "start": 288.5,
+          "duration": 7.100000001490116,
+          "transfer": 0,
+          "encoded": 46
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+          "start": 322.8999999985099,
+          "duration": 62.400000002235174,
+          "transfer": 0,
+          "encoded": 31
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+          "start": 495.69999999925494,
+          "duration": 510,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+          "start": 495.80000000074506,
+          "duration": 441.5999999977648,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+          "start": 499.30000000074506,
+          "duration": 488.8999999985099,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+          "start": 499.80000000074506,
+          "duration": 437.80000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+          "start": 500,
+          "duration": 505.5,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+          "start": 500.1000000014901,
+          "duration": 431.5999999977648,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+          "start": 500.19999999925494,
+          "duration": 379.1000000014901,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+          "start": 500.30000000074506,
+          "duration": 542.3999999985099,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+          "start": 504.30000000074506,
+          "duration": 5.5,
+          "transfer": 0,
+          "encoded": 33148
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+          "start": 504.3999999985099,
+          "duration": 5.800000000745058,
+          "transfer": 0,
+          "encoded": 33032
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+          "start": 504.5,
+          "duration": 6.199999999254942,
+          "transfer": 0,
+          "encoded": 32944
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+          "start": 525.1000000014901,
+          "duration": 525.1999999992549,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+          "start": 777.3000000007451,
+          "duration": 5.300000000745058,
+          "transfer": 0,
+          "encoded": 178518
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+          "start": 994.1999999992549,
+          "duration": 145.80000000074506,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+          "start": 994.1999999992549,
+          "duration": 161.10000000149012,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+          "start": 994.3000000007451,
+          "duration": 176,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+          "start": 994.3000000007451,
+          "duration": 216.09999999776483,
+          "transfer": 0,
+          "encoded": 0
+        }
+      ]
+    },
+    "requests": [
+      {
+        "url": "http://127.0.0.1:4174/",
+        "type": "document",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876292788.534,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.147,
+          "responseStart": 2.22,
+          "responseEnd": 3.053
+        },
+        "size": 7684
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+        "type": "stylesheet",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876292800.045,
+          "domainLookupStart": 0.067,
+          "domainLookupEnd": 0.079,
+          "connectStart": 0.079,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.37,
+          "requestStart": 0.409,
+          "responseStart": 3.3,
+          "responseEnd": 11.553
+        },
+        "size": 209320
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+        "type": "script",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876292799.282,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.556,
+          "responseStart": 4.285,
+          "responseEnd": 33.723
+        },
+        "size": 918059
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876292820.965,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.163,
+          "responseStart": 2.214,
+          "responseEnd": 4.331
+        },
+        "size": 209932
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293036.7332,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.199,
+          "responseStart": 3.868,
+          "responseEnd": 101.762
+        },
+        "size": 111912
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293037.157,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.851,
+          "responseStart": 3.992,
+          "responseEnd": 100.257
+        },
+        "size": 30688
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293037.2878,
+          "domainLookupStart": 0.042,
+          "domainLookupEnd": 0.055,
+          "connectStart": 0.055,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.83,
+          "requestStart": 0.97,
+          "responseStart": 4.121,
+          "responseEnd": 100.136
+        },
+        "size": 30744
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293037.7112,
+          "domainLookupStart": 0.051,
+          "domainLookupEnd": 0.056,
+          "connectStart": 0.056,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.51,
+          "requestStart": 0.637,
+          "responseStart": 4.11,
+          "responseEnd": 100.373
+        },
+        "size": 108232
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293038.498,
+          "domainLookupStart": 0.06,
+          "domainLookupEnd": 0.066,
+          "connectStart": 0.066,
+          "secureConnectionStart": -1,
+          "connectEnd": 0.267,
+          "requestStart": 0.295,
+          "responseStart": 3.654,
+          "responseEnd": 100.642
+        },
+        "size": 112312
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/auth/refresh",
+        "type": "xhr",
+        "status": 401,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293075.832,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.132,
+          "responseStart": 6.811,
+          "responseEnd": 7.089
+        },
+        "size": 46
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/settings",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293075.499,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.099,
+          "responseStart": 61.153,
+          "responseEnd": 61.418
+        },
+        "size": 325
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/csrf-token",
+        "type": "fetch",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293067.864,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.133,
+          "responseStart": 5.876,
+          "responseEnd": 6.306
+        },
+        "size": 95
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293110.1191,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.101,
+          "responseStart": 61.951,
+          "responseEnd": 62.466
+        },
+        "size": 31
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/hero-collections",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293075.316,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.072,
+          "responseStart": 204.826,
+          "responseEnd": 205.125
+        },
+        "size": 2569
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/images",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293075.022,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.099,
+          "responseStart": 206.373,
+          "responseEnd": 206.697
+        },
+        "size": 27436
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293043.456,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 43.729,
+          "connectStart": 44.018,
+          "secureConnectionStart": 84.167,
+          "connectEnd": 128.351,
+          "requestStart": 128.638,
+          "responseStart": 180.137,
+          "responseEnd": 265.161
+        },
+        "size": 24993
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293291.576,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.081,
+          "responseStart": 4.934,
+          "responseEnd": 5.535
+        },
+        "size": 33148
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293291.6272,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.304,
+          "responseStart": 5.062,
+          "responseEnd": 5.765
+        },
+        "size": 33032
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293291.656,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.329,
+          "responseStart": 5.84,
+          "responseEnd": 6.219
+        },
+        "size": 32944
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293042.9639,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 129.196,
+          "responseStart": 180.541,
+          "responseEnd": 298.728
+        },
+        "size": 48911
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293043.5698,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 128.593,
+          "responseStart": 179.691,
+          "responseEnd": 349.34
+        },
+        "size": 71130
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293043.667,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 128.524,
+          "responseStart": 246.466,
+          "responseEnd": 382.575
+        },
+        "size": 33347
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+        "type": "image",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876293564.5317,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.075,
+          "responseStart": 4.331,
+          "responseEnd": 5.31
+        },
+        "size": 178518
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293309.96,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 176.063,
+          "responseStart": 317.134,
+          "responseEnd": 379.103
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293287.5159,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 198.536,
+          "responseStart": 379.062,
+          "responseEnd": 431.626
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293283.895,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 202.105,
+          "responseStart": 425.188,
+          "responseEnd": 441.655
+        },
+        "size": 6294
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293287.235,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 198.743,
+          "responseStart": 422.088,
+          "responseEnd": 437.781
+        },
+        "size": 12811
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293286.6719,
+          "domainLookupStart": 0,
+          "domainLookupEnd": 49.751,
+          "connectStart": 102.213,
+          "secureConnectionStart": 146.798,
+          "connectEnd": 198.691,
+          "requestStart": 199.2,
+          "responseStart": 438.143,
+          "responseEnd": 489.041
+        },
+        "size": 12834
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293283.22,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 202.741,
+          "responseStart": 463.705,
+          "responseEnd": 509.902
+        },
+        "size": 11162
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293287.3809,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 198.546,
+          "responseStart": 459.335,
+          "responseEnd": 505.477
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293666.7268,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.19,
+          "responseStart": 126.118,
+          "responseEnd": 542.433
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293666.851,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.112,
+          "responseStart": 163.169,
+          "responseEnd": 525.3
+        },
+        "size": 5448
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293781.7532,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.163,
+          "responseStart": 114.4,
+          "responseEnd": 145.832
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293782.228,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.272,
+          "responseStart": 145.011,
+          "responseEnd": 161.078
+        },
+        "size": 37491
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293782.343,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.184,
+          "responseStart": 162.149,
+          "responseEnd": 176.086
+        },
+        "size": 12959
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876293782.433,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.121,
+          "responseStart": 175.138,
+          "responseEnd": 216.145
+        },
+        "size": 38813
+      }
+    ]
+  },
+  {
+    "run": 2,
+    "mode": "warm",
+    "metrics": {
+      "lcp": [
+        {
+          "time": 32,
+          "size": 3853,
+          "url": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%"
+        },
+        {
+          "time": 136,
+          "size": 667000,
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif"
+        }
+      ],
+      "longTasks": [],
+      "cls": 0,
+      "firstImageDecoded": 140.69999999925494,
+      "stageMounted": 92.39999999850988,
+      "nav": {
+        "name": "http://127.0.0.1:4174/",
+        "entryType": "navigation",
+        "startTime": 0,
+        "duration": 66.39999999850988,
+        "navigationId": 5910,
+        "initiatorType": "navigation",
+        "deliveryType": "",
+        "nextHopProtocol": "",
+        "renderBlockingStatus": "non-blocking",
+        "contentType": "text/html",
+        "contentEncoding": "gzip",
+        "workerStart": 1.5999999977648258,
+        "workerRouterEvaluationStart": 0,
+        "workerCacheLookupStart": 0,
+        "workerMatchedSourceType": "",
+        "workerFinalSourceType": "",
+        "redirectStart": 0,
+        "redirectEnd": 0,
+        "fetchStart": 1.699999999254942,
+        "domainLookupStart": 1.699999999254942,
+        "domainLookupEnd": 1.699999999254942,
+        "connectStart": 1.699999999254942,
+        "secureConnectionStart": 0,
+        "connectEnd": 1.699999999254942,
+        "requestStart": 1.699999999254942,
+        "responseStart": 5.199999999254942,
+        "firstInterimResponseStart": 5.199999999254942,
+        "finalResponseHeadersStart": 0,
+        "responseEnd": 7,
+        "transferSize": 7984,
+        "encodedBodySize": 7684,
+        "decodedBodySize": 7684,
+        "responseStatus": 200,
+        "serverTiming": [],
+        "unloadEventStart": 7.399999998509884,
+        "unloadEventEnd": 7.399999998509884,
+        "domInteractive": 13.299999997019768,
+        "domContentLoadedEventStart": 51.099999997764826,
+        "domContentLoadedEventEnd": 51.099999997764826,
+        "domComplete": 66.09999999776483,
+        "loadEventStart": 66.19999999925494,
+        "loadEventEnd": 66.39999999850988,
+        "type": "reload",
+        "redirectCount": 0,
+        "activationStart": 0,
+        "criticalCHRestart": 0,
+        "notRestoredReasons": null,
+        "confidence": {
+          "randomizedTriggerRate": 0.4994798,
+          "value": "low"
+        }
+      },
+      "paints": [
+        {
+          "name": "first-paint",
+          "entryType": "paint",
+          "startTime": 32,
+          "duration": 0,
+          "navigationId": 5910,
+          "paintTime": 26.799999997019768,
+          "presentationTime": 32
+        },
+        {
+          "name": "first-contentful-paint",
+          "entryType": "paint",
+          "startTime": 32,
+          "duration": 0,
+          "navigationId": 5910,
+          "paintTime": 26.799999997019768,
+          "presentationTime": 32
+        }
+      ],
+      "sw": true,
+      "resources": [
+        {
+          "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+          "start": 10.099999997764826,
+          "duration": 28.5,
+          "transfer": 0,
+          "encoded": 918059
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+          "start": 10.299999997019768,
+          "duration": 10.700000002980232,
+          "transfer": 0,
+          "encoded": 209320
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+          "start": 26.599999997764826,
+          "duration": 4.100000001490116,
+          "transfer": 0,
+          "encoded": 209932
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+          "start": 50.599999997764826,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+          "start": 77.29999999701977,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+          "start": 77.39999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+          "start": 77.5,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+          "start": 77.69999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+          "start": 77.69999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+          "start": 83.19999999925494,
+          "duration": 4.599999997764826,
+          "transfer": 0,
+          "encoded": 108232
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+          "start": 83.29999999701977,
+          "duration": 1.1000000014901161,
+          "transfer": 0,
+          "encoded": 33148
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+          "start": 83.39999999850988,
+          "duration": 6,
+          "transfer": 0,
+          "encoded": 111912
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+          "start": 83.5,
+          "duration": 1.199999999254942,
+          "transfer": 0,
+          "encoded": 33032
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+          "start": 83.59999999776483,
+          "duration": 1.300000000745058,
+          "transfer": 0,
+          "encoded": 32944
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+          "start": 83.69999999925494,
+          "duration": 5.800000000745058,
+          "transfer": 0,
+          "encoded": 30688
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+          "start": 84.09999999776483,
+          "duration": 5.699999999254942,
+          "transfer": 0,
+          "encoded": 30744
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+          "start": 84.39999999850988,
+          "duration": 6.199999999254942,
+          "transfer": 0,
+          "encoded": 112312
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+          "start": 113.69999999925494,
+          "duration": 1.5999999977648258,
+          "transfer": 0,
+          "encoded": 48911
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+          "start": 113.79999999701977,
+          "duration": 2.600000001490116,
+          "transfer": 0,
+          "encoded": 24993
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+          "start": 113.89999999850988,
+          "duration": 2.600000001490116,
+          "transfer": 0,
+          "encoded": 71130
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+          "start": 113.89999999850988,
+          "duration": 2.5,
+          "transfer": 0,
+          "encoded": 33347
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/csrf-token",
+          "start": 136.89999999850988,
+          "duration": 2.300000000745058,
+          "transfer": 0,
+          "encoded": 95
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/settings",
+          "start": 137.79999999701977,
+          "duration": 1.9000000022351742,
+          "transfer": 0,
+          "encoded": 325
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/auth/refresh",
+          "start": 138,
+          "duration": 5.399999998509884,
+          "transfer": 0,
+          "encoded": 46
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+          "start": 148.19999999925494,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+          "start": 148.39999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+          "start": 148.39999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+          "start": 148.39999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+          "start": 150.89999999850988,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+          "start": 151.29999999701977,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+          "start": 151.59999999776483,
+          "duration": 0,
+          "transfer": 0,
+          "encoded": 0
+        },
+        {
+          "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+          "start": 207.59999999776483,
+          "duration": 68.19999999925494,
+          "transfer": 0,
+          "encoded": 31
+        },
+        {
+          "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+          "start": 635.1999999992549,
+          "duration": 1.0999999977648258,
+          "transfer": 0,
+          "encoded": 178518
+        }
+      ]
+    },
+    "requests": [
+      {
+        "url": "http://127.0.0.1:4174/",
+        "type": "document",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294804.978,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.424,
+          "responseStart": 3.866,
+          "responseEnd": 5.843
+        },
+        "size": 7684
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-BQFWm1zf.css",
+        "type": "stylesheet",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294814.0972,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.124,
+          "responseStart": 9.517,
+          "responseEnd": 10.646
+        },
+        "size": 209320
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/Roboto-Variable-1nydPDgi.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294830.4573,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.21,
+          "responseStart": 2.996,
+          "responseEnd": 4.091
+        },
+        "size": 209932
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/index-DuqmdeKA.js",
+        "type": "script",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294814.064,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.062,
+          "responseStart": 5.727,
+          "responseEnd": 28.555
+        },
+        "size": 918059
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294854.176,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.088,
+          "responseEnd": 0.088
+        },
+        "size": 12834
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294880.829,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.109,
+          "responseEnd": 0.109
+        },
+        "size": 12811
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294881.0251,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.048,
+          "responseEnd": 0.048
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294881.1309,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.05,
+          "responseEnd": 0.05
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294881.238,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.043,
+          "responseEnd": 0.043
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294881.326,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.043,
+          "responseEnd": 0.043
+        },
+        "size": 36815
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/33f3233b5edd544c-DsEkmiuO.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294887.0168,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.194,
+          "responseStart": 0.844,
+          "responseEnd": 1.228
+        },
+        "size": 33148
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294887.219,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.099,
+          "responseStart": 0.948,
+          "responseEnd": 1.306
+        },
+        "size": 33032
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/501f76ca195ed91f-Bj02rdhv.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294887.333,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.289,
+          "responseStart": 0.992,
+          "responseEnd": 1.381
+        },
+        "size": 32944
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/a699af1dea30b799-ClqSfwQ3.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294886.981,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.097,
+          "responseStart": 3.774,
+          "responseEnd": 4.724
+        },
+        "size": 108232
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/87e867b52640b3b3-C2FsVcxq.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294887.125,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.138,
+          "responseStart": 4.756,
+          "responseEnd": 6.08
+        },
+        "size": 111912
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/72025d9b68a7dd0b-M4vHmlo8.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294887.5452,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.285,
+          "responseStart": 4.641,
+          "responseEnd": 5.809
+        },
+        "size": 30688
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/959364b06f81af7e-BPzpuXuS.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294887.9722,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.211,
+          "responseStart": 4.496,
+          "responseEnd": 5.861
+        },
+        "size": 30744
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/6f49e1b28bce7339-C3bW5xsp.woff2",
+        "type": "font",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294888.2908,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.213,
+          "responseStart": 5.135,
+          "responseEnd": 6.228
+        },
+        "size": 112312
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294918.447,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.111,
+          "responseStart": 0.216,
+          "responseEnd": 1.661
+        },
+        "size": 48911
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519741497674-611481863552",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294919.226,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.052,
+          "responseStart": 0.311,
+          "responseEnd": 2.621
+        },
+        "size": 24993
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1511895426328-dc8714191300",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294919.338,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.029,
+          "responseStart": 0.33,
+          "responseEnd": 2.709
+        },
+        "size": 71130
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294919.4211,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.026,
+          "responseStart": 0.507,
+          "responseEnd": 2.616
+        },
+        "size": 33347
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766053066170-43ca831e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294951.777,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.178,
+          "responseEnd": 0.178
+        },
+        "size": 36815
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766050794158-2955159e-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294951.9219,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.065,
+          "responseEnd": 0.065
+        },
+        "size": 37491
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665111-adf2b8b8-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294951.999,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.05,
+          "responseEnd": 0.05
+        },
+        "size": 12959
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-regular.avif",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294952.067,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.045,
+          "responseEnd": 0.045
+        },
+        "size": 38813
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237623-d130db32-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294954.4202,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 1.01,
+          "responseEnd": 1.01
+        },
+        "size": 11162
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946145456-33591d6a-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294954.852,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.099,
+          "responseEnd": 0.099
+        },
+        "size": 6294
+      },
+      {
+        "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765287718849-d033317c-thumbnail.webp",
+        "type": "image",
+        "status": 200,
+        "fromSW": false,
+        "timing": {
+          "startTime": 1791876294955.118,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": -1,
+          "responseStart": 0.074,
+          "responseEnd": 0.074
+        },
+        "size": 5448
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/settings",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294941.551,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.065,
+          "responseStart": 1.723,
+          "responseEnd": 1.981
+        },
+        "size": 325
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/auth/refresh",
+        "type": "xhr",
+        "status": 401,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294941.773,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.526,
+          "responseStart": 5.272,
+          "responseEnd": 5.478
+        },
+        "size": 46
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/csrf-token",
+        "type": "fetch",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876294940.745,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.083,
+          "responseStart": 1.546,
+          "responseEnd": 2.415
+        },
+        "size": 95
+      },
+      {
+        "url": "http://127.0.0.1:4174/api/admin/analytics/track",
+        "type": "xhr",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876295011.4531,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.108,
+          "responseStart": 68.004,
+          "responseEnd": 68.262
+        },
+        "size": 31
+      },
+      {
+        "url": "http://127.0.0.1:4174/assets/logo-CD6Ledml.png",
+        "type": "image",
+        "status": 200,
+        "fromSW": true,
+        "timing": {
+          "startTime": 1791876295439.0369,
+          "domainLookupStart": -1,
+          "domainLookupEnd": -1,
+          "connectStart": -1,
+          "secureConnectionStart": -1,
+          "connectEnd": -1,
+          "requestStart": 0.079,
+          "responseStart": 0.896,
+          "responseEnd": 1.15
+        },
+        "size": 178518
+      }
+    ]
+  }
+]

@@ -1,5 +1,5 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { Compass, Camera } from 'lucide-react';
 import { useImageStore } from '@/stores/useImageStore';
 import { categoryService, type Category } from '@/services/categoryService';
@@ -15,9 +15,13 @@ import { useSearchFilters } from '@/components/SearchBar/hooks/useSearchFilters'
 import { buildFilterParams } from '@/utils/buildFilterParams';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { BRAND } from '@/constants/brand';
-import { t, getLocale } from '@/i18n';
+import { getLocale } from '@/i18n';
 import { getTranslatedCategoryName } from '@/utils/categoryTranslations';
 import './ExplorePage.css';
+import { saveImagePageScroll } from '@/utils/imagePageScroll';
+import { useImagePageScrollRestore } from '@/hooks/useImagePageScrollRestore';
+
+const returnCategories = new Map<string, string>();
 
 const ORIENTATIONS = [
   { value: 'all', label: 'Tất cả' },
@@ -38,6 +42,11 @@ export default function ExplorePage() {
   const navigate = useNavigate();
   const actualLocation = useContext(ActualLocationContext);
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const pageRef = useRef<HTMLElement | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>(() =>
+    navigationType === 'POP' ? returnCategories.get(location.key) || 'all' : 'all');
   useDocumentMeta({
     title: 'Khám phá',
     description: `Khám phá bộ sưu tập ảnh từ cộng đồng ${BRAND.nameLong}. Lọc theo danh mục, bố cục và phong cách.`,
@@ -47,11 +56,17 @@ export default function ExplorePage() {
   const images = useImageStore((s) => s.images);
   const loading = useImageStore((s) => s.loading);
   const hasMore = useImageStore((s) => s.hasMore);
+  useImagePageScrollRestore(location, pageRef,
+    navigationType === 'POP' && !loading && images.length > 0, false, undefined, images.length);
 
   const handleImageClick = useCallback((image: Image) => {
     const targetPath = `/photos/${generateImageSlug(image.imageTitle || 'Untitled', image._id)}`;
     const imageState = { images, image, fromGrid: true };
     if (isMobile) {
+      saveImagePageScroll(location, null);
+      returnCategories.delete(location.key);
+      returnCategories.set(location.key, activeCategory);
+      if (returnCategories.size > 50) returnCategories.delete(returnCategories.keys().next().value!);
       navigate(targetPath, { state: imageState });
       return;
     }
@@ -68,10 +83,9 @@ export default function ExplorePage() {
     navigate(targetPath, {
       state: { ...prepareModalNavigationState(background), ...imageState },
     });
-  }, [navigate, images, actualLocation, isMobile]);
+  }, [navigate, images, actualLocation, isMobile, location, activeCategory]);
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
   const { filters, setFilters } = useSearchFilters();
   const orientation = filters.orientation;
   const sort = filters.sortBy || 'date';
@@ -124,7 +138,7 @@ export default function ExplorePage() {
   );
 
   return (
-    <main className="explore-page">
+    <main ref={pageRef} className="explore-page">
       <section className="explore-hero">
         <div className="explore-hero-inner">
           <p className="booking-eyebrow">KHÁM PHÁ</p>

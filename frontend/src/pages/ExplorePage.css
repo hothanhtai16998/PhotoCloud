@@ -195,6 +195,11 @@
   padding: 0 24px;
 }
 
+/* The page shell and filter section already reserve their own space. */
+.explore-grid-wrap .no-flash-grid-container {
+  padding-top: 0;
+}
+
 .explore-empty {
   text-align: center;
   padding: 80px 24px;

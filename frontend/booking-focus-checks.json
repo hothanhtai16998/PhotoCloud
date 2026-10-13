@@ -1,0 +1,47 @@
+[
+  {
+    "width": 320,
+    "initialFocus": true,
+    "tabTrap": true,
+    "stepFocus": true,
+    "escape": true,
+    "close": true,
+    "returnFocus": true
+  },
+  {
+    "width": 390,
+    "initialFocus": true,
+    "tabTrap": true,
+    "stepFocus": true,
+    "escape": true,
+    "close": true,
+    "returnFocus": true
+  },
+  {
+    "width": 768,
+    "initialFocus": true,
+    "tabTrap": true,
+    "stepFocus": true,
+    "escape": true,
+    "close": true,
+    "returnFocus": true
+  },
+  {
+    "width": 1024,
+    "initialFocus": true,
+    "tabTrap": true,
+    "stepFocus": true,
+    "escape": true,
+    "close": true,
+    "returnFocus": true
+  },
+  {
+    "width": 1440,
+    "initialFocus": true,
+    "tabTrap": true,
+    "stepFocus": true,
+    "escape": true,
+    "close": true,
+    "returnFocus": true
+  }
+]

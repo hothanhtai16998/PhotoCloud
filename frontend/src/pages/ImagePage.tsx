@@ -26,7 +26,7 @@ import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { t, getLocale } from '@/i18n';
 import { translateTags } from '@/utils/tagTranslations';
 import { toast } from 'sonner';
-import { Heart, Share2, Download, Info, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle, X } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Download, Info, ChevronDown, MapPin, ExternalLink, Tag, Edit2, FolderPlus, LoaderCircle, X } from 'lucide-react';
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
@@ -77,9 +77,16 @@ function ImagePage() {
   }, [locationWithState.state]);
 
   // Core state
-  const [image, setImage] = useState<Image | null>(null);
-  const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialImage] = useState<Image | null>(() => {
+    const candidate = locationWithState.state?.image as Image | undefined;
+    const id = slug ? extractIdFromSlug(slug) : null;
+    if (!candidate?._id || !id) return null;
+    return (id.length === 24 ? candidate._id : candidate._id.slice(-12)).toLowerCase() === id.toLowerCase() ? candidate : null;
+  });
+  const [image, setImage] = useState<Image | null>(initialImage);
+  const [images, setImages] = useState<Image[]>(() => initialImage
+    ? (Array.isArray(locationWithState.state?.images) ? locationWithState.state.images : [initialImage]) : []);
+  const [loading, setLoading] = useState(!initialImage);
   const [error, setError] = useState<string | null>(null);
   const [supportsAvif, setSupportsAvif] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -1127,6 +1134,7 @@ function ImagePage() {
         className={`image-modal-top-info ${isImageChanging ? 'no-transition' : ''}`}
         style={isImageChanging ? { transition: 'none' } : undefined}
       >
+        {!showModalStyle && <button type="button" className="image-page-back-button" onClick={handleClose} aria-label="Trở về" title="Trở về"><ArrowLeft size={20} /></button>}
         <div
           ref={authorAreaRef}
           className="image-modal-author-area"

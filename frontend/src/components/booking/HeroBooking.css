@@ -43,6 +43,8 @@
 
 /* The marquee spans both columns with breathing room below the header. */
 .hero-marquee-wrap {
+  min-width: 0;
+  contain: inline-size;
   grid-column: 1 / -1;
   grid-row: 1;
   margin: 0 calc(-1 * clamp(20px, 3vw, 32px));
@@ -118,6 +120,9 @@
 
 /* ---------- Copy block ---------- */
 .hero-copy {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   position: relative;
   z-index: 2;
   min-height: 0; /* cho phép co lại theo parent trong grid */
@@ -636,6 +641,9 @@
 
 /* ---------- Visual: 4 collections 2x2 (label-above) ---------- */
 .hero-visual {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -694,9 +702,11 @@
 
 /* 2x2 grid — 4 cards đều nhau */
 .hero-grid {
+  width: 100%;
+  min-width: 0;
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 10px;
   min-height: 0;
@@ -720,6 +730,7 @@
 
 /* 1 collection cell */
 .hero-collection {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -790,6 +801,8 @@
 
 /* Card ảnh */
 .hero-collection-card {
+  width: 100%;
+  min-width: 0;
   position: relative;
   flex: 1;
   min-height: 0;
@@ -978,7 +991,7 @@
 
 @media (max-width: 900px) {
   .hero-section {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto auto;
     padding: 24px 24px 112px;
     /* Tablet: không ép khít viewport nữa, vẫn cho phép scroll */
@@ -988,14 +1001,29 @@
   }
   .hero-visual {
     min-height: 320px;
-    height: 360px;
+    height: auto;
     order: 2;
+  }
+  .hero-collection-card {
+    flex: none;
+    aspect-ratio: 4 / 3;
+  }
+  .hero-title,
+  .hero-sub {
+    overflow-wrap: anywhere;
+  }
+  .hero-cta {
+    max-width: 100%;
+    white-space: normal;
   }
   /* .hero-marquee removed — ribbon now lives in <HeaderMarquee /> */
 }
 
 @media (min-width: 901px) and (max-height: 650px) {
   .hero-section {
+    height: auto;
+    min-height: calc(100dvh - var(--homepage-header-height, 80px) - 8px);
+    grid-template-rows: auto auto;
     gap: 12px;
     padding-bottom: 112px;
   }
@@ -1037,11 +1065,11 @@
   .hero-section {
     min-height: auto;
     max-height: none;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   /* Gallery stack 1 cột trên mobile */
   .hero-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .hero-collection-label {
     font-size: 10px;

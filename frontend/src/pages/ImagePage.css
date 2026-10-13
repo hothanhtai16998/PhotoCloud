@@ -95,7 +95,7 @@
   min-height: calc(100vh - 66px) !important;
   border-radius: 0 !important;
   margin: 0 !important;
-  margin-top: 66px !important; /* Full header height including padding */
+  margin-top: 0 !important; /* The app shell already reserves the header. */
   margin-left: 0 !important; /* No left margin on mobile */
   display: flex !important;
   flex-direction: column !important;
@@ -115,7 +115,7 @@
 
 /* Override scrolled state margin in regular page mode */
 .image-page .image-modal-container.scrolled {
-  margin-top: 66px !important; /* Keep margin even when scrolled */
+  margin-top: 0 !important;
   border-radius: 0 !important;
 }
 
@@ -126,7 +126,7 @@
 }
 
 .image-page .image-modal-container:not(.scrolled) {
-  margin-top: 66px !important; /* Full header height */
+  margin-top: 0 !important;
   border-radius: 0 !important;
 }
 
@@ -157,8 +157,28 @@
   }
   
   .image-page:not(.modal-style) .image-modal-container {
-    margin-top: 96px !important; /* Header + search bar */
+    margin-top: 0 !important;
   }
+}
+
+.app-body > .image-page:not(.modal-style) {
+  padding-top: 0;
+}
+
+.image-page-back-button {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.image-page-back-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }
 
 /* Detail page only: size the dialog to the viewport, including tablet widths. */

@@ -1,5 +1,4 @@
-/* Google Fonts loaded before @import tailwind so the @import url() rule is valid. */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+@import './assets/fonts/web/fonts.css';
 
 @import 'tailwindcss';
 @import 'tw-animate-css';
@@ -46,7 +45,7 @@
 
 @font-face {
 	font-family: 'Roboto';
-	src: url('./assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf') format('truetype');
+	src: url('./assets/fonts/Roboto/Roboto-Variable.woff2') format('woff2');
 	font-weight: 100 900;
 	font-style: normal;
 	/* Use optional to reduce initial payload - browser can skip if slow connection */

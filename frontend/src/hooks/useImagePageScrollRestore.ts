@@ -5,7 +5,7 @@ import { getImagePageScroll, type ImagePageScrollPosition } from '@/utils/imageP
 /** Restore once content has grown enough; user input always takes priority. */
 export function useImagePageScrollRestore(
   location: Location,
-  scrollerRef: RefObject<HTMLDivElement | null>,
+  scrollerRef: RefObject<HTMLElement | null>,
   ready: boolean,
   isBackground: boolean,
   imageId: string | undefined,

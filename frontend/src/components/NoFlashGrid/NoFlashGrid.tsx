@@ -306,20 +306,12 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                                         preloadImage(full, false).catch(() => {});
                                                     }
                                                 }
-                                                : async () => {
-                                                    // DESKTOP: Preload before navigation for smoother experience
+                                                : () => {
                                                     if (!onImageClick) return;
                                                     
                                                     const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                                    if (full) {
-                                                        try {
-                                                            // Preload image before navigation
-                                                            await preloadImage(full, false);
-                                                        } catch {
-                                                            // Continue even if preload fails
-                                                        }
-                                                    }
                                                     onImageClick(image, idx);
+                                                    if (full) void preloadImage(full, false).catch(() => {});
                                                 }}
                                             priority={isPriority}
                                         />

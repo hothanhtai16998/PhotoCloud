@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-13T08:05:57.863Z",
+  "title": "Design System: PhotoCloud — Observed",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "studio-card",
+        "value": "0 1px 2px rgba(27,27,25,.04), 0 8px 24px rgba(27,27,25,.04)",
+        "purpose": "Declared studio card token; actual package cards differ."
+      },
+      {
+        "name": "booking-modal",
+        "value": "0 24px 80px rgba(0,0,0,.25)",
+        "purpose": "Current desktop/mobile booking dialog depth."
+      }
+    ],
+    "motion": [
+      {
+        "name": "studio-transition-smooth",
+        "value": "250ms cubic-bezier(0.22,0.61,0.36,1)",
+        "purpose": "Existing studio token, not universal coverage."
+      },
+      {
+        "name": "slide-transition",
+        "value": "500ms",
+        "purpose": "TimedCardSlider JS transition; reduced-motion gap remains."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "slider-mobile",
+        "value": "600px"
+      },
+      {
+        "name": "header-mobile",
+        "value": "768px"
+      },
+      {
+        "name": "slider-tablet",
+        "value": "900px"
+      },
+      {
+        "name": "sidebar-desktop",
+        "value": "1024px"
+      }
+    ],
+    "provenance": {
+      "status": "observed-not-redesign",
+      "sources": [
+        "frontend/src/styles/theme.css",
+        "frontend/src/index.css",
+        "frontend/design-observations.json"
+      ],
+      "knownDrift": "See DESIGN.md and frontend-audit.md. Do not normalize automatically."
+    }
+  },
+  "components": [],
+  "narrative": {
+    "overview": "Observed light warm studio surfaces and dark image-led slideshow; no new visual world selected.",
+    "keyCharacteristics": [
+      "Photography-first slideshow",
+      "Serif studio headings",
+      "Fixed shared header",
+      "Route-specific sidebar"
+    ],
+    "dos": [
+      "Preserve verified identity and behavior",
+      "Distinguish declared tokens from computed styles"
+    ],
+    "donts": [
+      "Do not treat known bugs as design invariants",
+      "Do not infer dark-mode completeness"
+    ]
+  }
+}

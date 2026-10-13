@@ -1,0 +1,167 @@
+[
+  {
+    "name": "responsive-320",
+    "evidence": {
+      "viewport": 320,
+      "heroColumn": 2582.03125,
+      "heroSection": 312,
+      "horizontalOverflow": false
+    }
+  },
+  {
+    "name": "responsive-390",
+    "evidence": {
+      "viewport": 390,
+      "heroColumn": 2582.03125,
+      "heroSection": 382,
+      "horizontalOverflow": false
+    }
+  },
+  {
+    "name": "responsive-768",
+    "evidence": {
+      "viewport": 768,
+      "heroColumn": 2575.96875,
+      "heroSection": 760,
+      "horizontalOverflow": false
+    }
+  },
+  {
+    "name": "responsive-1024",
+    "evidence": {
+      "viewport": 1024,
+      "heroColumn": 487.1875,
+      "heroSection": 1016,
+      "horizontalOverflow": false
+    }
+  },
+  {
+    "name": "responsive-1440",
+    "evidence": {
+      "viewport": 1440,
+      "heroColumn": 702.4375,
+      "heroSection": 1432,
+      "horizontalOverflow": false
+    }
+  },
+  {
+    "name": "booking-keyboard",
+    "evidence": {
+      "initialFocusInside": false,
+      "afterTab": {
+        "inside": false,
+        "label": "Contact"
+      },
+      "escapeClosed": true
+    }
+  },
+  {
+    "name": "touch-emulation-and-rotation",
+    "evidence": {
+      "syntheticTapPressed": "true",
+      "rotatedOverflow": false,
+      "physicalDevice": false
+    }
+  },
+  {
+    "name": "reduced-motion-autoplay",
+    "evidence": {
+      "before": "01",
+      "after": "02"
+    }
+  },
+  {
+    "name": "route-/explore",
+    "evidence": {
+      "path": "/explore",
+      "heading": [
+        "Bộ sưu tập ảnh được tuyển chọn"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/collections",
+    "evidence": {
+      "path": "/",
+      "heading": [
+        "PHONG CẢNH",
+        "Chụp ảnhtheo cách của bạn"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/packages",
+    "evidence": {
+      "path": "/packages",
+      "heading": [
+        "Chọn gói phù hợp với bạn"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/blog",
+    "evidence": {
+      "path": "/blog",
+      "heading": [
+        "Kể chuyện bằng ánh sáng"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/about",
+    "evidence": {
+      "path": "/about",
+      "heading": [
+        "Kể chuyện bằng ánh sáng"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/signin",
+    "evidence": {
+      "path": "/signin",
+      "heading": [
+        "Chào mừng bạn"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/profile",
+    "evidence": {
+      "path": "/signin",
+      "heading": [
+        "Chào mừng bạn"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "route-/admin",
+    "evidence": {
+      "path": "/signin",
+      "heading": [
+        "Chào mừng bạn"
+      ],
+      "dialogs": 0
+    }
+  },
+  {
+    "name": "refresh-scroll",
+    "evidence": {
+      "afterReload": 0
+    }
+  },
+  {
+    "name": "image-api-failure",
+    "evidence": {
+      "message": null,
+      "retryButtons": 0
+    }
+  }
+]

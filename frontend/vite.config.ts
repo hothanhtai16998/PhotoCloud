@@ -99,6 +99,12 @@ export default defineConfig({
     },
   },
   // Server configuration for development
+  preview: {
+    proxy: {
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/socket.io': { target: 'http://localhost:3000', changeOrigin: true, ws: true },
+    },
+  },
   server: {
     // Ensure proper handling of module scripts
     fs: {

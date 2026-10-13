@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
+import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, MapPin, Sparkles, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -48,6 +49,8 @@ export function BookingModal() {
   const [packages, setPackages] = useState<BookingPackage[]>([]);
   const [form, setForm] = useState<BookingPayload>(blankForm);
   const [loading, setLoading] = useState(false);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const dialogRef = useRef<HTMLElement | null>(null);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
   const [mode, setMode] = useState<BookingModalMode>('package');
   const [pendingPackageId, setPendingPackageId] = useState<string | undefined>(undefined);
@@ -55,6 +58,7 @@ export function BookingModal() {
   useEffect(() => {
     const openHandler = (event: Event) => {
       const detail = getBookingModalDetail(event);
+      if (!open) triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setOpen(true);
       setStep(1);
       setSubmittedCode(null);
@@ -63,7 +67,7 @@ export function BookingModal() {
     };
     window.addEventListener(BOOKING_MODAL_EVENT, openHandler);
     return () => window.removeEventListener(BOOKING_MODAL_EVENT, openHandler);
-  }, []);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -92,17 +96,8 @@ export function BookingModal() {
 
   useEffect(() => {
     if (!open) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
+    dialogRef.current?.focus({ preventScroll: true });
+  }, [open, step, submittedCode]);
 
   const selectedPackage = packages.find((item) => item.slug === form.packageSlug);
   const update = <K extends keyof BookingPayload>(key: K, value: BookingPayload[K]) => setForm((current) => ({ ...current, [key]: value }));
@@ -116,21 +111,31 @@ export function BookingModal() {
   const isCustomQuote = mode === 'custom-quote';
   const totalSteps = isCustomQuote ? 3 : 4;
 
+  const contactError = () => {
+    if (!form.contact.name.trim()) return 'Vui lòng nhập họ và tên.';
+    if (!/^\S+@\S+\.\S+$/.test(form.contact.email.trim())) return 'Vui lòng nhập email hợp lệ.';
+    if (form.contact.phone.trim().length < 7) return 'Vui lòng nhập số điện thoại có ít nhất 7 ký tự.';
+    return null;
+  };
+
   const next = () => {
     if (isCustomQuote) {
       if (step === 1 && (!form.requestedDate || !form.location.address.trim())) return toast.error('Vui lòng chọn ngày và nhập địa điểm.');
-      if (step === 2 && (!form.contact.name.trim() || !form.contact.email.trim() || !form.contact.phone.trim())) return toast.error('Vui lòng điền đủ thông tin liên hệ.');
+      if (step === 2) { const message = contactError(); if (message) return toast.error(message); }
       setStep((current) => current + 1);
       return;
     }
     if (step === 1 && !selectedPackage) return toast.error('Vui lòng chọn một gói chụp.');
     if (step === 2 && (!form.requestedDate || !form.location.address.trim())) return toast.error('Vui lòng chọn ngày và nhập địa điểm.');
-    if (step === 3 && (!form.contact.name.trim() || !form.contact.email.trim() || !form.contact.phone.trim())) return toast.error('Vui lòng điền đủ thông tin liên hệ.');
+    if (step === 3) { const message = contactError(); if (message) return toast.error(message); }
     setStep((current) => current + 1);
   };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (loading) return;
+    const message = contactError();
+    if (message) { toast.error(message); return; }
     if (!user) {
       close();
       navigate('/signin');
@@ -150,12 +155,17 @@ export function BookingModal() {
   if (!open) return null;
 
   return (
-    <div className="booking-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
-      <section className="booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Portal>
+    <Dialog.Overlay className="booking-modal-backdrop">
+      <Dialog.Content asChild aria-describedby={undefined}
+        onOpenAutoFocus={(event) => { event.preventDefault(); dialogRef.current?.focus({ preventScroll: true }); }}
+        onCloseAutoFocus={(event) => { event.preventDefault(); if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true }); }}>
+      <section ref={dialogRef} className="booking-modal" tabIndex={-1}>
         <header className="booking-modal-header">
           <div>
             <p className="booking-modal-eyebrow">{isCustomQuote ? 'BÁO GIÁ RIÊNG' : 'PHOTO CLOUD SERVICES'}</p>
-            <h2 id="booking-modal-title">{isCustomQuote ? 'Nhận báo giá riêng' : 'Đặt lịch chụp'}</h2>
+            <Dialog.Title asChild><h2>{isCustomQuote ? 'Nhận báo giá riêng' : 'Đặt lịch chụp'}</h2></Dialog.Title>
           </div>
           <button type="button" className="booking-modal-close" onClick={close} aria-label="Đóng"><X size={20} /></button>
         </header>
@@ -269,11 +279,14 @@ export function BookingModal() {
 
             <footer className="booking-modal-footer">
               {step > 1 ? <button type="button" className="booking-modal-back" onClick={() => setStep((current) => current - 1)}><ArrowLeft size={16} /> Quay lại</button> : <button type="button" className="booking-modal-full-page" onClick={() => { close(); navigate('/booking'); }}>{isCustomQuote ? 'Mở form báo giá đầy đủ' : 'Đặt lịch đầy đủ'}</button>}
-              {step < totalSteps ? <button type="button" className="booking-modal-next" onClick={next}>Tiếp tục <ArrowRight size={16} /></button> : <button type="submit" className="booking-modal-next" disabled={loading}>{loading && <span className="booking-modal-spinner" />} {loading ? 'Đang gửi' : (isCustomQuote ? 'Gửi yêu cầu báo giá' : 'Gửi yêu cầu')} <Check size={16} /></button>}
+              {step < totalSteps ? <button key="next-step" type="button" className="booking-modal-next" onClick={(event) => { event.preventDefault(); next(); }}>Tiếp tục <ArrowRight size={16} /></button> : <button key="submit-request" type="submit" className="booking-modal-next" disabled={loading}>{loading && <span className="booking-modal-spinner" />} {loading ? 'Đang gửi' : (isCustomQuote ? 'Gửi yêu cầu báo giá' : 'Gửi yêu cầu')} <Check size={16} /></button>}
             </footer>
           </form>
         )}
       </section>
-    </div>
+      </Dialog.Content>
+    </Dialog.Overlay>
+    </Dialog.Portal>
+    </Dialog.Root>
   );
 }

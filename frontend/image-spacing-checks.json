@@ -1,0 +1,32 @@
+[
+  {
+    "width": 390,
+    "toolbarTop": 80,
+    "gridPadding": "0px",
+    "footerStable": true
+  },
+  {
+    "width": 440,
+    "toolbarTop": 80,
+    "gridPadding": "0px",
+    "footerStable": true
+  },
+  {
+    "width": 768,
+    "toolbarTop": 80,
+    "gridPadding": "0px",
+    "footerStable": true
+  },
+  {
+    "width": 1024,
+    "toolbarTop": 80,
+    "gridPadding": "0px",
+    "footerStable": true
+  },
+  {
+    "width": 1440,
+    "toolbarTop": 80,
+    "gridPadding": "0px",
+    "footerStable": true
+  }
+]
