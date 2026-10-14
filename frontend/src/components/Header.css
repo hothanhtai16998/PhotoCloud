@@ -5,10 +5,10 @@
   box-shadow: none;
   position: fixed;
   top: 0;
-  left: 64px; /* Start after sidebar */
+  left: 0;
   right: 0;
   z-index: var(--z-header, 1500);
-  width: calc(100% - 64px); /* Full width minus sidebar */
+  width: 100%;
   box-sizing: border-box;
   transition: background 180ms ease, box-shadow 180ms ease;
   display: flex;
@@ -78,9 +78,6 @@
     z-index: 1502;
   }
 
-  .PHOTOCLOUD-header .header-logo-container {
-    transform: translateX(-72px);
-  }
 }
 
 .header-logo:focus-visible {
@@ -322,8 +319,8 @@
 @media (min-width: 1024px) {
   /* Mobile: Header should be full width (no sidebar visible) */
   .PHOTOCLOUD-header {
-    left: 64px;
-    width: calc(100% - 64px);
+    left: 0;
+    width: 100%;
   }
 }
 
@@ -572,7 +569,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 28px;
+  gap: 18px;
   margin-inline: auto;
   white-space: nowrap;
 }
@@ -593,8 +590,8 @@
 .homepage-header .header-studio-nav { gap:18px; }
 @keyframes library-overlay-in { from { opacity:0; } }
 @keyframes library-panel-in { from { transform:translate3d(100%,0,0); } }
-@media(max-width:1200px) and (min-width:769px) { .homepage-header .header-studio-nav { gap:10px; } .homepage-header .header-studio-nav a { font-size:13px; } .homepage-header .header-container { gap:12px; } .homepage-header .header-booking-button { padding-inline:10px!important; } }
-@media(max-width:768px) { .homepage-header .mobile-header-actions { gap:2px; } .homepage-header .mobile-header-actions > div { gap:2px!important; } .homepage-header .mobile-booking-shortcut,.homepage-header .mobile-header-icon-wrapper { display:none; } .homepage-header .header-container { gap:4px; } .homepage-header .header-library-action { width:32px; } }
+@media(max-width:1200px) and (min-width:769px) { .PHOTOCLOUD-header .header-studio-nav { gap:10px; } .PHOTOCLOUD-header .header-studio-nav a { font-size:13px; } .PHOTOCLOUD-header .header-container { gap:12px; } .PHOTOCLOUD-header .header-booking-button { padding-inline:10px!important; } }
+@media(max-width:768px) { .PHOTOCLOUD-header .mobile-header-actions { gap:2px; } .PHOTOCLOUD-header .mobile-header-actions > div { gap:2px!important; } .PHOTOCLOUD-header .mobile-booking-shortcut,.PHOTOCLOUD-header .mobile-header-icon-wrapper { display:none; } .PHOTOCLOUD-header .header-container { gap:4px; } .PHOTOCLOUD-header .header-library-action { width:32px; } }
 @media(prefers-reduced-motion:reduce) { .header-library-panel,.header-library-overlay { animation:none; } }
 
 .header-studio-nav a {

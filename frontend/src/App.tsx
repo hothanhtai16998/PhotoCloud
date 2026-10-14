@@ -9,7 +9,6 @@ import { useSiteSettings } from "./hooks/useSiteSettings";
 import { useStructuredData, schemaHelpers } from "./hooks/useStructuredData";
 import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
-import ImagePageSidebar from "./components/ImagePageSidebar";
 import Header from "./components/Header";
 import HomePage from './pages/HomePage';
 import { Footer } from "./components/Footer";
@@ -196,12 +195,6 @@ function App() {
   // 2. We have a valid background location with pathname
   const shouldRenderModalRoutes = Boolean(modalValidation.isValid && hasValidBackground);
 
-  // Show sidebar on all pages except admin and auth pages
-  const shouldShowSidebar = !location.pathname.startsWith('/admin') && 
-                            !location.pathname.startsWith('/signin') && 
-                            !location.pathname.startsWith('/signup') &&
-                            !location.pathname.startsWith('/auth/google/callback');
-
   // Show header on all pages except auth pages (signin/signup/callback)
   const shouldShowHeader = !location.pathname.startsWith('/signin') && 
                             !location.pathname.startsWith('/signup') &&
@@ -214,9 +207,6 @@ function App() {
     <ActualLocationContext.Provider value={location}>
       {/* Header - PHOTOCLOUD-style: Always visible, even during loading */}
       {shouldShowHeader && <Header />}
-
-      {/* Sidebar - PHOTOCLOUD-style: Always visible, even during loading */}
-      {shouldShowSidebar && location.pathname !== '/' && <ImagePageSidebar />}
 
       {/* Floating Contact Button - Always visible */}
       <ContactButton />

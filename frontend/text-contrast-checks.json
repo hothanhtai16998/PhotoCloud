@@ -1,0 +1,292 @@
+[
+  {
+    "width": 320,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FAF8F4",
+    "contrast": 5.05
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#F2EEE7",
+    "contrast": 4.63
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FFFFFF",
+    "contrast": 5.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#16140F",
+    "contrast": 7.4
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#1F1C16",
+    "contrast": 6.83
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#25221C",
+    "contrast": 6.37
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "role": ".hero-eyebrow",
+    "contrast": 5.07,
+    "threshold": 4.5,
+    "fontSize": 12
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "role": ".hero-title em",
+    "contrast": 3.81,
+    "threshold": 3,
+    "fontSize": 42
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FAF8F4",
+    "contrast": 5.05
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#F2EEE7",
+    "contrast": 4.63
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FFFFFF",
+    "contrast": 5.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#16140F",
+    "contrast": 7.4
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#1F1C16",
+    "contrast": 6.83
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#25221C",
+    "contrast": 6.37
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "role": ".hero-eyebrow",
+    "contrast": 5.07,
+    "threshold": 4.5,
+    "fontSize": 12
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "role": ".hero-title em",
+    "contrast": 3.81,
+    "threshold": 3,
+    "fontSize": 42
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FAF8F4",
+    "contrast": 5.05
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#F2EEE7",
+    "contrast": 4.63
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FFFFFF",
+    "contrast": 5.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#16140F",
+    "contrast": 7.4
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#1F1C16",
+    "contrast": 6.83
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#25221C",
+    "contrast": 6.37
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "role": ".hero-eyebrow",
+    "contrast": 5.07,
+    "threshold": 4.5,
+    "fontSize": 12
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "role": ".hero-title em",
+    "contrast": 3.81,
+    "threshold": 3,
+    "fontSize": 68
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FAF8F4",
+    "contrast": 5.05
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#F2EEE7",
+    "contrast": 4.63
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FFFFFF",
+    "contrast": 5.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#16140F",
+    "contrast": 7.4
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#1F1C16",
+    "contrast": 6.83
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#25221C",
+    "contrast": 6.37
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "role": ".hero-eyebrow",
+    "contrast": 5.07,
+    "threshold": 4.5,
+    "fontSize": 12
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "role": ".hero-title em",
+    "contrast": 3.81,
+    "threshold": 3,
+    "fontSize": 52
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FAF8F4",
+    "contrast": 5.05
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#F2EEE7",
+    "contrast": 4.63
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "role": "muted",
+    "bg": "#FFFFFF",
+    "contrast": 5.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#16140F",
+    "contrast": 7.4
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#1F1C16",
+    "contrast": 6.83
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "role": "muted",
+    "bg": "#25221C",
+    "contrast": 6.37
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "role": ".hero-eyebrow",
+    "contrast": 5.07,
+    "threshold": 4.5,
+    "fontSize": 12
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "role": ".hero-title em",
+    "contrast": 3.81,
+    "threshold": 3,
+    "fontSize": 68
+  }
+]

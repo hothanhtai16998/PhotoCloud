@@ -1,0 +1,28 @@
+/* Public/member surfaces share the studio palette; admin keeps its own theme. */
+body:not(:has(.admin-page)) {
+  --background:40 37.5% 96.8627%;
+  --foreground:60 3.8462% 10.1961%;
+  --card:0 0% 100%; --card-foreground:60 3.8462% 10.1961%;
+  --popover:0 0% 100%; --popover-foreground:60 3.8462% 10.1961%;
+  --muted:38.1818 29.7297% 92.7451%; --secondary:38.1818 29.7297% 92.7451%;
+  --muted-foreground:60 2.3923% 40.9804%; --secondary-foreground:60 3.8462% 10.1961%;
+  --border:40 28.125% 87.451%; --input:40 28.125% 87.451%;
+}
+html.dark-theme body:not(:has(.admin-page)) {
+  --background:42.8571 18.9189% 7.2549%;
+  --foreground:38.1818 29.7297% 92.7451%;
+  --card:40 13.8462% 12.7451%; --card-foreground:38.1818 29.7297% 92.7451%;
+  --popover:40 13.8462% 12.7451%; --popover-foreground:38.1818 29.7297% 92.7451%;
+  --muted:40 16.9811% 10.3922%; --secondary:40 16.9811% 10.3922%;
+  --muted-foreground:44.3478 11.9247% 62.1569%; --secondary-foreground:38.1818 29.7297% 92.7451%;
+  --border:43.6364 14.6667% 14.7059%; --input:43.6364 14.6667% 14.7059%;
+}
+.app-body :is(.download-history-page,.profile-page,.profile-settings-page,.search-results-page,.favorite-collections-page,.collection-detail-page) { margin-left:0; }
+.app-body :is(.booking-detail-page,.profile-settings-page,.search-results-page) { background:var(--bg-primary); }
+@media(min-width:769px) {
+  .app-body > .booking-page { padding-left:40px; }
+  .app-body > .booking-detail-page { padding-left:40px; }
+}
+@media(min-width:601px) and (max-width:800px) {
+  .app-body > .booking-detail-page { padding-left:22px; }
+}

@@ -16,3 +16,5 @@
 @media(max-width:600px){.travel-stage{min-height:730px}.travel-stage .travel-header{top:25px;left:6%}.travel-stage .destination{top:15%;left:6%;width:88%}.travel-stage h1{font-size:61px}.travel-stage .location{font-size:14px}.travel-stage .destination-rule{margin-bottom:13px}.travel-stage .description{max-width:320px;margin:15px 0}.travel-stage .card-window{left:6%;top:auto;bottom:106px;height:205px}.travel-stage .destination-card{width:132px;left:calc(var(--position) * 146px)}.travel-stage .card-copy{padding:15px 12px}.travel-stage .card-copy strong{font-size:21px}.travel-stage .slider-controls{left:6%;right:6%;bottom:35px}.travel-stage .slider-controls button:nth-child(3){display:grid}.travel-stage .slide-number{font-size:35px}.travel-stage .shade{background:linear-gradient(90deg,#0008,#0002),linear-gradient(0deg,#0008,transparent)}}
 @media(prefers-reduced-motion:reduce){.travel-stage .destination,.travel-stage .destination-card,.travel-stage .top-timer,.travel-stage .timer-progress{animation:none}.travel-stage .slide-progress{transition:none}}
 
+.travel-stage .bookmark:not(.saved){color:#161918}
+

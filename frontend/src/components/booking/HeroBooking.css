@@ -149,23 +149,12 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--studio-text-faint);
+  color: #6B4F20;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
-  background: linear-gradient(
-    90deg,
-    var(--studio-text-faint) 0%,
-    var(--studio-accent-copper) 25%,
-    var(--studio-rating-gold-bright) 50%,
-    var(--studio-accent-copper) 75%,
-    var(--studio-text-faint) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: currentColor;
   animation: none;
 }
 
@@ -274,10 +263,8 @@
 
 .hero-title em {
   font-style: italic;
-  background: linear-gradient(135deg, var(--studio-accent-copper) 0%, var(--studio-rating-gold-bright) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #865E3B;
+  -webkit-text-fill-color: currentColor;
   position: relative;
   font-weight: 500;
 }

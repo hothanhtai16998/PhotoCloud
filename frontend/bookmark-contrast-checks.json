@@ -1,0 +1,58 @@
+[
+  {
+    "width": 390,
+    "state": "normal",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(239, 181, 47)",
+    "contrast": 9.54
+  },
+  {
+    "width": 390,
+    "state": "hover",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(239, 181, 47)",
+    "contrast": 9.54
+  },
+  {
+    "width": 390,
+    "state": "focus",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(239, 181, 47)",
+    "contrast": 9.54
+  },
+  {
+    "width": 390,
+    "state": "saved",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(255, 255, 255)",
+    "contrast": 17.7
+  },
+  {
+    "width": 1440,
+    "state": "normal",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(239, 181, 47)",
+    "contrast": 9.54
+  },
+  {
+    "width": 1440,
+    "state": "hover",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(239, 181, 47)",
+    "contrast": 9.54
+  },
+  {
+    "width": 1440,
+    "state": "focus",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(239, 181, 47)",
+    "contrast": 9.54
+  },
+  {
+    "width": 1440,
+    "state": "saved",
+    "fg": "rgb(22, 25, 24)",
+    "bg": "rgb(255, 255, 255)",
+    "contrast": 17.7
+  }
+]

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { BRAND } from '@/constants/brand';
 import { TextLogo } from './TextLogo';
+import { WebSocketStatus } from './WebSocketStatus';
 import './Footer.css';
 
 const STUDIO_LINKS = [
@@ -150,6 +151,7 @@ export function Footer({ compact = false }: FooterProps) {
                 <div className="studio-footer-divider" />
 
                 <div className="studio-footer-meta">
+                    <WebSocketStatus />
                     <p>© {year} {BRAND.nameLong}. Đã đăng ký bản quyền.</p>
                     <p className="studio-footer-meta-sub">
                         Ảnh minh họa sử dụng từ PHOTOCLOUD theo giấy phép PHOTOCLOUD License. {BRAND.subTagline}.

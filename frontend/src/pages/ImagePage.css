@@ -106,10 +106,10 @@
 /* On desktop, add left margin to account for fixed sidebar */
 @media (min-width: 769px) {
   .image-page .image-modal-container {
-    width: calc(100% - 64px) !important;
-    max-width: calc(100% - 64px) !important;
+    width: 100% !important;
+    max-width: 100% !important;
     flex: 0 1 auto !important;
-    margin-left: 64px !important; /* Sidebar width (updated from 56px to 64px) */
+    margin-left: 0 !important;
   }
 }
 
@@ -121,7 +121,7 @@
 
 @media (min-width: 769px) {
   .image-page .image-modal-container.scrolled {
-    margin-left: 64px !important; /* Keep left margin for sidebar (updated from 56px to 64px) */
+    margin-left: 0 !important;
   }
 }
 

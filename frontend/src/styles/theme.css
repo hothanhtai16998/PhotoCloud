@@ -5,7 +5,7 @@
   --bg-card: #FFFFFF;
   --text-primary: #1B1B19;
   --text-secondary: #6B6B66;
-  --text-muted: #8A8A82;
+  --text-muted: #6B6B66;
   --border-color: #E8E2D6;
   --border-strong: #D8D1C5;
   --hover-bg: #F2EEE7;
@@ -21,7 +21,7 @@
   --bg-card: #25221C;
   --text-primary: #F2EEE7;
   --text-secondary: #B8B2A4;
-  --text-muted: #8A8578;
+  --text-muted: #AAA493;
   --border-color: #2D2A22;
   --border-strong: #3A362C;
   --hover-bg: #25221C;
@@ -142,13 +142,6 @@
 /* Homepage */
 .dark-theme .homepage {
   background: var(--bg-secondary);
-}
-
-/* Account for sidebar on desktop */
-@media (min-width: 768px) {
-  main.homepage {
-    margin-left: 64px; /* Sidebar width */
-  }
 }
 
 /* Prevent layout shift during navigation */
@@ -329,21 +322,3 @@ main.homepage {
   color: var(--text-primary);
   border-color: var(--border-color);
 }
-
-/* General text colors */
-.dark-theme p,
-.dark-theme span,
-.dark-theme div:not([class*="image"]):not([class*="photo"]) {
-  color: var(--text-primary);
-}
-
-/* Links */
-.dark-theme a:not(.header-link):not(.category-nav-link) {
-  color: var(--text-primary);
-}
-
-.dark-theme a:hover:not(.header-link):not(.category-nav-link) {
-  color: var(--text-primary);
-  opacity: 0.8;
-}
-

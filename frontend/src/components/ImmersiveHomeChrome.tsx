@@ -20,7 +20,7 @@ export function ImmersiveHomeChrome() {
     const update = () => {
       frame = 0;
       const scroll = Math.max(0, window.scrollY);
-      body.classList.toggle('home-cinematic-active', scroll < stageEnd - headerHeight);
+      body.classList.toggle('home-cinematic-active', scroll <= 12 && scroll < stageEnd - headerHeight);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     const resize = () => {

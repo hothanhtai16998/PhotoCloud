@@ -2,6 +2,15 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <script id="site-theme-init">
+      (() => {
+        let dark = false;
+        try { dark = localStorage.getItem('theme') === 'dark'; } catch {}
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.classList.toggle('dark-theme', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
     <script id="reload-scroll-reset">
       (() => {
         if (performance.getEntriesByType('navigation')[0]?.type !== 'reload') return;

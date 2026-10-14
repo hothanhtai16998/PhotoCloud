@@ -240,7 +240,7 @@
 		--color-border-hover: #999;
 
 		/* Sidebar width - used for layout calculations */
-		--sidebar-width: 64px;
+		--sidebar-width: 0px;
 
 		/* PhotoCloud Studio Brand Tokens - Warm Premium */
 		--studio-bg-warm: #FAF8F4;

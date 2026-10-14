@@ -1,0 +1,68 @@
+html.dark-theme {
+  --studio-bg-warm:var(--bg-primary); --studio-bg-cream:var(--bg-secondary); --studio-bg-card:var(--bg-card);
+  --studio-text-primary:var(--text-primary); --studio-text-muted:var(--text-secondary); --studio-text-faint:var(--text-muted);
+  --studio-border-soft:var(--border-color); --studio-accent-copper:#DFC29F; --studio-accent-copper-dark:#DFC29F;
+  --color-bg-primary:var(--bg-primary); --color-text-primary:var(--text-primary); --color-text-secondary:var(--text-secondary);
+  --color-border:var(--border-color); --color-border-hover:var(--border-strong);
+}
+html.dark-theme body { background:var(--bg-primary);color:var(--text-primary); }
+html.dark-theme .hero-section { background:var(--bg-secondary);margin-bottom:0; }
+html.dark-theme .home-package-section {
+  width:100%;margin:0;box-sizing:border-box;
+  padding:58px max(16px, calc((100% - 1296px) / 2)) 36px;
+  background:var(--bg-primary);
+}
+html.dark-theme :is(.hero-eyebrow,.hero-title em) { color:#DFC29F; }
+html.dark-theme :is(.hero-sub,.hero-highlight,.hero-slot,.home-package-meta,.home-package-description,.home-section-heading p) { color:var(--text-secondary); }
+html.dark-theme :is(.hero-highlight,.hero-slot,.hero-collection-card,.hero-cta--secondary,.home-package-custom,.home-bottom-cta,.home-step,.booking-faq-item) { background:var(--bg-card);border-color:var(--border-color); }
+html.dark-theme :is(.home-section-heading h2,.home-bottom-cta h2,.home-package-body h3,.home-package-badge,.home-step h3,.hero-cta--secondary) { color:var(--text-primary); }
+html.dark-theme .home-package-price { color:#E5A899; }
+html.dark-theme .home-package-body > strong { color:#E5A899; }
+html.dark-theme .home-package-summary { color:var(--text-secondary); }
+html.dark-theme :is(.studio-cta-primary,.hero-cta--primary,.booking-modal-primary) { background:#F2EEE7;color:#1B1B19; }
+html.dark-theme :is(.studio-cta-secondary,.home-package-card,.booking-modal,.booking-modal-header,.booking-modal-progress,.booking-modal-footer,.booking-modal-summary,.booking-modal-assurance) { border-color:var(--border-color); }
+html.dark-theme :is(.booking-modal-summary,.booking-modal-assurance,.booking-modal-error) { background:var(--bg-secondary); }
+html.dark-theme .booking-modal-progress span { color:var(--text-muted); }
+html.dark-theme .booking-modal-progress span.active { color:var(--text-primary); }
+html.dark-theme :is(.booking-modal-fields input,.booking-modal-fields select,.booking-modal-notes textarea) { border-color:var(--border-strong); }
+html.dark-theme :is(.image-modal-container,.image-modal-top-info,.image-modal-surface,.image-modal-related-section,.image-page,.image-page-error) { background:var(--bg-primary) !important;color:var(--text-primary); }
+html.dark-theme :is(.image-modal-related-title,.image-modal-author-name,.image-modal-image-title) { color:var(--text-primary) !important; }
+html.dark-theme :is(.image-modal-middle-container,.image-modal-image-container,.image-modal-author-avatar) { background:var(--bg-secondary) !important; }
+html.dark-theme :is(.image-modal-save-button,.image-modal-collection-button,.image-modal-download-button,.image-modal-share-button,.image-page-back-button) { background:var(--bg-card);color:var(--text-primary);border-color:var(--border-color); }
+html.dark-theme :is(.mobile-bottom-nav,.user-menu-content,.mobile-menu-dropdown,.header-library-panel) { background:var(--bg-primary);color:var(--text-primary);border-color:var(--border-color); }
+html.dark-theme :is(.explore-chip,.explore-select,.explore-segmented) { background:var(--bg-card);color:var(--text-primary);border-color:var(--border-strong); }
+html.dark-theme :is(.explore-chip.is-active,.explore-segmented-btn.is-active) { background:var(--text-primary);color:var(--bg-primary); }
+html.dark-theme :is(.travel-stage,.travel-stage a,.travel-stage button) { color:#fff; }
+html.dark-theme .travel-stage .bookmark { color:#161918; }
+
+html.dark-theme .PHOTOCLOUD-header .text-logo { color:var(--text-primary) !important; }
+html.dark-theme :is(.header-studio-nav a,.mobile-bottom-nav-item) { color:var(--text-secondary); }
+html.dark-theme .hero-eyebrow { -webkit-text-fill-color:currentColor; }
+html.dark-theme .hero-live { color:#B6C99A;background:var(--bg-card); }
+html.dark-theme .hero-sub-tagline { color:#DFC29F;background:var(--bg-card); }
+html.dark-theme .hero-grid--empty { background:var(--bg-card); }
+html.dark-theme .hero-grid-empty-text { color:var(--text-secondary); }
+html.dark-theme .hero-cta--primary svg:first-child { color:inherit; }
+html.dark-theme :is(.home-booking-step,.booking-modal-policy,.image-modal-bottom-info,.image-modal-image-wrapper,.image-modal-download-menu,.info-modal-wrapper,.info-modal) { background:var(--bg-card);color:var(--text-primary);border-color:var(--border-color); }
+html.dark-theme :is(.home-booking-step strong,.home-package-body h3,.image-modal-stat-value) { color:var(--text-primary); }
+html.dark-theme :is(.home-booking-step p,.home-booking-step span,.home-package-custom-bullets,.home-social-proof p,.home-package-body p,.image-modal-stat-label) { color:var(--text-secondary); }
+html.dark-theme :is(.booking-modal-next,.booking-modal-success button:not(.secondary)) { background:#F2EEE7;color:#1B1B19; }
+html.dark-theme .booking-modal-progress i.active { background:var(--text-primary); }
+html.dark-theme :is(.image-info-trigger,.image-modal-favorite-button,.image-modal-nav-button) { background:var(--bg-card);color:var(--text-primary);border-color:var(--border-strong); }
+html.dark-theme .image-modal-nav-icon { filter:invert(1); }
+html.dark-theme :is(.contact-button,.contact-button-text) { color:#fff !important; }
+
+html.dark-theme :is(.studio-cta-secondary,.hero-cta--secondary) {
+  background:#343027;color:var(--text-primary);border-color:#8A8578;
+}
+html.dark-theme :is(.studio-cta-secondary,.hero-cta--secondary):hover:not(:disabled) {
+  background:#40392E;color:var(--text-primary);border-color:#DFC29F;
+}
+html.dark-theme .studio-cta-ghost { color:var(--text-primary);background:#343027;border:1px solid #8A8578; }
+html.dark-theme .studio-cta-ghost:hover:not(:disabled) { background:#343027;color:var(--text-primary); }
+html.dark-theme .hero-highlight-icon { color:#1B1B19; }
+html.dark-theme .avatar-placeholder,
+html.dark-theme .user-menu-trigger:hover .avatar-placeholder,
+html.dark-theme .user-menu-trigger:active .avatar-placeholder {
+  background:#40392E;color:#F2EEE7;outline:1px solid #8A8578;outline-offset:0;
+}

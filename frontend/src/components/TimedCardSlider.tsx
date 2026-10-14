@@ -1,9 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { ArrowLeft, ArrowRight, Bookmark, Globe2, Pause, Play } from 'lucide-react';
+import { toast } from 'sonner';
+import { t } from '@/i18n';
+import { favoriteService } from '@/services/favoriteService';
+import { useAuthStore } from '@/stores/useAuthStore';
+import { useImageFavoriteCountStore } from '@/stores/useImageFavoriteCountStore';
+import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
 import './TimedCardSlider.css';
 
-export interface TimedCard { place: string; region: string; title: string; image: string; description: string; }
+export interface TimedCard { id?: string; place: string; region: string; title: string; image: string; description: string; }
 const url = (source: string) => source;
 const interval = 5500;
 const duration = 500;
@@ -27,26 +33,66 @@ function loadImage(source: string, priority: 'high' | 'low' | 'auto' = 'auto') {
 export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0, onActiveChange }: { slides: TimedCard[]; brandName?: string; current?: number; onActiveChange?: (index: number) => void }) {
   const [active, setActive] = useState(current);
   const [background, setBackground] = useState(current);
-  const [playing, setPlaying] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [playing, setPlaying] = useState(() => typeof window === 'undefined' || !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const playingRef = useRef(playing);
+  const [focusWithin, setFocusWithin] = useState(false);
+  const reducedRef = useRef(reducedMotion);
   const [moving, setMoving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [favoriteBusy, setFavoriteBusy] = useState(false);
   const stage = useRef<HTMLElement>(null);
   const busy = useRef(false);
+  const favoriteBusyRef = useRef(false);
   const activeRef = useRef(current);
-  const changeRef = useRef<(index: number) => void>(() => {});
+  const changeRef = useRef<(index: number, automatic?: boolean) => void>(() => {});
   const pending = useRef<{ cancel: () => void } | null>(null);
   const topProgress = useRef<HTMLDivElement>(null);
   const bottomProgress = useRef<HTMLDivElement>(null);
   const elapsedProgress = useRef(0);
   const slide = slides[active];
+  const accessToken = useAuthStore(state => state.accessToken);
+  const isFavorited = useBatchedFavoriteCheck(slide?.id);
 
-  const change = async (index: number) => {
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = (event: MediaQueryListEvent) => {
+      reducedRef.current = event.matches;
+      setReducedMotion(event.matches);
+      if (event.matches) {
+        playingRef.current = false;
+        setPlaying(false);
+        pending.current?.cancel();
+        stage.current?.getAnimations({ subtree: true }).forEach(animation => animation.cancel());
+        stage.current?.querySelectorAll<HTMLElement>('[data-slide]').forEach(card => { card.style.visibility = ''; });
+        setBackground(activeRef.current);
+        setMoving(false);
+      }
+    };
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  const change = async (index: number, automatic = false) => {
     if (busy.current || index === activeRef.current || !stage.current) return;
     busy.current = true;
     const target = stage.current;
     let image: HTMLImageElement;
     try { image = await loadImage(url(slides[index].image)); } catch { busy.current = false; return; }
     if (!stage.current) { busy.current = false; return; }
+    // Focus may enter while an automatic transition waits for image decoding.
+    if (automatic && (target.contains(document.activeElement) || !playingRef.current)) {
+      busy.current = false;
+      return;
+    }
+    if (reducedRef.current) {
+      activeRef.current = index;
+      elapsedProgress.current = 0;
+      setActive(index);
+      setBackground(index);
+      onActiveChange?.(index);
+      busy.current = false;
+      return;
+    }
     const card = target.querySelector<HTMLElement>(`[data-slide="${index}"]`);
     const bounds = target.getBoundingClientRect();
     const box = card?.getBoundingClientRect();
@@ -111,7 +157,7 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
     activeRef.current = index;
     elapsedProgress.current = 0;
     onActiveChange?.(index);
-    flushSync(() => { setMoving(true); setActive(index); setSaved(false); });
+    flushSync(() => { setMoving(true); setActive(index); });
     const cards = Array.from(target.querySelectorAll<HTMLElement>('[data-slide]'));
     const step = cards.length > 1 ? cards[1].getBoundingClientRect().left - cards[0].getBoundingClientRect().left : width + 20;
     cards.forEach(item => {
@@ -119,7 +165,14 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
       const offset = previous === undefined ? step : previous - item.getBoundingClientRect().left;
       item.animate([{ transform: `translate3d(${offset}px,0,0)` }, { transform: 'translate3d(0,0,0)' }], { duration: duration - leadIn, delay: leadIn, easing, fill: 'backwards' });
     });
-    try { await animation.finished; } catch { layer.remove(); busy.current = false; return; }
+    try { await animation.finished; } catch {
+      layer.remove();
+      if (card) card.style.visibility = '';
+      pending.current = null;
+      busy.current = false;
+      setMoving(false);
+      return;
+    }
     // Commit the identical final image before removing its animated surface.
     flushSync(() => { setBackground(index); setMoving(false); });
     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
@@ -127,8 +180,32 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
     busy.current = false;
     pending.current = null;
   };
-  changeRef.current = change;
+  useLayoutEffect(() => { changeRef.current = change; playingRef.current = playing; });
   useEffect(() => { if (current !== activeRef.current) void changeRef.current(current); }, [current]);
+  const toggleFavorite = async () => {
+    if (!slide?.id || favoriteBusyRef.current) return;
+    if (!accessToken) {
+      window.location.assign('/signin');
+      return;
+    }
+    favoriteBusyRef.current = true;
+    setFavoriteBusy(true);
+    const requestToken = useAuthStore.getState().accessToken;
+    try {
+      const response = await favoriteService.toggleFavorite(slide.id);
+      if (useAuthStore.getState().accessToken !== requestToken) return;
+      updateFavoriteCache(slide.id, response.isFavorited);
+      if (response.favoriteCount !== undefined) {
+        useImageFavoriteCountStore.getState().updateFavoriteCount(slide.id, response.favoriteCount);
+      }
+      toast.success(response.isFavorited ? t('favorites.added') : t('favorites.removed'));
+    } catch {
+      toast.error(t('favorites.updateFailed'));
+    } finally {
+      favoriteBusyRef.current = false;
+      setFavoriteBusy(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -142,15 +219,20 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
   }, [slides]);
   useEffect(() => {
     const paint = () => {
-      const width = `${Math.min(100, elapsedProgress.current / interval * 100)}%`;
+      const width = reducedMotion ? '0%' : `${Math.min(100, elapsedProgress.current / interval * 100)}%`;
       if (topProgress.current) topProgress.current.style.width = width;
       if (bottomProgress.current) bottomProgress.current.style.width = width;
     };
     paint();
-    if (!playing || moving || slides.length < 2) return;
+    if (!playing || focusWithin || moving || slides.length < 2) return;
     let frame = 0;
     let previous: number | undefined;
     const tick = (time: number) => {
+      if (stage.current?.contains(document.activeElement)) {
+        previous = undefined;
+        frame = requestAnimationFrame(tick);
+        return;
+      }
       if (previous !== undefined && !busy.current && document.visibilityState === 'visible') {
         elapsedProgress.current += time - previous;
       }
@@ -158,15 +240,18 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
       paint();
       if (elapsedProgress.current >= interval && !busy.current) {
         elapsedProgress.current = 0;
-        changeRef.current((activeRef.current + 1) % slides.length);
+        changeRef.current((activeRef.current + 1) % slides.length, true);
       }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active, playing, moving, slides.length]);
+  }, [active, playing, focusWithin, moving, slides.length, reducedMotion]);
 
-  return <main className={`travel-stage ${moving ? 'is-moving' : ''}`} ref={stage} style={{ '--slide-interval': `${interval}ms`, '--transition-duration': `${duration}ms` } as React.CSSProperties}>
+  return <main className={`travel-stage ${moving ? 'is-moving' : ''}`} ref={stage}
+    onFocusCapture={() => setFocusWithin(true)}
+    onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocusWithin(false); }}
+    style={{ '--slide-interval': `${interval}ms`, '--transition-duration': `${reducedMotion ? 0 : duration}ms` } as React.CSSProperties}>
     <div className="landscape" style={{ backgroundImage: `url("${url(slides[background].image)}")` }} />
     <div className="shade" />
     <header className="travel-header"><a href="/" className="brand"><Globe2 size={20} /> {brandName}</a><span className="header-caption">BỘ SƯU TẬP ẢNH</span></header>
@@ -174,7 +259,7 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
       <div className="destination-rule" /><p className="location">{slide.place}</p>
       <h1>{slide.title.split('\n').map(line => <span key={line}>{line}</span>)}</h1>
       <p className="description">{slide.description}</p>
-      <div className="destination-actions"><button className={`bookmark ${saved ? 'saved' : ''}`} onClick={() => setSaved(!saved)} title={saved ? 'Remove bookmark' : 'Bookmark destination'} aria-pressed={saved}><Bookmark size={18} fill={saved ? 'currentColor' : 'none'} /></button><button className="discover" onClick={() => setPlaying(!playing)}>{playing ? 'PAUSE EXPLORING' : 'CONTINUE EXPLORING'}</button></div>
+      <div className="destination-actions"><button className={`bookmark ${isFavorited ? 'saved' : ''}`} onClick={toggleFavorite} title={isFavorited ? t('image.removeBookmark') : t('image.bookmark')} aria-pressed={isFavorited} disabled={favoriteBusy || !slide.id} aria-busy={favoriteBusy}><Bookmark size={18} fill={isFavorited ? 'currentColor' : 'none'} /></button><button className="discover" onClick={() => setPlaying(!playing)}>{playing ? 'PAUSE EXPLORING' : 'CONTINUE EXPLORING'}</button></div>
     </section>
     <div className="card-window"><div className="card-track">
       {Array.from({ length: Math.min(5, slides.length - 1) }, (_, offset) => (active + offset + 1) % slides.length).map((index, position) => <button className="destination-card" data-slide={index} key={index} style={{ '--position': position, backgroundImage: `url("${url(slides[index].image)}")` } as React.CSSProperties} onClick={() => change(index)} aria-label={`Explore ${slides[index].region}`}><div className="card-copy"><i /><span>{slides[index].place}</span><strong>{slides[index].region}</strong></div></button>)}

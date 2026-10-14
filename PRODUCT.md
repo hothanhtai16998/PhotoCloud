@@ -2,6 +2,117 @@
 
 ## 0. Bảng điều khiển chung
 
+### A05: bookmark slideshow lưu vào yêu thích thật — 2026-10-14
+
+- Tiếp tục A05 theo yêu cầu. Nút bookmark trong TimedCardSlider trước đây chỉ đổi state cục bộ và reset khi đổi slide; chưa gọi endpoint yêu thích nên refresh/tài khoản không giữ.
+- Đã đưa `id` ảnh thật từ `SlideData` qua `CardOpeningStage` sang `TimedCardSlider`, dùng `useBatchedFavoriteCheck` để đọc trạng thái yêu thích theo tài khoản và `favoriteService.toggleFavorite` để lưu/bỏ lưu qua `/favorites/:imageId`. Cập nhật cache favorite/count dùng helper hiện có để header/trang yêu thích nhận trạng thái mới.
+- Chưa đăng nhập thì chuyển `/signin`, giữ cùng kỳ vọng với grid ảnh; khi lỗi hiển thị thông báo cập nhật yêu thích thất bại. Không thêm localStorage fallback, không đổi API/backend, không tự tạo collection/wishlist gói.
+- ESLint hai file `TimedCardSlider.tsx` và `CardOpeningStage.tsx` PASS; `npm run type-check` PASS. Chưa chạy build production hoặc browser fixture đăng nhập thật trong lượt này, nên A05 **ĐÃ SỬA SOURCE, CHỜ KIỂM TRA APP THẬT**: đăng nhập, bấm bookmark trên slideshow, refresh, vào `/favorites`, đổi slide rồi quay lại, đăng xuất/hết phiên.
+
+### Bỏ sidebar người dùng và đồng bộ nền trang — 2026-10-14
+
+- Bỏ render sidebar public/member trong App, giữ component variant header cho yêu thích/tải xuống; không bỏ sidebar admin hay sidebar chỉnh sửa bộ sưu tập. Gỡ khoảng trống 64px của header và các trang người dùng, giữ gutter modal ảnh.
+- Chuyển trạng thái WebSocket xuống footer. Các link điều hướng, yêu thích và tải xuống vẫn ở header; không đổi endpoint, dữ liệu hay handler.
+- public-surfaces.css nối token HSL cũ với palette studio: canvas sáng #FAF8F4, tối #16140F; card/section vẫn có độ phân cấp. Scope không áp dụng cho admin. Favorites/Collections không còn nền tím/slate; nền tìm kiếm/cài đặt/chi tiết booking dùng nền chung.
+- Build và ESLint App/Footer PASS. Production browser member fixture 320/390/1024/1440: Collections/Favorites/Packages/Explore sáng và tối cùng màu canvas, không sidebar, header left0 và không tràn ngang; regression theme persistence/logo-top/CTA/booking/photo PASS. Toàn bộ API và WebSocket mock, không phải phiên tài khoản thật. Đã xem screenshot Favorites dark; chưa xác nhận trực quan tất cả profile/settings/download/admin trên dữ liệu thật.
+- Lỗi độ trễ mở modal ảnh vẫn CHƯA SỬA XONG, không đóng bởi lượt kiểm tra này.
+- Kiểm tra screenshot phát hiện logo còn translateX(-72px) từ layout sidebar: đã bỏ. Build lại PASS. Lượt cuối sau chỉnh logo: 320/390/1024 PASS; 1440 timeout ở assert logo về scroll0 trước bước palette, nên không gọi toàn bộ lượt cuối PASS. Lượt palette 1440 trước chỉnh logo đã PASS. Cần kiểm tra lại hành vi logo/top ở phiên thật; không lấy timeout này kết luận đã biết nguyên nhân.
+
+### Header còn thiếu yêu thích/tải xuống — 2026-10-14
+
+- Người dùng phản hồi menu5mục đãcó nhưng trang khác vẫnthiếu2nútYêuthích/Lịchsửtảixuống bênphải, làm menu dịch so với home. Không gọi sửa5nav trước đã đồngbộ toànheader.
+- Đã sửa cảhai nhánhdesktop/mobile Header.tsx: ImagePageSidebar variantheader không còn chỉrenderởpathname'/'. Giữgateauth, count, dialogfavorites vàdownloadlinkhiệncó; khônggiảlậpcount hoặc đổiendpoint. Sidebar trangkhác vẫngiữchứcnăng.
+- Testmembermock phát hiện menumobile320 ngoài viewport trênroutekhác: áp dụng quy tắc thu gọn đãcó của home cho PHOTOCLOUD-header ởmọiroute<=768. Cácshortcutbooking/bell duplicate đượcẩntrênheadernhỏ; chức năng ởbottomnav/menu hiệncó vẫngiữ, khôngthayluồng/handlers. Chưa gọi đây là kiểmtra cảmứngthật.
+- Buildlầnđầu Vitehoànthành nhưng NodeWindows assertionUV_HANDLE_CLOSING exit1; khôngghi passlượtđó. Rerunbuild sauPASS. Lượtmemberfixture đangxácnhận, chờuserkiểmtracụmnút vàvịtrímenu.
+- Xácnhận cuối productionmembermock320/390/1024/1440 PASS; desktopExplore vàhome cócụm2shortcut, navkhôngoverlaplogo/actions ở1024/1440, menumobilethao tácđược; theme/booking/ảnh/logo-topregressionPASS. Rawfrontend/site-theme-member-checks.json. Đây là authfixture với mọirequestintercept, chưa chứngminh phiên đăngnhập/route/accountthật đãđạt. Sidebar vẫnchiếmvịtrí ởroutekhác, không tuyênbố mọix-coordinateheadergiốnghệtviewporthome.
+
+### Cao độ CTA gói, menu header và logo/top — 2026-10-14
+
+- Người dùng phản hồi Chọn gói lệch caođộ giữa4card (khác lỗi iconxuốngdòng đãsửa), nút VềPhotoCloud chưa rõ, menuheader home/routekhác thiếuKhámphá/Câuchuyện, bấmlogotừroutekhác khôngvềtop, headertrongsuốt chồngảnhslidekhi cuộn.
+- SửaHomePageLayouts:cardflexcolumn, bodyflex1 + grid5rows với mô tảrow1fr; CTAởhàngcuối để4card cùngbaseline dù mô tảdài/ngắn. Giữgridbreakpoint và nội dung/giá/handler.
+- Dark ghostCTA thêm nền#343027 và border#8A8578; không chỉ dựavàomàuchữ. Nútprimaryvẫngiữlightfilledđể phâncấp.
+- Headerdesktop dùng chung5linkKhámphá/Góichụp/Bộsưutập/Câuchuyện/Vềstudio ởhome vàroutekhác; aria-current theođườngdẫn. Đồngbộgap và quy tắc gọn769–1200px. Không xoásidebar hay đưa mọi tácvụ củasidebar vàoheader, không đổi mobilebottomnav.
+- Bấmlogo khôngmodifier: nếuởhomecuộntopinstant; từroutekhác ghi refrequest, navigatehome rồi layoutEffect vàrAF vềtop. Chỉconsume requestlogo, không reset mọi route/POP hoặc clear scrollsnapshot; Ctrl/Meta/Shiftclick giữhànhvimởtab. Header không bịẩn tronglượt này.
+- ImmersiveHomeChrome:trongsuốt/chữtrắng chỉ ởscroll<=12px vàđầuhero; saucuộn headernềnđặc theo theme, không đểmenu trắngnổi trênảnh đang đi qua. **Header vẫnfixed vàchiếm dải trênviewport**, không tuyên bố đã bỏ mọi chồnglấn hìnhhọc. Nếumuốn slidekhông bịheaderche tuyệtđối, cần quyếtđịnh layoutheaderin-flow/sticky riêng, không âmthầm đổi toànhero.
+- Production mock320/390/1024/1440 PASS: menu5link; từExploređãcuộn bấmlogovềhome scroll0; headernềnđặc saucuộn; CTA4carddesktopbaselineđều; spacing/theme/modalbooking/ảnhregression PASS. Darkcontrols5width cảsáng/tối PASS, ESLintHeader/ImmersivePASS. BuildPASS, warningcũcòn. Rawsite-theme-checks/dark-controls-checks vàscreenshotQA.
+- Lượt xácnhận cuối bổsungassertlogo/nav/actions khôngoverlap ởdesktopguest1024/1440 PASS. Testscroll chờ màuheader ổnđịnh thay đọc giữa frame/transition; không thêmwait/timer vàoapp.
+- Chưa thử logged-inheadergeometry/tấtcảroute, modifierclick/tabthật, phonehardware, paint/filmstrip khi cuộnnhanh vàrefreshhome; cần nghiệmthu người dùng. Lỗi mởmodalảnh vẫnCHƯA SỬA XONG; không lấy cácfixture này để đóng hiệu năng hoặc auditheader toànsite.
+
+### Nút/icon/avatar dark và mũi tên gói — 2026-10-14
+
+- Phản hồi ảnh người dùng: nút Nhận báo giá trắng nhạt khó đọc; icon highlight trắng trên đồng; nút phụ thiếu phân biệt nền; avatar fallback chữU chìm; mũi tên Chọn gói xuốngdòng. Ảnh lặp avatar/CTA là cùng nhóm vấn đề, không tính thành nhiều bug riêng.
+- Đã sửa dark-surfaces.css: secondaryCTA/hero-secondary nền#343027, chữprimary, border#8A8578; hover#40392E/borderđồng. Ghost giữ chữsáng và hover surface rõ. Highlighticon dùng chữ/icon#1B1B19 trên nềnđồng. Avatarfallback nềnđặc#40392E/chữ#F2EEE7, outline1px, kể cảhover/active. Không filter/đổi ảnhavatar thật hoặc font/kíchthước.
+- HomePageLayouts.css: nút Chọn gói inline-flex, align-items:center/gap8px/nowrap, SVGkhôngco; maxwidth100%. Áp dụng sáng/tối vì lỗi xuốngdòng là layout, không phải màu. Không đổi giá/nhãn/clickhandler và không khẳngđịnh bookmark đãlưu thật.
+- Browser CSSproduction fixture320/390/768/1024/1440, sáng/tối: arrow/textcenter lệch<2px, khôngoverflowbutton; darktext/icon đạtngưỡng tươngphản4.5/3:1 ởnormal/hover/focus. Avatar là markupfallback đại diện dùngCSSthật, không phải phiên userđăngnhập. Raw frontend/dark-controls-checks.json; scripts/check-dark-controls.cjs.
+- BuildPASS, warningcũ còn; regressionproduction home/Explore/booking/photo/theme mock4width PASS. QA screenshotgói1440 đãxem: Nhận báogiá rõ và mũitênChọngói cùnghàng. Chờuserxácnhận cácnút/avatar thật; chưa cover mọi route/userảnhhỏng/admin/disabled/forcedcolors. Modal ảnh vẫnCHƯA SỬA XONG.
+
+### Phân biệt nền HeroBooking và gói chụp trong dark — 2026-10-14
+
+- Người dùng xác nhận dark chữ/nút trang chủ/Explore/booking ĐẠT, refresh giữdark ĐẠT, trở vềsáng bìnhthường ĐẠT. Xác nhận trong phạm vi đã thử, không đóng toàn bộ dark/admin/profile.
+- Phản hồi mới: HeroBooking và gói chụp gần cùng nền nên khó nhận section, khác với testimonial/FAQ. Đã sửa chỉdark: hero giữbg-secondary#1F1C16; gói chụp thành dải fullwidthbg-primary#16140F, card giữbg-card#25221C.
+- Giữ content gói max1296px vàgutter16px bằng padding của dải thay widthsection constrained; bỏmarginbottomhero26px và chuyển khoảngcách vào paddingtopgói58px để tổng vịtrí heading banđầu gần như giữnguyên. Không đổi lighttheme, giá, ảnh, CTA hoặc cấu trúc/breakpointgrid.
+- QA ảnh cũng thấy selector dark cũ không trúng markup giá/mô tả PackageCard; bổ sung home-package-body > strong và home-package-summary cho chữ rõ, không đổi giá/nội dung.
+- Production CSS/React vớiAPIgiả tại320/390/1024/1440 PASS: màuhero/gói khác nhau, dải rộngbằngparent, contentwidthmin1296/parent-32 không đổi, khôngscroll ngangsection. ScreenshotQA theme-packages-*.png và site-theme-checks.json; buildPASS, warningcũ còn. Chờ người dùng xác nhận ranhgiới section rõ hơn trênapp thật; không sửa tiếp motion hoặc độ trễ modal ảnh.
+
+### Xác nhận A04 và bổ sung Sáng/Tối — 2026-10-14
+
+- **Người dùng xác nhận ĐẠT:** chữ phụ/form/đặt lịch dễ đọc; chữ nhấnHeroBooking rõ/đầy đủ; mobile390 không tràn, CTA đặt lịch/xem gói dùng được. Chưa xác nhận dark vì trước đó không có lựa chọn dark hoạt động. Không dùng kết quả sáng suy ra tối đạt.
+- Theo yêu cầu, thêm **hai lựa chọn Sáng/Tối**. Mặc định sáng khi chưa có lựa chọn, giữ brand và ảnh chụp không invert/filter. Desktop: icon Moon/Sun44px trongheader; mobile: mục trongmenu, không thêm một icon vàoheader chật.
+- siteTheme.ts + ThemeToggle dùng DOM classdark/dark-theme làm snapshot qua useSyncExternalStore, event đồng bộ các nút, storageevent đồng bộtab; lưu localStoragekeytheme, storage bị chặn vẫn đổi được trongphiên. index.html áp dụngclass lựa chọn trướcCSS/app để giảm nháy sáng khi reloaddark. Không thêm timer/loading.
+- Thay ThemeToggleadmin cũ ép light/xoá dark bằng re-export control dùng chung. Không thay quyềnadmin/settings/API. Gỡ CSSdark blanket tô mọidiv/span/link, thay scope surface/roles; dark-surfaces.css nối tokenstudio với darktheme và bổ sung mainpublic home/header/Explore/photo/booking/footer/menu.
+- Build PASS, warning chunk/Zod/import còn; ESLint control/helper PASS. Production bundle thật vớiAPI/ảnhmock:320/390/1024/1440 toggledark, reloadgiữdark, Explore/hero/photo/booking có nền tối; đổi sáng/reloadgiữsáng; ảnhfilter không đổi; khôngpageerror. Raw frontend/site-theme-checks.json và screenshots theme-*.png. Không dùng mock để kết luận mọi luồng/tài khoản thật đã kiểm tra.
+- VòngảnhQA đầu phát hiện logo/contact/footerảnh và một sốcard/text hardcode; đã sửa cùnglượt, xác nhận lại. Chưa test đầyđủ profile/admin/settings/authenticatednotifications/signedimages, cácbước booking2–4, toànbộcollections, storagebịchặn/cross-tab trongbrowser hoặc theme-colorfilmstrip. **Dark mới chờ người dùng nghiệm thu**, A12khôngđóngtoànsite.
+- Lỗi mởmodalảnh vẫn **CHƯA SỬA XONG**. A05bookmarkpersistence vẫnchưađổi. A04 cácđiểm sángđãđượcxácnhận, dark/cácnềnảnhkhác vẫncòn kiểmtra.
+
+### Quy trình kiểm tra mobile riêng
+
+- Có bước riêng: **nhóm7 adapt/responsive**. Gom kiểmtra đầyđủ thànhmộtđợt saunhómsửa, không bắtngười dùng chạy lại mọi desktop/mobile saumỗimàu/icon nhỏ. Codex vẫnchạy matrixtựđộng desktop/mobile khi sửa sharedCSS/component và báogiớihạn.
+- Mobile cơbản:320/390px dọc,768px tablet; thêm landscape, bànphímảo, safearea và cảmứng trênmáythật. Kiểmtra header/menu/bottomnav, CTA/formbooking/gallery/ảnh/modal, Back/refresh và scroll. Mụctiêu: đầyđủchứcnăng, khôngtràn/cắt/co méo trướcpolish. Desktop chốt1024/1440riêng.
+- Khi cópatch nhỏ, user chỉ xácnhận màn hình/tác vụliênquan; kiểmtra hồi quy toànluồng vào cuối nhóm hoặc sau sửa nguy cơcao (navigation/auth/modal). Không bỏmobile hoặc gọi viewportgiảlập là testđiệnthoạithật.
+
+### A04: chữ phụ và chữ nhấn HeroBooking — 2026-10-14
+
+- Tiếp tục A04 sau khi icon bookmark được người dùng xác nhận đạt. Không sửa A05 persistence, A06 focus chuông, URL/modal, giá hoặc nội dung.
+- Đã sửa theme.css: text-muted sáng#8A8A82 -> #6B6B66 (màu secondary sẵn có); tối#8A8578 -> #AAA493. Token dùng chung nên không coi chỉ trang chủ được ảnh hưởng; các route/modal dùng token cần kiểm tra trực quan tiếp.
+- HeroBooking.css: eyebrow12px dùng màu đặc#6B4F20; phần em tiêu đề dùng đồng đặc#865E3B, thay gradient chữ có điểm sáng vàng. Giữ nền, font/cỡ chữ, gạch chân trang trí, spacing và hành vi. Không đổi toàn bộ brandpalette.
+- Browser fixture CSS thật và studio tokens từ parserPostCSS:320/390/768/1024/1440. Muted sáng trên3nền chuẩn4.63–5.36:1; tối6.37–7.40:1. Hero eyebrow5.07:1; em cỡ42–68px3.81:1 trên bound tối bảo thủRGB222/210/184 của nền gradient mặc định. Bound là kiểm tra tính toán, không screenshot sampling/pixel từng vị trí thực hoặc mọi theme/custombrand.
+- Regression HeroBooking9viewport PASS không clipping CTA/copy; build production PASS, warning cũ còn. Raw frontend/text-contrast-checks.json, script scripts/check-text-contrast.cjs; hero-responsive-after.json cập nhật.
+- **A04 ĐÃ SỬA các điểm nêu trên, CHỜ NGƯỜI DÙNG XÁC NHẬN CHỮ.** Chưa tuyên bố tương phản toàn site đạt: chữ trên ảnh/header slide, customaccent, opacity/disabled, forced-colors và các nền thực khác còn cần rà. Dark hero có quy tắc màu riêng trongtheme.css, A12 vẫn mở; không gọi fixture token dark là test dark fullpage.
+- Checklist người dùng: chữ phụ/form/booking đọc rõ hơn; phần “theo cách của bạn” vẫn đầy đủ, dễ đọc trên nền studio; mobile390 không tràn, hai CTA vẫn dùng được. Giá/nội dung/chức năng không đổi. Theme tối nếu đang dùng: chữ phụ không chìm hoặc sáng lẫn nền; báo cụ thể route nếu lệch. Modal ảnh vẫn CHƯA SỬA XONG.
+
+### A03 được xác nhận; chuyển A04 — 2026-10-14
+
+- **Người dùng xác nhận icon bookmark ĐẠT** ở nền vàng và trạng thái nền trắng qua hai ảnh. Chỉ nghiệm thu thay đổi tương phản icon của A04, không đóng phần chữ/nền khác. A05 vẫn chưa sửa: bookmark slideshow chỉ state cục bộ, chưa lưu vào tài khoản/bộ sưu tập hoặc duy trì sau refresh.
+
+- **NGƯỜI DÙNG XÁC NHẬN ĐẠT:** Tab tới bookmark giữ slide10s; Shift+Tab tới link header thì autoplay tiếp tục khi Play bật; Pause + rời focus vẫn dừng; Play + rời focus chạy lại. Kết hợp xác nhận trước: reduce/manual chuyển/nội dung đầy đủ, no-preference autoplay và đổi reduce giữa hiệu ứng đều đạt trong các luồng người dùng vừa thử.
+- **A03 ĐÃ SỬA + NGƯỜI DÙNG XÁC NHẬN.** Các giới hạn điện thoại thật/hệ điều hành/screen reader vẫn còn, không bắt thử lại mọi mục đã đạt. Modal ảnh CHƯA SỬA XONG, theo dõi riêng.
+- Chuyển A04: sửa icon bookmark trắng trên vàng bằng màu tối#161918 đã dùng ở trạng thái saved. Không đổi nền vàng, chức năng lưu, layout/animation; không tự nối persistenceA05.
+- Browser CSS fixture390/1440 normal/hover/focus/saved: icon vàng trước1.86:1, sau9.54:1; saved nền trắng17.70:1. PASS so với mức3:1 cho icon chức năng, không phải chứng nhận WCAG toàn site. Raw frontend/bookmark-contrast-checks.json; scripts/check-bookmark-contrast.cjs. Build PASS, warning cũ còn. Chưa kiểm tra forced-colors hoặc phiên app người dùng; các chữ muted/gradient khác trong A04 chưa xử lý.
+- Trong14 findings kỹ thuật, A01/A02/A03/A14 đã có xác nhận người dùng trong phạm vi đã thử. Còn10 mục chưa hoàn tất hoặc mới sửa một phần; lỗi modal ảnh theo dõi riêng. Đây không phải tổng số mọi công việc LT/H/C, responsive/auth hoặc polish toàn site.
+
+### Chuyển bước theo yêu cầu — 2026-10-14
+
+- **MỞ MODAL ẢNH: CHƯA SỬA XONG / CHƯA ĐẠT.** Người dùng vẫn thấy URL đổi ngay nhưng modal hiện chậm. Các tối ưu và số đo trước chỉ là cải thiện trong phạm vi thử nghiệm, không phải nghiệm thu. Tạm chuyển sang mục khác theo yêu cầu, không xoá hoặc hạ mức ưu tiên lỗi này.
+- Khi quay lại: lấy Performance trace trong đúng phiên đăng nhập và môi trường đang chậm; phân biệt click, đổi URL, dialog DOM, paint và ảnh decode. Kiểm tra dev/production riêng, không thêm loading/timer để che độ chậm.
+- Bước đang xử lý: **A03 — reduced motion của TimedCardSlider**. Giữ chức năng, không thêm animation mới hoặc sửa tiếp modal ảnh trong lượt này.
+
+### A03: giảm chuyển động slideshow — 2026-10-14
+
+- **PHẢN HỒI TIẾP:** người dùng xác nhận no-preference + refresh animation/autoplay ĐẠT; đổi reduce giữa hiệu ứng không kẹt và dừng ĐẠT. Tab tới bookmark nhưng slide tiếp tục **CHƯA ĐẠT**; mục rời focus và Pause/Play CHƯA KIỂM TRA vì hướng dẫn chưa rõ. Không đóng A03.
+- Sửa bổ sung: phân biệt change tự động với chọn ảnh thủ công; sau await decode phải kiểm tra focus DOM và trạng thái Play hiện hành trước commit chuyển tự động. Mỗi tick kiểm tra focus DOM trực tiếp để không chạy trong khoảng trước cleanup effect. Không chặn chọn ảnh thủ công; giữ chức năng người dùng đã xác nhận đạt. Chờ kiểm tra lại bookmark trên app thật.
+- Regression fixture390/1440 PASS; case bổ sung1440 giữ decode ảnh thứ2 tới sau khi autoplay đến hạn, focus bookmark rồi resolve decode: slide01 giữ hơn6.1s, focus bookmark còn đúng, rời focus mới sang02 PASS. Build/ESLint PASS; không chứng minh đây là nguyên nhân duy nhất ở phiên người dùng. Raw slider-motion-checks.json cập nhật.
+- Hướng dẫn rời focus: nhấn Shift+Tab nhiều lần tới một nút/link header nằm ngoài slideshow, không cần click/điều hướng; nếu Play còn bật thì chờ7–10s để thấy chuyển tiếp. Pause rồi rời focus phải giữ ảnh; Play rồi rời focus phải tiếp tục.
+
+- **XÁC NHẬN MỚI CỦA NGƯỜI DÙNG:** reduce + refresh: chờ7–10s không tự chuyển ĐẠT; mũi tên/thẻ ảnh đổi không phóng/trượt ĐẠT; tiêu đề/ảnh/nút đầy đủ, không kẹt ĐẠT. Chưa xác nhận riêng viewport mobile trong phản hồi này. Chế độ no-preference, pause/focus/resume và đổi reduce giữa hiệu ứng CHƯA KIỂM TRA; không suy diễn các mục chưa thử thành đạt.
+
+- **ĐÃ SỬA SOURCE + KIỂM TRA FIXTURE; CHỜ XÁC NHẬN APP/THIẾT BỊ THẬT.** Không đánh dấu mọi animation toàn site hoàn tất.
+- TimedCardSlider khởi tạo autoplay tắt nếu hệ thống chọn prefers-reduced-motion:reduce. Nút Next/Previous/card đổi ảnh sau khi ảnh sẵn sàng nhưng không chạy hình phóng/trượt/WAAPI. Người dùng vẫn có thể chủ động bật Play; khi reduce, chuyển ảnh tức thời và không chạy thanh timer chuyển động.
+- Theo dõi thay đổi preference lúc đang mở trang: bật reduce tắt Play, huỷ opening animation/WAAPI, phục hồi card và background để không kẹt. Tắt reduce không tự bật lại autoplay đã dừng. Đưa ref cập nhật handler vào layout effect thay gán trong render.
+- Autoplay tạm dừng khi focus bàn phím ở trong slideshow, tiếp tục khi focus ra ngoài nếu Play còn bật. Giữ cơ chế pause/visibility hiện có; không thay URL, modal ảnh, bookmark persistence, nội dung hoặc bố cục.
+- Browser fixture dùng component/CSS thật và ảnh nội bộ, tại390/1440: reduce không tự đổi sau6.1s; Next đổi ảnh không opening layer/animation; focus giữ slide hơn6.1s; rời focus autoplay đổi; bật reduce giữa opening huỷ được và trở về Play. PASS. Raw frontend/slider-motion-checks.json, script scripts/check-slider-motion.cjs.
+- Production build PASS, warning chunk/Zod/import còn. Chưa test preference Windows/iOS/Android thật, touch thật, refresh toàn app/API ảnh thật hoặc focus/hover các browser khác. Không dùng build để kết luận hết lỗi.
+- Cách người dùng kiểm tra: DevTools Rendering -> Emulate CSS media prefers-reduced-motion:reduce; refresh trang chủ, chờ7s (không tự chuyển), bấm mũi tên/card (không phóng/trượt). Đổi no-preference, bật Play rồi focus trong slider (không tự chuyển); focus ra ngoài (tiếp tục). Bật reduce giữa chuyển slide (không kẹt). Modal ảnh vẫn CHƯA SỬA XONG.
+
 ### Độ trễ sau URL: probe đúng localhost5173 — 2026-10-13
 
 - Người dùng xác nhận **URL đổi ngay nhưng modal chờ lâu**. URL /explore -> /photos/untitled-ID là điều hướng ảnh hợp lệ, không chứng minh document reload; phải giữ URL riêng cho share/refresh. Không đổi sang URL ẩn để che độ trễ.
@@ -169,9 +280,9 @@ ID giữ theo audit để tránh mất liên kết lịch sử. Chi tiết đầ
 |---|---|---|---|---|
 | A01 | P1 | Studio cắt nội dung; HeroBooking.css, HeaderMarquee.css:44 | ĐÃ SỬA; người dùng xác nhận đạt; fixture9viewport PASS; thiết bị thật còn giới hạn | 1 |
 | A02 | P1 | Booking không giữ focus; BookingModal.tsx | ĐÃ SỬA; người dùng xác nhận đạt; fixture5width PASS; reader/máy thật chưa kiểm tra đầy đủ | 2 |
-| A03 | P1 | Reduced motion chưa áp dụng đường JS; TimedCardSlider.tsx | CÒN LỖI; slide vẫn tự đổi sau6.7s khi reduce | 5, trước motion mới |
-| A04 | P1 | Bookmark trắng/vàng 1.86:1; TimedCardSlider.css | CHƯA SỬA; chữ muted/gradient phải xét nền/cỡ thực | 5 |
-| A05 | P1 | Bookmark chỉ local state; TimedCardSlider.tsx:177 | CHƯA SỬA; ý nghĩa đối tượng lưu cần xác nhận | 3 |
+| A03 | P1 | Reduced motion đường JS; TimedCardSlider.tsx | ĐÃ SỬA + NGƯỜI DÙNG XÁC NHẬN các luồng; fixture390/1440 PASS; máy thật còn giới hạn | 5, trước motion mới |
+| A04 | P1 | Tương phản bookmark/chữ muted/gradient HeroBooking | ICON người dùng xác nhận; đã sửa token muted + chữ hero, fixture5width PASS; chờ xác nhận chữ và các nền khác | 5 |
+| A05 | P1 | Bookmark chỉ local state; TimedCardSlider.tsx:177 | ĐÃ SỬA SOURCE: nối trạng thái/cập nhật favorite ảnh thật; chờ kiểm tra phiên đăng nhập/app thật | 3 |
 | A06 | P1 | Chuông bỏ outline; NotificationBell.css:14/25/31 | NGHI VẤN TỪ CSS; chưa test tài khoản thật | 5 |
 | A07 | P2 | Card ngoài màn hình vẫn tabbable; TimedCardSlider.tsx:180 | CÒN LỖI | 1, 5 |
 | A08 | P2 | Vùng bấm nhỏ; Header/TimedCardSlider/BookingModal CSS | CHƯA SỬA; 44px là mục tiêu dễ dùng, không gọi mọi nút nhỏ là lỗi WCAG AA | 1, 5 |
@@ -180,7 +291,7 @@ ID giữ theo audit để tránh mất liên kết lịch sử. Chi tiết đầ
 | A11 | P2 | Payload/startup và animation layout nặng; App/TimedCardSlider | ĐÃ SỬA PHẦN FONT; JS~918KB/trace slider còn mở | 7 |
 | A12 | P2 | Hardcode màu lệch dark tokens; HomePageLayouts.css/theme.css | NGHI VẤN TỪ CODE; live dark chưa kiểm tra | 5, 6 |
 | A13 | P2 | Collections redirect guest về home; CollectionsPage.tsx:82 | ĐÃ TÁI HIỆN; CHỜ CHỐT public/private | 3 |
-| A14 | P2 | Mobile Back mất vị trí; ExplorePage.tsx/imagePageScroll | ĐÃ SỬA; hook fixture PASS; chờ người dùng xác nhận Back/refresh/modal trên app | 2 |
+| A14 | P2 | Mobile Back mất vị trí; ExplorePage.tsx/imagePageScroll | ĐÃ SỬA; người dùng xác nhận Back/nút trở về/refresh và desktop đóng giữ vị trí; fixture PASS | 2 |
 
 Critique có ba nhóm P1 và hai nhóm P2, là nhóm UX gộp các vấn đề ở bảng này, không cộng thành 19 lỗi khác nhau. Điểm audit 8/20 là snapshot ban đầu, critique 20/40 là thang khác; không gộp thành một điểm chung.
 

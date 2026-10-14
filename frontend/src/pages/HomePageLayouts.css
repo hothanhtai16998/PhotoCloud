@@ -59,6 +59,8 @@
 }
 
 .home-package-card {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #ebe7de;
   border-radius: 22px;
   overflow: hidden;
@@ -97,6 +99,8 @@
 }
 
 .home-package-body {
+  flex: 1;
+  grid-template-rows: auto auto auto 1fr auto;
   padding: 18px;
   display: grid;
   gap: 8px;
@@ -136,9 +140,16 @@
 }
 
 .home-package-body button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
   width: max-content;
+  max-width: 100%;
   padding: 10px 13px;
 }
+
+.home-package-body button svg { flex-shrink: 0; }
 
 /* Custom quote card - wider and softer than the package cards */
 .home-package-custom {

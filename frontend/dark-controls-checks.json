@@ -1,0 +1,1052 @@
+[
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 5.07
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 3.18
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 3.18
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 3.18
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 1
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 1
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 320,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 10.15
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 10.15
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 10.15
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 9.85
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 9.85
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 11.36
+  },
+  {
+    "width": 320,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 5.07
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 3.18
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 3.18
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 3.18
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 1
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 1
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 390,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 10.15
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 10.15
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 10.15
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 9.85
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 9.85
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 11.36
+  },
+  {
+    "width": 390,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 5.07
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 3.18
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 3.18
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 3.18
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 1
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 1
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 768,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 10.15
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 10.15
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 10.15
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 9.85
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 9.85
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 11.36
+  },
+  {
+    "width": 768,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 5.07
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 3.18
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 3.18
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 3.18
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 1
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 1
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 1024,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 10.15
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 10.15
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 10.15
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 9.85
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 9.85
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 11.36
+  },
+  {
+    "width": 1024,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 5.07
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 3.18
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 3.18
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 3.18
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 1
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 1
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 1
+  },
+  {
+    "width": 1440,
+    "theme": "light",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 17.25
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".studio-cta-secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".hero-cta--secondary",
+    "state": "focus",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "normal",
+    "contrast": 10.15
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "hover",
+    "contrast": 10.15
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".hero-highlight-icon",
+    "state": "focus",
+    "contrast": 10.15
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "normal",
+    "contrast": 9.85
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "hover",
+    "contrast": 9.85
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".avatar-placeholder",
+    "state": "focus",
+    "contrast": 9.85
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "normal",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "hover",
+    "contrast": 11.36
+  },
+  {
+    "width": 1440,
+    "theme": "dark",
+    "selector": ".studio-cta-ghost",
+    "state": "focus",
+    "contrast": 11.36
+  }
+]

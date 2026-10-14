@@ -9,7 +9,7 @@
 /* Account for sidebar on desktop */
 @media (min-width: 768px) {
   .favorites-page {
-    margin-left: 64px; /* Sidebar width */
+    margin-left: 0;
   }
 }
 

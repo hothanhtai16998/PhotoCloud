@@ -1,0 +1,24 @@
+[
+  {
+    "width": 390,
+    "reducedDefaultPaused": true,
+    "manualSnap": true,
+    "focusPauses": true,
+    "normalAutoplayResumes": true,
+    "preferenceChangeCancels": true
+  },
+  {
+    "width": 1440,
+    "reducedDefaultPaused": true,
+    "manualSnap": true,
+    "focusPauses": true,
+    "normalAutoplayResumes": true,
+    "preferenceChangeCancels": true
+  },
+  {
+    "width": 1440,
+    "pendingAutomaticDecodeFocusBlocked": true,
+    "bookmarkFocusPreserved": true,
+    "resumeAfterLeaving": true
+  }
+]

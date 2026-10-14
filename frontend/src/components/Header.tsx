@@ -1,5 +1,5 @@
-import { memo, useState, useRef, useEffect, lazy, Suspense } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { memo, useState, useRef, useEffect, useLayoutEffect, lazy, Suspense, type MouseEvent } from "react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
@@ -13,9 +13,9 @@ import { t } from "@/i18n"
 import { UserMenu } from "./UserMenu"
 import { TextLogo } from "./TextLogo"
 import { LanguageSwitcher } from "./LanguageSwitcher"
+import { ThemeToggle } from './ThemeToggle'
 import { openBookingModal } from '@/utils/bookingModalEvent'
 import { LANGUAGE_SWITCHER_ENABLED } from "@/config/features"
-import { useLocation } from "react-router-dom"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import './Header.css'
 import ImagePageSidebar from './ImagePageSidebar'
@@ -158,10 +158,21 @@ export const Header = memo(function Header() {
   }, [location.pathname, accessToken])
 
 
-  const handleLogoClick = () => {
-    if (location.pathname === '/') {
-      // If already on homepage, scroll to top (smooth UX)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+  const logoTopRequested = useRef(false)
+  useLayoutEffect(() => {
+    if (location.pathname !== '/' || !logoTopRequested.current) return
+    logoTopRequested.current = false
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    const frame = requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    return () => cancelAnimationFrame(frame)
+  }, [location.pathname, location.key])
+  const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return
+    event.preventDefault()
+    if (location.pathname === '/') window.scrollTo({ top: 0, behavior: 'instant' })
+    else {
+      logoTopRequested.current = true
+      navigate('/')
     }
   }
 
@@ -199,7 +210,7 @@ export const Header = memo(function Header() {
           {/* Mobile Header Actions - Icons visible on mobile */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
           {isMobile && <div className="mobile-header-actions" style={{ minWidth: '80px', height: '40px', position: 'relative', marginRight: 0, paddingRight: 0 }}>
-            {location.pathname === '/' && <ImagePageSidebar variant="header" />}
+            <ImagePageSidebar variant="header" />
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
               <div style={{ 
@@ -292,17 +303,18 @@ export const Header = memo(function Header() {
 
           {/* Search Bar */}
           <nav className="header-studio-nav" aria-label="Điều hướng studio">
-            {location.pathname === '/' && <Link to="/explore">Khám phá</Link>}
+            <Link to="/explore" aria-current={location.pathname === '/explore' ? 'page' : undefined}>Khám phá</Link>
             <Link to="/packages" aria-current={location.pathname.startsWith('/packages') ? 'page' : undefined}>Gói chụp</Link>
             <Link to="/collections" aria-current={location.pathname.startsWith('/collections') ? 'page' : undefined}>Bộ sưu tập</Link>
-            {location.pathname === '/' && <Link to="/blog">Câu chuyện</Link>}
+            <Link to="/blog" aria-current={location.pathname.startsWith('/blog') ? 'page' : undefined}>Câu chuyện</Link>
             <Link to="/about" aria-current={location.pathname === '/about' ? 'page' : undefined}>Về studio</Link>
           </nav>
 
           {/* Right Actions - Desktop */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
           {!isMobile && <div className="header-actions desktop-only">
-            {location.pathname === '/' && <ImagePageSidebar variant="header" />}
+            <ThemeToggle />
+            <ImagePageSidebar variant="header" />
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
               <div style={{ 
@@ -483,6 +495,7 @@ export const Header = memo(function Header() {
                 {t('header.account')}
               </Link>
 
+              <ThemeToggle menu />
               {LANGUAGE_SWITCHER_ENABLED && <>
               <div className="user-menu-separator user-menu-separator-mobile-only" />
               <div className="user-menu-item-mobile-only-wrapper mobile-hamburger-menu-item">
