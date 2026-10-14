@@ -1,0 +1,194 @@
+{
+  "measurement": {
+    "click": 1371.6000000014901,
+    "route": 1372.2000000011176,
+    "dialog": 1602.800000000745,
+    "longTasks": [
+      {
+        "start": 1492.2000000011176,
+        "duration": 111
+      }
+    ],
+    "url": "http://localhost:5173/photos/untitled-2d6811405d85",
+    "image": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+    "imageReadyAt": 2209.800000000745,
+    "ready": true
+  },
+  "errors": [],
+  "requests": [
+    {
+      "event": "start",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765943687302-22e5598c.avif",
+      "method": "GET",
+      "at": 19
+    },
+    {
+      "event": "start",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.webp",
+      "method": "GET",
+      "at": 33
+    },
+    {
+      "event": "start",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946237618-9854cabc-regular.avif",
+      "method": "GET",
+      "at": 253
+    },
+    {
+      "event": "start",
+      "url": "http://localhost:3000/api/images/6ac8a9f327212d6811405d85/view",
+      "method": "PATCH",
+      "at": 254
+    },
+    {
+      "event": "start",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765945447241-42a20266-thumbnail.webp",
+      "method": "GET",
+      "at": 275
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766055803880-87356ee1-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704440.5598,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 318.147,
+        "responseStart": 783.978,
+        "responseEnd": 792.977
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-avatars/avatar-1765535555321-227a743f6714238760c76a69f45155df.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704367.41,
+        "domainLookupStart": 0,
+        "domainLookupEnd": 0,
+        "connectStart": 0,
+        "secureConnectionStart": 157.885,
+        "connectEnd": 390.681,
+        "requestStart": 391.227,
+        "responseStart": 872.17,
+        "responseEnd": 887.163
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766293077384-3321f33e-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704439.5352,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 319.128,
+        "responseStart": 817.675,
+        "responseEnd": 825.993
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704287.928,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 470.645,
+        "responseStart": 976.206,
+        "responseEnd": 980.066
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054651141-4b2fdb60-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704440.6262,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 318.11,
+        "responseStart": 966.305,
+        "responseEnd": 978.521
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766057948332-be659b24-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704440.4539,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 318.227,
+        "responseStart": 990.786,
+        "responseEnd": 1003.048
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1791535579807-9507f80d-regular.avif",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704833.921,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.031,
+        "responseStart": 653.35,
+        "responseEnd": 997.151
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1766054100266-2f5ad89f-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704834.023,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.182,
+        "responseStart": 667.686,
+        "responseEnd": 1074.534
+      }
+    },
+    {
+      "event": "finished",
+      "url": "https://cdn.uploadanh.cloud/photo-app-images/image-1765946665107-c3eb654b-thumbnail.webp",
+      "method": "GET",
+      "timing": {
+        "startTime": 1791898704834.1382,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.488,
+        "responseStart": 677.997,
+        "responseEnd": 1086.119
+      }
+    }
+  ]
+}

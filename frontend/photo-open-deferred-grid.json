@@ -1,0 +1,42 @@
+[
+  {
+    "width": 1440,
+    "moduleDelayMs": 0,
+    "largeImageDelayMs": 3000,
+    "clickToSurfaceMs": 79,
+    "largeImageStillLoading": true,
+    "relatedGridReachable": true,
+    "closeRestoresScroll": true,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "moduleDelayMs": 2000,
+    "largeImageDelayMs": 3000,
+    "clickToSurfaceMs": 64,
+    "largeImageStillLoading": true,
+    "relatedGridReachable": true,
+    "closeRestoresScroll": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "moduleDelayMs": 0,
+    "largeImageDelayMs": 3000,
+    "clickToSurfaceMs": 57,
+    "largeImageStillLoading": true,
+    "relatedGridReachable": true,
+    "closeRestoresScroll": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "moduleDelayMs": 2000,
+    "largeImageDelayMs": 3000,
+    "clickToSurfaceMs": 59,
+    "largeImageStillLoading": true,
+    "relatedGridReachable": true,
+    "closeRestoresScroll": true,
+    "errors": []
+  }
+]

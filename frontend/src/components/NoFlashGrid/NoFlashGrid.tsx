@@ -4,7 +4,7 @@ import './NoFlashGrid.css';
 
 // Import extracted modules
 import { GRID_CONFIG } from './constants/gridConfig';
-import { preloadImage, preloadImages } from './utils/imagePreloader';
+import { preloadImages } from './utils/imagePreloader';
 import { loadImageDimensions, getCachedImageDimensions } from './utils/imageDimensions';
 import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
@@ -297,22 +297,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                             image={image}
                                             images={filteredImages}
                                             currentIndex={idx}
-                                            onClick={isMobile && onImageClick
-                                                ? () => {
-                                                    // Mobile: immediate navigation, preload in background
-                                                    onImageClick(image, idx);
-                                                    const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                                    if (full) {
-                                                        preloadImage(full, false).catch(() => {});
-                                                    }
-                                                }
-                                                : () => {
-                                                    if (!onImageClick) return;
-                                                    
-                                                    const full = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
-                                                    onImageClick(image, idx);
-                                                    if (full) void preloadImage(full, false).catch(() => {});
-                                                }}
+                                            onClick={onImageClick ? () => onImageClick(image, idx) : undefined}
                                             priority={isPriority}
                                         />
                                     </div>

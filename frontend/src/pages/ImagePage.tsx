@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect, useContext } from 'react';
+import { lazy, Suspense, useEffect, useState, useMemo, useCallback, useRef, useLayoutEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ActualLocationContext, BackgroundRouteContext } from '@/contexts/ActualLocationContext';
@@ -30,7 +30,7 @@ import { ArrowLeft, Heart, Share2, Download, Info, ChevronDown, MapPin, External
 import { ImageModalInfo } from '@/components/NoFlashGrid/components/ImageModalInfo';
 import { preloadImage, loadedImages } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
-import { NoFlashGrid } from '@/components/NoFlashGrid';
+import { ImageRelatedGrid } from '@/components/ImageRelatedGrid';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import { validateModalState, clearModalActive, restoreScrollPosition, setModalActive, getImageNavigationBackground } from '@/utils/modalNavigation';
 import { detectAvifSupport } from '@/utils/avifSupport';
@@ -46,8 +46,8 @@ import '@/components/NoFlashGrid/components/modal-info.css';
 import '@/components/NoFlashGrid/components/modal-footer.css';
 
 // Import modals
-import EditImageModal from '@/components/EditImageModal';
-import CollectionModal from '@/components/collection/CollectionModal';
+const EditImageModal = lazy(() => import('@/components/EditImageModal'));
+const CollectionModal = lazy(() => import('@/components/collection/CollectionModal'));
 
 // Module-level cache to persist API stats across component unmounts
 const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
@@ -1293,6 +1293,7 @@ function ImagePage() {
               <span className="image-action-label">{t('image.collection')}</span>
             </button>
             {showCollectionModal && image && (
+              <Suspense fallback={null}>
               <CollectionModal
                 isOpen={showCollectionModal}
                 onClose={() => setShowCollectionModal(false)}
@@ -1301,6 +1302,7 @@ function ImagePage() {
                   // Optionally refresh data or show success message
                 }}
               />
+              </Suspense>
             )}
           </div>
 
@@ -1546,7 +1548,9 @@ function ImagePage() {
             <h2 className="image-modal-related-title" style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px', color: '#111' }}>
               {t('image.relatedImages')}
             </h2>
-            <NoFlashGrid
+            <ImageRelatedGrid
+              key={image._id}
+              scrollRoot={scrollRef}
               compactMobile
               images={relatedImages}
               loading={false}
@@ -1655,7 +1659,8 @@ function ImagePage() {
       )}
 
       {/* Edit Image Modal */}
-      {image && (
+      {image && showEditModal && (
+        <Suspense fallback={null}>
         <EditImageModal
           image={image}
           isOpen={showEditModal}
@@ -1669,6 +1674,7 @@ function ImagePage() {
             ));
           }}
         />
+        </Suspense>
       )}
 
     </>

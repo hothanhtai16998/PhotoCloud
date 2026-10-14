@@ -17,6 +17,7 @@ import { MobileBottomNav } from "./components/MobileBottomNav";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { GlobalLoadingOverlay } from "./components/ui/GlobalLoadingOverlay";
 import { syncGlobalLoading } from "./stores/helpers/syncGlobalLoading";
+import ImagePage from "./pages/ImagePage";
 import {
   isPageRefresh,
   clearModalStateOnRefresh,
@@ -38,7 +39,6 @@ const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const FavoriteCollectionsPage = lazy(() => import("./pages/FavoriteCollectionsPage"));
 const DownloadHistoryPage = lazy(() => import("./pages/DownloadHistoryPage"));
-const ImagePage = lazy(() => import("./pages/ImagePage"));
 const CollectionsPage = lazy(() => import("./pages/CollectionsPage"));
 const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDetailPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -295,9 +295,11 @@ function App() {
 
         {/* Modal routes: render on top when background exists */}
         {shouldRenderModalRoutes && (
+          <Suspense fallback={null}>
           <Routes>
             <Route path="/photos/:slug" element={<ImagePage />} />
           </Routes>
+          </Suspense>
         )}
 
         {/* Studio Footer - hiện ở public/member, ẩn ở admin */}

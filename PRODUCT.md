@@ -2,6 +2,40 @@
 
 ## 0. Bảng điều khiển chung
 
+### Độ trễ sau URL: probe đúng localhost5173 — 2026-10-13
+
+- Người dùng xác nhận **URL đổi ngay nhưng modal chờ lâu**. URL /explore -> /photos/untitled-ID là điều hướng ảnh hợp lệ, không chứng minh document reload; phải giữ URL riêng cho share/refresh. Không đổi sang URL ẩn để che độ trễ.
+- Đã truy cập được đúng dev server localhost5173 trong ảnh. Edge phiên mới chưa đăng nhập; chặn mọi method ghi và Socket.IO, không increment view hoặc gửi dữ liệu thật. API GET/ảnh CDN thật. Script frontend/scripts/probe-live-photo.cjs, có profiler từ trước click tới dialog DOM; số dialog DOM không phải thời điểm paint pixel.
+- Lượt bình thường: URL đổi khoảng0.6ms, modal DOM khoảng170–231ms, ảnh ready khoảng838ms ở lượt có số đo; chưa tái hiện mức nhiều giây trong phiên user. Không giả lập tài khoản của user, không gọi đây là số đo logged-in.
+- CPU6x trên dev tái hiện: modal DOM khoảng2545ms/2062ms trong hai lượt trước, URL khoảng5ms. Profile có JSX development runtime và long task render trước dialog966–1438ms; không phải API detail bị await trước modal ở lượt này. Không kết luận toàn bộ chậm do CPU hoặc mọi thiết bị đều như mô phỏng.
+- Đã sửa thêm: ImageRelatedGrid dùng IntersectionObserver root là scroller trang ảnh, margin300px; dựng các card liên quan khi gần viewport, không trì hoãn modal để dựng cả gallery dưới fold. Giữ vùng minheight400px và fallback mount ngay khi không có observer; key theo ảnh để ảnh mới có vòng đời riêng. NoFlashGrid click chỉ gọi điều hướng, bỏ preload regularWebP dư khi ImagePage dùng AVIF. Preload gallery/hover hiện có không bị xoá.
+- Sau sửa một lượt CPU6x dev: modal DOM1469ms, long task ngay trước dialog293ms. **Còn chậm ở CPU mô phỏng, chưa đóng lỗi.** Các lượt đo network/CPU không hoàn toàn giống nhau nên đây là quan sát, không cam kết giảm tỷ lệ cố định hay ngang Unsplash.
+- Production bundle thật với API/ảnh mock giữ3000ms: mở surface desktop64–79ms, mobile57–59ms; cuộn tới gallery liên quan hiển thị và Escape/Back giữ vị trí PASS, không pageerror. Raw frontend/photo-open-deferred-grid.json. Build PASS; warning chunk/Zod/import còn. Khác biệt môi trường dev/production cần giữ riêng, không dùng mock chứng minh phiên user hết lỗi.
+- Evidence live: frontend/photo-live-probe-6.json (sau sửa), frontend/photo-live-probe.json (lượt bình thường trước; script sau đổi tên output theo CPU). Chưa test logged-in, điện thoại thật, restore vào sâu gallery liên quan và ảnh lỗi trong gallery này. Cần trace đúng phiên user nếu vẫn chờ nhiều giây ở CPU bình thường; giữ checklist hiệu năng mở.
+
+### Modal vẫn chậm: tái hiện production và bỏ tải module tại click — 2026-10-13
+
+- Người dùng xác nhận thay đổi prefetch trước vẫn chưa đạt. Không đánh dấu hết lỗi từ tối ưu chunk; nhật ký trước là lịch sử, không còn mô tả chiến lược code hiện tại.
+- Đã tái hiện bằng **bundle production thật** trên Edge, API/ảnh giả và intercept toàn bộ request (không gọi backend/ghi DB). Script frontend/scripts/measure-photo-open.cjs: mở Explore, bấm ảnh ngay khi gallery hiện. Ảnh regular cố ý giữ3000ms; ở nhánh mạng module chậm, ImagePage JS giữ2000ms.
+- **Trước sửa:** desktop1440 click tới modal74ms khi module không bị trì hoãn; **2436ms** khi module giữ2000ms. Chứng minh lazy module là một khoản chặn mở modal lần đầu; không chứng minh đây là toàn bộ nguyên nhân trên máy người dùng/CDN thật.
+- **Đã sửa:** App import ImagePage trực tiếp thay React.lazy. Xoá shared loadImagePage và prefetch effect ở NoFlashGrid vì không còn cần. Code xem ảnh được tải cùng app, không có request module ImagePage phát sinh khi click; EditImageModal/CollectionModal vẫn lazy riêng. Không thêm skeleton/spinner/timer hoặc chờ ảnh decode trước mở; giữ nguyên modal/history/refresh/mobile semantics.
+- **Sau sửa:** desktop1440 **84/77ms** ở hai nhánh module delay0/2000; mobile390 **68/67ms**. Ảnh lớn vẫn chưa complete khi surface hiển thị, không có pageerror trong bốn case. Escape desktop/Back mobile trả Explore đúng scroll trong cả bốn case. Đây là số đo fixture local, không phải độ trễ Internet thực hoặc benchmark Unsplash; cũng không đo tốc độ boot app.
+- Đánh đổi: main JS production **918.54 -> 966.04KB**, gzip **293.64 -> 308.27KB**, tăng khoảng14.63KB nén ở lượt tải đầu. Route xem ảnh là hành động chính nên ưu tiên có code sẵn khi gallery thao tác được; không quảng cáo bundle toàn site đã nhỏ hơn.
+- Raw: frontend/photo-open-before.json và frontend/photo-open-after.json. Build PASS, warning chunk/Zod/import vẫn còn. API/auth/signed URLs/ảnh thật và chỉnh sửa/bộ sưu tập chưa được kiểm chứng bằng fixture này; refresh photo standalone chưa test lại trong lượt này.
+- **Chờ người dùng:** refresh bản đang chạy/bản production mới, bấm ảnh chưa xem ngay rồi bấm ảnh tiếp theo. Xác nhận khung modal có mở tức thì dù ảnh chưa nét. Nếu còn chậm, cần waterfall/Performance trace trên đúng máy và URL đang dùng; không tiếp tục quy mọi chậm cho bundle hay khẳng định ngang Unsplash.
+
+### Xác nhận trang ảnh và tối ưu lần mở modal đầu — 2026-10-13
+
+- **NGƯỜI DÙNG XÁC NHẬN ĐẠT:** mobile hết khoảng trắng trên ảnh; nút Trở về và Back trình duyệt giữ vị trí; ảnh tải chậm không kéo thông tin/footer lên. A14 đã được xác nhận trong các luồng vừa thử. Không yêu cầu kiểm tra lại ba mục này nếu không xuất hiện hồi quy.
+- **CHƯA ĐẠT:** desktop mở ảnh chưa xem vẫn chậm. Giữ mục hiệu năng này mở, không coi thay đổi trước đã giải quyết xong.
+- Phát hiện ở source: route ImagePage lazy chỉ tải khi mở lần đầu; import tĩnh kéo cả EditImageModal/CollectionModal vào đường mở ảnh. Modal chung Suspense với gallery kích hoạt PageLoader/global loading trong lúc tải module; overlay có minimum display/fade riêng. Không phải bằng chứng API/CDN chậm bao nhiêu giây.
+- Đã sửa: shared loadImagePage dùng cùng promise cho lazy route/prefetch và reset khi import lỗi. Gallery có ảnh và handler điều hướng thì prefetch code xem ảnh, không fetch API hay ảnh gốc thêm. Modal có Suspense riêng để không che gallery; các modal chỉnh sửa/bộ sưu tập lazy riêng và chỉ mount khi mở. Không đổi URL, history, refresh hoặc logic restore scroll; không thêm timer/loading che độ chậm.
+- Production bundle đo trước/sau: ImagePage JS **100114 -> 46936 byte** (giảm khoảng 53%); CSS **48676 -> 30576 byte** (giảm khoảng 37%). Đây là kích thước riêng chunk, không phải tổng tải toàn ứng dụng hoặc thời gian click. EditImageModal/CollectionModal vẫn có thể được tải bởi route khác cần chúng.
+- Kiểm tra Edge headless fixture React tại390/1440: import giữ pending350ms, gallery vẫn hiển thị, không mount global fallback, dialog xuất hiện khi import resolve. Script frontend/scripts/check-photo-route-loading.cjs; đây là fixture kiến trúc Suspense, không full ImagePage/API/CDN.
+- Regression fixtures Back/scroll tại390/768/1440 và CSS spacing/footer tại390/440/768/1024/1440 PASS. Build production PASS, cảnh báo chunk/Zod/import cũ còn; ESLint không có error, cảnh báo hiện có trong ImagePage chưa sửa ngoài phạm vi.
+- **Chờ xác nhận desktop app thật:** refresh rồi mở ảnh chưa xem, so với lần mở tiếp theo; phân biệt thời điểm khung modal xuất hiện và ảnh nét tải xong. Chưa đo click-to-modal thực, chưa kiểm tra chức năng chỉnh sửa/bộ sưu tập sau lazy-split hoặc điện thoại cảm ứng thật. Không kết luận hết chậm từ build/fixture.
+- Probe đọc-only tới127.0.0.1:5175 ngoài sandbox bị connection refused trong môi trường kiểm tra này; không khởi động lại/đổi server của người dùng. Vì vậy chưa có số đo thời gian mở modal app thật ở lượt này.
+
 ### Phản hồi A14 và trang ảnh: khoảng trắng/tải/Back — 2026-10-13
 
 - Người dùng xác nhận Escape trở về đúng vị trí, refreshExplore vềđầu, refreshảnh standalone và desktopclosemodal giữvịtrí. **BrowserBack chưa được xác nhận riêng** vì người dùng thửEscape; trước đó trangảnh không có núttrởvề rõ.

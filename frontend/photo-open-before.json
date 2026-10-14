@@ -1,0 +1,14 @@
+[
+  {
+    "moduleDelayMs": 0,
+    "largeImageDelayMs": 3000,
+    "clickToModalMs": 74,
+    "errors": []
+  },
+  {
+    "moduleDelayMs": 2000,
+    "largeImageDelayMs": 3000,
+    "clickToModalMs": 2436,
+    "errors": []
+  }
+]
