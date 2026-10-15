@@ -1,12 +1,9 @@
-import { Image as ImageIcon } from 'lucide-react';
-
 interface EditImageTabsProps {
-  activeTab: 'details' | 'tags' | 'exif' | 'edit';
-  onTabChange: (tab: 'details' | 'tags' | 'exif' | 'edit') => void;
-  onEditClick: () => void;
+  activeTab: 'details' | 'tags' | 'exif';
+  onTabChange: (tab: 'details' | 'tags' | 'exif') => void;
 }
 
-export const EditImageTabs = ({ activeTab, onTabChange, onEditClick }: EditImageTabsProps) => {
+export const EditImageTabs = ({ activeTab, onTabChange }: EditImageTabsProps) => {
   return (
     <div className="edit-modal-tabs">
       <button
@@ -26,13 +23,6 @@ export const EditImageTabs = ({ activeTab, onTabChange, onEditClick }: EditImage
         onClick={() => onTabChange('exif')}
       >
         Exif
-      </button>
-      <button
-        className={`edit-modal-tab ${activeTab === 'edit' ? 'active' : ''}`}
-        onClick={onEditClick}
-      >
-        <ImageIcon size={16} />
-        Chỉnh ảnh
       </button>
     </div>
   );

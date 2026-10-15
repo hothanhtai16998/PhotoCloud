@@ -97,6 +97,10 @@ function fixture({ mobile = false, guest = false } = {}) {
     '@/hooks/useIsMobile': { useIsMobile: () => mobile },
     '@/stores/useDownloadHistoryStore': { useDownloadHistoryStore: selector => selector({ addDownloadToHistory: image => history.push(image._id) }) },
     '@/stores/useAuthStore': { useAuthStore },
+    '@/utils/imageActionSession': { captureImageActionSession: () => {
+      const originalToken = accessToken;
+      return { authenticated: Boolean(originalToken), isCurrent: () => accessToken === originalToken, dispose: noop };
+    } },
     '@/utils/avifSupport': { detectAvifSupport: async () => true },
     './BlurUpImage.css': {},
   };
@@ -213,7 +217,7 @@ async function actions() {
   const saving = save(event()); await save(event());
   assert.equal(f.favorites.length, 1, 'rapid taps cannot toggle twice');
   f.favorites[0].resolve({ isFavorited: true }); await saving;
-  assert.deepEqual(f.favoriteUpdates, [['A', true]]);
+  assert.deepEqual(f.favoriteUpdates, [['A', true], ['A', true]], 'publish optimistic state and reconcile the server response');
 
   const downloading = f.button('Download').props.onClick(event());
   await f.button('Download').props.onClick(event()); await settle();
@@ -238,9 +242,10 @@ async function actions() {
 
   const account = fixture(); account.render({ image: a });
   const oldToggle = account.button('Save').props.onClick(event());
+  const updatesBeforeAccountChange = account.favoriteUpdates.length;
   account.setToken('another-mock-session');
   account.favorites[0].resolve({ isFavorited: true }); await oldToggle;
-  assert.equal(account.favoriteUpdates.length, 0, 'old account toggle must not update new account favorites');
+  assert.equal(account.favoriteUpdates.length, updatesBeforeAccountChange, 'old response must not publish into the new account');
 }
 
 async function opening() {

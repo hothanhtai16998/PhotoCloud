@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, MapPin, Camera, HelpCircle } from 'lucide-react';
 import type { Image } from '@/types/image';
-import { ImageEditor } from './EditImage/ImageEditor';
 import { TagInput } from './ui/TagInput';
 import { EditImageTabs } from './EditImage/EditImageTabs';
 import { useEditImageForm } from './EditImage/hooks/useEditImageForm';
@@ -19,12 +19,10 @@ interface EditImageModalProps {
 
 function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProps) {
   useScrollLock(isOpen, '.edit-image-modal');
-  const [activeTab, setActiveTab] = useState<'details' | 'tags' | 'exif' | 'edit'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'tags' | 'exif'>('details');
 
   const {
     isSubmitting,
-    showEditor,
-    setShowEditor,
     imageTitle,
     setImageTitle,
     location,
@@ -47,30 +45,13 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
     setDescription,
     canEdit,
     handleSubmit,
-    handleSaveEditedImage,
   } = useEditImageForm({ image, isOpen, onUpdate, onClose });
 
   if (!isOpen) return null;
 
-  // Show image editor in full screen
-  if (showEditor) {
-    return (
-      <div className="edit-image-modal-overlay">
-        <div className="edit-image-modal edit-image-modal-fullscreen" onClick={(e) => e.stopPropagation()}>
-          <ImageEditor
-            imageUrl={image.imageUrl || image.regularUrl || image.smallUrl || ''}
-            imageTitle={image.imageTitle || ''}
-            onSave={handleSaveEditedImage}
-            onCancel={() => setShowEditor(false)}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  return (
+  return createPortal(
     <div className="edit-image-modal-overlay" onClick={onClose}>
-      <div className="edit-image-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="edit-image-modal" role="dialog" aria-modal="true" aria-label={t('imagePage.editImage')} onClick={(e) => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="edit-modal-header">
           <h2>{t('imagePage.editImage')}</h2>
@@ -89,7 +70,6 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
         <EditImageTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onEditClick={() => setShowEditor(true)}
         />
 
         {/* Tab Content */}
@@ -328,7 +308,7 @@ function EditImageModal({ image, isOpen, onClose, onUpdate }: EditImageModalProp
           </div>
         </form>
       </div>
-    </div>
+    </div>, document.body
   );
 }
 

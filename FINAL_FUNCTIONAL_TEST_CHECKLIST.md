@@ -139,7 +139,7 @@ Bằng chứng đã có: Vite build thành công; các script fixture cho yêu c
 ## 17. Không gian cá nhân — `/me`
 
 - [ ] Các tab/số liệu/nội dung cá nhân và liên kết quản lý mở đúng; tài khoản mới có trạng thái rỗng.
-- [ ] Các thao tác upload/chỉnh ảnh/ghim nếu cung cấp kiểm tra quyền và đồng bộ với hồ sơ.
+- [ ] Các thao tác upload/sửa thông tin ảnh/ghim nếu cung cấp kiểm tra quyền và đồng bộ với hồ sơ.
 - [ ] `/upload` chuyển về `/` đúng route hiện tại, không mở trang hỏng.
 - [ ] R chung hoàn tất.
 

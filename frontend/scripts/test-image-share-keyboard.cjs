@@ -3,7 +3,7 @@ const root=path.join(__dirname,'../src');
 const compile=s=>ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
-const page=read('pages/ImagePage.tsx');
+const page=read('pages/image/useImagePageController.ts')+read('pages/ImagePage.tsx');
 const slice=(a,b)=>compile(page.slice(page.indexOf(a),page.indexOf(b,page.indexOf(a))));
 (async()=>{
   let copies=0;
@@ -53,6 +53,8 @@ const slice=(a,b)=>compile(page.slice(page.indexOf(a),page.indexOf(b,page.indexO
     if(name.includes('useAuthStore'))return{useAuthStore:()=>({accessToken:'fixture',setAccessToken:()=>{},clearAuth:()=>authCleared++})};
     if(name.includes('authService'))return{authService:{refresh:async()=>{throw new Error('refresh denied');}}};
     if(name.includes('logger'))return loggerModule.exports;
+    if(name==='@/lib/axios')return{default:{defaults:{baseURL:'http://localhost:3000/api'}}};
+    if(name==='@/utils/socketServerUrl')return{socketServerUrl:()=> 'http://localhost:3000'};
     if(name==='sonner')return{toast:{warning:()=>{},error:()=>{}}};
     throw new Error(name);
   }};

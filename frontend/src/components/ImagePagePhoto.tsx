@@ -44,7 +44,7 @@ export const ImagePagePhoto = memo(function ImagePagePhoto({ src, fallback, prev
     {preview && !ready && <img src={preview} alt="" aria-hidden="true" className="image-page-photo-preview" draggable={false} />}
     {activeSrc && <img key={`${activeSrc}:${attempt}`} ref={imageRef} src={requestSrc} alt={alt}
       className={`image-modal-image image-page-photo ${ready ? 'is-ready' : ''}`}
-      decoding="async" draggable={false} />}
+      decoding="async" fetchPriority="high" draggable={false} />}
     {error && <div className="image-page-photo-error" role="status">
       <span>{t('imagePage.loadError')}</span>
       <button onClick={() => {

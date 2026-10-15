@@ -2,17 +2,17 @@
 
 ## 🔴 LỖI QUAN TRỌNG ĐANG MỞ — XEM TRƯỚC KHI NGHIỆM THU
 
-<span style="color: #d32f2f;">**[o] IMG-01 — Bấm ảnh mở modal rất lag, phản hồi chậm.** Người dùng báo trên giao diện đang chạy; ảnh hưởng các trang có lưới ảnh. Chưa đo thời gian hoặc xác định nguyên nhân, chưa sửa, chưa xác nhận đạt.</span>
+<span style="color: #d32f2f;">**[o] IMG-01 — Bấm ảnh mở modal chậm.** Đã chỉnh luồng mở ảnh, ưu tiên ảnh chính và tách module; fixture đo click → có DOM modal khoảng35–47ms, không chờ API chi tiết bị làm chậm1,2giây. Chưa đo hiệu năng production; **NGƯỜI DÙNG KIỂM LẠI VẪN CHƯA ĐẠT** ở PHO-01, mục15, không tự đóng lỗi.</span>
 
-<span style="color: #d32f2f;">**[o] IMG-02 — F5 khi đang xem ảnh dạng modal: vẫn hiện modal khoảng 2 giây rồi mới thành trang ảnh.** Mong đợi: sau reload mở thẳng trang ảnh, không nháy modal trung gian. Mốc 2 giây là quan sát người dùng, chưa phải số đo tự động. Chưa sửa, chưa xác nhận đạt.</span>
+<span style="color: #d32f2f;">**[o] PHO-21 / PHO-22 — Lỗi mở link ảnh và tải file ảnh lớn chưa đạt.** Người dùng đã đánh o; cần sửa và kiểm lại. **PHO-10:** Lưu đúng chức năng nhưng phản hồi còn chậm.</span>
 
 <span style="color: #d32f2f;">**[o] EXP-F05 — Khám phá: sắp xếp chưa đạt.** Người dùng đã đánh o trong checklist. Cần đối chiếu từng lựa chọn với thứ tự ảnh thực tế và API; chưa tự suy ra nguyên nhân hoặc đánh dấu đã sửa.</span>
 
-<span style="color: #d32f2f;">**[o] SEA-17 — Nút × xóa chữ tìm kiếm lại chuyển về trang chủ.** Nguyên nhân: handler gọi navigate('/') và blur ô nhập. Đã sửa chỉ xóa chữ, giữ focus, URL/bộ lọc/kết quả hiện tại; Enter khi ô trống cũng không chuyển trang. **CHỜ NGƯỜI DÙNG KIỂM LẠI.** SEA-11/SEA-12 đã được người dùng xác nhận đạt, chuyển khỏi danh sách lỗi mở.</span>
+**Đã đóng theo xác nhận người dùng:** SEA-11, SEA-12, SEA-17 và IMG-02 (PHO-03 đã đạt). Toàn bộ mục14 về chức năng tìm kiếm đã đạt; không còn là lỗi mở. Responsive vẫn chưa nghiệm thu.
 
 **Quy ước chung:** `x` = ĐẠT · `o` = CHƯA ĐẠT · để trống = CHƯA KIỂM. Chấp nhận chữ hoa/thường và khoảng trắng khi đọc kết quả. Màu đỏ dùng HTML trong trình xem hỗ trợ; biểu tượng 🔴 vẫn chỉ rõ mức ưu tiên ở trình xem không hỗ trợ màu.
 
-**Thứ tự hiện tại:** Trang chủ để sau → Khám phá đã kiểm, còn lỗi → đang làm **Kết quả tìm kiếm (#3)** → tiếp theo Chi tiết ảnh (#4), xử lý chung IMG-01/IMG-02 tại lượt đó. **Responsive test sau cùng, khi xong chức năng tất cả các trang.**
+**Thứ tự hiện tại:** Trang chủ để sau → Khám phá còn EXP-F05 → ~~Kết quả tìm kiếm (#3) — chức năng đạt~~ → **Chi tiết ảnh (#4), còn PHO-01/21/22 chưa đạt ở mục15**. **Responsive test sau cùng, khi xong chức năng tất cả các trang.**
 
 Ngày đối chiếu: 15/10/2026. Cơ sở: route và mã nguồn hiện tại, không phải kết quả nghiệm thu production.
 
@@ -36,7 +36,7 @@ Quyền “công khai” chỉ nói về mở trang; các thao tác cá nhân b�
 |---|---|---|---|
 | 1 | Trang chủ / danh mục | `/`, `/t/:categorySlug` | Khám phá ảnh theo nhóm, vào chi tiết, tìm kiếm và đặt lịch. Cần giữ vị trí cuộn khi quay lại, tải ảnh ổn định, danh mục khớp dữ liệu admin. |
 | 2 | Khám phá | `/explore` | Cửa vào nội dung theo các nhóm hiển thị. Cần phân biệt vai trò với trang chủ, tránh hai trang đưa cùng nội dung mà không có mục đích rõ. |
-| 3 | Kết quả tìm kiếm | `/s/photos/:query` | Truy vấn → danh sách → chi tiết. URL và kết quả phải đồng bộ; xử lý dấu tiếng Việt, truy vấn rỗng/dài và phản hồi đến sai thứ tự. |
+| 3 | ~~Kết quả tìm kiếm~~ — chức năng đã xác nhận | `/s/photos/:query` | Truy vấn → danh sách → chi tiết. URL và kết quả phải đồng bộ; xử lý dấu tiếng Việt, truy vấn rỗng/dài và phản hồi đến sai thứ tự. |
 | 4 | Chi tiết ảnh | `/photos/:slug` | Xem ảnh, thông tin và các tương tác được cung cấp. Một nội dung có chế độ toàn trang và modal; Back/F5, tải ảnh, quyền tương tác là phần phức tạp nhất. |
 | 5 | Danh sách bộ sưu tập | `/collections` | Khám phá bộ sưu tập công khai và vào chi tiết. Cần xác minh tìm/lọc/phân trang theo UI thực tế, không để nội dung riêng lọt vào danh sách. |
 | 6 | Chi tiết bộ sưu tập | `/collections/:collectionId` | Xem ảnh và tương tác theo quyền. Trọng tâm: quyền chủ sở hữu, nội dung riêng, ảnh đã xóa và đồng bộ thay đổi. |
@@ -255,7 +255,7 @@ Khi thêm/xóa route hoặc thay nguồn dữ liệu, cập nhật bản đồ n
 
 Script tham khảo: `frontend/scripts/test-explore-page.cjs`. Đã chạy PASS trên Edge desktop 1440×900, sáng/tối: request page 2 giữ category/orientation/sort, lỗi trang đầu và retry, empty, reset về truy vấn mặc định; không có pageerror. Vite build PASS, ESLint ba file UI sửa không có error. Fixture nội bộ dùng API giả lập, không sửa dữ liệu thật. Đây không thay thế kiểm tra dữ liệu thật trên staging, ca lỗi page 2 hoặc nghiệm thu responsive và các ca người dùng ở trên.
 
-Kết quả người dùng mới nhất: **19 dấu x, 1 dấu o (EXP-F05)**. Chuẩn hóa khoảng trắng/chữ hoa trong dấu đánh giá, không thay đổi ý nghĩa. Giữ dấu x ở EXP-F17/F18 theo lần kiểm trước, nhưng hai lỗi IMG-01/IMG-02 mới báo được theo dõi riêng ở đầu file; không dùng các dấu x cũ để đóng hai lỗi này.
+Kết quả người dùng mới nhất: **19 dấu x, 1 dấu o (EXP-F05)**. Chuẩn hóa khoảng trắng/chữ hoa trong dấu đánh giá, không thay đổi ý nghĩa. Giữ dấu x ở EXP-F17/F18 theo lần kiểm trước, IMG-01 còn mở; IMG-02 đã được kiểm lại đạt tại PHO-03.
 
 | Ca | Đạt/chưa đạt | Mô tả lỗi, bước tái hiện | Bằng chứng/build | Ngày kiểm |
 |---|---|---|---|---|
@@ -322,9 +322,9 @@ Script đọc dependency: `frontend/scripts/audit-admin-dependencies.cjs` (chỉ
 - Fixture Khám phá, Edge desktop sáng/tối: **PASS** tải page 2 giữ category/orientation/sort, **thứ tự asc + minWidth**, lỗi page 2 giữ grid và retry đúng trang, lỗi danh mục và retry, lỗi trang đầu/retry, empty/reset; không có pageerror.
 - Script fixture: `frontend/scripts/test-explore-page.cjs` và `test-admin-actions.cjs`. Kết quả kỹ thuật không thay thế người dùng tích các ca EXP-F; chưa thực hiện nghiệm thu responsive trong lượt này.
 
-## 14. ~~Kết quả tìm kiếm (#3) — 16 ca ban đầu ĐẠT~~
+## 14. ~~Kết quả tìm kiếm (#3) — chức năng ĐẠT (16 ca + SEA-17)~~
 
-**Đường dẫn:** gõ từ khóa rồi Enter, hoặc mở `/s/photos/chan%20dung`. **Trạng thái: người dùng xác nhận đủ 16/16 ca đạt. Có lỗi bổ sung SEA-17 (nút ×), đã sửa và chờ kiểm lại ở mục 14.5.**
+**Đường dẫn:** gõ từ khóa rồi Enter, hoặc mở `/s/photos/chan%20dung`. **Trạng thái: người dùng xác nhận đủ 16/16 ca đạt. Lỗi bổ sung SEA-17 (nút ×) cũng đã được người dùng xác nhận đạt.**
 
 Điền `x` nếu đúng, `o` nếu sai, để trống nếu chưa thử. Nếu sai, ghi ngay dưới ca: đã gõ gì/bấm gì, lỗi đang thấy, ảnh chụp nếu có. Không cần xem request/API để làm các bước này. **Chưa test responsive ở lượt này.**
 
@@ -364,7 +364,7 @@ Script: `frontend/scripts/test-search-results.cjs`. Edge desktop 1440×900 sáng
 
 Mã sau chỉnh: `SearchResultsPage.tsx` khoảng 100 dòng và `pages/search/useSearchResultsData.ts` dưới 100 dòng. Không có file trang tìm kiếm vượt 1.000 dòng. TypeScript toàn dự án còn lỗi legacy, được theo dõi riêng; không coi build Vite là type-check toàn dự án đạt.
 
-**Người dùng xác nhận:** 16/16 ca ban đầu đạt, bao gồm SEA-11/SEA-12 sau sửa. Đã gạch ngang phạm vi 16 ca này. Lỗi mới SEA-17 chờ kiểm lại; IMG-01/IMG-02 và EXP-F05 vẫn mở. Responsive chưa kiểm, làm vòng cuối.
+**Người dùng xác nhận:** 16/16 ca ban đầu đạt, bao gồm SEA-11/SEA-12 sau sửa. Đã gạch ngang phạm vi 16 ca này. SEA-17 đã được người dùng kiểm lại đạt; IMG-01 và EXP-F05 vẫn mở; IMG-02 đã đạt theo PHO-03. Responsive chưa kiểm, làm vòng cuối.
 
 ### 14.4. Kết quả người dùng và bản sửa hai ca mất mạng
 
@@ -398,9 +398,77 @@ Nguyên nhân tìm thấy trong `SearchBar.tsx`: `handleClear` gọi `navigate('
 
 - [x] SEA-17 — Đang ở trang kết quả, bấm **×** → chữ trong ô biến mất, con trỏ vẫn ở ô, không về trang chủ; tiêu đề/kết quả/bộ lọc cũ giữ nguyên để chờ tìm từ mới. Bấm ra ngoài rồi quay lại → ô vẫn trống. Enter khi trống → không chuyển trang. Nhập từ mới, Enter → tìm đúng từ mới.
 
-**Đã sửa, chờ người dùng test lại.** Không tự đổi SEA-17 thành x. Responsive vẫn làm sau cùng.
+**SEA-17 = x — người dùng xác nhận “đạt rồi”.** Phần chức năng tìm kiếm đã được xác nhận đủ 16 ca gốc và ca bổ sung SEA-17. Responsive vẫn làm sau cùng.
 
 Bằng chứng: build/lint phần sửa đạt; `test-search-results.cjs` PASS Edge desktop sáng/tối, có assertion xóa trống, giữ focus/URL, blur không điền lại, Enter trống không điều hướng và không phát request ảnh mới. Các ca hồi quy tìm kiếm trước đó vẫn PASS.
 
+## 15. Chi tiết ảnh (#4) — CÒN 3 CA CHƯA ĐẠT
+
+**Cách vào:** từ Khám phá hoặc Kết quả tìm kiếm, bấm một bức ảnh. Trên desktop ảnh mở dạng modal; sao chép URL hoặc F5 để kiểm chế độ trang ảnh riêng. **Responsive để vòng cuối**, không cần đổi kích thước màn hình khi test mục này.
+
+Điền `x` = đạt, `o` = chưa đạt; để trống = chưa kiểm. Các ca dưới đây chưa được tự đánh dấu theo kết quả máy. Nếu lỗi, ghi ảnh nào, vào từ trang nào, nút/phím đã bấm và hiện tượng cụ thể.
+
+### 15.1. Đã sửa và những điểm cần chú ý
+
+- **IMG-02 / F5 nháy modal:** trước đây App và ImagePage tự quyết định cách hiển thị riêng. App đã chọn trang sau reload nhưng ImagePage có thể đọc cờ modal cũ trước khi effect dọn state chạy. Nay chỉ route overlay được cấp context modal; route thường luôn render trang, không phụ thuộc thời điểm dọn cờ.
+- **IMG-01 / mở ảnh chậm:** giữ luồng mở bằng dữ liệu ảnh từ lưới, không chờ API chi tiết; ưu tiên ảnh chính bằng fetchPriority, rê chuột bắt đầu tải trước ảnh chính nếu cần cùng ảnh bên cạnh. Đã đo thời gian tạo DOM modal trong fixture; vẫn cần bạn kiểm độ phản hồi trên ảnh thật và máy đang dùng, chưa coi là hết lag production.
+- **Bấm tác giả bị quay lại:** bỏ việc vừa điều hướng sang hồ sơ vừa gọi đóng modal điều hướng về nền. Bấm tác giả giờ đi một đích rõ ràng.
+- **Lỗi tải thông tin ảnh:** thêm nút Thử lại ngay tại màn hình lỗi; không chỉ còn nút về trang chủ.
+- **Nút trong editor bị header chặn:** kiểm thử desktop phát hiện header nhận click thay nút Hủy trong editor. Modal sửa ảnh nay được portal ra document.body để nằm trên header thay vì mắc trong stacking context của app-body.
+- Nhãn lượt xem/lượt tải/chỉnh sửa dùng bản dịch chung; không đổi ảnh, giá trị thống kê hay dữ liệu thật.
+
+### 15.2. Checklist — làm gì và cần thấy gì
+
+- [o] PHO-01 — Từ Khám phá, bấm một ảnh → khung modal và thanh nút xuất hiện nhanh, không phải đợi màn hình đứng vài giây. Đây là ca kiểm lại IMG-01; ghi lại nếu vẫn lag.
+- [x] PHO-02 — Mở một ảnh từ Kết quả tìm kiếm → đúng ảnh/tên/tác giả, không nhầm ảnh khác; thanh nút có thể thao tác khi ảnh lớn còn đang tải.
+- [x] PHO-03 — Đang ở modal, nhấn **F5** → mở thẳng giao diện trang ảnh, **không hiện modal khoảng 2 giây rồi mới đổi**. Đây là ca kiểm lại IMG-02.
+- [x] PHO-04 — Sao chép URL ảnh, mở tab mới → trang ảnh hoạt động độc lập, không cần mở lưới trước, không có nền của một trang khác.
+- [x] PHO-05 — Đóng modal bằng nút ×, thử lại bằng **Esc** → về đúng trang xuất phát, bộ lọc/từ khóa và vị trí đang xem được giữ; trang cuộn lại bình thường.
+- [x] PHO-06 — Trong modal có nhiều ảnh, dùng mũi tên trái/phải và phím **←/→** → đổi đúng ảnh, URL/thông tin đổi cùng ảnh; không tạo hai modal chồng lên nhau.
+- [x] PHO-07 — Sau F5 thành trang riêng, mở một ảnh liên quan rồi đóng → trở về đúng ảnh/trang trước đó; sau đó mở modal mới vẫn hoạt động.
+- [x] PHO-08 — Bấm tên/avatar tác giả → đến đúng hồ sơ tác giả, không tự quay ngược về trang lưới hoặc ảnh cũ.
+- [x] PHO-09 — Rê vào nút thông tin tác giả hoặc bấm nút **i** cạnh tác giả → thông tin hiện đúng; đưa chuột vào popup vẫn đọc được; Esc/bấm ngoài đóng được.
+- [x] PHO-10 — Khi đã đăng nhập, bấm **Lưu** → đổi trạng thái yêu thích; bấm lại bỏ lưu. Bấm liên tục không tăng/giảm sai nhiều lần; trang Yêu thích đồng bộ sau khi tải lại. (tuy nhiên thao tác khá chậm)
+- [x] PHO-11 — Khi chưa đăng nhập, thử Lưu/Bộ sưu tập → đi theo luồng yêu cầu đăng nhập phù hợp, không báo đã lưu khi chưa thực hiện được.
+- [x] PHO-12 — Bấm **Bộ sưu tập** → thấy danh sách phù hợp tài khoản, thêm/bỏ ảnh đúng bộ sưu tập; đóng xong vẫn ở ảnh hiện tại. Chỉ dùng bộ sưu tập test để thử thay đổi.
+- [x] PHO-13 — Bấm **Tải xuống**, chọn một kích thước → trình duyệt nhận file đúng ảnh. Mỗi lượt bấm có phản hồi, bấm nhanh không tạo nhiều lượt tải ngoài ý muốn; lỗi tải không báo thành công.
+- [x] PHO-14 — Bấm **Chia sẻ** → mở chia sẻ của thiết bị hoặc sao chép đúng URL ảnh. Dán vào tab khác → mở đúng ảnh; hủy chia sẻ không báo lỗi giả.
+- [x] PHO-15 — Kiểm tra tên, ngày đăng, vị trí, máy ảnh/EXIF và tag khi ảnh có dữ liệu → hiện đúng; thiếu thông tin không sinh chữ undefined/NaN hoặc ô trống khó hiểu.
+- [x] PHO-16 — Bấm **Thông tin** cạnh Chia sẻ → popup thống kê đúng ảnh; chuyển tab lượt xem/lượt tải và đóng popup không đổi ảnh đang xem.
+- [x] PHO-17 — Chủ ảnh/admin thấy nút **Chỉnh sửa**; tài khoản thường không phải chủ ảnh không thấy hoặc không được phép sửa. Thử sửa dữ liệu ảnh test, lưu rồi tải lại → đúng dữ liệu; lỗi lưu giữ nội dung đã nhập.
+- N/A — PHO-18: đã bỏ tính năng chỉnh pixel theo yêu cầu; không cần kiểm lại.
+- N/A — PHO-19: đã bỏ tính năng chỉnh pixel theo yêu cầu; không cần kiểm lại.
+- [x] PHO-20 — Ảnh liên quan ở cuối trang → bấm đúng ảnh được chọn, có thể quay lại; ảnh liên quan lỗi không làm mất ảnh chính.
+- [ o] PHO-21 — Mở link ảnh không tồn tại hoặc ngắt mạng trước khi mở link mới → thấy trạng thái lỗi rõ, không spinner mãi. Có mạng rồi **Thử lại** tải được nếu ảnh vẫn tồn tại.
+- [ o] PHO-22 — Khi file ảnh lớn tải lỗi → có phản hồi và nút thử lại trên vùng ảnh; thử lại không đổi URL ảnh đang xem hoặc cập nhật nhầm ảnh khác.
+- [x] PHO-23 — Trên desktop sáng/tối: các nút và chữ đọc được. Dùng Tab/Enter ở modal: focus ở trong modal, đóng xong trở về vùng thao tác phù hợp. Khi gõ trong form sửa ảnh, phím mũi tên/F không tự đổi ảnh hoặc yêu thích.
+
+### 15.3. Tách file để dễ bảo trì
+
+- `pages/ImagePage.tsx`: khoảng705 dòng, chỉ phần hiển thị/ghép component.
+- `pages/image/useImagePageController.ts`: khoảng973 dòng, trạng thái và điều khiển trang.
+- `pages/image/useImagePageData.ts`: khoảng100 dòng, tải ảnh/cancel/retry và ảnh liên quan.
+- Trình chỉnh pixel đã được xóa theo yêu cầu; chỉ giữ form sửa thông tin.
+- `CollectionModal.css` trước đây1.375 dòng tách thành base/list và forms/picker; entry giữ nguyên import và thứ tự cascade. Đã so nội dung ghép lại bằng đúng CSS gốc; thuật toán pixel filter cũng được so AST trước/sau tách, không thay tính toán trong lượt này.
+- Audit dependency của Chi tiết ảnh hiện không còn file vượt1.000 dòng. Ngưỡng này áp dụng cho file nguồn, không phải bundle build.
+
+### 15.4. Bằng chứng kỹ thuật — không thay người dùng tích x
+
+- Vite build và ESLint phần sửa không có error; TypeScript không có diagnostic tại các file trang ảnh/editor vừa sửa. Toàn dự án vẫn còn diagnostic ngoài phạm vi.
+- `test-image-page-browser.cjs`: Edge desktop1440×900, sáng/tối, API giả lập. Modal mở từ grid không gọi/chờ API chi tiết (API này được cố ý delay1.200ms); click → DOM modal đo được khoảng35–47ms qua các lượt fixture. Đây không phải số đo từ ảnh production hoặc thiết bị người dùng.
+- Theo dõi DOM từ lúc reload: không bắt gặp `.image-page-modal` ở frame trung gian trước trang riêng. Kiểm tra được đóng/Esc/mũi tên, mở modal mới sau reload, đi hồ sơ tác giả và lỗi chi tiết/thử lại.
+- Editor sau chia module đã test bằng canvas thật: tải ảnh, chỉnh độ sáng làm đổi pixel, bấm Hủy và đóng form. Chưa dùng fixture để khẳng định toàn bộ nhánh crop/watermark/export lên server đã nghiệm thu; đây là bằng chứng lịch sử, editor hiện đã bỏ.
+- Các script navigation, lifecycle, actions, share/keyboard, BlurUpImage, dialog-focus, image-card-hooks và decoded-image PASS. Cập nhật đường dẫn harness theo module mới và mock còn thiếu; không gọi database/SMTP hoặc sửa ảnh thật.
+
+**Người dùng xác nhận:** 18/21 ca còn áp dụng đạt; PHO-01/21/22 chưa đạt. PHO-10 đạt chức năng nhưng còn chậm. IMG-02 đã đóng theo PHO-03. PHO-18/19 không còn áp dụng vì đã bỏ editor. **Responsive vẫn để cuối.** Sau khi xong chức năng Chi tiết ảnh, trang tiếp theo theo inventory là Danh sách bộ sưu tập (#5).
 
 
+
+
+
+### 15.5. Bỏ trình chỉnh ảnh pixel theo yêu cầu (15/10/2026)
+
+- Đã bỏ tab Chỉnh ảnh, canvas, cắt/xoay, bộ lọc, watermark, undo/redo và xuất ảnh đã chỉnh. Các mô tả editor ở mục 15.3/15.4 là lịch sử trước khi bỏ tính năng.
+- Xóa module editor/CSS, state/handler lưu pixel, service thay file và hai API replace đơn/hàng loạt cùng controller riêng. Upload ảnh mới và cập nhật metadata vẫn giữ.
+- Form còn ba tab: Chi tiết, Tags, Exif; PHO-17 vẫn áp dụng. PHO-18/19 chuyển N/A, không tính vào kết quả nghiệm thu hiện tại.
+- Responsive kiểm riêng sau khi hoàn tất chức năng tất cả trang.

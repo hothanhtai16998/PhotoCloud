@@ -51,8 +51,6 @@ export const imageService = {
 
   // Update operations
   updateImage: imageUpdateService.updateImage,
-  updateImageWithFile: imageUpdateService.updateImageWithFile,
-  batchUpdateImages: imageUpdateService.batchUpdateImages,
 
   // Stats operations
   incrementView: imageStatsService.incrementView,

@@ -14,7 +14,7 @@ const moduleContext = {exports:{},require:name=>name.includes('useAuthStore')?{u
 vm.runInNewContext(compile(fs.readFileSync(path.join(root,'utils/imageActionSession.ts'),'utf8')), moduleContext);
 const capture = moduleContext.exports.captureImageActionSession;
 const deferred = () => {let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
-const source = fs.readFileSync(path.join(root,'pages/ImagePage.tsx'),'utf8');
+const source = fs.readFileSync(path.join(root,'pages/image/useImagePageController.ts'),'utf8');
 assert.match(source, /import '@\/stores\/useDownloadHistoryStore';/, 'direct routes must register the history event listener');
 const block = source.slice(source.indexOf('  const handleDownload ='),source.indexOf('  const handleShare ='));
 function harness() {

@@ -8,8 +8,6 @@ import {
     downloadImage,
     getImageById,
     updateImage,
-    replaceImage,
-    batchReplaceImages,
     createBulkUploadNotification,
 } from '../controllers/imageController.js';
 import { proxyImage } from '../controllers/image/imageProxyController.js';
@@ -21,7 +19,7 @@ import {
     getAllImages,
     getLocations,
 } from '../controllers/imageSearchController.js';
-import { singleUpload, multipleUpload } from '../middlewares/multerMiddleware.js';
+import { singleUpload } from '../middlewares/multerMiddleware.js';
 import { protectedRoute, optionalAuth } from '../middlewares/authMiddleware.js';
 import { uploadLimiter } from '../middlewares/rateLimiter.js';
 import { validateImageUpload, validateGetImages, validateUserId } from '../middlewares/validationMiddleware.js';
@@ -69,8 +67,6 @@ router.post('/bulk-upload-notification', protectedRoute, createBulkUploadNotific
 // Legacy upload endpoint (kept for backward compatibility)
 router.post('/upload', protectedRoute, uploadLimiter, singleUpload, validateImageUpload, uploadImage);
 router.patch('/:imageId', protectedRoute, updateImage);
-router.patch('/:imageId/replace', protectedRoute, uploadLimiter, singleUpload, replaceImage);
-router.patch('/batch/replace', protectedRoute, uploadLimiter, multipleUpload, batchReplaceImages);
 // Public route - get images by user ID (works for both authenticated and anonymous users)
 router.get('/user/:userId', optionalAuth, validateUserId, validateGetImages, getImagesByUserId);
 

@@ -3,9 +3,10 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const ts = require('typescript');
 
-const source = fs.readFileSync(require('node:path').join(__dirname, '../src/pages/ImagePage.tsx'), 'utf8');
+const source = fs.readFileSync(require('node:path').join(__dirname, '../src/pages/image/useImagePageController.ts'), 'utf8');
 const extract = (start, end) => ts.transpileModule(source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start))), {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
-const fetchEffect = extract('  // Fetch image', '  // WebSocket for real-time updates');
+const dataSource = fs.readFileSync(require('node:path').join(__dirname, '../src/pages/image/useImagePageData.ts'), 'utf8');
+const fetchEffect = ts.transpileModule(dataSource.slice(dataSource.indexOf('  // Fetch image'), dataSource.lastIndexOf('}')), {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
 const statsEffect = extract('  // Increment view count when image is viewed', '  // Image loading logic');
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a; reject=b;}); return {promise,resolve,reject}; };
 const flush = () => new Promise(resolve => setImmediate(resolve));
@@ -15,7 +16,7 @@ const related = [];
 function runFetch(id, passedState) {
   let cleanup;
   const context = {
-    AbortController, imageId:id, locationWithState:{state:passedState},
+    AbortController, imageId:id, attempt:0, navigationState:passedState, locationWithState:{state:passedState},
     initialLocationStateRef:{current:passedState}, manuallySetImageRef:{current:null},
     useEffect:fn => {cleanup=fn();},
     setImage:value => {state.image=value;}, setImages:value => {state.images=value;},

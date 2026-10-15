@@ -153,12 +153,13 @@ export function BlurUpImage({
     const handleMouseEnter = useCallback(() => {
         if (!images?.length || currentIndex === undefined || supportsAvif === null) return;
         const neighborIndexes = new Set([
+            currentIndex,
             (currentIndex - 1 + images.length) % images.length,
             (currentIndex + 1) % images.length,
         ]);
         const urls = new Set<string>();
         for (const index of neighborIndexes) {
-            if (index === currentIndex || !images[index]) continue;
+            if (!images[index]) continue;
             const url = getRegularImageUrl(images[index], supportsAvif);
             if (url && url !== fullImageUrl) urls.add(url);
         }

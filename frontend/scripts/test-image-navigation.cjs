@@ -28,7 +28,7 @@ assert.equal(normalized.url,'/photos/a?source=test#details');
 assert.equal(normalized.options.replace,true);
 assert.equal(history.state.idx,5,'normalization must leave history indexing to Router');
 assert.equal(normalized.options.state.background,undefined,'Router state must also discard home background');
-const page=fs.readFileSync(path.join(root,'pages/ImagePage.tsx'),'utf8');
+const page=fs.readFileSync(path.join(root,'pages/image/useImagePageController.ts'),'utf8')+fs.readFileSync(path.join(root,'pages/ImagePage.tsx'),'utf8');
 const extract=(begin,end)=>transpile(page.slice(page.indexOf(begin),page.indexOf(end,page.indexOf(begin))));
 let navigation;
 const savedPositions=[];
@@ -81,3 +81,4 @@ vm.runInNewContext(extract('  const handleClose =','  const handleOverlayClick =
 gridClose.close();
 assert.equal(navigation.url,'/?category=landscape#grid','grid modal must return to original filtered grid');
 console.log('Image navigation: refresh state synchronization, history index, A→B→close A, query/hash and grid return passed.');
+

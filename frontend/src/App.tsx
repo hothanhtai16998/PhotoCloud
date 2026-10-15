@@ -3,7 +3,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import { PageViewTracker } from "./components/PageViewTracker";
-import { ActualLocationContext, BackgroundRouteContext } from "./contexts/ActualLocationContext";
+import { ActualLocationContext, BackgroundRouteContext, ImagePresentationContext } from "./contexts/ActualLocationContext";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { useStructuredData, schemaHelpers } from "./hooks/useStructuredData";
@@ -359,9 +359,11 @@ function App() {
         {/* Modal routes: render on top when background exists */}
         {shouldRenderModalRoutes && (
           <Suspense fallback={null}>
+          <ImagePresentationContext.Provider value="modal">
           <Routes>
             <Route path="/photos/:slug" element={<ImagePage />} />
           </Routes>
+          </ImagePresentationContext.Provider>
           </Suspense>
         )}
 

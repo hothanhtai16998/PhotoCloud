@@ -51,7 +51,9 @@ const unusedAdmin = walk(path.join(sourceRoot, 'pages/admin')).filter(file => !r
 for (const file of unusedAdmin) console.log('UNREACHABLE', path.relative(sourceRoot, file));
 console.log(`Admin files unreachable from main.tsx: ${unusedAdmin.length}`);
 
-const exploreFiles = dependencies(path.join(sourceRoot, 'pages/ExplorePage.tsx'));
+const target = process.argv[2] || 'pages/ExplorePage.tsx';
+const targetPath = path.resolve(sourceRoot, target);
+const exploreFiles = dependencies(targetPath);
 let oversizedCount = 0;
 for (const file of exploreFiles) {
   const lines = fs.readFileSync(file, 'utf8').split('\n').length;
@@ -60,5 +62,5 @@ for (const file of exploreFiles) {
     console.log('OVER_1000', lines, path.relative(sourceRoot, file));
   }
 }
-console.log(`Explore dependency files over 1000 lines: ${oversizedCount}`);
-console.log('ExplorePage.tsx:', fs.readFileSync(path.join(sourceRoot, 'pages/ExplorePage.tsx'), 'utf8').split('\n').length, 'lines');
+console.log(`${target} dependency files over 1000 lines: ${oversizedCount}`);
+console.log(target + ':', fs.readFileSync(targetPath, 'utf8').split('\n').length, 'lines');

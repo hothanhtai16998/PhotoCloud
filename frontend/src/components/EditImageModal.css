@@ -36,13 +36,6 @@
   overflow: hidden;
 }
 
-.edit-image-modal-fullscreen {
-  max-width: 100%;
-  width: 100%;
-  max-height: calc(100dvh - 40px);
-  height: calc(100dvh - 40px);
-}
-
 /* Keep scroll gestures inside the active dialog, including at scroll limits. */
 .edit-image-modal-overlay,
 .edit-image-modal,

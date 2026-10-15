@@ -2,6 +2,13 @@
 
 ## 0. Bảng điều khiển chung
 
+### SEA-17 đạt, chuyển Chi tiết ảnh (#4) — 2026-10-15
+
+- Người dùng xác nhận nút × đã đạt; inventory đóng SEA-17 và gạch ngang chức năng tìm kiếm (16 ca gốc + ca bổ sung). Responsive vẫn để cuối.
+- Chi tiết ảnh dùng ImagePresentationContext từ router để phân biệt modal/trang ngay render đầu, tránh cờ modal cũ trên reload; ưu tiên ảnh chính, thêm retry thông tin ảnh và sửa bấm tác giả bị điều hướng về nền. Modal editor portal ra body để không bị header chặn Hủy.
+- Tách ImagePage thành view705/controller973/data99 dòng; editor2.272 dòng và CSS collection1.375 dòng cũng chia theo trách nhiệm, giữ API và cascade. Audit toàn dependency ảnh không còn file >1.000 dòng. So AST pixel filter và CSS ghép lại đúng bản gốc.
+- Build/lint phần sửa đạt; TypeScript không diagnostic ở trang ảnh/editor sửa, toàn dự án còn lỗi ngoài phạm vi. Browser fixture sáng/tối PASS mở modal không chờ detail API, click→DOM khoảng35–47ms, reload không frame modal, điều hướng/tác giả/error-retry; editorcanvas chỉnh độ sáng đổi pixel và Hủy đóng được.8 nhóm test chức năng/hook ảnh PASS. IMG-01/02 chưa đóng, chờ người dùng kiểm dữ liệu thật ở inventory mục15 (23 ca).
+
 ### Xác nhận16 ca tìm kiếm, sửa nút × — 2026-10-15
 
 - Người dùng xác nhận mục14 đạt hết:16/16 ca x, đã đóng SEA-11/12 theo xác nhận và gạch ngang phạm vi16 ca ban đầu. Responsive vẫn để cuối; lỗi mới ghi riêng SEA-17.
@@ -5179,3 +5186,7 @@ Sau 3 việc này, website sẽ chuyển từ cảm giác “xem ảnh” sang c
 
 
 </details>
+
+
+### 15/10/2026 — Bỏ editor chỉnh pixel
+Bỏ tab Chỉnh ảnh và editor canvas cùng API replace riêng theo yêu cầu. Giữ sửa tên/mô tả/tag/EXIF và upload ảnh mới. Inventory ghi nhận PHO-01/21/22 chưa đạt, PHO-10 còn chậm, PHO-03 F5 đã đạt; PHO-18/19 không còn áp dụng.

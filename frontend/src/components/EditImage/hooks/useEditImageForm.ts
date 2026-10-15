@@ -14,7 +14,6 @@ interface UseEditImageFormProps {
 export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditImageFormProps) => {
   const { user } = useUserStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showEditor, setShowEditor] = useState(false);
 
   // Form state
   const [imageTitle, setImageTitle] = useState(image.imageTitle || '');
@@ -88,42 +87,8 @@ export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditIm
     }
   }, [image._id, imageTitle, description, location, cameraModel, cameraMake, focalLength, aperture, shutterSpeed, iso, tags, canEdit, onUpdate, onClose]);
 
-  // Handle saving edited image
-  const handleSaveEditedImage = useCallback(async (editedImageBlob: Blob) => {
-    if (!canEdit) {
-      toast.error('Bạn không có quyền chỉnh sửa ảnh này');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      // Convert blob to File
-      const editedFile = new File([editedImageBlob], `${image.imageTitle || 'image'}.jpg`, {
-        type: 'image/jpeg',
-      });
-
-      // Upload edited image
-      const updatedImage = await imageService.updateImageWithFile(image._id, editedFile);
-
-      toast.success('Cập nhật ảnh đã chỉnh sửa thành công');
-      onUpdate(updatedImage);
-      setShowEditor(false);
-      onClose();
-    } catch (error) {
-      console.error('Failed to save edited image:', error);
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Lưu ảnh đã chỉnh sửa thất bại';
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [image._id, image.imageTitle, canEdit, onUpdate, onClose]);
-
   return {
     isSubmitting,
-    showEditor,
-    setShowEditor,
     imageTitle,
     setImageTitle,
     location,
@@ -146,7 +111,6 @@ export const useEditImageForm = ({ image, isOpen, onUpdate, onClose }: UseEditIm
     setDescription,
     canEdit,
     handleSubmit,
-    handleSaveEditedImage,
   };
 };
 
