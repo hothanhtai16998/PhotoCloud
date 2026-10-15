@@ -1,54 +1,710 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarClock, ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { toast } from 'sonner';
-import { bookingService, type BookingAvailability } from '@/services/bookingService';
+import {
+  bookingService,
+  type BookingAvailability,
+} from '@/services/bookingService';
 import type { Booking, BookingPackage, BookingStatus } from '@/types/booking';
+import type { BookingReview } from '@/types/bookingFinal';
+const timeSlotLabels: Record<string, string> = {
+  morning: 'Buổi sáng',
+  afternoon: 'Buổi chiều',
+  evening: 'Buổi tối',
+  flexible: 'Linh hoạt',
+};
 import { getErrorMessage } from '@/lib/utils';
+import { AdminBookingRequests } from '../bookings/AdminBookingRequests';
 
-const statusLabels: Record<BookingStatus, string> = { pending: 'Chờ xử lý', reviewing: 'Đang xem xét', needs_information: 'Cần bổ sung', confirmed: 'Đã xác nhận', rescheduled: 'Đã đổi lịch', completed: 'Hoàn thành', cancelled_by_client: 'Khách đã hủy', cancelled_by_photographer: 'Đã hủy', rejected: 'Từ chối', expired: 'Hết hạn' };
-const nextStatuses: BookingStatus[] = ['reviewing', 'needs_information', 'confirmed', 'rescheduled', 'completed', 'rejected', 'cancelled_by_photographer'];
-const emptyPackage: Omit<BookingPackage, '_id'> = { slug: '', name: '', description: '', durationMinutes: 60, basePrice: 0, includedPhotos: 10, includedPeople: 1, deliveryDays: 7, category: 'portrait' };
-const defaultWeekly = Array.from({ length: 7 }, (_, weekday) => ({ weekday, enabled: weekday !== 0, startTime: '08:00', endTime: '18:00' }));
+const statusLabels: Record<BookingStatus, string> = {
+  pending: 'Chờ xử lý',
+  reviewing: 'Đang xem xét',
+  needs_information: 'Cần bổ sung',
+  confirmed: 'Đã xác nhận',
+  rescheduled: 'Đã đổi lịch',
+  completed: 'Hoàn thành',
+  cancelled_by_client: 'Khách đã hủy',
+  cancelled_by_photographer: 'Đã hủy',
+  rejected: 'Từ chối',
+  expired: 'Hết hạn',
+};
+
+const emptyPackage: Omit<BookingPackage, '_id'> = {
+  slug: '',
+  name: '',
+  description: '',
+  durationMinutes: 60,
+  basePrice: 0,
+  includedPhotos: 10,
+  includedPeople: 1,
+  deliveryDays: 7,
+  category: 'portrait',
+};
+const defaultWeekly = Array.from({ length: 7 }, (_, weekday) => ({
+  weekday,
+  enabled: weekday !== 0,
+  startTime: '08:00',
+  endTime: '18:00',
+}));
 
 export function AdminBookings() {
-  const [view, setView] = useState<'requests' | 'calendar' | 'packages' | 'availability' | 'reviews' | 'policy'>('requests');
-  const [reviews, setReviews] = useState<Array<{ _id: string; rating: number; comment?: string; adminReply?: string; booking: { bookingCode?: string } }>>([]);
-  const [policy, setPolicy] = useState<{ allowClientCancellation: boolean; allowOneReschedule: boolean; rescheduleDeadlineHours: number; weatherRescheduleAllowed: boolean; cancellationRules: Array<{ minimumHoursBefore: number; refundPercent: number; label: string }> } | null>(null);
-  const [availability, setAvailability] = useState<BookingAvailability>({ timezone: 'Asia/Ho_Chi_Minh', weekly: defaultWeekly, blockedDates: [] });
+  const [view, setView] = useState<
+    'requests' | 'calendar' | 'packages' | 'availability' | 'reviews' | 'policy'
+  >('requests');
+  const [reviews, setReviews] = useState<BookingReview[]>([]);
+  const [policy, setPolicy] = useState<{
+    allowClientCancellation: boolean;
+    allowOneReschedule: boolean;
+    rescheduleDeadlineHours: number;
+    weatherRescheduleAllowed: boolean;
+    cancellationRules: Array<{
+      minimumHoursBefore: number;
+      refundPercent: number;
+      label: string;
+    }>;
+  } | null>(null);
+  const [availability, setAvailability] = useState<BookingAvailability>({
+    timezone: 'Asia/Ho_Chi_Minh',
+    weekly: defaultWeekly,
+    blockedDates: [],
+  });
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [packages, setPackages] = useState<BookingPackage[]>([]);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
   const [month, setMonth] = useState(new Date());
-  const [calendarMode, setCalendarMode] = useState<'day' | 'week' | 'month'>('month');
+  const [calendarMode, setCalendarMode] = useState<'day' | 'week' | 'month'>(
+    'month'
+  );
   const [selectedDay, setSelectedDay] = useState(new Date());
-  const [editingPackage, setEditingPackage] = useState<BookingPackage | null>(null);
+  const [editingPackage, setEditingPackage] = useState<BookingPackage | null>(
+    null
+  );
   const [packageForm, setPackageForm] = useState(emptyPackage);
 
-  const loadBookings = async () => { setLoading(true); try { const result = await bookingService.getAdmin({ status: statusFilter || undefined }); setBookings(result.bookings); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể tải danh sách đặt lịch')); } finally { setLoading(false); } };
-  const loadPackages = async () => { try { const result = await bookingService.getAdminPackages(); setPackages(result.packages); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể tải gói chụp')); } };
-  const loadReviews = async () => { try { const result = await bookingService.getAdminReviews(); setReviews(result.reviews); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể tải đánh giá')); } };
-  const loadPolicy = async () => { try { const result = await bookingService.getPolicy(); setPolicy(result.policy); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể tải chính sách')); } };
-  const savePolicy = async () => { if (policy) { try { await bookingService.updatePolicy(policy); toast.success('Đã lưu chính sách'); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể lưu chính sách')); } } };
-  const loadAvailability = async () => { try { const result = await bookingService.getAvailability(); setAvailability(result.availability); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể tải lịch rảnh')); } };
-  const saveAvailability = async () => { try { await bookingService.updateAvailability(availability); toast.success('Đã lưu lịch rảnh'); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể lưu lịch rảnh')); } };
-  useEffect(() => { loadBookings(); }, [statusFilter]);
-  useEffect(() => { loadPackages(); loadAvailability(); loadReviews(); loadPolicy(); }, []);
+  const loadBookings = async () => {
+    try {
+      const result = await bookingService.getAdmin({ limit: 100 });
+      setBookings(result.bookings);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể tải danh sách đặt lịch'));
+    }
+  };
+  const loadPackages = async () => {
+    try {
+      const result = await bookingService.getAdminPackages();
+      setPackages(result.packages);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể tải gói chụp'));
+    }
+  };
+  const loadReviews = async () => {
+    try {
+      const result = await bookingService.getAdminReviews();
+      setReviews(result.reviews);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể tải đánh giá'));
+    }
+  };
+  const loadPolicy = async () => {
+    try {
+      const result = await bookingService.getPolicy();
+      setPolicy(result.policy);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể tải chính sách'));
+    }
+  };
+  const savePolicy = async () => {
+    if (policy) {
+      try {
+        await bookingService.updatePolicy(policy);
+        toast.success('Đã lưu chính sách');
+      } catch (error: unknown) {
+        toast.error(getErrorMessage(error, 'Không thể lưu chính sách'));
+      }
+    }
+  };
+  const loadAvailability = async () => {
+    try {
+      const result = await bookingService.getAvailability();
+      setAvailability(result.availability);
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể tải lịch rảnh'));
+    }
+  };
+  const saveAvailability = async () => {
+    try {
+      await bookingService.updateAvailability(availability);
+      toast.success('Đã lưu lịch rảnh');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể lưu lịch rảnh'));
+    }
+  };
+  useEffect(() => {
+    if (view === 'calendar') void loadBookings();
+  }, [view]);
+  useEffect(() => {
+    if (view === 'packages') void loadPackages();
+    if (view === 'availability') void loadAvailability();
+    if (view === 'reviews') void loadReviews();
+    if (view === 'policy') void loadPolicy();
+  }, [view]);
 
-  const updateStatus = async (booking: Booking, status: BookingStatus) => { const note = status === 'rejected' ? window.prompt('Nhập lý do từ chối') : window.prompt('Ghi chú cho lần cập nhật này (tùy chọn)') || ''; if (status === 'rejected' && !note?.trim()) return; setUpdatingId(booking._id); try { await bookingService.updateAdmin(booking._id, { status, note: note || undefined }); toast.success('Đã cập nhật trạng thái booking'); await loadBookings(); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể cập nhật booking')); } finally { setUpdatingId(null); } };
-  const savePackage = async () => { try { if (editingPackage?._id) await bookingService.updateAdminPackage(editingPackage._id, packageForm); else await bookingService.createAdminPackage(packageForm); toast.success('Đã lưu gói chụp'); setEditingPackage(null); setPackageForm(emptyPackage); await loadPackages(); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể lưu gói chụp')); } };
-  const archivePackage = async (item: BookingPackage) => { if (!item._id || !window.confirm(`Ẩn gói “${item.name}”?`)) return; try { await bookingService.archiveAdminPackage(item._id); await loadPackages(); toast.success('Đã ẩn gói chụp'); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể ẩn gói chụp')); } };
+  const savePackage = async () => {
+    try {
+      if (editingPackage?._id)
+        await bookingService.updateAdminPackage(
+          editingPackage._id,
+          packageForm
+        );
+      else await bookingService.createAdminPackage(packageForm);
+      toast.success('Đã lưu gói chụp');
+      setEditingPackage(null);
+      setPackageForm(emptyPackage);
+      await loadPackages();
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể lưu gói chụp'));
+    }
+  };
+  const archivePackage = async (item: BookingPackage) => {
+    if (!item._id || !window.confirm(`Ẩn gói “${item.name}”?`)) return;
+    try {
+      await bookingService.archiveAdminPackage(item._id);
+      await loadPackages();
+      toast.success('Đã ẩn gói chụp');
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể ẩn gói chụp'));
+    }
+  };
 
-  const calendarDays = useMemo(() => { const first = new Date(month.getFullYear(), month.getMonth(), 1); const start = new Date(first); start.setDate(first.getDate() - first.getDay()); return Array.from({ length: 42 }, (_, index) => { const date = new Date(start); date.setDate(start.getDate() + index); const key = date.toISOString().slice(0, 10); return { date, key, items: bookings.filter((item) => item.requestedDate.slice(0, 10) === key) }; }); }, [month, bookings]);
+  const calendarDays = useMemo(() => {
+    const first = new Date(month.getFullYear(), month.getMonth(), 1);
+    const start = new Date(first);
+    start.setDate(first.getDate() - first.getDay());
+    return Array.from({ length: 42 }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      const key = date.toISOString().slice(0, 10);
+      return {
+        date,
+        key,
+        items: bookings.filter(
+          (item) => item.requestedDate.slice(0, 10) === key
+        ),
+      };
+    });
+  }, [month, bookings]);
 
-  return <div className="admin-bookings"><div className="admin-header"><h1 className="admin-title"><CalendarClock size={24} /> Đặt lịch chụp</h1><div className="admin-booking-toolbar"><button className={view === 'requests' ? 'active' : ''} onClick={() => setView('requests')}>Yêu cầu</button><button className={view === 'calendar' ? 'active' : ''} onClick={() => setView('calendar')}>Lịch</button><button className={view === 'packages' ? 'active' : ''} onClick={() => setView('packages')}>Gói chụp</button><button className={view === 'availability' ? 'active' : ''} onClick={() => setView('availability')}>Lịch rảnh</button><button className={view === 'reviews' ? 'active' : ''} onClick={() => setView('reviews')}>Đánh giá</button><button className={view === 'policy' ? 'active' : ''} onClick={() => setView('policy')}>Chính sách</button></div></div>
-    {view === 'requests' && <>{loading ? <div className="admin-loading">Đang tải yêu cầu đặt lịch...</div> : <><div className="admin-booking-filters"><select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="admin-booking-filter"><option value="">Tất cả trạng thái</option>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div><div className="admin-table"><table><thead><tr><th>Mã yêu cầu</th><th>Khách hàng</th><th>Gói chụp</th><th>Ngày mong muốn</th><th>Địa điểm</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>{bookings.map((booking) => <tr key={booking._id}><td><strong>{booking.bookingCode}</strong><small>{new Date(booking.createdAt).toLocaleDateString('vi-VN')}</small></td><td>{booking.contact.name}<small>{booking.contact.phone}</small></td><td>{booking.packageSnapshot.name}<small>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(booking.packageSnapshot.basePrice)}</small></td><td>{new Date(booking.requestedDate).toLocaleDateString('vi-VN')}<small>{booking.requestedTimeSlot}</small></td><td>{booking.location.address}</td><td><span className={`admin-status-badge booking-status-${booking.status}`}>{statusLabels[booking.status]}</span></td><td><select disabled={updatingId === booking._id} value="" onChange={(e) => { if (e.target.value) updateStatus(booking, e.target.value as BookingStatus); }} aria-label={`Cập nhật ${booking.bookingCode}`}><option value="">Cập nhật</option>{nextStatuses.map((value) => <option key={value} value={value}>{statusLabels[value]}</option>)}</select></td></tr>)}</tbody></table></div></>}</>}
-    {view === 'calendar' && <div className="admin-booking-calendar"><div className="admin-calendar-header"><button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft size={18} /></button><strong>{month.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}</strong><button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight size={18} /></button><div className="admin-calendar-modes">{(['day', 'week', 'month'] as const).map((mode) => <button className={calendarMode === mode ? 'active' : ''} key={mode} onClick={() => setCalendarMode(mode)}>{mode === 'day' ? 'Ngày' : mode === 'week' ? 'Tuần' : 'Tháng'}</button>)}</div></div>{calendarMode !== 'month' && <div className="admin-calendar-agenda">{bookings.filter((item) => { const date = new Date(item.requestedDate); if (calendarMode === 'day') return date.toDateString() === selectedDay.toDateString(); const weekStart = new Date(selectedDay); weekStart.setDate(selectedDay.getDate() - selectedDay.getDay()); const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 6); return date >= weekStart && date <= weekEnd; }).map((item) => <div className="admin-calendar-agenda-item" key={item._id}><strong>{new Date(item.requestedDate).toLocaleDateString('vi-VN')}</strong><span>{item.packageSnapshot.name} · {item.contact.name}</span><em className={`booking-status-${item.status}`}>{statusLabels[item.status]}</em></div>)}{bookings.length === 0 && <p>Không có lịch trong khoảng thời gian này.</p>}</div>}{calendarMode === 'month' && <div className="admin-calendar-grid">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day) => <div className="admin-calendar-weekday" key={day}>{day}</div>)}{calendarDays.map(({ date, key, items }) => <div className={`admin-calendar-day ${date.getMonth() !== month.getMonth() ? 'muted' : ''}`} key={key} onClick={() => setSelectedDay(date)} role="button" tabIndex={0}><span>{date.getDate()}</span>{items.map((item) => <div className={`admin-calendar-item booking-status-${item.status}`} key={item._id} data-tooltip={`${new Date(item.requestedDate).toLocaleDateString('vi-VN')} · ${item.packageSnapshot.name}\n${item.contact.name}\n${timeSlotLabels[item.requestedTimeSlot] ?? item.requestedTimeSlot} · ${statusLabels[item.status]}`}>{item.packageSnapshot.name}</div>)}</div>)}</div>}
-    </div>}
-    {view === 'availability' && <div className="admin-availability"><h2>Lịch làm việc và ngày nghỉ</h2><p>Cấu hình khung giờ nhận yêu cầu theo từng ngày trong tuần.</p>{availability.weekly.map((day) => <div className="admin-availability-row" key={day.weekday}><label><input type="checkbox" checked={day.enabled} onChange={(e) => setAvailability({ ...availability, weekly: availability.weekly.map((item) => item.weekday === day.weekday ? { ...item, enabled: e.target.checked } : item) })} /> {['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][day.weekday]}</label><input type="time" value={day.startTime} onChange={(e) => setAvailability({ ...availability, weekly: availability.weekly.map((item) => item.weekday === day.weekday ? { ...item, startTime: e.target.value } : item) })} /><span>—</span><input type="time" value={day.endTime} onChange={(e) => setAvailability({ ...availability, weekly: availability.weekly.map((item) => item.weekday === day.weekday ? { ...item, endTime: e.target.value } : item) })} /></div>)}<div className="admin-availability-blocked"><h3>Ngày nghỉ</h3><p>Ngày nghỉ được lưu ở API để không nhận booking mới.</p><input type="date" onChange={(e) => { if (e.target.value) setAvailability({ ...availability, blockedDates: [...availability.blockedDates, { date: e.target.value }] }); }} />{availability.blockedDates.map((item, index) => <div key={`${item.date}-${index}`}>{item.date} <button type="button" onClick={() => setAvailability({ ...availability, blockedDates: availability.blockedDates.filter((_, itemIndex) => itemIndex !== index) })}>Xóa</button></div>)}</div><button className="admin-availability-save" onClick={saveAvailability}>Lưu lịch rảnh</button></div>}
-    {view === 'reviews' && <div className="admin-reviews">{reviews.length === 0 ? <p>Chưa có đánh giá nào.</p> : reviews.map((item) => <div className="admin-review-row" key={item._id}><div><strong>{item.rating}/5 · {item.booking?.bookingCode || 'Booking'}</strong><p>{item.comment || 'Không có bình luận.'}</p>{item.adminReply && <small>Phản hồi của bạn: {item.adminReply}</small>}<div className="admin-review-reply"><input placeholder="Phản hồi cho khách..." onKeyDown={async (e) => { if (e.key === 'Enter') { try { await bookingService.replyReview(item._id, (e.target as HTMLInputElement).value); loadReviews(); } catch (error: unknown) { toast.error(getErrorMessage(error, 'Không thể gửi phản hồi')); } } }} /></div></div></div>)}</div>}
-    {view === 'policy' && policy && <div className="admin-policy"><h2>Chính sách hủy và đổi lịch</h2><label><input type="checkbox" checked={policy.allowClientCancellation} onChange={(e) => setPolicy({ ...policy, allowClientCancellation: e.target.checked })} /> Cho phép khách hủy booking</label><label><input type="checkbox" checked={policy.allowOneReschedule} onChange={(e) => setPolicy({ ...policy, allowOneReschedule: e.target.checked })} /> Cho phép đổi lịch một lần</label><label><input type="checkbox" checked={policy.weatherRescheduleAllowed} onChange={(e) => setPolicy({ ...policy, weatherRescheduleAllowed: e.target.checked })} /> Thời tiết xấu được đổi lịch</label><label>Giới hạn đổi lịch trước giờ (giờ)<input type="number" value={policy.rescheduleDeadlineHours} onChange={(e) => setPolicy({ ...policy, rescheduleDeadlineHours: Number(e.target.value) })} /></label>{policy.cancellationRules.map((rule, index) => <div className="admin-policy-rule" key={`rule-${index}`}><span>{rule.label}</span><input type="number" value={rule.refundPercent} onChange={(e) => setPolicy({ ...policy, cancellationRules: policy.cancellationRules.map((item, ruleIndex) => ruleIndex === index ? { ...item, refundPercent: Number(e.target.value) } : item) })} /><em>% hoàn cọc</em></div>)}<button onClick={savePolicy}>Lưu chính sách</button></div>}
-    {view === 'packages' && <div className="admin-packages"><div className="admin-package-form"><h2>{editingPackage ? 'Chỉnh sửa gói chụp' : 'Thêm gói chụp'}</h2><div className="admin-package-fields">{(['slug', 'name', 'category', 'description'] as const).map((key) => <label key={key}>{key === 'slug' ? 'Slug' : key === 'name' ? 'Tên gói' : key === 'category' ? 'Danh mục' : 'Mô tả'}{key === 'description' ? <textarea rows={3} value={packageForm[key]} onChange={(e) => setPackageForm({ ...packageForm, [key]: e.target.value })} /> : <input value={packageForm[key]} onChange={(e) => setPackageForm({ ...packageForm, [key]: e.target.value })} />}</label>)}<label>Thời lượng (phút)<input type="number" value={packageForm.durationMinutes} onChange={(e) => setPackageForm({ ...packageForm, durationMinutes: Number(e.target.value) })} /></label><label>Giá tham khảo<input type="number" value={packageForm.basePrice} onChange={(e) => setPackageForm({ ...packageForm, basePrice: Number(e.target.value) })} /></label><label>Số ảnh<input type="number" value={packageForm.includedPhotos} onChange={(e) => setPackageForm({ ...packageForm, includedPhotos: Number(e.target.value) })} /></label><label>Số người<input type="number" value={packageForm.includedPeople} onChange={(e) => setPackageForm({ ...packageForm, includedPeople: Number(e.target.value) })} /></label><label>Ngày giao ảnh<input type="number" value={packageForm.deliveryDays} onChange={(e) => setPackageForm({ ...packageForm, deliveryDays: Number(e.target.value) })} /></label></div><div className="admin-package-actions"><button onClick={savePackage}><Save size={15} /> Lưu gói</button>{editingPackage && <button onClick={() => { setEditingPackage(null); setPackageForm(emptyPackage); }}>Hủy</button>}</div></div><div className="admin-package-list">{packages.map((item) => <div className="admin-package-row" key={item._id || item.slug}><div><strong>{item.name}</strong><small>{item.durationMinutes} phút · {item.includedPhotos} ảnh · {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(item.basePrice)}</small></div><div><button onClick={() => { setEditingPackage(item); setPackageForm({ ...item, _id: undefined }); }}>Sửa</button><button onClick={() => archivePackage(item)}>Ẩn</button></div></div>)}</div></div>}
-  </div>;
+  return (
+    <div className="admin-bookings">
+      <header className="admin-page-header">
+        <div>
+          <h1 className="admin-page-title">Đặt lịch chụp</h1>
+          <p className="admin-page-subtitle">
+            Từ yêu cầu đầu tiên đến buổi chụp hoàn tất, quản lý mọi việc tại
+            đây.
+          </p>
+        </div>
+      </header>
+      <nav className="admin-booking-toolbar" aria-label="Quản lý lịch chụp">
+        {(
+          [
+            ['requests', 'Yêu cầu'],
+            ['calendar', 'Lịch'],
+            ['availability', 'Lịch rảnh'],
+            ['packages', 'Gói chụp'],
+            ['reviews', 'Đánh giá'],
+            ['policy', 'Chính sách'],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            className={view === key ? 'active' : ''}
+            aria-pressed={view === key}
+            onClick={() => setView(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      {view === 'requests' && <AdminBookingRequests />}
+      {view === 'calendar' && (
+        <div className="admin-booking-calendar">
+          <div className="admin-calendar-header">
+            <button
+              onClick={() =>
+                setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
+              }
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <strong>
+              {month.toLocaleDateString('vi-VN', {
+                month: 'long',
+                year: 'numeric',
+              })}
+            </strong>
+            <button
+              onClick={() =>
+                setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
+              }
+            >
+              <ChevronRight size={18} />
+            </button>
+            <div className="admin-calendar-modes">
+              {(['day', 'week', 'month'] as const).map((mode) => (
+                <button
+                  className={calendarMode === mode ? 'active' : ''}
+                  key={mode}
+                  onClick={() => setCalendarMode(mode)}
+                >
+                  {mode === 'day' ? 'Ngày' : mode === 'week' ? 'Tuần' : 'Tháng'}
+                </button>
+              ))}
+            </div>
+          </div>
+          {calendarMode !== 'month' && (
+            <div className="admin-calendar-agenda">
+              {bookings
+                .filter((item) => {
+                  const date = new Date(item.requestedDate);
+                  if (calendarMode === 'day')
+                    return date.toDateString() === selectedDay.toDateString();
+                  const weekStart = new Date(selectedDay);
+                  weekStart.setDate(
+                    selectedDay.getDate() - selectedDay.getDay()
+                  );
+                  const weekEnd = new Date(weekStart);
+                  weekEnd.setDate(weekStart.getDate() + 6);
+                  return date >= weekStart && date <= weekEnd;
+                })
+                .map((item) => (
+                  <div className="admin-calendar-agenda-item" key={item._id}>
+                    <strong>
+                      {new Date(item.requestedDate).toLocaleDateString('vi-VN')}
+                    </strong>
+                    <span>
+                      {item.packageSnapshot.name} · {item.contact.name}
+                    </span>
+                    <em className={`booking-status-${item.status}`}>
+                      {statusLabels[item.status]}
+                    </em>
+                  </div>
+                ))}
+              {bookings.length === 0 && (
+                <p>Không có lịch trong khoảng thời gian này.</p>
+              )}
+            </div>
+          )}
+          {calendarMode === 'month' && (
+            <div className="admin-calendar-grid">
+              {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day) => (
+                <div className="admin-calendar-weekday" key={day}>
+                  {day}
+                </div>
+              ))}
+              {calendarDays.map(({ date, key, items }) => (
+                <div
+                  className={`admin-calendar-day ${date.getMonth() !== month.getMonth() ? 'muted' : ''}`}
+                  key={key}
+                  onClick={() => setSelectedDay(date)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <span>{date.getDate()}</span>
+                  {items.map((item) => (
+                    <div
+                      className={`admin-calendar-item booking-status-${item.status}`}
+                      key={item._id}
+                      data-tooltip={`${new Date(item.requestedDate).toLocaleDateString('vi-VN')} · ${item.packageSnapshot.name}\n${item.contact.name}\n${timeSlotLabels[item.requestedTimeSlot] ?? item.requestedTimeSlot} · ${statusLabels[item.status]}`}
+                    >
+                      {item.packageSnapshot.name}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {view === 'availability' && (
+        <div className="admin-availability">
+          <h2>Lịch làm việc và ngày nghỉ</h2>
+          <p>Cấu hình khung giờ nhận yêu cầu theo từng ngày trong tuần.</p>
+          {availability.weekly.map((day) => (
+            <div className="admin-availability-row" key={day.weekday}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={day.enabled}
+                  onChange={(e) =>
+                    setAvailability({
+                      ...availability,
+                      weekly: availability.weekly.map((item) =>
+                        item.weekday === day.weekday
+                          ? { ...item, enabled: e.target.checked }
+                          : item
+                      ),
+                    })
+                  }
+                />{' '}
+                {
+                  [
+                    'Chủ nhật',
+                    'Thứ 2',
+                    'Thứ 3',
+                    'Thứ 4',
+                    'Thứ 5',
+                    'Thứ 6',
+                    'Thứ 7',
+                  ][day.weekday]
+                }
+              </label>
+              <input
+                type="time"
+                value={day.startTime}
+                onChange={(e) =>
+                  setAvailability({
+                    ...availability,
+                    weekly: availability.weekly.map((item) =>
+                      item.weekday === day.weekday
+                        ? { ...item, startTime: e.target.value }
+                        : item
+                    ),
+                  })
+                }
+              />
+              <span>—</span>
+              <input
+                type="time"
+                value={day.endTime}
+                onChange={(e) =>
+                  setAvailability({
+                    ...availability,
+                    weekly: availability.weekly.map((item) =>
+                      item.weekday === day.weekday
+                        ? { ...item, endTime: e.target.value }
+                        : item
+                    ),
+                  })
+                }
+              />
+            </div>
+          ))}
+          <div className="admin-availability-blocked">
+            <h3>Ngày nghỉ</h3>
+            <p>Ngày nghỉ được lưu ở API để không nhận booking mới.</p>
+            <input
+              type="date"
+              onChange={(e) => {
+                if (e.target.value)
+                  setAvailability({
+                    ...availability,
+                    blockedDates: [
+                      ...availability.blockedDates,
+                      { date: e.target.value },
+                    ],
+                  });
+              }}
+            />
+            {availability.blockedDates.map((item, index) => (
+              <div key={`${item.date}-${index}`}>
+                {item.date}{' '}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAvailability({
+                      ...availability,
+                      blockedDates: availability.blockedDates.filter(
+                        (_, itemIndex) => itemIndex !== index
+                      ),
+                    })
+                  }
+                >
+                  Xóa
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            className="admin-availability-save"
+            onClick={saveAvailability}
+          >
+            Lưu lịch rảnh
+          </button>
+        </div>
+      )}
+      {view === 'reviews' && (
+        <div className="admin-reviews">
+          {reviews.length === 0 ? (
+            <p>Chưa có đánh giá nào.</p>
+          ) : (
+            reviews.map((item) => (
+              <div className="admin-review-row" key={item._id}>
+                <div>
+                  <strong>
+                    {item.rating}/5 ·{' '}
+                    {(typeof item.booking === 'object'
+                      ? item.booking?.bookingCode
+                      : item.booking) || 'Lịch chụp'}
+                  </strong>
+                  <p>{item.comment || 'Không có bình luận.'}</p>
+                  {item.adminReply && (
+                    <small>Phản hồi của bạn: {item.adminReply}</small>
+                  )}
+                  <div className="admin-review-reply">
+                    <input
+                      placeholder="Phản hồi cho khách..."
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          try {
+                            await bookingService.replyReview(
+                              item._id,
+                              (e.target as HTMLInputElement).value
+                            );
+                            loadReviews();
+                          } catch (error: unknown) {
+                            toast.error(
+                              getErrorMessage(error, 'Không thể gửi phản hồi')
+                            );
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+      {view === 'policy' && policy && (
+        <div className="admin-policy">
+          <h2>Chính sách hủy và đổi lịch</h2>
+          <label>
+            <input
+              type="checkbox"
+              checked={policy.allowClientCancellation}
+              onChange={(e) =>
+                setPolicy({
+                  ...policy,
+                  allowClientCancellation: e.target.checked,
+                })
+              }
+            />{' '}
+            Cho phép khách hủy booking
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={policy.allowOneReschedule}
+              onChange={(e) =>
+                setPolicy({ ...policy, allowOneReschedule: e.target.checked })
+              }
+            />{' '}
+            Cho phép đổi lịch một lần
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={policy.weatherRescheduleAllowed}
+              onChange={(e) =>
+                setPolicy({
+                  ...policy,
+                  weatherRescheduleAllowed: e.target.checked,
+                })
+              }
+            />{' '}
+            Thời tiết xấu được đổi lịch
+          </label>
+          <label>
+            Giới hạn đổi lịch trước giờ (giờ)
+            <input
+              type="number"
+              value={policy.rescheduleDeadlineHours}
+              onChange={(e) =>
+                setPolicy({
+                  ...policy,
+                  rescheduleDeadlineHours: Number(e.target.value),
+                })
+              }
+            />
+          </label>
+          {policy.cancellationRules.map((rule, index) => (
+            <div className="admin-policy-rule" key={`rule-${index}`}>
+              <span>{rule.label}</span>
+              <input
+                type="number"
+                value={rule.refundPercent}
+                onChange={(e) =>
+                  setPolicy({
+                    ...policy,
+                    cancellationRules: policy.cancellationRules.map(
+                      (item, ruleIndex) =>
+                        ruleIndex === index
+                          ? { ...item, refundPercent: Number(e.target.value) }
+                          : item
+                    ),
+                  })
+                }
+              />
+              <em>% hoàn cọc</em>
+            </div>
+          ))}
+          <button onClick={savePolicy}>Lưu chính sách</button>
+        </div>
+      )}
+      {view === 'packages' && (
+        <div className="admin-packages">
+          <div className="admin-package-form">
+            <h2>{editingPackage ? 'Chỉnh sửa gói chụp' : 'Thêm gói chụp'}</h2>
+            <div className="admin-package-fields">
+              {(['slug', 'name', 'category', 'description'] as const).map(
+                (key) => (
+                  <label key={key}>
+                    {key === 'slug'
+                      ? 'Đường dẫn'
+                      : key === 'name'
+                        ? 'Tên gói'
+                        : key === 'category'
+                          ? 'Danh mục'
+                          : 'Mô tả'}
+                    {key === 'description' ? (
+                      <textarea
+                        rows={3}
+                        value={packageForm[key]}
+                        onChange={(e) =>
+                          setPackageForm({
+                            ...packageForm,
+                            [key]: e.target.value,
+                          })
+                        }
+                      />
+                    ) : (
+                      <input
+                        value={packageForm[key]}
+                        onChange={(e) =>
+                          setPackageForm({
+                            ...packageForm,
+                            [key]: e.target.value,
+                          })
+                        }
+                      />
+                    )}
+                  </label>
+                )
+              )}
+              <label>
+                Thời lượng (phút)
+                <input
+                  type="number"
+                  value={packageForm.durationMinutes}
+                  onChange={(e) =>
+                    setPackageForm({
+                      ...packageForm,
+                      durationMinutes: Number(e.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Giá tham khảo
+                <input
+                  type="number"
+                  value={packageForm.basePrice}
+                  onChange={(e) =>
+                    setPackageForm({
+                      ...packageForm,
+                      basePrice: Number(e.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Số ảnh
+                <input
+                  type="number"
+                  value={packageForm.includedPhotos}
+                  onChange={(e) =>
+                    setPackageForm({
+                      ...packageForm,
+                      includedPhotos: Number(e.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Số người
+                <input
+                  type="number"
+                  value={packageForm.includedPeople}
+                  onChange={(e) =>
+                    setPackageForm({
+                      ...packageForm,
+                      includedPeople: Number(e.target.value),
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Ngày giao ảnh
+                <input
+                  type="number"
+                  value={packageForm.deliveryDays}
+                  onChange={(e) =>
+                    setPackageForm({
+                      ...packageForm,
+                      deliveryDays: Number(e.target.value),
+                    })
+                  }
+                />
+              </label>
+            </div>
+            <div className="admin-package-actions">
+              <button onClick={savePackage}>
+                <Save size={15} /> Lưu gói
+              </button>
+              {editingPackage && (
+                <button
+                  onClick={() => {
+                    setEditingPackage(null);
+                    setPackageForm(emptyPackage);
+                  }}
+                >
+                  Hủy
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="admin-package-list">
+            {packages.map((item) => (
+              <div className="admin-package-row" key={item._id || item.slug}>
+                <div>
+                  <strong>{item.name}</strong>
+                  <small>
+                    {item.durationMinutes} phút · {item.includedPhotos} ảnh ·{' '}
+                    {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND',
+                      maximumFractionDigits: 0,
+                    }).format(item.basePrice)}
+                  </small>
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setEditingPackage(item);
+                      setPackageForm(item);
+                    }}
+                  >
+                    Sửa
+                  </button>
+                  <button onClick={() => archivePackage(item)}>Ẩn</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

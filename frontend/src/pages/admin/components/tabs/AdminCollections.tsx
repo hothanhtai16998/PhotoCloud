@@ -132,7 +132,7 @@ export function AdminCollections() {
                                     <th>{t('admin.views')}</th>
                                     <th>{t('admin.status')}</th>
                                     <th>{t('admin.createdDate')}</th>
-                                    <th>Actions</th>
+                                    <th>{t('admin.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody>

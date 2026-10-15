@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Trash2, CheckCircle, XCircle, Flag, X } from 'lucide-react';
@@ -23,7 +23,7 @@ interface AdminImagesProps {
     categories?: Category[];
 }
 
-export function AdminImages({
+export const AdminImages = memo(function AdminImages({
     images,
     pagination,
     search,
@@ -338,5 +338,5 @@ export function AdminImages({
             )}
         </div>
     );
-}
+});
 

@@ -1,0 +1,310 @@
+/* User Dashboard — stats grid, recent images, recent bookings. */
+
+.user-dashboard {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.user-dash-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.user-dash-title {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--admin-text, #1B1B19);
+}
+
+.user-dash-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--admin-text-secondary, #6B6B66);
+}
+
+.user-dash-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #dc2626;
+    font-size: 13px;
+}
+
+/* Stats grid */
+.user-dash-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.user-dash-stat,
+.user-dash-stat-placeholder {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bg-card, #FFFFFF);
+    border: 1px solid var(--border-color, #E8E2D6);
+    border-radius: 12px;
+    text-decoration: none;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.user-dash-stat:hover {
+    border-color: var(--admin-accent, #B8865B);
+    box-shadow: 0 2px 8px rgba(184, 134, 91, 0.1);
+}
+
+.user-dash-stat-placeholder {
+    pointer-events: none;
+}
+
+.user-dash-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--hover-bg, #F2EEE7);
+    color: var(--admin-text-secondary, #6B6B66);
+    flex-shrink: 0;
+}
+
+.user-dash-stat.tone-primary .user-dash-stat-icon {
+    background: rgba(184, 134, 91, 0.12);
+    color: var(--admin-accent, #B8865B);
+}
+
+.user-dash-stat.tone-success .user-dash-stat-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.user-dash-stat-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-dash-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--admin-text, #1B1B19);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.user-dash-stat-label {
+    font-size: 12px;
+    color: var(--admin-text-secondary, #6B6B66);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-dash-stat-arrow {
+    color: var(--admin-text-secondary, #6B6B66);
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+.user-dash-stat:hover .user-dash-stat-arrow {
+    opacity: 1;
+}
+
+/* Sections */
+.user-dash-section {
+    margin-bottom: 32px;
+}
+
+.user-dash-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.user-dash-section-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--admin-text, #1B1B19);
+}
+
+.user-dash-section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--admin-accent, #B8865B);
+    text-decoration: none;
+}
+
+.user-dash-section-link:hover {
+    text-decoration: underline;
+}
+
+/* Recent images grid */
+.user-dash-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.user-dash-image-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-card, #FFFFFF);
+    border: 1px solid var(--border-color, #E8E2D6);
+    text-decoration: none;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.user-dash-image-card:hover {
+    border-color: var(--admin-accent, #B8865B);
+    box-shadow: 0 2px 8px rgba(184, 134, 91, 0.15);
+}
+
+.user-dash-image-thumb {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--hover-bg, #F2EEE7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--admin-text-secondary, #6B6B66);
+    overflow: hidden;
+}
+
+.user-dash-image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.user-dash-image-info {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-dash-image-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--admin-text, #1B1B19);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-dash-image-meta {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--admin-text-secondary, #6B6B66);
+}
+
+/* Bookings list */
+.user-dash-bookings-list {
+    background: var(--bg-card, #FFFFFF);
+    border: 1px solid var(--border-color, #E8E2D6);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.user-dash-booking-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color, #E8E2D6);
+    text-decoration: none;
+    transition: background-color 0.1s ease;
+}
+
+.user-dash-booking-row:last-child {
+    border-bottom: 0;
+}
+
+.user-dash-booking-row:hover {
+    background: var(--hover-bg, #F8F5F0);
+}
+
+.user-dash-booking-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--admin-text, #1B1B19);
+}
+
+.user-dash-booking-date {
+    font-size: 13px;
+    color: var(--admin-text-secondary, #6B6B66);
+}
+
+/* Empty state */
+.user-dash-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px 16px;
+    background: var(--bg-card, #FFFFFF);
+    border: 1px solid var(--border-color, #E8E2D6);
+    border-radius: 10px;
+    color: var(--admin-text-secondary, #6B6B66);
+}
+
+.user-dash-empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Spinning refresh icon */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .user-dash-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .user-dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .user-dash-images-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

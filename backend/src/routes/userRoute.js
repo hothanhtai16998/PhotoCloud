@@ -1,5 +1,5 @@
 import express from 'express';
-import { authMe, changePassword, forgotPassword, changeInfo, searchUsers, getUserStats, trackProfileView, getUserByUsername, getUserById, pinImage, unpinImage, getPinnedImages, reorderPinnedImages, getDownloadHistory } from '../controllers/userController.js';
+import { authMe, changePassword, forgotPassword, resetPassword, getNotificationPreferences, updateNotificationPreferences, changeInfo, searchUsers, getUserStats, trackProfileView, getUserByUsername, getUserById, pinImage, unpinImage, getPinnedImages, reorderPinnedImages, getDownloadHistory } from '../controllers/userController.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { avatarUpload } from '../middlewares/multerMiddleware.js';
 import { validateCsrf } from '../middlewares/csrfMiddleware.js';
@@ -9,11 +9,15 @@ const router = express.Router();
 
 router.get('/me', protectedRoute, authMe);
 router.get('/me/download-history', protectedRoute, getDownloadHistory);
+router.get('/me/notification-preferences', protectedRoute, getNotificationPreferences);
+router.put('/me/notification-preferences', protectedRoute, validateCsrf, updateNotificationPreferences);
 router.get('/search', protectedRoute, searchUsers);
 
 router.put('/change-password', protectedRoute, validateCsrf, changePassword);
 
-router.post('/forgot-password', protectedRoute, validateCsrf, forgotPassword);
+// Public — no auth required, returns 200 even if email not found (prevents enumeration)
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 router.put('/change-info', protectedRoute, validateCsrf, avatarUpload, changeInfo);
 

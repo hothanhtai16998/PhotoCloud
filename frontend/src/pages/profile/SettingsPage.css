@@ -1,0 +1,64 @@
+.settings-page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.settings-page-header {
+    margin-bottom: 20px;
+}
+
+.settings-page-title {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--admin-text, #1B1B19);
+}
+
+.settings-page-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--admin-text-secondary, #6B6B66);
+}
+
+.settings-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color, #E8E2D6);
+}
+
+.settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 0;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--admin-text-secondary, #6B6B66);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.12s ease, border-color 0.12s ease;
+    margin-bottom: -1px;
+}
+
+.settings-tab:hover {
+    color: var(--admin-text, #1B1B19);
+}
+
+.settings-tab.active {
+    color: var(--admin-accent, #B8865B);
+    border-bottom-color: var(--admin-accent, #B8865B);
+}
+
+.settings-tab:focus-visible {
+    outline: 2px solid var(--admin-accent, #B8865B);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.settings-tab-content {
+    /* EditProfilePage and NotificationSettings handle their own layout. */
+}

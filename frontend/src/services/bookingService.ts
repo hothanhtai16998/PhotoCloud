@@ -54,7 +54,7 @@ export const bookingService = {
     const response = await patch<{ success: boolean; availability: BookingAvailability }>('/bookings/admin/availability', data);
     return response.data;
   },
-  async getAdmin(params: { page?: number; status?: string } = {}) {
+  async getAdmin(params: { page?: number; status?: string; limit?: number; search?: string } = {}) {
     const response = await get<BookingsResponse>('/bookings/admin', { params: { page: 1, limit: 50, ...params } });
     return response.data;
   },

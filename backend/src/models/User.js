@@ -105,6 +105,22 @@ const userSchema = new mongoose.Schema(
             default: 0,
             min: 0,
         },
+        // Notification preferences — user controls which alerts they receive
+        notificationPreferences: {
+            email: {
+                comments: { type: Boolean, default: true },
+                likes: { type: Boolean, default: true },
+                follows: { type: Boolean, default: true },
+                bookings: { type: Boolean, default: true },
+                newsletters: { type: Boolean, default: false },
+            },
+            push: {
+                comments: { type: Boolean, default: true },
+                likes: { type: Boolean, default: true },
+                follows: { type: Boolean, default: false },
+                bookings: { type: Boolean, default: true },
+            },
+        },
         location: {
             type: String,
             trim: true,

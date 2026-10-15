@@ -8,6 +8,7 @@ import Notification from '../models/Notification.js';
 import User from '../models/User.js';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import { logger } from '../utils/logger.js';
+import { bookingAdminSearch } from '../utils/bookingAdminSearch.js';
 
 const BOOKING_PACKAGES = [
     {
@@ -229,7 +230,7 @@ export const cancelMyBooking = asyncHandler(async (req, res) => {
 export const getAdminBookings = asyncHandler(async (req, res) => {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 20));
-    const query = {};
+    const query = bookingAdminSearch(req.query.search);
     if (req.query.status) query.status = req.query.status;
     if (req.query.from || req.query.to) {
         query.requestedDate = {};

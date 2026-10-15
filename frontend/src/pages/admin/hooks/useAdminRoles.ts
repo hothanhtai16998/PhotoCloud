@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import {
   adminService,
@@ -61,6 +61,13 @@ export function useAdminRoles(): UseAdminRolesReturn {
   const [editingRole, setEditingRole] = useState<AdminRole | null>(null);
   const [creatingRole, setCreatingRole] = useState(false);
 
+  // Mounted ref so async loaders don't call setState after unmount.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const loadAdminRoles = useCallback(
     async (
       loadUsersCallback?: (page: number) => Promise<void>,
@@ -70,23 +77,28 @@ export function useAdminRoles(): UseAdminRolesReturn {
 
       try {
         setLoading(true);
-        const data = await adminService.getAllAdminRoles();
-        setAdminRoles(data.adminRoles);
+        const response = await adminService.getAllAdminRoles();
+        if (!mountedRef.current) return;
+        // Defensive: accept both raw body and wrapped shapes
+        const data = (response as any)?.data ?? response;
+        const list = data?.adminRoles ?? data?.data?.adminRoles ?? [];
+        setAdminRoles(Array.isArray(list) ? list : []);
 
         // Also load users if not already loaded (for create role modal)
         if (usersLength === 0 && loadUsersCallback) {
           await loadUsersCallback(1);
         }
       } catch (error: unknown) {
+        if (!mountedRef.current) return;
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
-        toast.error(
-          axiosError.response?.data?.message ||
-            'Lỗi khi lấy danh sách quyền admin'
-        );
+        const msg = axiosError.response?.data?.message || 'Lỗi khi lấy danh sách quyền admin';
+        if (axiosError.response?.status !== 401 && axiosError.response?.status !== 403) {
+          toast.error(msg);
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) setLoading(false);
       }
     },
     [isSuperAdmin]
@@ -109,7 +121,7 @@ export function useAdminRoles(): UseAdminRolesReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi tạo quyền admin'
@@ -130,7 +142,7 @@ export function useAdminRoles(): UseAdminRolesReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi cập nhật quyền admin'
@@ -160,7 +172,7 @@ export function useAdminRoles(): UseAdminRolesReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi xoá quyền admin'

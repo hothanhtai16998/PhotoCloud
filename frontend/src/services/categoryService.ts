@@ -6,6 +6,8 @@ export interface Category {
   description?: string;
   isActive?: boolean;
   imageCount?: number;
+  slug?: string;
+  createdAt?: string;
 }
 
 // Simple cache to prevent duplicate requests

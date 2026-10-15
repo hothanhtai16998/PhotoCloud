@@ -93,3 +93,9 @@
 .auth-layout .auth-caps-warning { color:#966339; font-size:12px; margin:10px 0 0; }
 @keyframes auth-spin { to { transform:rotate(360deg); } }
 @media(prefers-reduced-motion:reduce) { .auth-loading { animation:none; } }
+
+.auth-forgot-link {
+    margin: 12px 0 0 0;
+    text-align: right;
+    font-size: 13px;
+}

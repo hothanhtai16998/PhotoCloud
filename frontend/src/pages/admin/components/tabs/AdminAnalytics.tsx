@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -16,27 +16,60 @@ import { AdminTrafficAnalytics } from './AdminTrafficAnalytics';
 
 type MetricTab = 'users' | 'images' | 'pending' | 'approved';
 
+// Empty analytics object lives at module scope so its identity is stable
+// across renders. Without this, every render produced a new object literal
+// which invalidated every useMemo that depended on `displayAnalytics`.
+const EMPTY_ANALYTICS_FALLBACK: AnalyticsData = {
+    period: { days: 30, startDate: '', endDate: '' },
+    users: { total: 0, new: 0, banned: 0 },
+    images: { total: 0, new: 0, moderated: 0, pendingModeration: 0, approved: 0, rejected: 0, flagged: 0 },
+    categories: [],
+    dailyUploads: [],
+    dailyUsers: [],
+    dailyPending: [],
+    dailyApproved: [],
+    topUploaders: [],
+};
+
 export function AdminAnalytics() {
     const [, setLoading] = useState(true);
     const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
     const [days, setDays] = useState(30);
     const [activeTab, setActiveTab] = useState<MetricTab>('users');
+    const mountedRef = useRef(true);
 
     const loadAnalytics = useCallback(async () => {
         try {
             // Don't block UI - load in background
-            // setLoading(true);
             const data = await adminService.getAnalytics(days);
+            if (!mountedRef.current) return;
             setAnalytics(data);
         } catch (error: unknown) {
+            if (!mountedRef.current) return;
             toast.error(getErrorMessage(error, 'Lỗi khi tải dữ liệu phân tích'));
         } finally {
-            setLoading(false);
+            if (mountedRef.current) setLoading(false);
         }
     }, [days]);
 
     useEffect(() => {
-        loadAnalytics();
+        mountedRef.current = true;
+        // Defer initial load so first paint and tab/header clicks stay responsive.
+        const idleCallback = (window as any).requestIdleCallback as ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
+        let handle: number;
+        if (idleCallback) {
+            handle = idleCallback(() => { loadAnalytics(); }, { timeout: 800 });
+        } else {
+            handle = window.setTimeout(() => { loadAnalytics(); }, 250);
+        }
+        return () => {
+            mountedRef.current = false;
+            if (idleCallback) {
+                (window as any).cancelIdleCallback?.(handle);
+            } else {
+                window.clearTimeout(handle);
+            }
+        };
     }, [loadAnalytics]);
 
     // Calculate percentage changes (mock for now, can be enhanced with historical data)
@@ -45,21 +78,11 @@ export function AdminAnalytics() {
         return ((current - previous) / previous) * 100;
     }, []);
 
-    // Use default/empty analytics if not loaded yet - define before useMemo
-    const displayAnalytics = analytics || {
-        users: { total: 0, new: 0 },
-        images: { total: 0, pendingModeration: 0, approved: 0 },
-        dailyUsers: [],
-        dailyUploads: [],
-        dailyPending: [],
-        dailyApproved: [],
-        dailyUsersComparison: [],
-        dailyUploadsComparison: [],
-        dailyPendingComparison: [],
-        dailyApprovedComparison: [],
-        topUploaders: [],
-        categories: [],
-    };
+    // Empty fallback lives at module scope so its identity is stable across
+    // renders. Returning a fresh object literal here every render was
+    // making every downstream useMemo with `displayAnalytics` in its deps
+    // recompute on every render — that was a major contributor to the lag.
+    const displayAnalytics = analytics ?? EMPTY_ANALYTICS_FALLBACK;
 
     // Prepare chart data based on active tab - MUST be called before early returns (Rules of Hooks)
     const chartData = useMemo(() => {
@@ -176,14 +199,20 @@ export function AdminAnalytics() {
         setActiveTab(tab);
     }, []);
 
-    // Scroll to top immediately when tab changes (not smooth scroll)
-    // Use useLayoutEffect to ensure scroll happens after DOM updates but before paint
-    // This prevents flash by scrolling synchronously before browser paints
-    useLayoutEffect(() => {
-        // Use requestAnimationFrame to ensure scroll happens after layout but before paint
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        });
+    // Scroll to top when sub-tab changes — schedule on idle so it doesn't
+    // block the first paint / sidebar interaction.
+    useEffect(() => {
+        const idleCallback = (window as any).requestIdleCallback as ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
+        const handle = idleCallback
+            ? idleCallback(() => window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }), { timeout: 200 })
+            : window.setTimeout(() => window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }), 50);
+        return () => {
+            if (idleCallback) {
+                (window as any).cancelIdleCallback?.(handle);
+            } else {
+                window.clearTimeout(handle);
+            }
+        };
     }, [activeTab]);
 
     // Format chart data for the selected metric tab with profile page logic
@@ -213,6 +242,96 @@ export function AdminAnalytics() {
 
         return { data: filteredData, domain };
     }, [chartData]);
+
+    // Memoize derived data for sub-charts to keep the JSX render cheap and
+    // to satisfy the Rules of Hooks (hooks may not be called inside JSX
+    // expressions — they were inline before, which is fragile).
+    const dailyUploadBars = useMemo(() => {
+        const uploads = displayAnalytics.dailyUploads || [];
+        if (uploads.length === 0) return null;
+        const maxCount = Math.max(...uploads.map(d => d.count), 1);
+        return uploads.map((day) => {
+            const height = (day.count / maxCount) * 100;
+            const date = new Date(day._id);
+            const dayNumber = date.getDate();
+            return (
+                <div key={day._id} className="admin-daily-upload-bar">
+                    <div
+                        className="admin-daily-upload-bar-fill"
+                        style={{ height: `${Math.max(height, 5)}%` }}
+                        title={`${day._id}: ${day.count} ảnh`}
+                    />
+                    <div className="admin-daily-upload-bar-label">
+                        <span className="admin-daily-upload-day">{dayNumber}</span>
+                        <span className="admin-daily-upload-count">{day.count}</span>
+                    </div>
+                </div>
+            );
+        });
+    }, [displayAnalytics.dailyUploads]);
+
+    const topUploaderItems = useMemo(() => {
+        const uploaders = displayAnalytics.topUploaders || [];
+        if (uploaders.length === 0) return null;
+        const maxCount = uploaders[0]?.uploadCount || 1;
+        const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
+        return uploaders.map((uploader, index) => {
+            const percentage = (uploader.uploadCount / maxCount) * 100;
+            const medalColor = medalColors[index] || '#6B7280';
+            return (
+                <div key={uploader.userId} className="admin-top-uploader-item">
+                    <div className="admin-top-uploader-rank">
+                        {index < 3 ? (
+                            <span className="admin-top-uploader-medal" style={{ color: medalColor }}>
+                                {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                            </span>
+                        ) : (
+                            <span className="admin-top-uploader-number">#{index + 1}</span>
+                        )}
+                    </div>
+                    <div className="admin-top-uploader-info">
+                        <div className="admin-top-uploader-name">
+                            <strong>{uploader.username}</strong>
+                            {uploader.displayName && (
+                                <span className="admin-top-uploader-display-name">{uploader.displayName}</span>
+                            )}
+                        </div>
+                        <div className="admin-top-uploader-bar-container">
+                            <div
+                                className="admin-top-uploader-bar-fill"
+                                style={{ width: `${percentage}%` }}
+                            />
+                        </div>
+                    </div>
+                    <div className="admin-top-uploader-count">{uploader.uploadCount} ảnh</div>
+                </div>
+            );
+        });
+    }, [displayAnalytics.topUploaders]);
+
+    // Daily uploads small bar chart (legacy bar chart inside the falcon card)
+    const dailyUploadsBarItems = useMemo(() => {
+        const uploads = displayAnalytics.dailyUploads || [];
+        const maxCount = uploads.length > 0 ? Math.max(...uploads.map(d => d.count), 1) : 1;
+        return uploads.map((day) => {
+            const height = (day.count / maxCount) * 100;
+            return (
+                <div key={day._id} className="falcon-bar-item">
+                    <div className="falcon-bar" style={{ height: `${Math.max(height, 5)}%` }} />
+                    <div className="falcon-bar-label">{new Date(day._id).getDate()}</div>
+                </div>
+            );
+        });
+    }, [displayAnalytics.dailyUploads]);
+
+    // Category distribution chart data
+    const categoryChartData = useMemo(() => {
+        return (displayAnalytics.categories || []).map(cat => ({
+            name: cat.name || 'Không xác định',
+            count: cat.count,
+            _id: cat._id,
+        }));
+    }, [displayAnalytics.categories]);
 
     // Chart configuration
     const chartConfig = {
@@ -294,13 +413,13 @@ export function AdminAnalytics() {
                         <div className="falcon-chart-header-left">
                             <select
                                 value={days}
-                                onChange={useCallback((e: React.ChangeEvent<HTMLSelectElement>) => setDays(Number(e.target.value)), [])}
+                                onChange={(e) => setDays(Number(e.target.value))}
                                 className="falcon-select-small"
                             >
-                            <option value={7}>{t('admin.last7Days')}</option>
-                            <option value={30}>{t('admin.lastMonth')}</option>
-                            <option value={90}>{t('admin.last90Days')}</option>
-                            <option value={365}>{t('admin.lastYear')}</option>
+                                <option value={7}>{t('admin.last7Days')}</option>
+                                <option value={30}>{t('admin.lastMonth')}</option>
+                                <option value={90}>{t('admin.last90Days')}</option>
+                                <option value={365}>{t('admin.lastYear')}</option>
                             </select>
                         </div>
                     </div>
@@ -441,19 +560,7 @@ export function AdminAnalytics() {
                         <div className="falcon-card-body">
                             <div className="falcon-chart-container">
                                 <div className="falcon-bar-chart">
-                                    {useMemo(() => {
-                                        const uploads = displayAnalytics.dailyUploads || [];
-                                        const maxCount = uploads.length > 0 ? Math.max(...uploads.map(d => d.count), 1) : 1;
-                                        return uploads.map((day) => {
-                                            const height = (day.count / maxCount) * 100;
-                                            return (
-                                                <div key={day._id} className="falcon-bar-item">
-                                                    <div className="falcon-bar" style={{ height: `${Math.max(height, 5)}%` }} />
-                                                    <div className="falcon-bar-label">{new Date(day._id).getDate()}</div>
-                                                </div>
-                                            );
-                                        });
-                                    }, [displayAnalytics.dailyUploads])}
+                                    {dailyUploadsBarItems}
                                 </div>
                             </div>
                         </div>
@@ -473,11 +580,7 @@ export function AdminAnalytics() {
                         <div className="falcon-card-body">
                             <ResponsiveContainer width="100%" height={300}>
                                 <LineChart
-                                    data={useMemo(() => (displayAnalytics.categories || []).map(cat => ({
-                                        name: cat.name || 'Không xác định',
-                                        count: cat.count,
-                                        _id: cat._id
-                                    })), [displayAnalytics.categories])}
+                                    data={categoryChartData}
                                     isAnimationActive={false}
                                     margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
                                 >
@@ -574,29 +677,7 @@ export function AdminAnalytics() {
                     {t('admin.dailyUploads')} ({t('admin.lastNDays', { count: days })})
                 </h2>
                 <div className="admin-daily-uploads-chart">
-                    {useMemo(() => {
-                        const uploads = displayAnalytics.dailyUploads || [];
-                        if (uploads.length === 0) return null;
-                        const maxCount = Math.max(...uploads.map(d => d.count), 1);
-                        return uploads.map((day) => {
-                            const height = (day.count / maxCount) * 100;
-                            const date = new Date(day._id);
-                            const dayNumber = date.getDate();
-                            return (
-                                <div key={day._id} className="admin-daily-upload-bar">
-                                    <div
-                                        className="admin-daily-upload-bar-fill"
-                                        style={{ height: `${Math.max(height, 5)}%` }}
-                                        title={`${day._id}: ${day.count} ảnh`}
-                                    />
-                                    <div className="admin-daily-upload-bar-label">
-                                        <span className="admin-daily-upload-day">{dayNumber}</span>
-                                        <span className="admin-daily-upload-count">{day.count}</span>
-                                    </div>
-                                </div>
-                            );
-                        });
-                    }, [displayAnalytics.dailyUploads])}
+                    {dailyUploadBars}
                 </div>
             </div>
 
@@ -607,44 +688,7 @@ export function AdminAnalytics() {
                     Top người tải lên ({days} ngày gần nhất)
                 </h2>
                 <div className="admin-top-uploaders">
-                    {useMemo(() => {
-                        const uploaders = displayAnalytics.topUploaders || [];
-                        if (uploaders.length === 0) return null;
-                        const maxCount = uploaders[0]?.uploadCount || 1;
-                        const medalColors = ['#FFD700', '#C0C0C0', '#CD7F32'];
-                        return uploaders.map((uploader, index) => {
-                            const percentage = (uploader.uploadCount / maxCount) * 100;
-                            const medalColor = medalColors[index] || '#6B7280';
-                            return (
-                                <div key={uploader.userId} className="admin-top-uploader-item">
-                                    <div className="admin-top-uploader-rank">
-                                        {index < 3 ? (
-                                            <span className="admin-top-uploader-medal" style={{ color: medalColor }}>
-                                                {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
-                                            </span>
-                                        ) : (
-                                            <span className="admin-top-uploader-number">#{index + 1}</span>
-                                        )}
-                                    </div>
-                                    <div className="admin-top-uploader-info">
-                                        <div className="admin-top-uploader-name">
-                                            <strong>{uploader.username}</strong>
-                                            {uploader.displayName && (
-                                                <span className="admin-top-uploader-display-name">{uploader.displayName}</span>
-                                            )}
-                                        </div>
-                                        <div className="admin-top-uploader-bar-container">
-                                            <div
-                                                className="admin-top-uploader-bar-fill"
-                                                style={{ width: `${percentage}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="admin-top-uploader-count">{uploader.uploadCount} ảnh</div>
-                                </div>
-                            );
-                        });
-                    }, [displayAnalytics.topUploaders])}
+                    {topUploaderItems}
                 </div>
             </div>
 
@@ -860,18 +904,14 @@ export function AdminAnalytics() {
                 </div>
             )}
 
-            {/* Traffic Analytics Section - Lazy loaded */}
+            {/* Traffic Analytics Section - Lazy render only when data is available */}
             {analytics && (
-                <div style={{ marginTop: '2rem' }}>
-                    <AdminTrafficAnalytics />
-                </div>
+                <AdminTrafficAnalytics />
             )}
 
             {/* WebSocket Metrics Section - Lazy loaded */}
             {analytics && (
-                <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-                    <AdminWebSocketMetrics />
-                </div>
+                <AdminWebSocketMetrics />
             )}
         </div>
     );

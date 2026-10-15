@@ -1,16 +1,18 @@
 import User from '../../models/User.js';
 import Image from '../../models/Image.js';
 import PageView from '../../models/PageView.js';
+import Category from '../../models/Category.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 
 // Statistics
 export const getDashboardStats = asyncHandler(async (req, res) => {
     // Permission check is handled by requirePermission('viewDashboard') middleware
-    const [totalUsers, totalImages, recentUsers, recentImages] = await Promise.all([
+    const [totalUsers, totalImages, recentUsers, recentImages, totalCategories] = await Promise.all([
         User.countDocuments(),
         Image.countDocuments(),
         User.find().sort({ createdAt: -1 }).limit(5).select('username email displayName createdAt isAdmin').lean(),
-        Image.find().sort({ createdAt: -1 }).limit(10).populate('uploadedBy', 'username displayName').populate('imageCategory', 'name').select('imageTitle imageCategory createdAt uploadedBy').lean(),
+        Image.find().sort({ createdAt: -1 }).limit(10).populate('uploadedBy', 'username displayName').populate('imageCategory', 'name').select('imageTitle imageUrl imageCategory createdAt uploadedBy').lean(),
+        Category.countDocuments(),
     ]);
 
     // Count images by category (using lookup to get category names)
@@ -40,6 +42,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
         stats: {
             totalUsers,
             totalImages,
+            totalCategories,
             categoryStats,
         },
         recentUsers,

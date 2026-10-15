@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Edit2, Trash2, Ban, Unlock, Users } from 'lucide-react';
@@ -29,7 +29,7 @@ interface AdminUsersProps {
     onUserUpdated?: () => void;
 }
 
-export function AdminUsers({
+export const AdminUsers = memo(function AdminUsers({
     users,
     pagination,
     search,
@@ -292,5 +292,5 @@ export function AdminUsers({
             )}
         </div>
     );
-}
+});
 

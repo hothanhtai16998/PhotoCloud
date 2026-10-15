@@ -165,47 +165,47 @@
 	}
 
 	/* Button styling - consistent border radius for all buttons */
-	button:not(.contact-button),
-	button[data-slot="button"]:not(.contact-button),
-	button[data-slot="button"].rounded-md:not(.contact-button),
-	button[data-slot="button"].rounded-lg:not(.contact-button),
-	button[data-slot="button"].rounded-xl:not(.contact-button),
-	button[data-slot="button"][class*="rounded"]:not(.contact-button),
-	button:not([class*="rounded-none"]):not([class*="rounded-full"]):not(.contact-button) {
+	button:not(.contact-button):not(.admin-layout *):not(.admin-modal *),
+	button[data-slot="button"]:not(.contact-button):not(.admin-layout *):not(.admin-modal *),
+	button[data-slot="button"].rounded-md:not(.contact-button):not(.admin-layout *):not(.admin-modal *),
+	button[data-slot="button"].rounded-lg:not(.contact-button):not(.admin-layout *):not(.admin-modal *),
+	button[data-slot="button"].rounded-xl:not(.contact-button):not(.admin-layout *):not(.admin-modal *),
+	button[data-slot="button"][class*="rounded"]:not(.contact-button):not(.admin-layout *):not(.admin-modal *),
+	button:not([class*="rounded-none"]):not([class*="rounded-full"]):not(.contact-button):not(.admin-layout *):not(.admin-modal *) {
 		border-radius: 8px !important;
 	}
 
 	/* Save button styling - black background, white text (variant="default") - excluding admin */
-	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]) {
+	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *) {
 		background-color: #000000 !important;
 		color: #ffffff !important;
 	}
 
-	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):hover {
+	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *):hover {
 		border-color: #111 !important;
 	}
 
 	/* Cancel button styling - border hover (variant="outline") - excluding admin */
 	/* Remove cyan/blue hover color, use light gray instead */
-	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover:not(.admin-page *) {
+	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover:not(.admin-page *):not(.admin-layout *):not(.admin-modal *) {
 		border-color: #111 !important;
 		background-color: #f5f5f5 !important; /* Light gray hover background */
 		background: #f5f5f5 !important; /* Light gray hover background */
 	}
 
 	/* Ghost button styling - light gray hover (excluding admin) */
-	button[data-slot="button"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):not([class*="border"]):not([class*="bg-background"]):hover:not(.admin-page *) {
+	button[data-slot="button"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):not([class*="border"]):not([class*="bg-background"]):hover:not(.admin-page *):not(.admin-layout *):not(.admin-modal *) {
 		background-color: #f5f5f5 !important; /* Light gray hover background */
 		background: #f5f5f5 !important; /* Light gray hover background */
 	}
 
 	/* Override for admin pages - restore original styles */
-	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]) {
+	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *) {
 		background-color: hsl(var(--primary)) !important;
 		color: hsl(var(--primary-foreground)) !important;
 	}
 
-	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):hover {
+	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *):hover {
 		background-color: hsl(var(--primary) / 0.9) !important;
 	}
 

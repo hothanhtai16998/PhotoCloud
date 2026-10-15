@@ -71,4 +71,5 @@ coverage
 docs/
 
 Help/
+.local-backups/
 .md

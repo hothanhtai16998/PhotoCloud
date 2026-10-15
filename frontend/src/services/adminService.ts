@@ -6,6 +6,7 @@ export interface DashboardStats {
     stats: {
         totalUsers: number;
         totalImages: number;
+        totalCategories?: number;
         categoryStats: Array<{ _id: string; count: number }>;
     };
     recentUsers: User[];

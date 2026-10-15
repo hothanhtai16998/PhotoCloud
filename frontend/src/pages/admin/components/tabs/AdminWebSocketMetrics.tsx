@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import { adminService } from '@/services/adminService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -71,10 +71,14 @@ export const AdminWebSocketMetrics = memo(function AdminWebSocketMetrics() {
     const [metrics, setMetrics] = useState<WebSocketMetrics | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const hasShownErrorRef = useRef(false);
+    const mountedRef = useRef(true);
 
     const fetchMetrics = async () => {
+        if (!mountedRef.current) return;
         try {
             const response = await adminService.getWebSocketMetrics();
+            if (!mountedRef.current) return;
             if (response.success && response.metrics) {
                 setMetrics(response.metrics);
                 setError(null);
@@ -82,22 +86,40 @@ export const AdminWebSocketMetrics = memo(function AdminWebSocketMetrics() {
                 setError('Invalid response format');
             }
         } catch (error: any) {
+            if (!mountedRef.current) return;
             setError(error?.message || 'Failed to fetch metrics');
             // Don't show toast on every error to avoid spamming
-            if (!metrics) {
+            if (!hasShownErrorRef.current) {
                 // Only show error on first load
                 toast.error('Failed to load WebSocket metrics. Check console for details.');
+                hasShownErrorRef.current = true;
             }
         } finally {
-            setLoading(false);
+            if (mountedRef.current) setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchMetrics();
-        // Refresh every 5 seconds
-        const interval = setInterval(fetchMetrics, 5000);
-        return () => clearInterval(interval);
+        mountedRef.current = true;
+        // Schedule first fetch during idle time so it never blocks initial paint / first interaction.
+        // requestIdleCallback may not be available in Safari; fall back to a small setTimeout.
+        const idleCallback = (window as any).requestIdleCallback as ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
+        const idleId = idleCallback
+            ? idleCallback(() => { fetchMetrics(); }, { timeout: 1500 })
+            : window.setTimeout(() => { fetchMetrics(); }, 800);
+
+        // Refresh every 30 seconds (was 5s — too aggressive and caused UI to feel locked)
+        const interval = window.setInterval(fetchMetrics, 30000);
+
+        return () => {
+            mountedRef.current = false;
+            clearInterval(interval);
+            if (idleCallback) {
+                (window as any).cancelIdleCallback?.(idleId);
+            } else {
+                window.clearTimeout(idleId);
+            }
+        };
     }, []);
 
     if (loading && !metrics) {

@@ -2,6 +2,74 @@
 
 ## 0. Bảng điều khiển chung
 
+### Xử lý lịch chụp dạng danh sách gọn — 2026-10-15
+
+- Thay các ô hành động lớn bằng danh sách một cột có biểu tượng, tên và mô tả; mục được chọn dùng gold nhẹ và dấu chọn bên phải. Hủy/từ chối tách cuối danh sách, dùng đỏ tiết chế. Bỏ nền panel lớn, giữ nền kem và chữ dễ đọc của modal.
+- Giữ radio native cho bàn phím/focus; chỉ hiện ghi chú sau khi chọn hành động, ngày giờ hiện theo hành động cần lịch. Footer xác nhận cố định, không gửi cập nhật khi chỉ chọn mục; API và quyền không đổi.
+- Vite build, ESLint file sửa và detector PASS. Edge fixture tại320/390/1440 sáng/tối PASS, gồm footer trong viewport, chọn hành động chưa PATCH, lỗi503 giữ bản nháp và retry đúng payload. Đã xem desktop/mobile; không cập nhật lịch hoặc gửi thông báo thật trong QA.
+
+### Modal lịch chụp: nền, chữ và hành động xử lý — 2026-10-15
+
+- Người dùng thích hướng giao diện, yêu cầu tăng độ đọc/màu nền và cải thiện phần xử lý; ảnh cho thấy footer cắt ở đáy. Riêng modal chi tiết booking dùng class riêng, header/footer cố định trong flex dialog, body cuộn độc lập, max-height theo viewport/safe-area. Không thay layout modal khác.
+- Nền modal kem ấm, panel xử lý đậm hơn một bậc, input sáng riêng; dark dùng brown/gold tương ứng. Nội dung16px, nhãn14px, tên hành động15px và mô tả14px; tăng nút/cỡ nhập và phân biệt nền/focus.
+- Thay dropdown trạng thái bằng nhóm radio hành động có mô tả. Nhãn rõ “Hoàn thành buổi chụp”, “Đổi lịch chụp”, “Hủy lịch chụp”…; nút xác nhận gọi đúng hành động. Ngày/giờ chỉ hiện khi cần, lý do vẫn bắt buộc ở hủy/từ chối. Không gửi PATCH khi chỉ chọn radio; API/trạng thái/quyền giữ nguyên, không sửa lịch hoặc gửi mail thật.
+- Build Vite/ESLint phần sửa PASS, detector trả[]. Edge fixture320x568/390x844/1440x720 sáng/tối PASS: footer/nút nằm trọn trong modal và viewport, nhánh xác nhận/hoàn thành/tra cứu lịch kết thúc,503 giữ draft và retry đúng payload. Đã xem screenshot desktop sáng và mobile tối. Một lần ghi screenshot bị Windows khóa file; chuyển output QA sang thư mục riêng và chạy lại thành công.
+
+### Cải thiện UX/UI quản lý yêu cầu lịch chụp — 2026-10-15
+
+- Theo ảnh phản hồi, tách tiêu đề và thanh điều hướng sáu mục, dùng tab gạch chân nhất quán với kem/gold. Danh sách Yêu cầu mới ưu tiên khách hàng/liên hệ, gói/giá/địa điểm, phân biệt ngày mong muốn với lịch đã chốt; trạng thái chờ/xác nhận/kết thúc có màu riêng. Mobile dùng danh sách dọc thay bảng kéo ngang.
+- Thêm lọc nhanh, bộ lọc đầy đủ, tìm theo mã/tên/điện thoại/email và phân trang server. API GET admin booking bổ sung tìm kiếm literal đã escape và giới hạn100 ký tự; service nhận limit/search. Không thêm số liệu giả hoặc đổi giá/nội dung gói.
+- Nút Chi tiết mở thông tin khách, ý tưởng/ghi chú, lịch sử trạng thái và form xử lý có xác nhận. Bỏ select đổi trạng thái tức thì + window.prompt của danh sách; có ngày/giờ khi chốt/đổi lịch, ghi chú bắt buộc khi từ chối/hủy từ studio, lỗi lưu giữ draft. UI chỉ tra cứu yêu cầu đã kết thúc; backend quyền và API trạng thái giữ nguyên. Không cập nhật lịch thật hoặc gửi email thật trong QA.
+- Các tab gói/lịch rảnh/đánh giá/chính sách chỉ gọi dữ liệu khi mở. Calendar giữ module hiện có, tách tải danh sách khỏi request filter; chưa coi đây là nghiệm thu đầy đủ mọi nhánh calendar và cấu hình studio.
+- Build Vite PASS; ESLint các file booking mới/parent không lỗi; TypeScript không có diagnostic ở file booking mới/parent/service (toàn dự án vẫn có lỗi khác). Backend test literal search/field/bounds PASS. Edge fixture390/1440 sáng/tối PASS lọc, tìm kiếm, chi tiết, yêu cầu kết thúc read-only, không PATCH lúc chỉ chọn trạng thái,503 giữ ngày/giờ và retry gửi đúng payload. Đã xem screenshot desktop sáng/mobile tối; detector trả[].
+
+### Chuẩn hóa danh mục thực tế — 2026-10-15
+
+- Theo yêu cầu dọn mục không liên quan, đã đọc MongoDB thật:9 danh mục,49 ảnh. Giữ8 nhóm chủ đề ảnh (Chân dung, Du lịch, Kiến trúc, Ngoài trời, Phong cảnh, Thời trang, Thú cưng, Ẩm thực), sửa toàn bộ mô tả tiếng Anh đang sai sang mô tả tiếng Việt đúng. Bỏ mục Nho quá cụ thể;4 ảnh của mục đó giữ nguyên, chỉ chuyển imageCategory=null để quản trị phân loại lại, không đoán nội dung từ tên cũ.
+- Áp dụng bằng transaction trong `backend/scripts/normalize-photocloud-categories.js --apply`, có snapshot danh mục và liên kết ảnh trước thay đổi tại `.local-backups/categories-2026-10-15T11-28-27-974Z.json` (đã gitignore). Sau cập nhật8 danh mục/49 ảnh; chạy lại preview không còn thay đổi, không xóa file ảnh hay nội dung ảnh.
+- Form danh mục bỏ slug vì model/API không lưu; thêm tùy chọn hiển thị khi sửa, gửi đúng description rỗng khi muốn xóa mô tả, giữ form khi API lỗi; cập nhật cache và sự kiện categoriesUpdated sau lưu. Không khóa quản trị vào một danh sách cứng khi tạo danh mục tương lai. Build Vite PASS.
+- Edge fixture PASS form sửa: không còn slug, gửi isActive=false/description rỗng đúng,503 giữ draft và retry thành công; regression thao tác admin PASS. Detector form trả[]. Dữ liệu Mongo đã cập nhật thật; kiểm thử form dùng API giả lập để không sửa thêm nội dung thật.
+
+### Đồng bộ các tab admin và tiếng Việt — 2026-10-15
+
+- Người dùng gửi ảnh các tab Bộ sưu tập/Lịch chụp/Phân quyền/Nhật ký còn banner và đầu bảng đen, một số chữ tiếng Anh. Các module giữ lại đang nhận CSS cũ; thêm `AdminToolsTheme.css` để dùng cùng tiêu đề, nền bảng, nút, form tìm kiếm, badge và palette kem/gold sáng/tối của workspace. Tách ngoại lệ admin khỏi rule nút đen/hover public có `!important` trong index.css, không thay màu nút public.
+- Dịch Actions/System/vai trò và các nhãn thiếu trong locale vi; quyền hiển thị nhãn qua i18n thay key như viewUsers; nhật ký hiển thị loại tiếng Việt và Hệ thống; bảng booking dùng nhãn khung giờ tiếng Việt thay morning/flexible. Giữ nguyên tên tài khoản, nội dung dữ liệu và tên gói do người dùng tạo.
+- Build Vite PASS. Fixture Edge `test-admin-tabs.cjs` kiểm tra bốn tab trên390/1440 sáng/tối, so nền đầu bảng với canvas, bỏ banner gradient, nhãn tiếng Việt, không tràn document và không lỗi render; bổ sung kiểm tra riêng nút thêm quyền không đen. Detector UI trả[]. Không mutation dữ liệu thật hoặc thay phân quyền backend trong lượt này.
+
+### Nút tải ảnh admin đồng bộ màu và icon — 2026-10-15
+
+- Phản hồi người dùng: nút tải ảnh đen và dấu cộng nằm trên chữ. Nguyên nhân `UploadTrigger` dùng Button chung bị áp global primary styles và wrapper children. Khi có class tùy biến workspace, dùng button trực tiếp để giữ flex và palette admin: nâu đồng sáng, gold trong dark; không đổi Button chung toàn site hoặc luồng modal.
+
+### Tải ảnh admin dùng modal, bỏ trang upload riêng — 2026-10-15
+
+- Người dùng yêu cầu nút tải ảnh admin dùng modal có sẵn và xóa trang upload riêng. Thay link `/upload` bằng `UploadTrigger` tải lazy `UploadModal`, mở ngay trên workspace; sự kiện upload thành công tải lại danh sách admin. Sửa cả link tải ảnh đầu tiên trong dashboard hồ sơ để dùng cùng modal.
+- Xóa `UploadPage.tsx` và `UploadPage.css`, bỏ lazy import; giữ redirect `/upload` cũ về `/` để tránh đường dẫn lỗi. Không thay đổi logic chọn ảnh, tải file hoặc API upload trong modal hiện có.
+- Build Vite PASS; Edge production fixture PASS: bấm tải ảnh mở modal, URL vẫn `/admin/images`, đóng modal trở lại danh sách; regression thao tác admin PASS. Không chọn/tải ảnh thật trong QA.
+
+### Hoàn thiện admin mới và tinh chỉnh UI bằng Impeccable — 2026-10-15
+
+- Người dùng chọn hướng tinh gọn, chuyên nghiệp cùng theme PhotoCloud. Rà source độc lập + đối chiếu API phát hiện các trang mới dùng sai hợp đồng hook: không tải ban đầu, `isLoading/loading`, `totalPages/pages`; cài đặt dùng hàm/field không tồn tại; duyệt ảnh gọi generic update không thay đổi trạng thái thật; xóa user/danh mục thiếu xác nhận.
+- Thay các trang danh sách bằng workspace dùng resource riêng theo route, tải ban đầu/search/phân trang URL, bỏ response cũ, lỗi inline + retry, không coi lỗi mạng là danh sách rỗng. Chỉnh ảnh và bulk danh mục gửi đúng `imageTitle/imageCategory`; xóa có dialog xác nhận, giữ mục lỗi khi bulk thất bại, cập nhật image store khi xóa. Form user chỉ gửi displayName/email/bio mà backend hỗ trợ; bỏ các ô vai trò/trạng thái giả trước đây. Form danh mục không đóng khi API thất bại, sửa slug tiếng Việt có chữ đ.
+- Cài đặt đọc/ghi endpoint admin với các field có thật, dirty/reset/saving/error. Duyệt ảnh dùng `/moderation/pending` và POST approve/reject, có preview lớn và lý do từ chối, phân trang hiển thị. Không dùng hardcoded zero thay số liệu lỗi. Dashboard lấy số liệu thật từ stats; backend bổ sung tổng danh mục và URL ảnh mới nhất.
+- Menu chia nhóm, nối lại lịch chụp/dịch vụ, bộ sưu tập, phân quyền và nhật ký bằng các module hiện có tải lazy. Các công cụ này được bọc CSS scope, không mount toàn bộ AdminPage cũ. Gate route theo quyền; phân quyền chỉ super admin, booking theo isAdmin như middleware backend. Không sửa vai trò hay dữ liệu thật trong QA.
+- UI dùng kem/gold và theme dark chung, sidebar có nhãn, breadcrumb, vùng bấm44px, bảng/toolbar thống nhất, focus rõ, reduced motion; drawer/dialog native giữ focus và phục hồi focus. Bỏ chuông không có hành động, nút thêm ảnh giả chuyển thành link upload thật; thêm về website/đăng xuất qua auth store. Tách header/mobile nav/contact công khai khỏi admin để không còn hai header.
+- QA production Edge fixture `test-admin-workspace.cjs` PASS390/1440 sáng/tối: menu, tìm kiếm/rỗng, bulk dialog, hủy xóa, slug, form user, lưu cài đặt, duyệt ảnh, lịch, bộ sưu tập; không lỗi render trong các luồng này. Đã xem screenshot desktop light, desktop dark thư viện và mobile dark. `test-admin-actions.cjs` PASS payload chỉnh ảnh, approve/reject + reason, hủy xóa không DELETE,503→retry, thiếu quyền không gọi settings API và không hiện menu đặc quyền. Detector Impeccable trên UI mới trả[]; build Vite PASS. ESLint phần mới không error, còn warning effect; TypeScript không còn diagnostic ở các file UI mới/booking vừa sửa, nhưng kiểm tra toàn dự án vẫn còn lỗi legacy và ngoài admin.
+- Giới hạn: API giả lập, chưa chạy CRUD/Mongo/email hoặc tài khoản thật; chưa nghiệm thu mọi nhánh của các công cụ booking/roles/collections/logs được nối lại. Trình duyệt tích hợp không truy cập localhost trong phiên này; QA chạy Edge headless cùng server fixture riêng. Cần restart backend để endpoint stats có tổng danh mục/URL ảnh mới. Không coi lượt này là chứng nhận toàn bộ backend hay mọi chức năng legacy đã hoàn tất.
+
+### Admin mới thay thế trang cũ — người dùng xác nhận 2026-10-15
+
+- Người dùng xác nhận admin đã sửa, lỗi đến từ code cũ và đã tạo trang admin mới. Không tiếp tục coi lỗi admin không phản hồi/lag của trang cũ là công việc đang chờ sửa.
+- Đối chiếu source: `App.tsx` đang nối `/admin` vào `components/AdminLayout.tsx`, dashboard mới và các trang con images/categories/users/moderation/settings tải lazy riêng. Không dùng `AdminPage.tsx` cũ trong route đang hoạt động. `AdminAppRoutes.tsx` là cây route khai báo riêng, hiện không phải điểm nối từ App.
+- `usePermissions` đã memoize các hàm kiểm tra theo user; layout mới không mount đồng thời bốn hook dữ liệu của trang admin cũ. Source cũ vẫn còn trong thư mục để tham chiếu, không đồng nghĩa nó còn chạy trên `/admin`.
+- Xác nhận hoạt động thực tế dựa trên phản hồi người dùng; lượt đối chiếu này là kiểm tra source, không phải đo hiệu năng hoặc kiểm tra CRUD/quyền của mọi trang admin mới. Các lỗi TypeScript toàn dự án được ghi riêng, không coi là bằng chứng admin còn lag.
+
+### Tiếp tục cài đặt thông báo — 2026-10-15
+
+- Rà các thay đổi đang dở: API cập nhật notificationPreferences ghi đè cả nhóm email/push khi chỉ gửi một lựa chọn, trái với cam kết giữ các khóa không gửi. Đã chuyển sang `$set` từng trường, tách danh sách khóa hợp lệ theo kênh; từ chối null/array, bỏ khóa lạ và giá trị không phải boolean.
+- Regression `node backend/scripts/test-notification-preferences.js` PASS: cập nhật riêng lẻ, hai kênh, newsletters chỉ thuộc email và payload sai. Syntax controller PASS. Chưa thử Mongo hoặc phiên người dùng thật; chưa xác nhận hệ thống gửi thông báo tuân theo các lựa chọn.
+- `npm run build:check --prefix frontend` FAIL do nhiều lỗi TypeScript ở ProtectedRoute, Header, admin, profile, stores và utilities trong cây mã hiện tại. Không dùng kết quả type-check cũ để kết luận cây mã đang dở đã đạt.
+- Build Vite riêng (`npm run build --prefix frontend`) PASS, còn cảnh báo chunk lớn và import tĩnh/động. Build này không thay thế kiểm tra TypeScript.
+
 ### Guest startup 401 và cấu hình admin trên homepage - 2026-10-15
 
 - Ảnh người dùng có refresh 401 lặp và /admin/settings 401. Public /api/settings backend local kiểm tra trực tiếp trả 200. Frontend refresh guest 401 gọi clearAuth làm tăng generation, hủy response public đang chờ; useSiteSettings catch lại fallback sang API admin gây thêm 401. StrictMode initializer cũng gọi refresh hai lần.

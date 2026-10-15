@@ -97,4 +97,56 @@ export const userService = {
 		});
 		return res.data.user;
 	},
+
+	/**
+	 * Request a password reset email. Always returns 200 to prevent email enumeration.
+	 */
+	forgotPassword: async (email: string): Promise<{ message: string }> => {
+		const res = await api.post<{ message: string }>('/users/forgot-password', { email });
+		return res.data;
+	},
+
+	/**
+	 * Reset password using a token from email. Throws on invalid/expired token.
+	 */
+	resetPassword: async (token: string, password: string): Promise<{ message: string }> => {
+		const res = await api.post<{ message: string }>('/users/reset-password', { token, password });
+		return res.data;
+	},
+
+	/**
+	 * Get notification preferences for the current user.
+	 */
+	getNotificationPreferences: async (): Promise<{ preferences: NotificationPreferences }> => {
+		const res = await api.get<{ preferences: NotificationPreferences }>(
+			'/users/me/notification-preferences'
+		);
+		return res.data;
+	},
+
+	/**
+	 * Update notification preferences (partial — only the keys you send are changed).
+	 */
+	updateNotificationPreferences: async (
+		prefs: Partial<NotificationPreferences>
+	): Promise<{ preferences: NotificationPreferences }> => {
+		const res = await api.put<{ preferences: NotificationPreferences }>(
+			'/users/me/notification-preferences',
+			prefs
+		);
+		return res.data;
+	},
 };
+
+export interface NotificationChannel {
+	comments: boolean;
+	likes: boolean;
+	follows: boolean;
+	bookings: boolean;
+	newsletters?: boolean;
+}
+
+export interface NotificationPreferences {
+	email: NotificationChannel;
+	push: NotificationChannel;
+}

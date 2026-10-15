@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { categoryService, clearCategoriesCache, type Category } from '@/services/categoryService';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -37,6 +37,13 @@ export function useAdminCategories(): UseAdminCategoriesReturn {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
 
+  // Mounted ref so async loaders don't call setState after unmount.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const loadCategories = useCallback(async () => {
     // Check permission before API call
     if (!isSuperAdmin() && !hasPermission('viewCategories')) {
@@ -47,19 +54,26 @@ export function useAdminCategories(): UseAdminCategoriesReturn {
     try {
       setLoading(true);
       const data = await categoryService.getAllCategoriesAdmin();
-      setCategories(data);
+      if (!mountedRef.current) return;
+      // Defensive: accept both raw array and wrapped { categories: [...] }
+      const list = Array.isArray(data) ? data : (data as any)?.categories ?? [];
+      setCategories(Array.isArray(list) ? list : []);
     } catch (error: unknown) {
+      if (!mountedRef.current) return;
       const axiosError = error as {
-        response?: { data?: { message?: string } };
+        response?: { status?: number; data?: { message?: string } };
       };
-      toast.error(axiosError.response?.data?.message || 'Lỗi khi lấy danh mục');
+      const msg = axiosError.response?.data?.message || 'Lỗi khi lấy danh mục';
+      if (axiosError.response?.status !== 401 && axiosError.response?.status !== 403) {
+        toast.error(msg);
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, [hasPermission, isSuperAdmin]);
 
   const createCategory = useCallback(
-    async (data: { name: string; description?: string }): Promise<boolean> => {
+    async (data: { name: string; description?: string; slug?: string }): Promise<boolean> => {
       // Check permission before action
       if (!isSuperAdmin() && !hasPermission('createCategories')) {
         toast.error('Bạn không có quyền tạo danh mục');
@@ -73,12 +87,11 @@ export function useAdminCategories(): UseAdminCategoriesReturn {
         // Dispatch event to notify CategoryNavigation to refresh
         window.dispatchEvent(new CustomEvent('categoriesUpdated'));
         toast.success('Tạo danh mục thành công');
-        setCreatingCategory(false);
         await loadCategories();
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi tạo danh mục'
@@ -92,7 +105,7 @@ export function useAdminCategories(): UseAdminCategoriesReturn {
   const updateCategory = useCallback(
     async (
       categoryId: string,
-      updates: { name?: string; description?: string; isActive?: boolean }
+      updates: { name?: string; description?: string; slug?: string; isActive?: boolean }
     ): Promise<boolean> => {
       // Check permission before action
       if (!isSuperAdmin() && !hasPermission('editCategories')) {
@@ -107,12 +120,11 @@ export function useAdminCategories(): UseAdminCategoriesReturn {
         // Dispatch event to notify CategoryNavigation to refresh
         window.dispatchEvent(new CustomEvent('categoriesUpdated'));
         toast.success('Danh mục đã được cập nhật thành công');
-        setEditingCategory(null);
         await loadCategories();
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi cập nhật danh mục'
@@ -145,7 +157,7 @@ export function useAdminCategories(): UseAdminCategoriesReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi xoá danh mục'

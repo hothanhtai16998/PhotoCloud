@@ -139,6 +139,9 @@ function SignInPage() {
                             {isSubmitting ? <LoaderCircle size={17} className="auth-loading" /> : <ArrowRight size={17} />}
                         </Button>
                         {capsLock && <p className="auth-caps-warning" role="status">Caps Lock đang bật</p>}
+                        <p className="auth-forgot-link">
+                            <Link to="/forgot-password" className="form-link">Quên mật khẩu?</Link>
+                        </p>
                     </form>
             <p className="auth-switch-footer">{t('auth.noAccount')} <Link to="/signup" className="form-link">{t('auth.signUp')}</Link></p>
         </AuthLayout>

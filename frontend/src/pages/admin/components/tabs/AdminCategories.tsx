@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 import { CreateCategoryModal, EditCategoryModal } from '../modals';
 import { ConfirmModal } from '@/pages/admin/components/modals';
@@ -19,7 +19,7 @@ interface AdminCategoriesProps {
     onSaveEdit: (categoryId: string, updates: { name?: string; description?: string; isActive?: boolean }) => Promise<boolean>;
 }
 
-export function AdminCategories({
+export const AdminCategories = memo(function AdminCategories({
     categories,
     creatingCategory,
     editingCategory,
@@ -148,5 +148,5 @@ export function AdminCategories({
             />
         </div>
     );
-}
+});
 

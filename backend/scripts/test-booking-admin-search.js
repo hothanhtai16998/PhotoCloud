@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { bookingAdminSearch } from '../src/utils/bookingAdminSearch.js';
+assert.deepEqual(bookingAdminSearch('  '), {});
+const query = bookingAdminSearch('PC-[01].*');
+assert.equal(query.$or.length, 4);
+const regex = new RegExp(query.$or[0].bookingCode.$regex, 'i');
+assert.ok(regex.test('pc-[01].*'));
+assert.ok(!regex.test('PC-0anything'));
+assert.equal(bookingAdminSearch('a'.repeat(1000)).$or[0].bookingCode.$regex.length, 100);
+console.log('PASS booking admin literal search, fields, bounded input');

@@ -11,6 +11,7 @@ import Settings from "../models/Settings.js";
 import UserActivity from "../models/UserActivity.js";
 import { uploadAvatar, deleteAvatarFromR2 } from "../libs/s3.js";
 import { logger } from '../utils/logger.js';
+import { buildNotificationPreferencesUpdate } from '../utils/notificationPreferences.js';
 
 // Input validation constants
 const VALIDATION_RULES = {
@@ -157,7 +158,7 @@ export const changePassword = asyncHandler(async (req, res) => {
     // Validate password length
     if (newPassword.length < passwordRequirements.minLength) {
         return res.status(400).json({
-            message: `Mật khẩu phải có ít nhất ${passwordRequirements.minLength} ký tự`,
+            message: `Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t ${passwordRequirements.minLength} kÃ½ tá»±`,
         });
     }
 
@@ -172,12 +173,12 @@ export const changePassword = asyncHandler(async (req, res) => {
         const passwordRegex = new RegExp(`^${regexParts.join('')}.{${passwordRequirements.minLength},}$`);
         if (!passwordRegex.test(newPassword)) {
             const messageParts = [];
-            if (passwordRequirements.requireLowercase) messageParts.push('chữ thường');
-            if (passwordRequirements.requireUppercase) messageParts.push('chữ hoa');
-            if (passwordRequirements.requireNumber) messageParts.push('số');
-            if (passwordRequirements.requireSpecialChar) messageParts.push('ký tự đặc biệt');
+            if (passwordRequirements.requireLowercase) messageParts.push('chá»¯ thÆ°á»ng');
+            if (passwordRequirements.requireUppercase) messageParts.push('chá»¯ hoa');
+            if (passwordRequirements.requireNumber) messageParts.push('sá»‘');
+            if (passwordRequirements.requireSpecialChar) messageParts.push('kÃ½ tá»± Ä‘áº·c biá»‡t');
             return res.status(400).json({
-                message: `Mật khẩu phải có ${messageParts.join(', ')}`,
+                message: `Máº­t kháº©u pháº£i cÃ³ ${messageParts.join(', ')}`,
             });
         }
     }
@@ -228,7 +229,96 @@ export const changePassword = asyncHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncHandler(async (req, res) => {
-    // TODO: Implement forgot password
+    const { email } = req.body;
+
+    if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: 'Email lÃ  báº¯t buá»™c.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Always return 200 to prevent email enumeration â€” same response whether user exists or not.
+    const user = await User.findOne({ email: normalizedEmail }).select('_id email username');
+
+    if (user) {
+        try {
+            const PasswordResetToken = (await import('../models/PasswordResetToken.js')).default;
+            const token = await PasswordResetToken.createToken(
+                user._id,
+                user.email,
+                req.ip || req.connection?.remoteAddress,
+                req.get('user-agent')
+            );
+
+            const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${token}`;
+
+            const { sendUserEmail } = await import('../utils/emailAlerts.js');
+            await sendUserEmail(
+                user.email,
+                'Äáº·t láº¡i máº­t kháº©u PhotoCloud',
+                `<p>Xin chÃ o ${user.username || user.email},</p>
+                 <p>Báº¡n Ä‘Ã£ yÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u cho tÃ i khoáº£n PhotoCloud.</p>
+                 <p>Nháº¥n vÃ o link bÃªn dÆ°á»›i Ä‘á»ƒ Ä‘áº·t láº¡i máº­t kháº©u (link cÃ³ hiá»‡u lá»±c trong 1 giá»):</p>
+                 <p><a href="${resetUrl}" style="display:inline-block;padding:12px 24px;background:#B8865B;color:#fff;text-decoration:none;border-radius:6px;">Äáº·t láº¡i máº­t kháº©u</a></p>
+                 <p>Náº¿u báº¡n khÃ´ng yÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u, hÃ£y bá» qua email nÃ y.</p>
+                 <p>â€” Äá»™i ngÅ© PhotoCloud</p>`,
+                `Xin chÃ o ${user.username || user.email},\n\nBáº¡n Ä‘Ã£ yÃªu cáº§u Ä‘áº·t láº¡i máº­t kháº©u. Truy cáº­p: ${resetUrl}\nLink cÃ³ hiá»‡u lá»±c trong 1 giá».\nNáº¿u khÃ´ng pháº£i báº¡n, bá» qua email nÃ y.\nâ€” PhotoCloud`
+            );
+        } catch (emailError) {
+            // Log but don't expose email failure to client
+            console.error('Failed to send reset email:', emailError);
+        }
+    }
+
+    // Always return success to prevent email enumeration
+    return res.status(200).json({
+        message: 'Náº¿u email tá»“n táº¡i trong há»‡ thá»‘ng, chÃºng tÃ´i Ä‘Ã£ gá»­i link Ä‘áº·t láº¡i máº­t kháº©u.',
+    });
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: 'Token lÃ  báº¯t buá»™c.' });
+    }
+
+    if (!password || typeof password !== 'string' || password.length < 8) {
+        return res.status(400).json({ message: 'Máº­t kháº©u pháº£i cÃ³ Ã­t nháº¥t 8 kÃ½ tá»±.' });
+    }
+
+    const PasswordResetToken = (await import('../models/PasswordResetToken.js')).default;
+    const resetToken = await PasswordResetToken.findByToken(token);
+
+    if (!resetToken) {
+        return res.status(400).json({ message: 'Link Ä‘áº·t láº¡i máº­t kháº©u khÃ´ng há»£p lá»‡ hoáº·c Ä‘Ã£ háº¿t háº¡n.' });
+    }
+
+    const user = resetToken.userId;
+    if (!user || !user._id) {
+        return res.status(400).json({ message: 'Token khÃ´ng há»£p lá»‡.' });
+    }
+
+    // OAuth users don't have local passwords â€” they can't reset.
+    if (user.isOAuthUser) {
+        return res.status(400).json({
+            message: 'TÃ i khoáº£n nÃ y Ä‘Äƒng nháº­p qua Google. Vui lÃ²ng Ä‘Äƒng nháº­p báº±ng Google Ä‘á»ƒ Ä‘áº·t láº¡i máº­t kháº©u.',
+        });
+    }
+
+    // Hash new password
+    const bcrypt = await import('bcrypt');
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update password
+    user.hashedPassword = hashedPassword;
+    await user.save();
+
+    // Consume token (mark as used)
+    await PasswordResetToken.consumeToken(resetToken._id);
+
+    return res.status(200).json({ message: 'Máº­t kháº©u Ä‘Ã£ Ä‘Æ°á»£c Ä‘áº·t láº¡i thÃ nh cÃ´ng. Báº¡n cÃ³ thá»ƒ Ä‘Äƒng nháº­p ngay.' });
 });
 
 export const changeInfo = asyncHandler(async (req, res) => {
@@ -980,5 +1070,55 @@ export const getDownloadHistory = asyncHandler(async (req, res) => {
             totalPages: Math.ceil(total / limit),
             hasMore: page * limit < total,
         },
+    });
+});
+/**
+ * Get notification preferences for the current user.
+ * Always returns the full shape with defaults if missing.
+ */
+export const getNotificationPreferences = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const user = await User.findById(userId).select('notificationPreferences').lean();
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+        success: true,
+        preferences: user.notificationPreferences ?? {
+            email: { comments: true, likes: true, follows: true, bookings: true, newsletters: false },
+            push: { comments: true, likes: true, follows: false, bookings: true },
+        },
+    });
+});
+
+
+
+/**
+ * Update notification preferences. Only updates the keys that the user
+ * sent; we don't reset missing keys to defaults.
+ */
+export const updateNotificationPreferences = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    let update;
+    try {
+        update = buildNotificationPreferencesUpdate(req.body);
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { $set: update },
+        { new: true, runValidators: true }
+    ).select('notificationPreferences').lean();
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+        success: true,
+        preferences: user.notificationPreferences,
     });
 });

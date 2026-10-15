@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import { PageViewTracker } from "./components/PageViewTracker";
@@ -28,13 +28,26 @@ import {
 // Lazy load pages for code splitting
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
 const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
+const SettingsPage = lazy(() => import("./pages/profile/SettingsPage").then(m => ({ default: m.default })));
+const UserDashboardPage = lazy(() => import("./pages/profile/UserDashboardPage").then(m => ({ default: m.default })));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 const ProfileRouteHandler = lazy(() => import("./pages/profile/ProfileRouteHandler").then(module => ({ default: module.ProfileRouteHandler })));
 const ProfileRedirect = lazy(() => import("./pages/profile/ProfileRedirect").then(module => ({ default: module.ProfileRedirect })));
-const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
+import { AdminAccess } from './pages/admin/components/AdminAccess';
+const AdminToolsPage = lazy(() => import('./pages/admin/AdminToolsPage').then(m => ({ default: m.AdminToolsPage })));
+// Admin v2 - new layout-based routing
+const AdminLayout = lazy(() => import("./pages/admin/components/AdminLayout").then(m => ({ default: m.AdminLayout })));
+const AdminDashboard = lazy(() => import("./pages/admin/components/AdminDashboard").then(m => ({ default: m.AdminDashboard })));
+const AdminImagesPage = lazy(() => import("./pages/admin/AdminImagesPage").then(m => ({ default: m.AdminImagesPage })));
+const AdminCategoriesPage = lazy(() => import("./pages/admin/AdminCategoriesPage").then(m => ({ default: m.AdminCategoriesPage })));
+const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage").then(m => ({ default: m.AdminUsersPage })));
+const AdminModerationPage = lazy(() => import("./pages/admin/AdminModerationPage").then(m => ({ default: m.AdminModerationPage })));
+const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage").then(m => ({ default: m.AdminSettingsPage })));
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const FavoriteCollectionsPage = lazy(() => import("./pages/FavoriteCollectionsPage"));
 const DownloadHistoryPage = lazy(() => import("./pages/DownloadHistoryPage"));
@@ -45,7 +58,6 @@ const BookingPage = lazy(() => import("./pages/BookingPage"));
 const BookingDetailPage = lazy(() => import("./pages/BookingDetailPage"));
 const MyBookingsPage = lazy(() => import("./pages/MyBookingsPage"));
 const ExplorePage = lazy(() => import("./pages/ExplorePage"));
-const UploadPage = lazy(() => import("./pages/UploadPage"));
 const NotificationPage = lazy(() => import("./pages/NotificationPage"));
 const PackagesPage = lazy(() => import("./pages/PackagesPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
@@ -201,20 +213,21 @@ function App() {
                             !location.pathname.startsWith('/signup') &&
                             !location.pathname.startsWith('/auth/google/callback');
 
+  const isAdminArea = location.pathname === '/admin' || location.pathname.startsWith('/admin/');
   // Footer: show ở public/member pages, KHÔNG hiện ở admin (admin có layout riêng)
   const shouldShowFooter = shouldShowHeader && !location.pathname.startsWith('/admin');
 
   return (
     <ActualLocationContext.Provider value={location}>
       {/* Header - PHOTOCLOUD-style: Always visible, even during loading */}
-      {shouldShowHeader && <Header />}
+      {shouldShowHeader && !isAdminArea && <Header />}
 
       {/* Floating Contact Button - Always visible */}
-      <ContactButton />
-      <BookingModal />
+      {!isAdminArea && <ContactButton />}
+      {!isAdminArea && <BookingModal />}
 
       {/* Mobile Bottom Nav - ẩn tự động khi modal mở */}
-      {shouldShowHeader && <MobileBottomNav />}
+      {shouldShowHeader && !isAdminArea && <MobileBottomNav />}
 
       {/* Global Loading Overlay - Single spinner for all loading states */}
       {location.pathname !== '/' && <GlobalLoadingOverlay />}
@@ -225,7 +238,7 @@ function App() {
           (auth pages render directly without the wrapper so they keep full-bleed
           layouts). */}
       {shouldShowHeader ? (
-        <div className="app-body">
+        <div className={isAdminArea ? "admin-app-body" : "app-body"}>
         <Suspense fallback={<PageLoader />}>
         <PageViewTracker />
         {/* Primary routes. If background exists, render using the background location */}
@@ -249,6 +262,8 @@ function App() {
           {/* Public collections — anyone can browse, login required to interact */}
           <Route path="/collections" element={<CollectionsPage />} />
           <Route path="/collections/:collectionId" element={<CollectionDetailPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/booking/:bookingId" element={<BookingDetailPage />} />
@@ -261,22 +276,77 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<ProfileRedirect />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/settings/profile" element={<EditProfilePage />} />
-            <Route path="/settings/notifications" element={<NotificationPage />} />
-            <Route path="/upload" element={<UploadPage />} />
-            <Route path="/favorites" element={<FavoritesPage />} />
-            <Route path="/favorites/photos" element={<FavoritesPage />} />
-            <Route path="/favorites/collections" element={<FavoriteCollectionsPage />} />
-            {/* Legacy alias — redirect to /favorites/collections */}
-            <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
-            <Route path="/downloads" element={<DownloadHistoryPage />} />
-            <Route path="/notifications" element={<NotificationPage />} />
-            <Route path="/profile/bookings" element={<MyBookingsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/profile" element={<SettingsPage />} />
+            <Route path="/settings/notifications" element={<SettingsPage />} />
+            <Route path="/upload" element={<Navigate to="/" replace />} />
+            <Route path="/me" element={<UserDashboardPage />} />
           </Route>
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/favorites/photos" element={<FavoritesPage />} />
+          <Route path="/favorites/collections" element={<FavoriteCollectionsPage />} />
+          {/* Legacy alias — redirect to /favorites/collections */}
+          <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
+          <Route path="/downloads" element={<DownloadHistoryPage />} />
+          <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/profile/bookings" element={<MyBookingsPage />} />
 
-          {/**admin routes */}
+          {/**admin routes v2 - per-route lazy load */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="bookings" element={<AdminAccess><AdminToolsPage /></AdminAccess>} />
+              <Route path="collections" element={<AdminAccess><AdminToolsPage /></AdminAccess>} />
+              <Route path="roles" element={<AdminAccess><AdminToolsPage /></AdminAccess>} />
+              <Route path="logs" element={<AdminAccess><AdminToolsPage /></AdminAccess>} />
+              <Route
+                index
+                element={
+                  <Suspense fallback={null}>
+                    <AdminAccess><AdminDashboard /></AdminAccess>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="images"
+                element={
+                  <Suspense fallback={null}>
+                    <AdminAccess><AdminImagesPage /></AdminAccess>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="categories"
+                element={
+                  <Suspense fallback={null}>
+                    <AdminAccess><AdminCategoriesPage /></AdminAccess>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="users"
+                element={
+                  <Suspense fallback={null}>
+                    <AdminAccess><AdminUsersPage /></AdminAccess>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="moderation"
+                element={
+                  <Suspense fallback={null}>
+                    <AdminAccess><AdminModerationPage /></AdminAccess>
+                  </Suspense>
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  <Suspense fallback={null}>
+                    <AdminAccess><AdminSettingsPage /></AdminAccess>
+                  </Suspense>
+                }
+              />
+            </Route>
           </Route>
           
           <Route path="/404" element={<NotFoundPage />} />

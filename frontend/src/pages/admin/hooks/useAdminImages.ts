@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { adminService, type AdminImage } from '@/services/adminService';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -43,6 +43,13 @@ export function useAdminImages(): UseAdminImagesReturn {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Mounted ref so async loaders don't call setState after unmount.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const loadImages = useCallback(
     async (page = 1) => {
       // Check permission before API call
@@ -53,20 +60,28 @@ export function useAdminImages(): UseAdminImagesReturn {
 
       try {
         setLoading(true);
-        const data = await adminService.getAllImages({
+        const response = await adminService.getAllImages({
           page,
           limit: 20,
           search: search || undefined,
         });
-        setImages(data.images);
-        setPagination(data.pagination);
+        if (!mountedRef.current) return;
+        const data = (response as any)?.data ?? response;
+        const imageList = data?.images ?? data?.data?.images ?? [];
+        const pag = data?.pagination ?? data?.data?.pagination ?? { page: 1, pages: 1, total: 0 };
+        setImages(Array.isArray(imageList) ? imageList : []);
+        setPagination(pag);
       } catch (error: unknown) {
+        if (!mountedRef.current) return;
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
-        toast.error(axiosError.response?.data?.message || 'Lỗi khi lấy ảnh');
+        const msg = axiosError.response?.data?.message || 'Lỗi khi lấy ảnh';
+        if (axiosError.response?.status !== 401 && axiosError.response?.status !== 403) {
+          toast.error(msg);
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) setLoading(false);
       }
     },
     [search, hasPermission, isSuperAdmin]
@@ -118,7 +133,7 @@ export function useAdminImages(): UseAdminImagesReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(axiosError.response?.data?.message || 'Lỗi khi xoá ảnh');
         return false;

@@ -97,14 +97,14 @@ export function AdminLogs() {
                                     <td>{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
                                     <td>
                                         <span className={`admin-log-badge ${log.level || 'info'}`}>
-                                            {log.level?.toUpperCase() || 'INFO'}
+                                            {({ info: 'Thông tin', warning: 'Cảnh báo', warn: 'Cảnh báo', error: 'Lỗi', debug: 'Chẩn đoán', critical: 'Nghiêm trọng' } as Record<string, string>)[log.level || 'info'] || 'Thông tin'}
                                         </span>
                                     </td>
                                     <td>{log.message}</td>
                                     <td>
                                         {typeof log.userId === 'object' && log.userId
                                             ? log.userId.displayName || log.userId.username
-                                            : log.userId || 'System'}
+                                            : log.userId || 'Hệ thống'}
                                     </td>
                                 </tr>
                             ))

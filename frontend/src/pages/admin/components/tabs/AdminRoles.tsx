@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit2, Trash2 } from 'lucide-react';
 import { CreateRoleModal, EditRoleModal, ConfirmModal } from '../modals';
@@ -35,7 +35,7 @@ interface AdminRolesProps {
     }) => Promise<boolean>;
 }
 
-export function AdminRoles({
+export const AdminRoles = memo(function AdminRoles({
     roles,
     users,
     currentUser,
@@ -154,7 +154,7 @@ export function AdminRoles({
                                                 </span>
                                             )}
                                             {(!role.expiresAt && role.active !== false && (!role.allowedIPs || role.allowedIPs.length === 0)) && (
-                                                <span className="admin-status-badge" style={{ background: '#d1fae5', color: '#065f46' }}>
+                                                <span className="admin-status-badge status-active">
                                                     {t('admin.activeStatus2')}
                                                 </span>
                                             )}
@@ -165,7 +165,7 @@ export function AdminRoles({
                                             {Object.entries(role.permissions || {}).map(([key, value]) =>
                                                 value ? (
                                                     <span key={key} className="admin-permission-tag">
-                                                        {key}
+                                                        {t(`admin.${key}`)}
                                                     </span>
                                                 ) : null
                                             )}
@@ -178,7 +178,7 @@ export function AdminRoles({
                                         <div className="admin-actions">
                                             {/* System-created roles cannot be edited or deleted */}
                                             {!role.grantedBy ? (
-                                                <span style={{ color: '#666', fontSize: '14px' }}>
+                                                <span className="admin-system-protected">
                                                     {t('admin.systemProtected') || 'Được bảo vệ bởi hệ thống'}
                                                 </span>
                                             ) : (
@@ -254,5 +254,5 @@ export function AdminRoles({
             )}
         </div>
     );
-}
+});
 

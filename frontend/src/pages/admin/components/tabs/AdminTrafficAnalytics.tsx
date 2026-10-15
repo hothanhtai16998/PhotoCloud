@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo, useMemo } from 'react';
+import { useState, useEffect, memo, useMemo } from 'react';
 import { adminService } from '@/services/adminService';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
@@ -13,19 +13,36 @@ export const AdminTrafficAnalytics = memo(function AdminTrafficAnalytics() {
     const [days, setDays] = useState(30);
 
     useEffect(() => {
-        const loadTrafficData = async () => {
+        let cancelled = false;
+        const idleCallback = (window as any).requestIdleCallback as ((cb: () => void, opts?: { timeout: number }) => number) | undefined;
+        const run = async () => {
             try {
                 setLoading(true);
                 const data = await adminService.getTrafficAnalytics(days);
+                if (cancelled) return;
                 setTrafficData(data);
             } catch (error: unknown) {
+                if (cancelled) return;
                 toast.error(getErrorMessage(error, 'Lỗi khi tải dữ liệu traffic'));
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
-
-        loadTrafficData();
+        // Defer so we don't compete with the main analytics tab for network/main-thread
+        let handle: number;
+        if (idleCallback) {
+            handle = idleCallback(() => { run(); }, { timeout: 1500 });
+        } else {
+            handle = window.setTimeout(() => { run(); }, 400);
+        }
+        return () => {
+            cancelled = true;
+            if (idleCallback) {
+                (window as any).cancelIdleCallback?.(handle);
+            } else {
+                window.clearTimeout(handle);
+            }
+        };
     }, [days]);
 
     // Format peak usage times for display (memoized) - MUST be before any returns (Rules of Hooks)

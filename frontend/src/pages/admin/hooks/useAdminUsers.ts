@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { adminService, type User } from '@/services/adminService';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -7,6 +7,7 @@ interface Pagination {
   page: number;
   pages: number;
   total: number;
+  totalPages?: number;
 }
 
 interface UseAdminUsersReturn {
@@ -39,6 +40,13 @@ export function useAdminUsers(): UseAdminUsersReturn {
   const [loading, setLoading] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  // Track mounted state so async loaders don't call setState after unmount.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const loadUsers = useCallback(
     async (page = 1) => {
       // Check permission before API call
@@ -49,22 +57,30 @@ export function useAdminUsers(): UseAdminUsersReturn {
 
       try {
         setLoading(true);
-        const data = await adminService.getAllUsers({
+        const response = await adminService.getAllUsers({
           page,
           limit: 20,
           search: search || undefined,
         });
-        setUsers(data.users);
-        setPagination(data.pagination);
+        if (!mountedRef.current) return;
+        // Defensive: response shape may vary (raw body or wrapped). Accept both.
+        const data = (response as any)?.data ?? response;
+        const userList = data?.users ?? data?.data?.users ?? [];
+        const pag = data?.pagination ?? data?.data?.pagination ?? { page: 1, pages: 1, total: 0 };
+        setUsers(Array.isArray(userList) ? userList : []);
+        setPagination(pag);
       } catch (error: unknown) {
+        if (!mountedRef.current) return;
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
-        toast.error(
-          axiosError.response?.data?.message || 'Failed to load users'
-        );
+        const msg = axiosError.response?.data?.message || 'Failed to load users';
+        // Suppress noisy toast for auth errors — user is being signed out anyway.
+        if (axiosError.response?.status !== 401 && axiosError.response?.status !== 403) {
+          toast.error(msg);
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) setLoading(false);
       }
     },
     [search, hasPermission, isSuperAdmin]
@@ -87,7 +103,7 @@ export function useAdminUsers(): UseAdminUsersReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Lỗi khi xoá người dùng'
@@ -114,7 +130,7 @@ export function useAdminUsers(): UseAdminUsersReturn {
         return true;
       } catch (error: unknown) {
         const axiosError = error as {
-          response?: { data?: { message?: string } };
+          response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
           axiosError.response?.data?.message || 'Failed to update user'

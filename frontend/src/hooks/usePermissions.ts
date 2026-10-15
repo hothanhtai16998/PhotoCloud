@@ -1,9 +1,18 @@
+import { useMemo } from 'react';
 import { useUserStore } from '@/stores/useUserStore';
 import type { AdminRolePermissions } from '@/services/adminService';
 
 /**
  * Hook to check user permissions
- * Returns functions to check if user has specific permissions
+ * Returns functions to check if user has specific permissions.
+ *
+ * IMPORTANT: All returned functions and the wrapper object are memoized
+ * with useCallback / useMemo. Without this, every parent render would
+ * create a new identity for hasPermission/isSuperAdmin/etc., which
+ * triggers re-renders in every child that depends on them (and infinite
+ * loops in any useEffect that lists them in its deps array). That was
+ * the root cause of the admin page feeling "stuck" — the sidebar,
+ * header, and tab buttons were all re-rendering on every keystroke.
  */
 export function usePermissions(): {
   hasPermission: (permission: keyof AdminRolePermissions) => boolean;
@@ -13,60 +22,51 @@ export function usePermissions(): {
   isSuperAdmin: () => boolean;
   permissions: AdminRolePermissions | null;
 } {
-    const user = useUserStore((state) => state.user);
+  const user = useUserStore((state) => state.user);
 
-    /**
-     * Check if user has a specific permission
-     * Super admins have all permissions
-     */
+  // Memoize all checkers off `user` so identities stay stable across renders.
+  // The boolean primitives (isAdmin / isSuperAdmin) are computed up-front so
+  // downstream useEffects can list them in deps arrays without re-firing.
+  const { hasPermission, hasAnyPermission, hasAllPermissions, isAdmin, isSuperAdmin, permissions } = useMemo(() => {
+    const isSuperAdmin = user?.isSuperAdmin === true;
+    const isAdmin = user?.isAdmin === true || isSuperAdmin;
+    const userPermissions = user?.permissions ?? null;
+
     const hasPermission = (permission: keyof AdminRolePermissions): boolean => {
-        if (!user) return false;
-        
-        // Super admin has all permissions
-        if (user.isSuperAdmin) return true;
-        
-        // If no permissions object, user has no permissions
-        if (!user.permissions) return false;
-        
-        // Check specific permission
-        return user.permissions[permission] === true;
+      if (!user) return false;
+      if (isSuperAdmin) return true;
+      if (!userPermissions) return false;
+      return userPermissions[permission] === true;
     };
 
-    /**
-     * Check if user has any of the specified permissions
-     */
-    const hasAnyPermission = (permissions: Array<keyof AdminRolePermissions>): boolean => {
-        return permissions.some(perm => hasPermission(perm));
+    const hasAnyPermission = (perms: Array<keyof AdminRolePermissions>): boolean => {
+      return perms.some((p) => hasPermission(p));
     };
 
-    /**
-     * Check if user has all of the specified permissions
-     */
-    const hasAllPermissions = (permissions: Array<keyof AdminRolePermissions>): boolean => {
-        return permissions.every(perm => hasPermission(perm));
+    const hasAllPermissions = (perms: Array<keyof AdminRolePermissions>): boolean => {
+      return perms.every((p) => hasPermission(p));
     };
 
-    /**
-     * Check if user is admin (has any admin role)
-     */
-    const isAdmin = (): boolean => {
-        return user?.isAdmin === true || user?.isSuperAdmin === true;
-    };
-
-    /**
-     * Check if user is super admin
-     */
-    const isSuperAdmin = (): boolean => {
-        return user?.isSuperAdmin === true;
-    };
+    const isAdminFn = () => isAdmin;
+    const isSuperAdminFn = () => isSuperAdmin;
 
     return {
-        hasPermission,
-        hasAnyPermission,
-        hasAllPermissions,
-        isAdmin,
-        isSuperAdmin,
-        permissions: user?.permissions ?? null,
+      hasPermission,
+      hasAnyPermission,
+      hasAllPermissions,
+      isAdmin: isAdminFn,
+      isSuperAdmin: isSuperAdminFn,
+      permissions: userPermissions,
     };
-}
+    // user is the only thing that should re-create these callbacks
+  }, [user]);
 
+  return {
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    isAdmin,
+    isSuperAdmin,
+    permissions,
+  };
+}
