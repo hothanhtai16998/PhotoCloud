@@ -61,6 +61,26 @@ fs.mkdirSync(outputDir, { recursive: true });
    await page.getByLabel('Ngày chụp', { exact: true }).fill('2026-10-21');
    await page.getByLabel('Bắt đầu', { exact: true }).fill('09:00');
    await page.getByLabel('Kết thúc', { exact: true }).fill('10:00');
+   const beforeTabs = await dialog.boundingBox();
+   await page.getByRole('tab', { name: /Lịch sử trạng thái/ }).click();
+   const afterTabs = await dialog.boundingBox();
+   const matchingColors = await page.locator('.booking-history-timeline li').evaluateAll(items => items.every(item => {
+    const tone = item.dataset.tone;
+    const sample = document.createElement('span');
+    sample.className = 'booking-state ' + tone;
+    item.append(sample);
+    const expected = getComputedStyle(sample).color;
+    const actual = getComputedStyle(item.querySelector('strong')).color;
+    const iconColor = getComputedStyle(item.querySelector('.booking-history-icon')).color;
+    sample.remove();
+    return expected === actual && actual === iconColor;
+   }));
+   assert.ok(matchingColors, 'History and badge share status colors');
+   assert.ok(Math.abs(beforeTabs.height - afterTabs.height) < 1 && Math.abs(beforeTabs.y - afterTabs.y) < 1, 'Tab switch preserves modal frame');
+   assert.equal(await page.getByRole('button', { name: 'Xác nhận lịch chụp', exact: true }).count(), 0);
+   await page.screenshot({ path: path.resolve(outputDir, 'booking-history-' + width + '-' + theme + '.png') });
+   await page.getByRole('tab', { name: 'Thông tin yêu cầu', exact: true }).click();
+   assert.equal(await page.getByLabel('Ngày chụp', { exact: true }).inputValue(), '2026-10-21', 'Draft preserved across tabs');
    await assertFooter();
    await page.screenshot({ path: path.resolve(outputDir, 'booking-detail-' + width + '-' + theme + '.png') });
    if (width === 1440 && theme === 'dark') {
@@ -79,3 +99,5 @@ fs.mkdirSync(outputDir, { recursive: true });
   }
  } finally { await browser.close(); await new Promise(r => server.close(r)); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
+
+

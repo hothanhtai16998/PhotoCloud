@@ -1,33 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Save, Plus, Pencil, EyeOff, X, Clock3, Images, Users, CalendarCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   bookingService,
-  type BookingAvailability,
 } from '@/services/bookingService';
-import type { Booking, BookingPackage, BookingStatus } from '@/types/booking';
+import type { BookingPackage } from '@/types/booking';
 import type { BookingReview } from '@/types/bookingFinal';
-const timeSlotLabels: Record<string, string> = {
-  morning: 'Buổi sáng',
-  afternoon: 'Buổi chiều',
-  evening: 'Buổi tối',
-  flexible: 'Linh hoạt',
-};
 import { getErrorMessage } from '@/lib/utils';
 import { AdminBookingRequests } from '../bookings/AdminBookingRequests';
-
-const statusLabels: Record<BookingStatus, string> = {
-  pending: 'Chờ xử lý',
-  reviewing: 'Đang xem xét',
-  needs_information: 'Cần bổ sung',
-  confirmed: 'Đã xác nhận',
-  rescheduled: 'Đã đổi lịch',
-  completed: 'Hoàn thành',
-  cancelled_by_client: 'Khách đã hủy',
-  cancelled_by_photographer: 'Đã hủy',
-  rejected: 'Từ chối',
-  expired: 'Hết hạn',
-};
+import { AdminBookingCalendar } from '../bookings/AdminBookingCalendar';
+import { AdminBookingPolicy } from '../bookings/AdminBookingPolicy';
+import { AdminBookingAvailability } from '../bookings/AdminBookingAvailability';
+import '../bookings/AdminBookingPackages.css';
 
 const emptyPackage: Omit<BookingPackage, '_id'> = {
   slug: '',
@@ -40,61 +24,52 @@ const emptyPackage: Omit<BookingPackage, '_id'> = {
   deliveryDays: 7,
   category: 'portrait',
 };
-const defaultWeekly = Array.from({ length: 7 }, (_, weekday) => ({
-  weekday,
-  enabled: weekday !== 0,
-  startTime: '08:00',
-  endTime: '18:00',
-}));
 
 export function AdminBookings() {
   const [view, setView] = useState<
     'requests' | 'calendar' | 'packages' | 'availability' | 'reviews' | 'policy'
   >('requests');
   const [reviews, setReviews] = useState<BookingReview[]>([]);
-  const [policy, setPolicy] = useState<{
-    allowClientCancellation: boolean;
-    allowOneReschedule: boolean;
-    rescheduleDeadlineHours: number;
-    weatherRescheduleAllowed: boolean;
-    cancellationRules: Array<{
-      minimumHoursBefore: number;
-      refundPercent: number;
-      label: string;
-    }>;
-  } | null>(null);
-  const [availability, setAvailability] = useState<BookingAvailability>({
-    timezone: 'Asia/Ho_Chi_Minh',
-    weekly: defaultWeekly,
-    blockedDates: [],
-  });
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [policyDirty, setPolicyDirty] = useState(false);
+  const [availabilityDirty, setAvailabilityDirty] = useState(false);
   const [packages, setPackages] = useState<BookingPackage[]>([]);
 
-  const [month, setMonth] = useState(new Date());
-  const [calendarMode, setCalendarMode] = useState<'day' | 'week' | 'month'>(
-    'month'
-  );
-  const [selectedDay, setSelectedDay] = useState(new Date());
   const [editingPackage, setEditingPackage] = useState<BookingPackage | null>(
     null
   );
   const [packageForm, setPackageForm] = useState(emptyPackage);
-
-  const loadBookings = async () => {
-    try {
-      const result = await bookingService.getAdmin({ limit: 100 });
-      setBookings(result.bookings);
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể tải danh sách đặt lịch'));
-    }
+  const [packageEditorOpen, setPackageEditorOpen] = useState(false);
+  const [packageBusy, setPackageBusy] = useState(false);
+  const [packagesLoading, setPackagesLoading] = useState(false);
+  const [packagesError, setPackagesError] = useState('');
+  const packageDialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (!packageEditorOpen) return;
+    packageDialog.current?.showModal();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [packageEditorOpen]);
+  const closePackageEditor = () => {
+    if (packageBusy) return;
+    const original = editingPackage || emptyPackage;
+    if (JSON.stringify(packageForm) !== JSON.stringify(original) &&
+      !window.confirm('Bỏ thay đổi chưa lưu và đóng biểu mẫu?')) return;
+    setPackageEditorOpen(false);
+    setEditingPackage(null);
+    setPackageForm(emptyPackage);
   };
+
   const loadPackages = async () => {
+    setPackagesLoading(true);
+    setPackagesError('');
     try {
       const result = await bookingService.getAdminPackages();
       setPackages(result.packages);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể tải gói chụp'));
+      setPackagesError(getErrorMessage(error, 'Không thể tải gói chụp'));
+    } finally {
+      setPackagesLoading(false);
     }
   };
   const loadReviews = async () => {
@@ -105,51 +80,15 @@ export function AdminBookings() {
       toast.error(getErrorMessage(error, 'Không thể tải đánh giá'));
     }
   };
-  const loadPolicy = async () => {
-    try {
-      const result = await bookingService.getPolicy();
-      setPolicy(result.policy);
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể tải chính sách'));
-    }
-  };
-  const savePolicy = async () => {
-    if (policy) {
-      try {
-        await bookingService.updatePolicy(policy);
-        toast.success('Đã lưu chính sách');
-      } catch (error: unknown) {
-        toast.error(getErrorMessage(error, 'Không thể lưu chính sách'));
-      }
-    }
-  };
-  const loadAvailability = async () => {
-    try {
-      const result = await bookingService.getAvailability();
-      setAvailability(result.availability);
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể tải lịch rảnh'));
-    }
-  };
-  const saveAvailability = async () => {
-    try {
-      await bookingService.updateAvailability(availability);
-      toast.success('Đã lưu lịch rảnh');
-    } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể lưu lịch rảnh'));
-    }
-  };
-  useEffect(() => {
-    if (view === 'calendar') void loadBookings();
-  }, [view]);
   useEffect(() => {
     if (view === 'packages') void loadPackages();
-    if (view === 'availability') void loadAvailability();
+
     if (view === 'reviews') void loadReviews();
-    if (view === 'policy') void loadPolicy();
   }, [view]);
 
   const savePackage = async () => {
+    if (packageBusy) return;
+    setPackageBusy(true);
     try {
       if (editingPackage?._id)
         await bookingService.updateAdminPackage(
@@ -160,9 +99,12 @@ export function AdminBookings() {
       toast.success('Đã lưu gói chụp');
       setEditingPackage(null);
       setPackageForm(emptyPackage);
+      setPackageEditorOpen(false);
       await loadPackages();
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Không thể lưu gói chụp'));
+    } finally {
+      setPackageBusy(false);
     }
   };
   const archivePackage = async (item: BookingPackage) => {
@@ -175,24 +117,6 @@ export function AdminBookings() {
       toast.error(getErrorMessage(error, 'Không thể ẩn gói chụp'));
     }
   };
-
-  const calendarDays = useMemo(() => {
-    const first = new Date(month.getFullYear(), month.getMonth(), 1);
-    const start = new Date(first);
-    start.setDate(first.getDate() - first.getDay());
-    return Array.from({ length: 42 }, (_, index) => {
-      const date = new Date(start);
-      date.setDate(start.getDate() + index);
-      const key = date.toISOString().slice(0, 10);
-      return {
-        date,
-        key,
-        items: bookings.filter(
-          (item) => item.requestedDate.slice(0, 10) === key
-        ),
-      };
-    });
-  }, [month, bookings]);
 
   return (
     <div className="admin-bookings">
@@ -220,219 +144,26 @@ export function AdminBookings() {
             key={key}
             className={view === key ? 'active' : ''}
             aria-pressed={view === key}
-            onClick={() => setView(key)}
+            onClick={() => {
+              if (
+                (policyDirty || availabilityDirty) &&
+                !window.confirm(
+                  'Có thay đổi chưa lưu. Bỏ thay đổi và chuyển tab?'
+                )
+              )
+                return;
+              setPolicyDirty(false);
+              setAvailabilityDirty(false);
+              setView(key);
+            }}
           >
             {label}
           </button>
         ))}
       </nav>
       {view === 'requests' && <AdminBookingRequests />}
-      {view === 'calendar' && (
-        <div className="admin-booking-calendar">
-          <div className="admin-calendar-header">
-            <button
-              onClick={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))
-              }
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <strong>
-              {month.toLocaleDateString('vi-VN', {
-                month: 'long',
-                year: 'numeric',
-              })}
-            </strong>
-            <button
-              onClick={() =>
-                setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))
-              }
-            >
-              <ChevronRight size={18} />
-            </button>
-            <div className="admin-calendar-modes">
-              {(['day', 'week', 'month'] as const).map((mode) => (
-                <button
-                  className={calendarMode === mode ? 'active' : ''}
-                  key={mode}
-                  onClick={() => setCalendarMode(mode)}
-                >
-                  {mode === 'day' ? 'Ngày' : mode === 'week' ? 'Tuần' : 'Tháng'}
-                </button>
-              ))}
-            </div>
-          </div>
-          {calendarMode !== 'month' && (
-            <div className="admin-calendar-agenda">
-              {bookings
-                .filter((item) => {
-                  const date = new Date(item.requestedDate);
-                  if (calendarMode === 'day')
-                    return date.toDateString() === selectedDay.toDateString();
-                  const weekStart = new Date(selectedDay);
-                  weekStart.setDate(
-                    selectedDay.getDate() - selectedDay.getDay()
-                  );
-                  const weekEnd = new Date(weekStart);
-                  weekEnd.setDate(weekStart.getDate() + 6);
-                  return date >= weekStart && date <= weekEnd;
-                })
-                .map((item) => (
-                  <div className="admin-calendar-agenda-item" key={item._id}>
-                    <strong>
-                      {new Date(item.requestedDate).toLocaleDateString('vi-VN')}
-                    </strong>
-                    <span>
-                      {item.packageSnapshot.name} · {item.contact.name}
-                    </span>
-                    <em className={`booking-status-${item.status}`}>
-                      {statusLabels[item.status]}
-                    </em>
-                  </div>
-                ))}
-              {bookings.length === 0 && (
-                <p>Không có lịch trong khoảng thời gian này.</p>
-              )}
-            </div>
-          )}
-          {calendarMode === 'month' && (
-            <div className="admin-calendar-grid">
-              {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day) => (
-                <div className="admin-calendar-weekday" key={day}>
-                  {day}
-                </div>
-              ))}
-              {calendarDays.map(({ date, key, items }) => (
-                <div
-                  className={`admin-calendar-day ${date.getMonth() !== month.getMonth() ? 'muted' : ''}`}
-                  key={key}
-                  onClick={() => setSelectedDay(date)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <span>{date.getDate()}</span>
-                  {items.map((item) => (
-                    <div
-                      className={`admin-calendar-item booking-status-${item.status}`}
-                      key={item._id}
-                      data-tooltip={`${new Date(item.requestedDate).toLocaleDateString('vi-VN')} · ${item.packageSnapshot.name}\n${item.contact.name}\n${timeSlotLabels[item.requestedTimeSlot] ?? item.requestedTimeSlot} · ${statusLabels[item.status]}`}
-                    >
-                      {item.packageSnapshot.name}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-      {view === 'availability' && (
-        <div className="admin-availability">
-          <h2>Lịch làm việc và ngày nghỉ</h2>
-          <p>Cấu hình khung giờ nhận yêu cầu theo từng ngày trong tuần.</p>
-          {availability.weekly.map((day) => (
-            <div className="admin-availability-row" key={day.weekday}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={day.enabled}
-                  onChange={(e) =>
-                    setAvailability({
-                      ...availability,
-                      weekly: availability.weekly.map((item) =>
-                        item.weekday === day.weekday
-                          ? { ...item, enabled: e.target.checked }
-                          : item
-                      ),
-                    })
-                  }
-                />{' '}
-                {
-                  [
-                    'Chủ nhật',
-                    'Thứ 2',
-                    'Thứ 3',
-                    'Thứ 4',
-                    'Thứ 5',
-                    'Thứ 6',
-                    'Thứ 7',
-                  ][day.weekday]
-                }
-              </label>
-              <input
-                type="time"
-                value={day.startTime}
-                onChange={(e) =>
-                  setAvailability({
-                    ...availability,
-                    weekly: availability.weekly.map((item) =>
-                      item.weekday === day.weekday
-                        ? { ...item, startTime: e.target.value }
-                        : item
-                    ),
-                  })
-                }
-              />
-              <span>—</span>
-              <input
-                type="time"
-                value={day.endTime}
-                onChange={(e) =>
-                  setAvailability({
-                    ...availability,
-                    weekly: availability.weekly.map((item) =>
-                      item.weekday === day.weekday
-                        ? { ...item, endTime: e.target.value }
-                        : item
-                    ),
-                  })
-                }
-              />
-            </div>
-          ))}
-          <div className="admin-availability-blocked">
-            <h3>Ngày nghỉ</h3>
-            <p>Ngày nghỉ được lưu ở API để không nhận booking mới.</p>
-            <input
-              type="date"
-              onChange={(e) => {
-                if (e.target.value)
-                  setAvailability({
-                    ...availability,
-                    blockedDates: [
-                      ...availability.blockedDates,
-                      { date: e.target.value },
-                    ],
-                  });
-              }}
-            />
-            {availability.blockedDates.map((item, index) => (
-              <div key={`${item.date}-${index}`}>
-                {item.date}{' '}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setAvailability({
-                      ...availability,
-                      blockedDates: availability.blockedDates.filter(
-                        (_, itemIndex) => itemIndex !== index
-                      ),
-                    })
-                  }
-                >
-                  Xóa
-                </button>
-              </div>
-            ))}
-          </div>
-          <button
-            className="admin-availability-save"
-            onClick={saveAvailability}
-          >
-            Lưu lịch rảnh
-          </button>
-        </div>
-      )}
+      {view === 'calendar' && <AdminBookingCalendar />}
+      {view === 'availability' && <AdminBookingAvailability onDirty={setAvailabilityDirty} />}
       {view === 'reviews' && (
         <div className="admin-reviews">
           {reviews.length === 0 ? (
@@ -477,88 +208,24 @@ export function AdminBookings() {
           )}
         </div>
       )}
-      {view === 'policy' && policy && (
-        <div className="admin-policy">
-          <h2>Chính sách hủy và đổi lịch</h2>
-          <label>
-            <input
-              type="checkbox"
-              checked={policy.allowClientCancellation}
-              onChange={(e) =>
-                setPolicy({
-                  ...policy,
-                  allowClientCancellation: e.target.checked,
-                })
-              }
-            />{' '}
-            Cho phép khách hủy booking
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={policy.allowOneReschedule}
-              onChange={(e) =>
-                setPolicy({ ...policy, allowOneReschedule: e.target.checked })
-              }
-            />{' '}
-            Cho phép đổi lịch một lần
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={policy.weatherRescheduleAllowed}
-              onChange={(e) =>
-                setPolicy({
-                  ...policy,
-                  weatherRescheduleAllowed: e.target.checked,
-                })
-              }
-            />{' '}
-            Thời tiết xấu được đổi lịch
-          </label>
-          <label>
-            Giới hạn đổi lịch trước giờ (giờ)
-            <input
-              type="number"
-              value={policy.rescheduleDeadlineHours}
-              onChange={(e) =>
-                setPolicy({
-                  ...policy,
-                  rescheduleDeadlineHours: Number(e.target.value),
-                })
-              }
-            />
-          </label>
-          {policy.cancellationRules.map((rule, index) => (
-            <div className="admin-policy-rule" key={`rule-${index}`}>
-              <span>{rule.label}</span>
-              <input
-                type="number"
-                value={rule.refundPercent}
-                onChange={(e) =>
-                  setPolicy({
-                    ...policy,
-                    cancellationRules: policy.cancellationRules.map(
-                      (item, ruleIndex) =>
-                        ruleIndex === index
-                          ? { ...item, refundPercent: Number(e.target.value) }
-                          : item
-                    ),
-                  })
-                }
-              />
-              <em>% hoàn cọc</em>
-            </div>
-          ))}
-          <button onClick={savePolicy}>Lưu chính sách</button>
-        </div>
-      )}
+      {view === 'policy' && <AdminBookingPolicy onDirty={setPolicyDirty} />}
       {view === 'packages' && (
-        <div className="admin-packages">
-          <div className="admin-package-form">
-            <h2>{editingPackage ? 'Chỉnh sửa gói chụp' : 'Thêm gói chụp'}</h2>
-            <div className="admin-package-fields">
-              {(['slug', 'name', 'category', 'description'] as const).map(
+        <div className={`pc-packages ${packageEditorOpen ? 'is-editing' : ''}`}>
+          <header className="pc-packages-header">
+            <div><h2>Gói chụp</h2><p>Quản lý giá, thời lượng và quyền lợi của từng gói chụp.</p></div>
+            <button type="button" className="admin-btn primary" disabled={packageBusy} onClick={() => {
+              if (packageEditorOpen && !window.confirm('Bỏ nội dung đang nhập để thêm gói mới?')) return;
+              setEditingPackage(null); setPackageForm(emptyPackage); setPackageEditorOpen(true);
+            }}><Plus size={18} /> Thêm gói chụp</button>
+          </header>
+          {packageEditorOpen && <dialog ref={packageDialog} className="pc-package-dialog" aria-labelledby="package-dialog-title" onCancel={(event) => { event.preventDefault(); closePackageEditor(); }} onClick={(event) => { if (event.target === event.currentTarget) closePackageEditor(); }}>
+          <form className="admin-package-form" onSubmit={(event) => { event.preventDefault(); void savePackage(); }}>
+            <header className="pc-package-dialog-header">
+              <div><h2 id="package-dialog-title">{editingPackage ? 'Chỉnh sửa gói chụp' : 'Thêm gói chụp'}</h2><p>Thiết lập thông tin và quyền lợi dành cho khách đặt lịch.</p></div>
+              <button type="button" className="admin-btn" aria-label="Đóng biểu mẫu gói chụp" disabled={packageBusy} onClick={closePackageEditor}><X size={20} /></button>
+            </header>
+            <fieldset disabled={packageBusy} className="admin-package-fields">
+              {(['name', 'slug', 'category', 'description'] as const).map(
                 (key) => (
                   <label key={key}>
                     {key === 'slug'
@@ -570,6 +237,7 @@ export function AdminBookings() {
                           : 'Mô tả'}
                     {key === 'description' ? (
                       <textarea
+                        required maxLength={1000}
                         rows={3}
                         value={packageForm[key]}
                         onChange={(e) =>
@@ -581,6 +249,8 @@ export function AdminBookings() {
                       />
                     ) : (
                       <input
+                        required
+                        placeholder={key === 'slug' ? 'vd: chan-dung-ca-nhan' : key === 'name' ? 'vd: Chân dung cá nhân' : undefined}
                         value={packageForm[key]}
                         onChange={(e) =>
                           setPackageForm({
@@ -597,6 +267,7 @@ export function AdminBookings() {
                 Thời lượng (phút)
                 <input
                   type="number"
+                  required min={15} max={1440}
                   value={packageForm.durationMinutes}
                   onChange={(e) =>
                     setPackageForm({
@@ -610,6 +281,7 @@ export function AdminBookings() {
                 Giá tham khảo
                 <input
                   type="number"
+                  required min={0}
                   value={packageForm.basePrice}
                   onChange={(e) =>
                     setPackageForm({
@@ -623,6 +295,7 @@ export function AdminBookings() {
                 Số ảnh
                 <input
                   type="number"
+                  required min={0}
                   value={packageForm.includedPhotos}
                   onChange={(e) =>
                     setPackageForm({
@@ -636,6 +309,7 @@ export function AdminBookings() {
                 Số người
                 <input
                   type="number"
+                  required min={1} max={100}
                   value={packageForm.includedPeople}
                   onChange={(e) =>
                     setPackageForm({
@@ -649,6 +323,7 @@ export function AdminBookings() {
                 Ngày giao ảnh
                 <input
                   type="number"
+                  required min={1} max={365}
                   value={packageForm.deliveryDays}
                   onChange={(e) =>
                     setPackageForm({
@@ -658,47 +333,54 @@ export function AdminBookings() {
                   }
                 />
               </label>
-            </div>
+            </fieldset>
             <div className="admin-package-actions">
-              <button onClick={savePackage}>
-                <Save size={15} /> Lưu gói
+              <button type="submit" disabled={packageBusy}>
+                <Save size={16} /> {packageBusy ? 'Đang lưu…' : 'Lưu gói chụp'}
               </button>
-              {editingPackage && (
                 <button
-                  onClick={() => {
-                    setEditingPackage(null);
-                    setPackageForm(emptyPackage);
-                  }}
+                  type="button" disabled={packageBusy}
+                  onClick={closePackageEditor}
                 >
-                  Hủy
+                  Đóng
                 </button>
-              )}
             </div>
-          </div>
-          <div className="admin-package-list">
-            {packages.map((item) => (
+          </form></dialog>}
+          <div className="admin-package-list" aria-busy={packagesLoading}>
+            {packagesLoading ? <p role="status">Đang tải gói chụp…</p> : packagesError ? <div role="alert"><p>{packagesError}</p><button className="admin-btn" onClick={() => void loadPackages()}>Thử lại</button></div> : packages.length === 0 ? <p>Chưa có gói chụp. Thêm gói đầu tiên để khách có thể đặt lịch.</p> : packages.map((item) => (
               <div className="admin-package-row" key={item._id || item.slug}>
                 <div>
                   <strong>{item.name}</strong>
-                  <small>
-                    {item.durationMinutes} phút · {item.includedPhotos} ảnh ·{' '}
+                  {item.description && <p className="pc-package-description">{item.description}</p>}
+                  <dl className="pc-package-specs">
+                    <div><Clock3 size={17} aria-hidden="true" /><dt>Thời lượng</dt><dd>{item.durationMinutes} phút</dd></div>
+                    <div><Images size={17} aria-hidden="true" /><dt>Số ảnh</dt><dd>{item.includedPhotos} ảnh</dd></div>
+                    <div><Users size={17} aria-hidden="true" /><dt>Số người</dt><dd>{item.includedPeople} người</dd></div>
+                    <div><CalendarCheck size={17} aria-hidden="true" /><dt>Giao ảnh</dt><dd>{item.deliveryDays} ngày</dd></div>
+                  </dl>
+                </div>
+                <p className="pc-package-price">
                     {new Intl.NumberFormat('vi-VN', {
                       style: 'currency',
                       currency: 'VND',
                       maximumFractionDigits: 0,
                     }).format(item.basePrice)}
-                  </small>
-                </div>
+                  <span>Giá tham khảo</span>
+                </p>
                 <div>
                   <button
+                    disabled={packageBusy}
+                    aria-label={`Sửa gói ${item.name}`}
                     onClick={() => {
+                      if (packageEditorOpen && !window.confirm('Bỏ nội dung đang nhập để sửa gói này?')) return;
                       setEditingPackage(item);
                       setPackageForm(item);
+                      setPackageEditorOpen(true);
                     }}
                   >
-                    Sửa
+                    <Pencil size={16} /> Sửa
                   </button>
-                  <button onClick={() => archivePackage(item)}>Ẩn</button>
+                  <button disabled={packageBusy} aria-label={`Ẩn gói ${item.name}`} onClick={() => archivePackage(item)}><EyeOff size={16} /> Ẩn</button>
                 </div>
               </div>
             ))}
@@ -708,3 +390,4 @@ export function AdminBookings() {
     </div>
   );
 }
+

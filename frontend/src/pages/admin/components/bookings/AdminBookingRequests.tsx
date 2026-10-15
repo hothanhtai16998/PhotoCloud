@@ -13,6 +13,11 @@ import {
   MessageSquare,
   ClipboardCheck,
   ChevronRight,
+  Clock3,
+  SearchCheck,
+  CalendarCheck2,
+  CircleCheckBig,
+  Hourglass,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { bookingService } from '@/services/bookingService';
@@ -330,6 +335,19 @@ export function AdminBookingRequests() {
   );
 }
 
+const bookingHistoryIcons = {
+  pending: Clock3,
+  reviewing: SearchCheck,
+  needs_information: MessageSquare,
+  confirmed: CalendarCheck2,
+  rescheduled: CalendarClock,
+  completed: CircleCheckBig,
+  cancelled_by_client: CircleX,
+  cancelled_by_photographer: CircleX,
+  rejected: CircleX,
+  expired: Hourglass,
+} satisfies Record<BookingStatus, typeof Clock3>;
+
 const bookingActionCopy: Partial<
   Record<BookingStatus, { title: string; description: string; button: string }>
 > = {
@@ -369,7 +387,7 @@ const bookingActionCopy: Partial<
     button: 'Xác nhận từ chối',
   },
 };
-function BookingDetail({
+export function BookingDetail({
   booking,
   onClose,
   onSaved,
@@ -379,14 +397,25 @@ function BookingDetail({
   onSaved: () => void;
 }) {
   const formId = useId();
+  const [detailTab, setDetailTab] = useState<'info' | 'history'>('info');
   const options = bookingNextStatuses(booking.status);
   const [status, setStatus] = useState<BookingStatus | ''>('');
   const [note, setNote] = useState('');
+  const [declining, setDeclining] = useState(false);
+  const [declineReason, setDeclineReason] = useState('');
   const [date, setDate] = useState(
-    booking.confirmedDate?.slice(0, 10) || booking.requestedDate.slice(0, 10)
+    booking.rescheduleRequest?.requestedDate?.slice(0, 10) ||
+      booking.confirmedDate?.slice(0, 10) ||
+      booking.requestedDate.slice(0, 10)
   );
-  const [start, setStart] = useState(booking.confirmedStartTime || '');
-  const [end, setEnd] = useState(booking.confirmedEndTime || '');
+  const [start, setStart] = useState(
+    booking.rescheduleRequest?.requestedAt
+      ? ''
+      : booking.confirmedStartTime || ''
+  );
+  const [end, setEnd] = useState(
+    booking.rescheduleRequest?.requestedAt ? '' : booking.confirmedEndTime || ''
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const needsReason =
@@ -439,11 +468,13 @@ function BookingDetail({
       footer={
         <>
           <span className="booking-footer-hint" role="status">
-            {status
-              ? bookingActionCopy[status]?.title
-              : options.length
-                ? 'Chọn một hành động để tiếp tục'
-                : 'Chỉ xem thông tin'}
+            {detailTab === 'history'
+              ? 'Lịch sử thay đổi của yêu cầu'
+              : status
+                ? bookingActionCopy[status]?.title
+                : options.length
+                  ? 'Chọn một hành động để tiếp tục'
+                  : 'Chỉ xem thông tin'}
           </span>
           <div className="booking-footer-buttons">
             <button
@@ -454,7 +485,7 @@ function BookingDetail({
             >
               Đóng
             </button>
-            {!!options.length && (
+            {!!options.length && detailTab === 'info' && (
               <button
                 type="submit"
                 form={formId}
@@ -472,219 +503,366 @@ function BookingDetail({
         </>
       }
     >
-      <div className="booking-detail-summary">
-        <h3>{booking.contact.name}</h3>
-        <span className={'booking-state ' + bookingTone(booking.status)}>
-          {labels[booking.status]}
-        </span>
+      <div
+        className="booking-detail-tabs"
+        role="tablist"
+        aria-label="Chi tiết lịch chụp"
+      >
+        {(['info', 'history'] as const).map((tab, index) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            id={formId + '-tab-' + tab}
+            aria-controls={formId + '-panel-' + tab}
+            aria-selected={detailTab === tab}
+            tabIndex={detailTab === tab ? 0 : -1}
+            onClick={() => setDetailTab(tab)}
+            onKeyDown={(event) => {
+              if (
+                ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+              ) {
+                event.preventDefault();
+                const next =
+                  event.key === 'Home'
+                    ? 'info'
+                    : event.key === 'End'
+                      ? 'history'
+                      : index === 0
+                        ? 'history'
+                        : 'info';
+                setDetailTab(next);
+                document.getElementById(formId + '-tab-' + next)?.focus();
+              }
+            }}
+          >
+            {tab === 'info'
+              ? 'Thông tin yêu cầu'
+              : `Lịch sử trạng thái (${booking.statusHistory?.length || 0})`}
+          </button>
+        ))}
       </div>
-      <dl className="booking-detail-grid">
-        <div>
-          <dt>Liên hệ</dt>
-          <dd>
-            <a href={'tel:' + booking.contact.phone}>{booking.contact.phone}</a>
-            {booking.contact.email && (
-              <a href={'mailto:' + booking.contact.email}>
-                {booking.contact.email}
-              </a>
-            )}
-          </dd>
+      <section
+        className="booking-detail-panel"
+        role="tabpanel"
+        id={formId + '-panel-info'}
+        aria-labelledby={formId + '-tab-info'}
+        hidden={detailTab !== 'info'}
+        tabIndex={0}
+      >
+        <div className="booking-detail-summary">
+          <h3>{booking.contact.name}</h3>
+          <span className={'booking-state ' + bookingTone(booking.status)}>
+            {labels[booking.status]}
+          </span>
         </div>
-        <div>
-          <dt>Gói chụp</dt>
-          <dd>
-            {booking.packageSnapshot.name}
-            <small>
-              {bookingMoney(booking.packageSnapshot.basePrice)} · Giá tham khảo
-            </small>
-          </dd>
-        </div>
-        <div>
-          <dt>Thời gian mong muốn</dt>
-          <dd>
-            {bookingDate(booking.requestedDate)}
-            <small>{bookingTimeLabels[booking.requestedTimeSlot]}</small>
-          </dd>
-        </div>
-        <div>
-          <dt>Địa điểm</dt>
-          <dd>{booking.location.address || 'Chưa có địa điểm'}</dd>
-        </div>
-        {booking.concept && (
-          <div>
-            <dt>Ý tưởng buổi chụp</dt>
-            <dd>{booking.concept}</dd>
-          </div>
-        )}
-        {booking.notes && (
-          <div>
-            <dt>Ghi chú của khách</dt>
-            <dd>{booking.notes}</dd>
-          </div>
-        )}
-      </dl>
-      {!!booking.statusHistory?.length && (
-        <details className="booking-history">
-          <summary>Lịch sử trạng thái ({booking.statusHistory.length})</summary>
-          <ol>
-            {booking.statusHistory.map((item, i) => (
-              <li key={i}>
-                <strong>{labels[item.to]}</strong>
-                <small>{bookingDate(item.createdAt)}</small>
-                {item.note && <p>{item.note}</p>}
-              </li>
-            ))}
-          </ol>
-        </details>
-      )}
-      {options.length ? (
-        <form id={formId} className="booking-update-form" onSubmit={save}>
-          <h3>Xử lý yêu cầu</h3>
-          <p>Khách sẽ nhận thông báo khi trạng thái được cập nhật.</p>
-          <fieldset className="admin-form-fields" disabled={busy}>
-            <fieldset className="booking-action-options">
-              <legend>Bạn muốn thực hiện việc gì?</legend>
-              <div className="booking-action-grid">
-                {options.map((value) => (
-                  <label
-                    className={
-                      'booking-action-choice' +
-                      (status === value ? ' selected' : '') +
-                      (['rejected', 'cancelled_by_photographer'].includes(value)
-                        ? ' destructive'
-                        : '')
-                    }
-                    key={value}
-                  >
-                    <input
-                      type="radio"
-                      name={formId + '-action'}
-                      value={value}
-                      checked={status === value}
-                      onChange={() => {
-                        setStatus(value);
-                        setError(null);
-                      }}
-                    />
-                    {value === 'completed' || value === 'confirmed' ? (
-                      <CheckCircle2
-                        className="booking-action-icon"
-                        size={21}
-                        aria-hidden="true"
-                      />
-                    ) : value === 'rescheduled' ? (
-                      <CalendarClock
-                        className="booking-action-icon"
-                        size={21}
-                        aria-hidden="true"
-                      />
-                    ) : value === 'rejected' ||
-                      value === 'cancelled_by_photographer' ? (
-                      <CircleX
-                        className="booking-action-icon"
-                        size={21}
-                        aria-hidden="true"
-                      />
-                    ) : value === 'needs_information' ? (
-                      <MessageSquare
-                        className="booking-action-icon"
-                        size={21}
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <ClipboardCheck
-                        className="booking-action-icon"
-                        size={21}
-                        aria-hidden="true"
-                      />
-                    )}
-                    <span className="booking-action-copy">
-                      <strong>
-                        {bookingActionCopy[value]?.title || labels[value]}
-                      </strong>
-                      <small>{bookingActionCopy[value]?.description}</small>
-                    </span>
-                    {status === value ? (
-                      <CheckCircle2
-                        className="booking-action-indicator"
-                        size={20}
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <ChevronRight
-                        className="booking-action-chevron"
-                        size={18}
-                        aria-hidden="true"
-                      />
-                    )}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            {needsSchedule && (
-              <div className="booking-schedule-fields">
-                <label className="admin-settings-field">
-                  Ngày chụp
-                  <input
-                    type="date"
-                    className="admin-input"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                </label>
-                <label className="admin-settings-field">
-                  Bắt đầu
-                  <input
-                    type="time"
-                    className="admin-input"
-                    value={start}
-                    onChange={(e) => setStart(e.target.value)}
-                  />
-                </label>
-                <label className="admin-settings-field">
-                  Kết thúc
-                  <input
-                    type="time"
-                    className="admin-input"
-                    value={end}
-                    onChange={(e) => setEnd(e.target.value)}
-                  />
-                </label>
-              </div>
-            )}
-            {status && (
-              <label className="admin-settings-field">
-                {needsReason
-                  ? 'Lý do thay đổi (bắt buộc)'
-                  : 'Ghi chú cho lần cập nhật'}
-                <textarea
-                  className="admin-input"
-                  rows={3}
-                  maxLength={500}
-                  required={needsReason}
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder={
-                    needsReason
-                      ? 'Giải thích lý do để khách hiểu thay đổi này…'
-                      : 'Nhập nội dung cần trao đổi với khách (không bắt buộc)…'
-                  }
-                />
-              </label>
-            )}
-          </fieldset>
-          {error && (
-            <p className="admin-form-error" role="alert">
-              {error}
+        {booking.rescheduleRequest?.requestedAt && (
+          <div className="booking-reschedule-pending" role="status">
+            <strong>
+              {booking.rescheduleRequest.reason === 'weather'
+                ? 'Yêu cầu đổi lịch vì thời tiết'
+                : 'Yêu cầu đổi lịch cá nhân'}{' '}
+              · Chờ studio duyệt
+            </strong>
+            <p>
+              Ngày đề nghị:{' '}
+              {bookingDate(booking.rescheduleRequest.requestedDate)} ·{' '}
+              {bookingTimeLabels[
+                booking.rescheduleRequest.requestedTimeSlot || ''
+              ] || 'Chưa chọn giờ'}
             </p>
+            {booking.rescheduleRequest.note && (
+              <p>{booking.rescheduleRequest.note}</p>
+            )}
+            <small>
+              Chọn “Đổi lịch chụp” bên dưới để xác nhận. Ngày đề nghị được điền
+              sẵn; hãy chốt giờ mới trước khi lưu.
+            </small>
+            <button
+              type="button"
+              className="admin-btn"
+              disabled={busy}
+              onClick={() => setDeclining((v) => !v)}
+            >
+              Không chấp thuận yêu cầu đổi lịch
+            </button>
+            {declining && (
+              <div className="admin-settings-field">
+                <label htmlFor={formId + '-decline'}>
+                  Lý do không chấp thuận
+                </label>
+                <textarea
+                  id={formId + '-decline'}
+                  className="admin-input"
+                  maxLength={500}
+                  value={declineReason}
+                  onChange={(e) => setDeclineReason(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="admin-btn"
+                  disabled={busy || !declineReason.trim()}
+                  onClick={async () => {
+                    setBusy(true);
+                    setError(null);
+                    try {
+                      await bookingService.updateAdmin(booking._id, {
+                        status: booking.status,
+                        note:
+                          'Không chấp thuận đổi lịch: ' + declineReason.trim(),
+                        dismissReschedule: true,
+                      });
+                      toast.success('Đã phản hồi yêu cầu đổi lịch');
+                      onSaved();
+                      onClose();
+                    } catch (cause) {
+                      setError(adminError(cause));
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  Gửi phản hồi, giữ lịch hiện tại
+                </button>
+                {error && <p role="alert">{error}</p>}
+              </div>
+            )}
+          </div>
+        )}
+        <dl className="booking-detail-grid">
+          <div>
+            <dt>Liên hệ</dt>
+            <dd>
+              <a href={'tel:' + booking.contact.phone}>
+                {booking.contact.phone}
+              </a>
+              {booking.contact.email && (
+                <a href={'mailto:' + booking.contact.email}>
+                  {booking.contact.email}
+                </a>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt>Gói chụp</dt>
+            <dd>
+              {booking.packageSnapshot.name}
+              <small>
+                {bookingMoney(booking.packageSnapshot.basePrice)} · Giá tham
+                khảo
+              </small>
+            </dd>
+          </div>
+          <div>
+            <dt>Thời gian mong muốn</dt>
+            <dd>
+              {bookingDate(booking.requestedDate)}
+              <small>{bookingTimeLabels[booking.requestedTimeSlot]}</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Địa điểm</dt>
+            <dd>{booking.location.address || 'Chưa có địa điểm'}</dd>
+          </div>
+          {booking.concept && (
+            <div>
+              <dt>Ý tưởng buổi chụp</dt>
+              <dd>{booking.concept}</dd>
+            </div>
           )}
-        </form>
-      ) : (
-        <div className="booking-closed-note">
-          <p>Yêu cầu đã kết thúc. Thông tin được giữ lại để tra cứu.</p>
-        </div>
-      )}
+          {booking.notes && (
+            <div>
+              <dt>Ghi chú của khách</dt>
+              <dd>{booking.notes}</dd>
+            </div>
+          )}
+        </dl>
+        {options.length ? (
+          <form id={formId} className="booking-update-form" onSubmit={save}>
+            <h3>Xử lý yêu cầu</h3>
+            <p>Khách sẽ nhận thông báo khi trạng thái được cập nhật.</p>
+            <fieldset className="admin-form-fields" disabled={busy}>
+              <fieldset className="booking-action-options">
+                <legend>Bạn muốn thực hiện việc gì?</legend>
+                <div className="booking-action-grid">
+                  {options.map((value) => (
+                    <label
+                      className={
+                        'booking-action-choice' +
+                        (status === value ? ' selected' : '') +
+                        (['rejected', 'cancelled_by_photographer'].includes(
+                          value
+                        )
+                          ? ' destructive'
+                          : '')
+                      }
+                      key={value}
+                    >
+                      <input
+                        type="radio"
+                        name={formId + '-action'}
+                        value={value}
+                        checked={status === value}
+                        onChange={() => {
+                          setStatus(value);
+                          setError(null);
+                        }}
+                      />
+                      {value === 'completed' || value === 'confirmed' ? (
+                        <CheckCircle2
+                          className="booking-action-icon"
+                          size={21}
+                          aria-hidden="true"
+                        />
+                      ) : value === 'rescheduled' ? (
+                        <CalendarClock
+                          className="booking-action-icon"
+                          size={21}
+                          aria-hidden="true"
+                        />
+                      ) : value === 'rejected' ||
+                        value === 'cancelled_by_photographer' ? (
+                        <CircleX
+                          className="booking-action-icon"
+                          size={21}
+                          aria-hidden="true"
+                        />
+                      ) : value === 'needs_information' ? (
+                        <MessageSquare
+                          className="booking-action-icon"
+                          size={21}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <ClipboardCheck
+                          className="booking-action-icon"
+                          size={21}
+                          aria-hidden="true"
+                        />
+                      )}
+                      <span className="booking-action-copy">
+                        <strong>
+                          {bookingActionCopy[value]?.title || labels[value]}
+                        </strong>
+                        <small>{bookingActionCopy[value]?.description}</small>
+                      </span>
+                      {status === value ? (
+                        <CheckCircle2
+                          className="booking-action-indicator"
+                          size={20}
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <ChevronRight
+                          className="booking-action-chevron"
+                          size={18}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              {needsSchedule && (
+                <div className="booking-schedule-fields">
+                  <label className="admin-settings-field">
+                    Ngày chụp
+                    <input
+                      type="date"
+                      className="admin-input"
+                      required
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  </label>
+                  <label className="admin-settings-field">
+                    Bắt đầu
+                    <input
+                      type="time"
+                      className="admin-input"
+                      value={start}
+                      onChange={(e) => setStart(e.target.value)}
+                    />
+                  </label>
+                  <label className="admin-settings-field">
+                    Kết thúc
+                    <input
+                      type="time"
+                      className="admin-input"
+                      value={end}
+                      onChange={(e) => setEnd(e.target.value)}
+                    />
+                  </label>
+                </div>
+              )}
+              {status && (
+                <label className="admin-settings-field">
+                  {needsReason
+                    ? 'Lý do thay đổi (bắt buộc)'
+                    : 'Ghi chú cho lần cập nhật'}
+                  <textarea
+                    className="admin-input"
+                    rows={3}
+                    maxLength={500}
+                    required={needsReason}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={
+                      needsReason
+                        ? 'Giải thích lý do để khách hiểu thay đổi này…'
+                        : 'Nhập nội dung cần trao đổi với khách (không bắt buộc)…'
+                    }
+                  />
+                </label>
+              )}
+            </fieldset>
+            {error && (
+              <p className="admin-form-error" role="alert">
+                {error}
+              </p>
+            )}
+          </form>
+        ) : (
+          <div className="booking-closed-note">
+            <p>Yêu cầu đã kết thúc. Thông tin được giữ lại để tra cứu.</p>
+          </div>
+        )}
+      </section>
+      <section
+        className="booking-detail-panel"
+        role="tabpanel"
+        id={formId + '-panel-history'}
+        aria-labelledby={formId + '-tab-history'}
+        hidden={detailTab !== 'history'}
+        tabIndex={0}
+      >
+        <h3>Lịch sử trạng thái</h3>
+        {booking.statusHistory?.length ? (
+          <ol className="booking-history-timeline">
+            {booking.statusHistory.map((item, i) => {
+              const StatusIcon = bookingHistoryIcons[item.to] || Clock3;
+              return (
+                <li
+                  key={i}
+                  data-status={item.to}
+                  data-tone={bookingTone(item.to)}
+                >
+                  <span className="booking-history-icon" aria-hidden="true">
+                    <StatusIcon size={18} />
+                  </span>
+                  <strong>{labels[item.to]}</strong>
+                  <time dateTime={item.createdAt}>
+                    {bookingDate(item.createdAt)}
+                  </time>
+                  {item.note && <p>{item.note}</p>}
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <p>Chưa có lịch sử thay đổi trạng thái.</p>
+        )}
+      </section>
     </AdminModal>
   );
 }

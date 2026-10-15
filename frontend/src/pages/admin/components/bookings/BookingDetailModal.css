@@ -270,3 +270,140 @@
     font-size: 16px;
   }
 }
+.admin-modal.booking-detail-modal {
+  height: min(780px, calc(100dvh - 40px));
+}
+.booking-detail-modal > .admin-modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 0;
+}
+.booking-detail-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 20px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--admin-border);
+}
+.booking-detail-tabs [role='tab'] {
+  min-height: 52px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+.booking-detail-tabs [aria-selected='true'] {
+  color: var(--admin-accent);
+  border-bottom-color: currentColor;
+  font-weight: 600;
+}
+.booking-detail-tabs [role='tab']:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: -4px;
+}
+.booking-detail-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 26px 28px;
+}
+.booking-detail-panel[hidden] {
+  display: none;
+}
+.booking-detail-panel > h3 {
+  font-size: 20px;
+  margin: 0 0 28px;
+}
+.booking-history-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 8px;
+}
+.booking-history-timeline li {
+  position: relative;
+  border-left: 1px solid var(--admin-border);
+  padding: 0 0 30px 24px;
+}
+.booking-history-timeline li:last-child {
+  border-left-color: transparent;
+}
+.booking-history-timeline li::before {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  left: -5px;
+  top: 7px;
+}
+.booking-history-timeline strong {
+  display: block;
+  font-size: 16px;
+}
+.booking-history-timeline time {
+  display: block;
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+  margin-top: 5px;
+}
+.booking-history-timeline p {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .booking-detail-tabs {
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .booking-detail-tabs [role='tab'] {
+    font-size: 13px;
+  }
+  .booking-detail-panel {
+    padding: 22px 20px;
+  }
+}
+.booking-history-timeline li {
+  --history-color: var(--booking-closed-text);
+  --history-bg: var(--booking-closed-bg);
+  padding-left: 34px;
+}
+.booking-history-timeline li::before {
+  display: none;
+}
+.booking-history-timeline li[data-tone='pending'] {
+  --history-color: var(--booking-pending-text);
+  --history-bg: var(--booking-pending-bg);
+}
+.booking-history-timeline
+  li:is([data-tone='confirmed'], [data-tone='completed']) {
+  --history-color: var(--booking-success-text);
+  --history-bg: var(--booking-success-bg);
+}
+.booking-history-icon {
+  position: absolute;
+  left: -14px;
+  top: -2px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--history-color);
+  background: var(--history-bg);
+  border-radius: 50%;
+}
+.booking-history-timeline strong {
+  color: var(--history-color);
+}
+.booking-reschedule-pending { padding:18px; margin:20px 0; background:var(--admin-accent-tint); border-radius:10px; font-size:15px; line-height:1.65; }
+.booking-reschedule-pending p { margin:8px 0; }
+.booking-reschedule-pending small { font-size:13px; }

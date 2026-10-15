@@ -23,7 +23,7 @@ export interface SearchBarRef {
  * SearchBar component with autocomplete, history, and filters.
  * Refactored into smaller hooks for maintainability.
  */
-export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
+export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }>(({ filterButtonLabel }, ref) => {
     const fetchImages = useImageStore(state => state.fetchImages);
     const currentCategory = useImageStore(state => state.currentCategory);
     const navigate = useNavigate();
@@ -350,6 +350,7 @@ export const SearchBar = forwardRef<SearchBarRef>((_props, ref) => {
                 {/* Search Filters */}
                 <div className="search-filters-wrapper">
                     <SearchFilters
+                        triggerLabel={filterButtonLabel}
                         filters={filters}
                         onFiltersChange={handleFiltersChange}
                     />

@@ -1,18 +1,18 @@
+import { defaultCancellationRules, validateBookingPolicy } from '../utils/bookingPolicyRules.js';
 import Booking from '../models/Booking.js';
 import BookingPolicy from '../models/BookingPolicy.js';
 import BookingReview from '../models/BookingReview.js';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 
-const defaultRules = [
-    { minimumHoursBefore: 168, refundPercent: 100, label: 'Hủy trước 7 ngày' },
-    { minimumHoursBefore: 72, refundPercent: 50, label: 'Hủy trước 3 ngày' },
-    { minimumHoursBefore: 0, refundPercent: 0, label: 'Hủy trong vòng 3 ngày' },
-];
+const defaultRules = defaultCancellationRules;
 const getPolicy = () => BookingPolicy.findOneAndUpdate({ key: 'default' }, { $setOnInsert: { cancellationRules: defaultRules } }, { upsert: true, new: true });
 
 export const getBookingPolicy = asyncHandler(async (_req, res) => res.json({ success: true, policy: await getPolicy() }));
 export const updateBookingPolicy = asyncHandler(async (req, res) => {
-    const data = { ...req.body, cancellationRules: Array.isArray(req.body?.cancellationRules) ? req.body.cancellationRules : defaultRules };
+    const error = validateBookingPolicy(req.body || {});
+    if (error) return res.status(400).json({ success: false, message: error });
+    const { allowClientCancellation, allowOneReschedule, weatherRescheduleAllowed, rescheduleDeadlineHours } = req.body;
+    const data = { allowClientCancellation, allowOneReschedule, weatherRescheduleAllowed, rescheduleDeadlineHours, cancellationRules: req.body.cancellationRules.map(({ minimumHoursBefore, refundPercent, label }) => ({ minimumHoursBefore, refundPercent, label })).sort((a,b) => b.minimumHoursBefore - a.minimumHoursBefore) };
     const policy = await BookingPolicy.findOneAndUpdate({ key: 'default' }, data, { upsert: true, new: true, runValidators: true });
     res.json({ success: true, policy });
 });

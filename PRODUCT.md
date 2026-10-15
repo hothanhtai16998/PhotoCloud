@@ -2,6 +2,52 @@
 
 ## 0. Bảng điều khiển chung
 
+### Xác nhận hoàn tất đợt chỉnh sửa Lịch chụp & dịch vụ admin — 2026-10-15
+
+- Đã hoàn tất phạm vi giao diện và luồng thao tác của `/admin/bookings`: Yêu cầu, Lịch, Lịch rảnh, Gói chụp, Đánh giá và Chính sách. Các thay đổi mới nhất gồm modal thêm/sửa gói có vùng cuộn và footer cố định, danh sách gói có thông số/icon, công tắc đồng bộ ở Lịch rảnh và Chính sách, ngày nghỉ riêng và bảo vệ bản nháp.
+- Xác nhận này ghi nhận kết thúc đợt chỉnh sửa theo yêu cầu người dùng, không thay thế nghiệm thu toàn hệ thống hoặc xác nhận sẵn sàng production. Tab Đánh giá vẫn cần kiểm thử cuối cùng cùng API thật ở môi trường staging.
+- Bằng chứng đã chạy trong đợt làm việc: Vite build thành công; fixture Edge 390/1440, sáng/tối cho chính sách, gói chụp và lịch rảnh đạt; có kiểm tra lỗi lưu giữ bản nháp. Các kiểm tra yêu cầu/lịch và quy tắc backend được ghi trong các mục trước. ESLint phần vừa sửa không có error, còn warning effect; TypeScript toàn dự án còn lỗi legacy theo lần kiểm tra trước.
+- Checklist kiểm thử cuối cùng cho toàn bộ trang được tập trung tại [FINAL_FUNCTIONAL_TEST_CHECKLIST.md](FINAL_FUNCTIONAL_TEST_CHECKLIST.md). Các ô chưa đánh dấu là chưa nghiệm thu vòng cuối; cần thực hiện trên staging, ghi kết quả và giải quyết lỗi chặn trước khi đưa lên host.
+
+### Chính sách hủy/đổi lịch và ngoại lệ thời tiết — 2026-10-15
+
+- Tách tab chính sách thành Đổi lịch và Hủy lịch & hoàn cọc; nhãn tiếng Việt, mốc hoàn không chồng lấn, giải thích tiền cọc đã nhận và hoàn tiền do studio đối soát. Có loading/error/retry, dirty/reset, busy/success, giữ draft khi lỗi, cảnh báo chuyển tab booking hoặc đóng/tải lại trang khi chưa lưu.
+- Backend kiểm tra bật/tắt khách tự hủy, một lượt đổi cá nhân đã được duyệt, deadline theo giờ đã chốt ở múi giờ Việt Nam (chưa chốt giờ dùng00:00), policy payload whitelist và phạm vi giá trị/thứ tự tỷ lệ hoàn. Hoàn cọc ghi tỷ lệ chính sách trong lịch sử, không thực hiện chuyển tiền.
+- Thời tiết là yêu cầu có mô tả bắt buộc, trước giờ chụp; được miễn deadline/lượt cá nhân nhưng cần studio xem xét, không tự đổi ngày. Chặn gửi trùng khi đang chờ; lưu reason trong request/history. Khách chọn lý do và mô tả; admin thấy yêu cầu, ngày đề nghị điền sẵn, giờ cũ không tự mang sang; có phản hồi không chấp thuận giữ lịch hiện tại. Lượt thời tiết và phản hồi không chấp thuận không trừ lượt cá nhân. Cho phép xử lý đổi tiếp ở trạng thái rescheduled.
+-6 kiểm thử node cho quy tắc/controller PASS, không Mongo/SMTP thật (Settings import được mock). Vite build, ESLint phần mới, detector PASS; TypeScript không diagnostic ở các file booking vừa sửa, toàn dự án còn lỗi legacy. Edge fixture390/1440 sáng/tối PASS dirty/tab confirm,503 giữ draft/retry và payload lưu, thời tiết pending/date/giờ trống và không chấp thuận. Đã xem desktop sáng/mobile tối và sửa specificity input/nút theo theme. Cần backend nạp lại code mới; chưa thay chính sách hay gửi thông báo/hoàn tiền thật.
+
+### Ngày/Tuần không còn vùng trống khó hiểu — 2026-10-15
+
+- Người dùng xem15/10 và tuần11–17/10 không có lịch phù hợp. Thêm chọn ngày trực tiếp, ngày hiển thị thành nhóm có thứ/ngày, tuần luôn hiện đủ7 ngày với nhãn không có lịch. Empty có giải thích và nút Đến lịch gần nhất theo bộ lọc hiện tại, không tự chuyển khỏi khoảng người dùng chọn.
+- Build/ESLint/detector PASS; fixture390/1440 sáng/tối PASS chọn ngày gần nhất20/10, tuần đủ7 ngày, mở chi tiết và retry. Không thêm dữ liệu giả vào ứng dụng thật.
+
+### Hoàn thiện tab Lịch chụp — 2026-10-15
+
+- Thay calendar legacy bằng AdminBookingCalendar riêng: ưu tiên confirmedDate/giờ đã chốt, chưa chốt ghi Dự kiến, tính ngày bằng UTC civil dates và hôm nay theo Việt Nam. Ngày/tuần/tháng có điều hướng đúng đơn vị, Hôm nay, chọn ngày; bấm buổi chụp mở BookingDetail chung và tải lại sau cập nhật.
+- Mặc định ẩn hủy/từ chối/hết hạn; bộ lọc cho xem tất cả hoặc lịch kết thúc. Màu dùng bookingTone/token chung, hiện tên khách, giờ và trạng thái; mobile tháng dùng danh sách ngày thay bảng kéo ngang, desktop giới hạn3 sự kiện/ô và mở ngày xem thêm.
+- Đọc đủ pagination thay giới hạn100 đầu, có loading/error/retry/làm mới và empty theo khoảng lọc. Không thay API/backend hoặc dữ liệu thật.
+- Vite build PASS, ESLint không error (còn warning effect của các tab legacy khác), TypeScript không diagnostic ở ba file booking sửa, detector trả[]. Edge fixture390/1440 sáng/tối kiểm tra ngày đã chốt20 thay requested18 không lệch ngày, ẩn/hiện hủy, mở modal, điều hướng ngày/tuần, empty,503/retry và không tràn document. Kiểm thử dùng API giả lập, không gửi thông báo thật.
+
+### Tăng độ rõ trạng thái booking — 2026-10-15
+
+- Phản hồi màu khó thấy: bổ sung token trạng thái chung sáng/tối với nền amber/teal/xám rõ hơn và chữ tương phản, tăng badge từ10 lên12px/700 và chấm6px. Icon timeline có nền tròn theo trạng thái, cùng màu chữ với badge; không đổi ý nghĩa trạng thái.
+- Build/detector PASS; Edge fixture320/390/1440 sáng/tối PASS gồm màu nhãn/icon đồng nhất, không tràn và thao tác cập nhật. Đã xem bảng desktop sáng và lịch sử mobile tối, không sửa dữ liệu thật.
+
+### Đồng nhất màu trạng thái booking — 2026-10-15
+
+- Lịch sử dùng cùng bookingTone và token màu như badge danh sách/chi tiết: pending/reviewing/needs_information vàng nâu, confirmed/rescheduled/completed xanh teal, cancelled/rejected/expired xám. Bỏ palette lịch sử riêng và giữ icon đặc trưng; màu đỏ của thao tác hủy/lỗi không thay đổi.
+- Build và detector PASS; Edge fixture320/390/1440 sáng/tối PASS, có so sánh computed color của nhãn/icon lịch sử với badge cùng tone. Không thay dữ liệu hoặc luồng cập nhật.
+
+### Phân biệt trạng thái trong lịch sử — 2026-10-15
+
+- Thay chấm tròn chung bằng icon theo trạng thái: đồng hồ chờ xử lý, lịch có dấu chọn khi xác nhận, lịch đổi giờ, hội thoại bổ sung, dấu hoàn thành và dấu hủy. Nhãn/icon dùng màu amber, xanh teal, xanh lam hoặc đỏ theo ý nghĩa, điều chỉnh riêng cho dark; giữ chữ mô tả và timeline rõ ràng.
+- Build/ESLint/detector PASS; fixture có lịch sử chờ xử lý và xác nhận, Edge320/390/1440 sáng/tối PASS. Đã xem mobile sáng/desktop tối; không đổi dữ liệu thật.
+
+### Tab lịch sử trong modal lịch chụp — 2026-10-15
+
+- Thay lịch sử bung xuống bằng hai tab Thông tin yêu cầu/Lịch sử trạng thái. Modal có chiều cao ổn định theo viewport; header, tab và footer cố định, panel cuộn riêng. Lịch sử dùng timeline và có trạng thái rỗng; giữ form mounted để không mất bản nháp khi chuyển tab, hỗ trợ phím mũi tên/Home/End.
+- Build Vite, ESLint và detector PASS. Edge fixture320/390/1440 sáng/tối PASS: chuyển tab không đổi chiều cao/vị trí modal, giữ ngày giờ đang nhập, footer trong viewport và luồng cập nhật/retry vẫn đúng. QA dùng API giả lập.
+
 ### Xử lý lịch chụp dạng danh sách gọn — 2026-10-15
 
 - Thay các ô hành động lớn bằng danh sách một cột có biểu tượng, tên và mô tả; mục được chọn dùng gold nhẹ và dấu chọn bên phải. Hủy/từ chối tách cuối danh sách, dùng đỏ tiết chế. Bỏ nền panel lớn, giữ nền kem và chữ dễ đọc của modal.

@@ -1,0 +1,41 @@
+.pc-availability { margin-top: 32px; max-width: 1040px; }
+.admin-layout .admin-tools .pc-availability h2 { font-size: 24px; margin: 0 0 10px; font-weight: 700; }
+.pc-availability p { color: var(--admin-text-secondary); font-size: 14px; line-height: 1.7; margin: 8px 0 22px; }
+.pc-availability-zone { display: inline-block; color: var(--admin-accent); background: var(--admin-accent-tint); padding: 7px 12px; border-radius: 6px; font-size: 13px; }
+.pc-availability > fieldset { border: 0; min-width: 0; padding: 0; margin: 32px 0 0; }
+.pc-availability h3 { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 650; margin: 0 0 8px; }
+.pc-availability-day { display: grid; grid-template-columns: 170px minmax(90px, 1fr) auto; align-items: center; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--admin-border); }
+.pc-availability-switch { display: flex; align-items: center; gap: 14px; cursor: pointer; min-height: 44px; font-size: 15px; font-weight: 600; }
+.admin-layout .admin-tools .pc-availability-switch input[type='checkbox'] { appearance: none; box-sizing: border-box; width: 42px; min-width: 42px; max-width: 42px; height: 26px; min-height: 26px; padding: 3px; margin: 0; border: 1px solid var(--admin-text-secondary); border-radius: 20px; background: var(--admin-text-secondary); cursor: pointer; }
+.pc-availability-switch input::before { content: ''; display: block; width: 18px; height: 18px; border-radius: 50%; background: var(--admin-bg); transition: transform 160ms ease-out; }
+.admin-layout .admin-tools .pc-availability-switch input:checked { background: var(--admin-accent); border-color: var(--admin-accent); }
+.pc-availability-switch input:checked::before { transform: translateX(16px); }
+.pc-availability-switch input:focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 4px; }
+.pc-availability-status { color: var(--admin-text-secondary); font-size: 13px; }
+.pc-availability-status.is-open { color: var(--admin-accent); }
+.pc-availability-hours { display: flex; gap: 20px; }
+.pc-availability-hours label { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--admin-text-secondary); }
+.admin-layout .admin-tools .pc-availability input:is([type='time'], [type='date']) { width: auto; min-width: 0; font-size: 15px; padding: 10px 12px; color: var(--admin-text); background: var(--admin-card-bg); border: 1px solid var(--admin-border); border-radius: 8px; min-height: 44px; box-sizing: border-box; }
+.pc-availability input:disabled { opacity: .4; cursor: default; }
+.pc-availability-days-off { margin-top: 40px; }
+.pc-availability-add { display: flex; align-items: flex-end; gap: 12px; }
+.pc-availability-add label { display: grid; gap: 10px; font-size: 14px; }
+.pc-availability-days-off ul { list-style: none; padding: 0; margin: 20px 0; }
+.pc-availability-days-off li { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--admin-border); font-size: 15px; }
+.pc-availability-days-off li span { display: block; margin-top: 5px; color: var(--admin-text-secondary); font-size: 14px; }
+.pc-availability .pc-availability-empty { margin-top: 20px; padding: 16px 20px; background: var(--admin-accent-tint); border-radius: 10px; color: var(--admin-text); }
+.pc-availability footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--admin-border); margin-top: 32px; padding: 22px 0; }
+.pc-availability footer > span { color: var(--admin-text-secondary); font-size: 13px; }
+.pc-availability footer > div { display: flex; gap: 10px; }
+.admin-layout .admin-tools .pc-availability .admin-btn.primary { background: var(--admin-accent); color: var(--admin-bg); border-color: var(--admin-accent); }
+@media (max-width: 700px) {
+  .pc-availability-day { grid-template-columns: 1fr auto; gap: 8px 16px; }
+  .pc-availability-hours { grid-column: 1 / -1; gap: 12px; }
+  .pc-availability-hours label { flex: 1; gap: 8px; }
+  .admin-layout .admin-tools .pc-availability input[type='time'] { width: 100%; }
+  .pc-availability footer { flex-direction: column; align-items: stretch; }
+  .pc-availability footer > div { justify-content: flex-end; }
+  .pc-availability-add { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { .pc-availability-switch input::before { transition: none; } }
+@media (forced-colors: active) { .admin-layout .admin-tools .pc-availability-switch input[type='checkbox'] { appearance: auto; } .pc-availability-switch input::before { content: none; } }

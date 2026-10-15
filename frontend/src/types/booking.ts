@@ -64,6 +64,7 @@ export interface Booking {
   concept?: string;
   notes?: string;
   cancellationReason?: string;
+  rescheduleRequest?: { requestedDate?: string; requestedTimeSlot?: BookingTimeSlot; note?: string; reason?: 'personal' | 'weather'; requestedAt?: string };
   statusHistory: Array<{ from?: BookingStatus; to: BookingStatus; note?: string; createdAt: string }>;
   createdAt: string;
   updatedAt: string;

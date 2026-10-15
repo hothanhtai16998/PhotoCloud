@@ -1,0 +1,213 @@
+.pc-policy {
+  max-width: 960px;
+  margin-top: 28px;
+}
+.pc-policy h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+.pc-policy header p,
+.pc-policy-help {
+  color: var(--admin-text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.pc-policy > fieldset {
+  border: 0;
+  padding: 0;
+  margin: 28px 0;
+  min-width: 0;
+}
+.pc-policy-section {
+  padding: 26px 0;
+  border-top: 1px solid var(--admin-border);
+}
+.pc-policy h3 {
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 24px;
+}
+.pc-policy-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 24px 0;
+  min-height: 48px;
+  cursor: pointer;
+}
+.admin-layout .pc-policy-toggle input[type='checkbox'] {
+  appearance: none;
+  display: block;
+  box-sizing: border-box;
+  width: 42px;
+  height: 26px;
+  min-height: 26px;
+  max-height: 26px;
+  min-width: 42px;
+  max-width: 42px;
+  padding: 3px;
+  margin: 0;
+  flex: 0 0 42px;
+  border: 1px solid var(--admin-text-secondary);
+  border-radius: 20px;
+  background: var(--admin-text-secondary);
+  color: var(--admin-bg);
+  cursor: pointer;
+  transition: background-color 160ms ease-out, border-color 160ms ease-out;
+}
+.pc-policy-toggle input[type='checkbox']::before {
+  content: '';
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--admin-bg);
+  transition: transform 160ms ease-out;
+}
+.admin-layout .pc-policy-toggle input[type='checkbox']:checked {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+}
+.pc-policy-toggle input[type='checkbox']:checked::before {
+  transform: translateX(16px);
+}
+.pc-policy-toggle:hover input[type='checkbox']:not(:disabled) {
+  border-color: var(--admin-accent);
+  outline: 5px solid var(--admin-accent-tint);
+}
+.admin-layout .pc-policy-toggle input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 4px;
+}
+.pc-policy-toggle:has(input:disabled) {
+  cursor: default;
+  opacity: 0.55;
+}
+.admin-layout .pc-policy-toggle input[type='checkbox']:disabled {
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-layout .pc-policy-toggle input[type='checkbox'],
+  .pc-policy-toggle input[type='checkbox']::before {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .admin-layout .pc-policy-toggle input[type='checkbox'] {
+    appearance: auto;
+  }
+  .pc-policy-toggle input[type='checkbox']::before {
+    content: none;
+  }
+}
+.pc-policy-toggle span {
+  display: grid;
+  gap: 7px;
+}
+.pc-policy-toggle strong {
+  font-size: 15px;
+}
+.pc-policy-toggle small {
+  font-size: 14px;
+  color: var(--admin-text-secondary);
+  line-height: 1.65;
+}
+.pc-policy-number {
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+  margin: 24px 0 10px 58px;
+}
+.pc-policy-number > div,
+.pc-policy-rule > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pc-policy-number input,
+.pc-policy-rule input {
+  width: 105px;
+}
+.pc-policy-help {
+  margin: 14px 0;
+}
+.pc-policy-note {
+  padding: 18px 20px;
+  border-radius: 10px;
+  background: var(--admin-accent-tint);
+  color: var(--admin-text);
+  font-size: 14px;
+  line-height: 1.75;
+}
+.pc-policy-refunds {
+  margin-top: 28px;
+}
+.pc-policy-rule {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 15px;
+}
+.pc-policy-rule-heading {
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+}
+.pc-policy footer {
+  border-top: 1px solid var(--admin-border);
+  padding: 22px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+.pc-policy footer > span {
+  color: var(--admin-text-secondary);
+  font-size: 13px;
+}
+.pc-policy footer > div {
+  display: flex;
+  gap: 10px;
+}
+.pc-policy-success {
+  color: var(--admin-success);
+}
+@media (max-width: 600px) {
+  .pc-policy footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pc-policy footer > div {
+    justify-content: flex-end;
+  }
+  .pc-policy-rule {
+    grid-template-columns: minmax(0, 1fr) 108px;
+    gap: 12px;
+  }
+  .pc-policy-rule input {
+    width: 78px;
+  }
+  .pc-policy-number {
+    margin-left: 0;
+  }
+}
+.admin-layout .admin-tools .pc-policy .pc-policy-number input {
+  width: 105px;
+  max-width: 105px;
+  flex: 0 0 105px;
+}
+.admin-layout .admin-tools .pc-policy .pc-policy-number > div {
+  justify-content: flex-start;
+}
+.admin-layout .admin-tools .pc-policy .pc-policy-toggle small {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.admin-layout .admin-tools .pc-policy .admin-btn.primary {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: var(--admin-bg);
+}

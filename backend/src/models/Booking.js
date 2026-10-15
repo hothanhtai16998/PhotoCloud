@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 const statusHistorySchema = new mongoose.Schema(
     {
         from: { type: String, default: null },
+        reason: { type: String, enum: ['personal', 'weather'] },
+        action: { type: String, enum: ['reschedule_declined'] },
         to: { type: String, required: true },
         note: { type: String, default: '' },
         changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -67,6 +69,7 @@ const bookingSchema = new mongoose.Schema(
         statusHistory: { type: [statusHistorySchema], default: [] },
         cancellationReason: { type: String, trim: true, maxlength: 500 },
         rescheduleRequest: {
+            reason: { type: String, enum: ['personal', 'weather'], default: 'personal' },
             requestedDate: { type: Date },
             requestedTimeSlot: { type: String, enum: ['morning', 'afternoon', 'evening', 'flexible'] },
             note: { type: String, trim: true, maxlength: 500 },

@@ -60,7 +60,7 @@ let settings = {
   maintenanceMode: false,
 };
 const requests = [];
-const baseBooking = { createdAt: '2026-10-15T03:00:00Z', contact: { name: 'Minh An', phone: '0900000000', email: 'minhan@example.test' }, packageSnapshot: { name: 'Chân dung cá nhân', basePrice: 1500000 }, requestedDate: '2026-10-18', requestedTimeSlot: 'morning', location: { address: 'Studio PhotoCloud' }, statusHistory: [], concept: 'Chụp chân dung với ánh sáng tự nhiên.' };
+const baseBooking = { createdAt: '2026-10-15T03:00:00Z', contact: { name: 'Minh An', phone: '0900000000', email: 'minhan@example.test' }, packageSnapshot: { name: 'Chân dung cá nhân', basePrice: 1500000 }, requestedDate: '2026-10-18', requestedTimeSlot: 'morning', location: { address: 'Studio PhotoCloud' }, statusHistory: [{ to: 'pending', createdAt: '2026-10-11T03:00:00Z', note: 'Khách gửi yêu cầu đặt lịch' }, { to: 'confirmed', createdAt: '2026-10-12T03:00:00Z' }], concept: 'Chụp chân dung với ánh sáng tự nhiên.' };
 let bookings = [
   { ...baseBooking, _id: 'booking-1', bookingCode: 'PC-001', status: 'pending' },
   { ...baseBooking, _id: 'booking-2', bookingCode: 'PC-002', status: 'confirmed', contact: { ...baseBooking.contact, name: 'Hoàng Linh' }, confirmedDate: '2026-10-20', confirmedStartTime: '09:00', confirmedEndTime: '10:00' },
@@ -207,3 +207,4 @@ if (require.main === module)
     () =>
       console.log('Admin fixture: http://127.0.0.1:' + server.address().port)
   );
+

@@ -41,7 +41,7 @@ export function bookingNextStatuses(status: BookingStatus): BookingStatus[] {
         'completed',
         'cancelled_by_photographer',
       ] as BookingStatus[]
-    ).filter((s) => s !== status);
+    );
   return [];
 }
 export function bookingDate(date?: string) {

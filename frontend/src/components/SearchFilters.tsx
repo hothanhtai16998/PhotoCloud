@@ -11,6 +11,7 @@ export type ColorFilter = 'all' | 'red' | 'orange' | 'yellow' | 'green' | 'blue'
 export type SearchFilters = SearchFiltersType;
 
 interface SearchFiltersProps {
+  triggerLabel?: string;
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
 }
@@ -69,6 +70,7 @@ const areFiltersEqual = (a: SearchFilters, b: SearchFilters): boolean => {
 };
 
 const SearchFiltersComponent = memo(function SearchFiltersComponent({
+  triggerLabel,
   filters,
   onFiltersChange,
 }: SearchFiltersProps) {
@@ -151,7 +153,7 @@ const SearchFiltersComponent = memo(function SearchFiltersComponent({
         title={t('search.advancedFilter')}
       >
         <Filter size={18} />
-        <span>{t('search.filter')}</span>
+        <span>{triggerLabel || t('search.filter')}</span>
         {hasActiveFilters && (
           <span className="filter-badge">
             {activeFilterCount > 9 ? '9+' : activeFilterCount}

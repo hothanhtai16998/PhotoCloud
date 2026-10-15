@@ -42,7 +42,7 @@ export const bookingService = {
     const response = await patch<{ success: boolean; workspace: BookingWorkspace }>(`/bookings/mine/${bookingId}/questionnaire`, data);
     return response.data;
   },
-  async requestReschedule(bookingId: string, data: { requestedDate: string; requestedTimeSlot: string; note?: string }) {
+  async requestReschedule(bookingId: string, data: { requestedDate: string; requestedTimeSlot: string; note?: string; reason?: 'personal' | 'weather' }) {
     const response = await post<BookingResponse>(`/bookings/mine/${bookingId}/reschedule`, data);
     return response.data;
   },
@@ -58,7 +58,7 @@ export const bookingService = {
     const response = await get<BookingsResponse>('/bookings/admin', { params: { page: 1, limit: 50, ...params } });
     return response.data;
   },
-  async updateAdmin(bookingId: string, data: { status: string; note?: string; confirmedDate?: string; confirmedStartTime?: string; confirmedEndTime?: string }) {
+  async updateAdmin(bookingId: string, data: { status: string; note?: string; confirmedDate?: string; confirmedStartTime?: string; confirmedEndTime?: string; dismissReschedule?: boolean }) {
     const response = await patch<BookingResponse>(`/bookings/admin/${bookingId}`, data);
     return response.data;
   },
@@ -85,3 +85,4 @@ export const bookingService = {
     return response.data;
   },
 };
+

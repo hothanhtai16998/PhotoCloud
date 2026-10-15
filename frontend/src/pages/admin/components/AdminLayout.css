@@ -11,6 +11,12 @@
   --admin-accent-tint: #eee2cf;
   --admin-success: #28634c;
   --admin-danger: #a3332d;
+  --booking-pending-text: #754510;
+  --booking-pending-bg: #f4dfb5;
+  --booking-success-text: #155b46;
+  --booking-success-bg: #cce8dc;
+  --booking-closed-text: #4b4b46;
+  --booking-closed-bg: #e3e1db;
   color: var(--admin-text);
   font-family: 'Manrope Variable', 'Manrope', sans-serif;
   font-size: 14px;
@@ -24,6 +30,12 @@
   --admin-accent-tint: #493b28;
   --admin-success: #9ed2b4;
   --admin-danger: #f1a39c;
+  --booking-pending-text: #ffda96;
+  --booking-pending-bg: #59401f;
+  --booking-success-text: #b3f0d3;
+  --booking-success-bg: #214d3d;
+  --booking-closed-text: #e1ded6;
+  --booking-closed-bg: #48453f;
 }
 .admin-layout {
   display: grid;

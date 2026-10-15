@@ -1,0 +1,297 @@
+.pc-calendar-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: start;
+  margin: 28px 0;
+}
+.pc-calendar h2 {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+.pc-calendar-heading p {
+  color: var(--admin-text-secondary);
+  margin: 0;
+  font-size: 14px;
+}
+.pc-calendar-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.pc-calendar-navigation,
+.pc-calendar-modes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pc-calendar-navigation > strong {
+  min-width: 160px;
+  text-align: center;
+  font-size: 15px;
+}
+.pc-calendar-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.pc-calendar-filter select {
+  max-width: 300px;
+}
+.pc-calendar-legend {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 16px 0;
+}
+.pc-calendar-legend > span:last-child {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+.pc-calendar-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+}
+.pc-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-width: 980px;
+}
+.pc-calendar-weekday {
+  text-align: center;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  background: var(--admin-hover);
+}
+.pc-calendar-cell {
+  min-height: 140px;
+  padding: 8px;
+  border-top: 1px solid var(--admin-border);
+  border-right: 1px solid var(--admin-border);
+}
+.pc-calendar-cell.muted {
+  background: var(--admin-hover);
+}
+.pc-calendar-date {
+  display: grid;
+  place-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--admin-text);
+  font: inherit;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.pc-calendar-cell.today .pc-calendar-date {
+  background: var(--admin-accent);
+  color: var(--admin-bg);
+  font-weight: 700;
+}
+.pc-calendar .pc-calendar-event {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0 0;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  background: var(--admin-card-bg);
+  color: var(--admin-text);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.pc-calendar-event strong {
+  font-size: 14px;
+}
+.pc-calendar-event-time {
+  font-size: 12px;
+  color: var(--admin-text-secondary);
+}
+.pc-calendar .pc-calendar-event:hover {
+  border-color: var(--admin-accent);
+  background: var(--admin-hover);
+}
+.pc-calendar button:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+.pc-calendar-agenda {
+  display: grid;
+  gap: 12px;
+}
+.pc-calendar-agenda-row {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+.pc-calendar-agenda-row > strong {
+  padding-top: 16px;
+  font-size: 14px;
+}
+.pc-calendar-empty {
+  padding: 24px 0;
+  color: var(--admin-text-secondary);
+}
+@media (max-width: 700px) {
+  .pc-calendar-heading {
+    gap: 12px;
+  }
+  .pc-calendar-heading .admin-btn {
+    flex-shrink: 0;
+  }
+  .pc-calendar-navigation {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .pc-calendar-navigation > strong {
+    min-width: 0;
+    flex: 1;
+  }
+  .pc-calendar-navigation > .admin-btn:last-child {
+    width: 100%;
+  }
+  .pc-calendar-filter {
+    display: grid;
+    width: 100%;
+  }
+  .pc-calendar-filter select {
+    width: 100%;
+    max-width: none;
+  }
+  .pc-calendar-legend > span:last-child {
+    margin-left: 0;
+    width: 100%;
+  }
+  .pc-calendar-agenda-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .pc-calendar-heading p {
+    font-size: 13px;
+  }
+}
+/* Override legacy tool button rules only inside the new calendar. */
+.admin-layout .admin-tools .pc-calendar .pc-calendar-date {
+  border: 0;
+  background: transparent;
+  color: var(--admin-text);
+  padding: 4px;
+}
+.admin-layout .admin-tools .pc-calendar .today .pc-calendar-date,
+.admin-layout .admin-tools .pc-calendar-modes .admin-btn[aria-pressed='true'] {
+  background: var(--admin-accent);
+  color: var(--admin-bg);
+  border-color: var(--admin-accent);
+}
+.pc-calendar h2 {
+  font-weight: 700;
+}
+.pc-calendar-filter {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.pc-calendar-modes {
+  gap: 6px;
+}
+@media (max-width: 700px) {
+  .pc-calendar-scroll {
+    border: 0;
+    overflow: visible;
+  }
+  .pc-calendar-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    gap: 16px;
+  }
+  .pc-calendar-weekday,
+  .pc-calendar-cell:not(:has(.pc-calendar-event)) {
+    display: none;
+  }
+  .pc-calendar-cell,
+  .pc-calendar-cell.muted {
+    border: 0;
+    padding: 0;
+    min-height: 0;
+    background: transparent;
+  }
+  .pc-calendar-date {
+    font-weight: 700;
+  }
+}
+.pc-calendar-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.pc-calendar-picker input {
+  width: 160px;
+}
+.pc-calendar-day-label {
+  display: grid;
+  gap: 5px;
+  padding-top: 12px;
+}
+.pc-calendar-day-label strong {
+  font-size: 15px;
+}
+.pc-calendar-day-label span {
+  font-size: 13px;
+  color: var(--admin-text-secondary);
+}
+.pc-calendar-day-label small {
+  color: var(--admin-accent);
+  font-weight: 700;
+}
+.pc-calendar-free {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--admin-text-secondary);
+  font-size: 14px;
+}
+.pc-calendar-empty {
+  margin-top: 24px;
+  padding: 22px;
+  background: var(--admin-hover);
+  border-radius: 12px;
+}
+.pc-calendar-empty strong {
+  color: var(--admin-text);
+  font-size: 15px;
+}
+.pc-calendar-empty p {
+  margin: 8px 0 16px;
+  font-size: 14px;
+}
+@media (max-width: 700px) {
+  .pc-calendar-picker {
+    width: 100%;
+  }
+  .pc-calendar-picker input {
+    flex: 1;
+    min-width: 0;
+  }
+}

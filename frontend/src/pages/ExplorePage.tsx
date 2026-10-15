@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { Compass, Camera } from 'lucide-react';
+import { Compass, Camera, RotateCcw } from 'lucide-react';
 import { useImageStore } from '@/stores/useImageStore';
 import { categoryService, type Category } from '@/services/categoryService';
 import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlug';
@@ -11,7 +11,7 @@ import { generateImageSlug } from '@/lib/utils';
 import { saveScrollPosition, setModalActive, prepareModalNavigationState } from '@/utils/modalNavigation';
 import type { Image } from '@/types/image';
 import { SearchBar } from '@/components/SearchBar';
-import { useSearchFilters } from '@/components/SearchBar/hooks/useSearchFilters';
+import { DEFAULT_FILTERS, useSearchFilters } from '@/components/SearchBar/hooks/useSearchFilters';
 import { buildFilterParams } from '@/utils/buildFilterParams';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { BRAND } from '@/constants/brand';
@@ -55,7 +55,9 @@ export default function ExplorePage() {
   const fetchImages = useImageStore((s) => s.fetchImages);
   const images = useImageStore((s) => s.images);
   const loading = useImageStore((s) => s.loading);
-  const hasMore = useImageStore((s) => s.hasMore);
+  const pagination = useImageStore((s) => s.pagination);
+  const error = useImageStore((s) => s.error);
+  const [requestedPage, setRequestedPage] = useState(1);
   useImagePageScrollRestore(location, pageRef,
     navigationType === 'POP' && !loading && images.length > 0, false, undefined, images.length);
 
@@ -86,20 +88,24 @@ export default function ExplorePage() {
   }, [navigate, images, actualLocation, isMobile, location, activeCategory]);
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const { filters, setFilters } = useSearchFilters();
+  const { filters, setFilters, resetFilters } = useSearchFilters();
   const orientation = filters.orientation;
   const sort = filters.sortBy || 'date';
   const [locale, setLocale] = useState<'vi' | 'en'>(getLocale());
+  const [categoryError, setCategoryError] = useState(false);
+  const [categoryAttempt, setCategoryAttempt] = useState(0);
+  const hasActiveFilters = activeCategory !== 'all' || JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS);
+  const clearFilters = () => { setActiveCategory('all'); resetFilters(); };
 
   // Load categories
   useEffect(() => {
     let active = true;
     categoryService
       .fetchCategories()
-      .then((data) => { if (active) setCategories(data || []); })
-      .catch(() => {/* ignore */});
+      .then((data) => { if (active) { setCategories(data || []); setCategoryError(false); } })
+      .catch(() => { if (active) setCategoryError(true); });
     return () => { active = false; };
-  }, []);
+  }, [categoryAttempt]);
 
   // Locale change
   useEffect(() => {
@@ -108,14 +114,13 @@ export default function ExplorePage() {
     return () => window.removeEventListener('localeChange', handle);
   }, []);
 
-  // Fetch images on filter change
-  useEffect(() => {
+  const params = useMemo(() => {
     const categoryName =
       activeCategory === 'all'
         ? undefined
         : getCategoryNameFromSlug(activeCategory, categories) ?? undefined;
 
-    const params = {
+    return {
       ...buildFilterParams(filters, { page: 1, category: categoryName }),
       sortBy: sort,
       order: filters.order || 'desc',
@@ -123,8 +128,17 @@ export default function ExplorePage() {
       limit: 30,
     };
 
-    fetchImages(params);
-  }, [activeCategory, orientation, sort, filters, categories, fetchImages]);
+  }, [activeCategory, sort, filters, categories]);
+  useEffect(() => {
+    setRequestedPage(1);
+    void fetchImages(params);
+  }, [params, fetchImages]);
+  const loadNextPage = async () => {
+    const state = useImageStore.getState();
+    if (state.loading || state.error || !state.pagination || state.pagination.page >= state.pagination.pages) return;
+    const nextPage = state.pagination.page + 1; setRequestedPage(nextPage);
+    await fetchImages({ ...params, page: nextPage });
+  };
 
   const translatedCategories = useMemo(
     () =>
@@ -141,29 +155,27 @@ export default function ExplorePage() {
     <main ref={pageRef} className="explore-page">
       <section className="explore-hero">
         <div className="explore-hero-inner">
-          <p className="booking-eyebrow">KHÁM PHÁ</p>
           <h1>
-            Bộ sưu tập ảnh <em>được tuyển chọn</em>
+            Khám phá <em>những khung hình</em>
           </h1>
           <p>
-            Duyệt qua hàng nghìn bức ảnh từ cộng đồng {BRAND.nameLong}. Lọc theo danh mục, bố cục hoặc sắp xếp theo phong cách bạn yêu thích.
+            Tìm cảm hứng từ những bức ảnh tại {BRAND.nameLong}. Chọn chủ đề và bố cục bạn yêu thích.
           </p>
         </div>
       </section>
 
       <section className="explore-filters">
         <div className="page-photo-search">
-          <SearchBar />
+          <SearchBar filterButtonLabel="Bộ lọc nâng cao" />
         </div>
         <div className="explore-filter-row">
           <h2 className="explore-filter-label">
             <Compass size={15} aria-hidden /> Danh mục
           </h2>
-          <div className="explore-categories" role="tablist">
+          <div className="explore-categories" role="group" aria-label="Danh mục ảnh">
             <button
               type="button"
-              role="tab"
-              aria-selected={activeCategory === 'all'}
+              aria-pressed={activeCategory === 'all'}
               className={`explore-chip${activeCategory === 'all' ? ' is-active' : ''}`}
               onClick={() => setActiveCategory('all')}
             >
@@ -173,8 +185,7 @@ export default function ExplorePage() {
               <button
                 key={cat.slug}
                 type="button"
-                role="tab"
-                aria-selected={activeCategory === cat.slug}
+                aria-pressed={activeCategory === cat.slug}
                 className={`explore-chip${activeCategory === cat.slug ? ' is-active' : ''}`}
                 onClick={() => setActiveCategory(cat.slug)}
               >
@@ -184,6 +195,7 @@ export default function ExplorePage() {
             ))}
           </div>
         </div>
+        {categoryError && <p className="explore-category-error" role="alert">Không tải được danh mục. <button type="button" onClick={() => setCategoryAttempt(value => value + 1)}>Thử lại</button></p>}
 
         <div className="explore-filter-row explore-filter-row--compact">
           <div className="explore-filter-group">
@@ -194,6 +206,7 @@ export default function ExplorePage() {
                   key={opt.value}
                   type="button"
                   className={`explore-segmented-btn${orientation === opt.value ? ' is-active' : ''}`}
+                  aria-pressed={orientation === opt.value}
                   onClick={() => setFilters({ ...filters, orientation: opt.value as typeof filters.orientation })}
                 >
                   {opt.label}
@@ -203,8 +216,9 @@ export default function ExplorePage() {
           </div>
 
           <div className="explore-filter-group">
-            <span className="explore-filter-label">Sắp xếp</span>
+            <label htmlFor="explore-sort" className="explore-filter-label">Sắp xếp</label>
             <select
+              id="explore-sort"
               className="explore-select"
               value={sort}
               onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as typeof filters.sortBy })}
@@ -216,26 +230,28 @@ export default function ExplorePage() {
               ))}
             </select>
           </div>
+          {hasActiveFilters && <button className="explore-reset" type="button" onClick={clearFilters}><RotateCcw size={15} /> Xóa bộ lọc</button>}
         </div>
       </section>
 
       <section className="explore-grid-wrap">
-        {loading && images.length === 0 ? (
-          <div className="explore-empty">Đang tải ảnh...</div>
-        ) : images.length === 0 ? (
+        <p className="explore-results" role="status">{loading ? 'Đang tải ảnh…' : error ? 'Chưa tải được kết quả mới.' : `${new Intl.NumberFormat('vi-VN').format(pagination?.total ?? images.length)} ảnh${activeCategory !== 'all' ? ` · ${translatedCategories.find(category => category.slug === activeCategory)?.translated || ''}` : ''}`}</p>
+        {error && <div className="explore-error" role="alert"><p>Không thể tải ảnh. Bạn có thể thử lại.</p><button type="button" onClick={() => void fetchImages({ ...params, page: requestedPage, _refresh: true })}>Thử lại tải ảnh</button></div>}
+        {loading && requestedPage === 1 ? (
+          <div className="explore-empty" aria-hidden="true">Đang chuẩn bị những khung hình…</div>
+        ) : !error && images.length === 0 ? (
           <div className="explore-empty">
             <Camera size={48} aria-hidden />
             <h3>Chưa có ảnh phù hợp</h3>
             <p>Thử chọn danh mục khác hoặc bỏ bộ lọc bố cục.</p>
+            {hasActiveFilters && <button type="button" className="explore-reset" onClick={clearFilters}>Xóa bộ lọc</button>}
           </div>
         ) : (
           <NoFlashGrid
             images={images}
-            hasMore={hasMore}
+            pagination={error ? null : pagination}
             loading={loading}
-            onLoadMore={async () => {
-              await fetchImages({ sortBy: sort, order: 'desc', page: 1, limit: 30 });
-            }}
+            onLoadMore={loadNextPage}
             onImageClick={handleImageClick}
           />
         )}
@@ -243,3 +259,4 @@ export default function ExplorePage() {
     </main>
   );
 }
+
