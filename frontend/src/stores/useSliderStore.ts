@@ -5,6 +5,7 @@ import type { Image } from '@/types/image';
 import { getSessionItem, setSessionItem, removeSessionItem } from '@/utils/safeStorage';
 
 export interface SlideData {
+	imageData?: Image;
 	id: string;
 	title: string;
     author?: string;
@@ -33,6 +34,7 @@ function toSlides(images: Image[]): SlideData[] {
     Number.isFinite(img.height) && img.height > 0
   ).map(img => ({
     id: img._id,
+    imageData: img,
     author: img.uploadedBy?.username,
     category: (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name) || 'Khám phá',
     title: img.imageTitle || (typeof img.imageCategory === 'string' ? img.imageCategory : img.imageCategory?.name) || 'Image',
@@ -45,7 +47,7 @@ function toSlides(images: Image[]): SlideData[] {
 
 // PHOTOCLOUD-style: 15 minutes stale threshold (slider changes less frequently)
 const STALE_THRESHOLD = 15 * 60 * 1000; // 15 minutes
-const SLIDER_CACHE_KEY = 'photocloud-slider-v1';
+const SLIDER_CACHE_KEY = 'photocloud-slider-v2';
 
 function readSliderCache(): { slides: SlideData[]; lastFetchedAt: number | null } {
   try {

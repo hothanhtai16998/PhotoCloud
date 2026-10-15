@@ -587,6 +587,15 @@
 .header-library-grid p { grid-column:1/-1; }
 .header-library-grid img { display:block; width:100%; aspect-ratio:1; object-fit:cover; border-radius:4px; }
 .header-library-view-all { color:inherit; padding:12px 0; }
+.header-library-panel { contain:layout paint; will-change:transform; }
+.header-library-overlay { will-change:opacity; }
+.header-library-grid > a { content-visibility:auto; contain-intrinsic-size:auto 160px; }
+.PHOTOCLOUD-header :is(.header-library-action,.mobile-header-icon,.mobile-hamburger-button,.notification-bell-btn) {
+  min-width:44px;
+  min-height:44px;
+  box-sizing:border-box;
+  flex-shrink:0;
+}
 .homepage-header .header-studio-nav { gap:18px; }
 @keyframes library-overlay-in { from { opacity:0; } }
 @keyframes library-panel-in { from { transform:translate3d(100%,0,0); } }

@@ -2,8 +2,32 @@
 
 ## 0. Bảng điều khiển chung
 
+### A08: vùng bấm tối thiểu 44px — 2026-10-15
+
+- Tăng độ đọc ô gói mobile: tên16px, giá14px, thời lượng/số ảnh13px trong breakpoint <=600px. Desktop giữ cỡ chữ/bố cục hai cột; sửa thumbnail đúng cột trước đó áp dụng cả desktop.
+- Thu gọn gói booking mobile theo ảnh phản hồi: sửa selector span ép thumbnail sang cột thông tin (gây hàng trống), giữ thumbnail cột trái và thông tin cột phải. Mobile thumbnail 44px, padding12px, gap gọn, hàng tối thiểu88px; vùng bấm vẫn lớn và tên dài được xuống dòng.
+- Theo phản hồi ảnh mobile, nút đóng booking đủ vùng bấm nhưng icon nhỏ/mờ. Đã tăng icon X lên 24px, thêm nền theo theme, viền rõ và focus-visible; kích thước nút cố định 44px không co trong header. Giữ hành vi đóng, không dùng nhãn “Trở về” vốn dành cho bước trước.
+- A07 được người dùng xác nhận đạt toàn bộ. Tiếp tục A08: tăng vùng bấm icon header, bookmark/điều hướng slideshow và nút đóng/footer/success booking lên tối thiểu 44px, giữ kích thước icon hiện có.
+- Fixture CSS Edge 320/390/768/1024/1440: các target hiển thị >=44px và nút slider không chồng nhau PASS. Fixture component slider/bookmark và A07 PASS. Detector báo font Inter có sẵn ngoài phạm vi. Chờ kiểm tra bố cục header đầy đủ và thao tác chạm trên app thật.
+### A07: card ngoài khung không nhận Tab — 2026-10-14
+
+- A06 đã được người dùng xác nhận đạt toàn bộ: đăng nhập, Tab/Shift-Tab, viền khi hover, Enter/Space và độ rõ trên các nền.
+- Tiếp tục A07: card hoàn toàn ngoài vùng slider chuyển inert, tabindex -1 và aria-hidden; card còn nhìn thấy giữ tương tác. IntersectionObserver theo khung slider cập nhật khi resize/animation; đồng bộ trước paint khi đổi slide. Nếu card đang focus bị ẩn, chuyển về nút điều hướng nhìn thấy, không cuộn trang.
+- Edge fixture component thật 390/1440 rồi resize 320: Tab không tới card ẩn, scrollLeft slider giữ 0, đổi slide/resize cập nhật inert/tabindex/aria-hidden PASS. ESLint và type-check PASS; regression bookmark PASS. Chờ người dùng xác nhận app thật.
+### A06: focus nút thông báo — 2026-10-14
+
+- Người dùng kiểm tra app thật: đăng nhập/Tab/Enter-Space ĐẠT; viền khi hover KHÔNG ĐẠT, dropdown sáng/tối/slideshow xấu và khó nhìn. A06 chưa đóng. Đã sửa tiếp: viền focus xanh đậm 3px với lớp trắng để không phụ thuộc màu icon; hover slideshow nền tối; timestamp/icon/action/border/unread dùng theme tokens, bỏ icon nền trắng và đường phân cách sáng trên dark. Fixture CSS tích hợp Header + theme + immersive 390/1440, Tab/hover và timestamp contrast >=4.5 PASS; chờ người dùng xác nhận lại.
+- Tiếp tục A06 sau khi người dùng yêu cầu ghi lại A05 và chuyển mục kế tiếp. CSS nút chuông xóa outline ở trạng thái thường, hover và focus; sửa bằng focus-visible theo màu hiện tại để dùng được trên header sáng/tối và nền slideshow.
+- Browser fixture Edge 390/1440 kiểm tra Tab + hover sáng/tối/slideshow: viền solid 2px PASS. Đây là fixture CSS nút, chưa kiểm tra dropdown thông báo với tài khoản thật. Detector báo border-left có sẵn ở mục thông báo, ngoài phạm vi A06.
+
 ### A05: bookmark slideshow lưu vào yêu thích thật — 2026-10-14
 
+- **CÒN LỖI KHỰNG — người dùng xác nhận sau lượt tối ưu cuối.** Mở tab bookmark vẫn làm khựng giao diện/slideshow trên app thật. Các luồng lưu/bỏ lưu, bộ đếm và danh sách đã được người dùng xác nhận ổn; tạm dừng xử lý khựng theo yêu cầu để chuyển A06. Không dùng kết quả fixture để đóng lỗi hiệu năng này.
+- Riêng khựng lúc mở panel: tách mount/decode thumbnail khỏi animation mở 280ms bằng transition React, thêm containment/layer cho panel và content-visibility cho ảnh ngoài viewport. Fixture Edge production components với JPEG thật 390/1440: trước max frame gap 16.7/20.9ms, sau 12.4/12.5ms, không frame >50ms, slideshow không đổi bounds. Fixture chưa tái hiện khựng nặng của app thật nên chưa coi là xác nhận hết lỗi trên máy người dùng. Type-check PASS.
+- Sửa panel bookmark và đồng bộ nhanh: panel không khóa scroll toàn trang, giới hạn preview 20 ảnh với decoding async và biến thể thumbnail, dùng cache/stale refresh khi mở lại. Favorite store hợp nhất thay đổi local và chặn response GET đảo thứ tự ghi đè; slideshow truyền object ảnh để mục mới xuất hiện ngay. Test tổng thêm stale GET/rapid add-remove/out-of-order PASS, slider/hook regression PASS, type-check PASS; chưa đo độ khựng trên browser thật.
+- Bỏ độ trễ phản hồi khi click: slideshow và grid cập nhật bookmark/cache ngay trước khi chờ API, xác nhận bằng kết quả server, hoàn tác nếu lỗi. Grid dùng session guard cho phép refresh token. Test slider xác nhận trạng thái đổi trước API response và rollback PASS; test tổng yêu thích, type-check PASS; ESLint không lỗi (grid còn warning fast-refresh có sẵn). Chưa kiểm tra phiên browser thật.
+- Sửa bộ đếm yêu thích header cập nhật chậm: chia sẻ tổng đã lấy của header với favorite store, cập nhật tổng đồng bộ theo thay đổi bookmark, không chờ GET phụ. Khử sự kiện trùng và xử lý bỏ lưu ảnh ngoài trang đang tải; sự kiện lưu thiếu object ảnh không còn bị coi là bỏ lưu. Test `test-favorite-total.cjs`, hook cache và slider bookmark PASS; chưa kiểm tra browser với phiên thật.
+- Kiểm tra lại lỗi bookmark: slider bỏ kết quả toggle thành công khi axios refresh access token. Đã thay kiểm tra token bằng theo dõi kết thúc phiên, giữ cập nhật cache/count sau refresh và bỏ kết quả sau logout. Regression `test-slider-bookmark.cjs` PASS: refresh token, click lặp, đổi phiên qua logout, lỗi mạng và retry; type-check PASS. Chưa xác nhận trên phiên tài khoản thật.
 - Tiếp tục A05 theo yêu cầu. Nút bookmark trong TimedCardSlider trước đây chỉ đổi state cục bộ và reset khi đổi slide; chưa gọi endpoint yêu thích nên refresh/tài khoản không giữ.
 - Đã đưa `id` ảnh thật từ `SlideData` qua `CardOpeningStage` sang `TimedCardSlider`, dùng `useBatchedFavoriteCheck` để đọc trạng thái yêu thích theo tài khoản và `favoriteService.toggleFavorite` để lưu/bỏ lưu qua `/favorites/:imageId`. Cập nhật cache favorite/count dùng helper hiện có để header/trang yêu thích nhận trạng thái mới.
 - Chưa đăng nhập thì chuyển `/signin`, giữ cùng kỳ vọng với grid ảnh; khi lỗi hiển thị thông báo cập nhật yêu thích thất bại. Không thêm localStorage fallback, không đổi API/backend, không tự tạo collection/wishlist gói.
@@ -282,10 +306,10 @@ ID giữ theo audit để tránh mất liên kết lịch sử. Chi tiết đầ
 | A02 | P1 | Booking không giữ focus; BookingModal.tsx | ĐÃ SỬA; người dùng xác nhận đạt; fixture5width PASS; reader/máy thật chưa kiểm tra đầy đủ | 2 |
 | A03 | P1 | Reduced motion đường JS; TimedCardSlider.tsx | ĐÃ SỬA + NGƯỜI DÙNG XÁC NHẬN các luồng; fixture390/1440 PASS; máy thật còn giới hạn | 5, trước motion mới |
 | A04 | P1 | Tương phản bookmark/chữ muted/gradient HeroBooking | ICON người dùng xác nhận; đã sửa token muted + chữ hero, fixture5width PASS; chờ xác nhận chữ và các nền khác | 5 |
-| A05 | P1 | Bookmark chỉ local state; TimedCardSlider.tsx:177 | ĐÃ SỬA SOURCE: nối trạng thái/cập nhật favorite ảnh thật; chờ kiểm tra phiên đăng nhập/app thật | 3 |
-| A06 | P1 | Chuông bỏ outline; NotificationBell.css:14/25/31 | NGHI VẤN TỪ CSS; chưa test tài khoản thật | 5 |
-| A07 | P2 | Card ngoài màn hình vẫn tabbable; TimedCardSlider.tsx:180 | CÒN LỖI | 1, 5 |
-| A08 | P2 | Vùng bấm nhỏ; Header/TimedCardSlider/BookingModal CSS | CHƯA SỬA; 44px là mục tiêu dễ dùng, không gọi mọi nút nhỏ là lỗi WCAG AA | 1, 5 |
+| A05 | P1 | Bookmark chỉ local state; TimedCardSlider.tsx:177 | CHỨC NĂNG người dùng xác nhận ổn; CÒN LỖI KHỰNG khi mở panel ảnh hưởng slideshow, tạm dừng theo yêu cầu | 3 |
+| A06 | P1 | Chuông bỏ outline; NotificationBell.css | ĐÃ SỬA; người dùng xác nhận đạt toàn bộ focus/thao tác/theme | 5 |
+| A07 | P2 | Card ngoài màn hình vẫn tabbable; TimedCardSlider.tsx | ĐÃ SỬA; người dùng xác nhận đạt toàn bộ | 1, 5 |
+| A08 | P2 | Vùng bấm nhỏ; Header/TimedCardSlider/BookingModal CSS | ĐÃ SỬA target >=44px; fixture5width PASS; chờ kiểm tra app thật | 1, 5 |
 | A09 | P2 | Lỗi slide giống rỗng, thiếu retry; useSliderStore/VisualArtFormsSlider | CHƯA SỬA; test abort trước chưa đủ kết luận UI lỗi | 4 |
 | A10 | P2 | Newsletter mailto dùng tone thương hiệu; Footer.tsx:138 | CHƯA SỬA; không submit thật trong audit | 3 |
 | A11 | P2 | Payload/startup và animation layout nặng; App/TimedCardSlider | ĐÃ SỬA PHẦN FONT; JS~918KB/trace slider còn mở | 7 |

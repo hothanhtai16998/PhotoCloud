@@ -2,6 +2,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import { favoriteService } from '@/services/favoriteService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { LRUCache } from '@/utils/lruCache';
+import type { Image } from '@/types/image';
 
 const favoriteCache = new LRUCache<boolean>(1000);
 const listeners = new Map<string, Set<() => void>>();
@@ -87,12 +88,14 @@ function handleCacheUpdate(event: Event): void {
   }
 }
 
-export function updateFavoriteCache(imageId: string, isFavorited: boolean): void {
+export function updateFavoriteCache(imageId: string, isFavorited: boolean, image?: Image): void {
   const id = String(imageId).trim();
+  syncSession(useAuthStore.getState().accessToken);
+  const previousIsFavorited = favoriteCache.get(id);
   setFavorite(id, isFavorited);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-      detail: { imageId: id, isFavorited },
+      detail: { imageId: id, isFavorited, previousIsFavorited, image: isFavorited ? image : undefined },
     }));
   }
 }

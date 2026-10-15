@@ -17,4 +17,5 @@
 @media(prefers-reduced-motion:reduce){.travel-stage .destination,.travel-stage .destination-card,.travel-stage .top-timer,.travel-stage .timer-progress{animation:none}.travel-stage .slide-progress{transition:none}}
 
 .travel-stage .bookmark:not(.saved){color:#161918}
+.travel-stage :is(.bookmark,.discover,.slider-controls button){min-width:44px;min-height:44px;flex-shrink:0}
 

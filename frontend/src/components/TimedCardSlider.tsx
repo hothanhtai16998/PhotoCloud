@@ -7,9 +7,11 @@ import { favoriteService } from '@/services/favoriteService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useImageFavoriteCountStore } from '@/stores/useImageFavoriteCountStore';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
+import { onLogout } from '@/utils/authEvents';
+import type { Image as PhotoImage } from '@/types/image';
 import './TimedCardSlider.css';
 
-export interface TimedCard { id?: string; place: string; region: string; title: string; image: string; description: string; }
+export interface TimedCard { id?: string; imageData?: PhotoImage; place: string; region: string; title: string; image: string; description: string; }
 const url = (source: string) => source;
 const interval = 5500;
 const duration = 500;
@@ -52,6 +54,32 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
   const slide = slides[active];
   const accessToken = useAuthStore(state => state.accessToken);
   const isFavorited = useBatchedFavoriteCheck(slide?.id);
+
+  useLayoutEffect(() => {
+    const target = stage.current;
+    if (!target) return;
+    const cards = Array.from(target.querySelectorAll<HTMLButtonElement>('[data-slide]'));
+    const setVisible = (card: HTMLButtonElement, visible: boolean) => {
+      if (!visible && document.activeElement === card) {
+        target.querySelector<HTMLButtonElement>('.slider-controls button:not(:disabled)')?.focus({ preventScroll: true });
+      }
+      card.inert = !visible;
+      card.tabIndex = visible ? 0 : -1;
+      if (visible) card.removeAttribute('aria-hidden');
+      else card.setAttribute('aria-hidden', 'true');
+    };
+    // Set keyboard access before paint; the observer tracks resize and motion.
+    const bounds = target.getBoundingClientRect();
+    cards.forEach(card => {
+      const box = card.getBoundingClientRect();
+      setVisible(card, box.right > bounds.left && box.left < bounds.right && box.bottom > bounds.top && box.top < bounds.bottom);
+    });
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => setVisible(entry.target as HTMLButtonElement, entry.isIntersecting && entry.intersectionRatio > 0));
+    }, { root: target, threshold: 0 });
+    cards.forEach(card => observer.observe(card));
+    return () => observer.disconnect();
+  }, [active, slides]);
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -190,18 +218,30 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
     }
     favoriteBusyRef.current = true;
     setFavoriteBusy(true);
-    const requestToken = useAuthStore.getState().accessToken;
+    let sessionEnded = false;
+    const unsubscribeLogout = onLogout(() => { sessionEnded = true; });
+    const unsubscribeAuth = useAuthStore.subscribe(state => {
+      if (!state.accessToken) sessionEnded = true;
+    });
+    const previousState = isFavorited;
+    updateFavoriteCache(slide.id, !previousState, slide.imageData);
     try {
       const response = await favoriteService.toggleFavorite(slide.id);
-      if (useAuthStore.getState().accessToken !== requestToken) return;
-      updateFavoriteCache(slide.id, response.isFavorited);
+      // Refreshing the access token does not end the user's session.
+      if (sessionEnded || !useAuthStore.getState().accessToken) return;
+      updateFavoriteCache(slide.id, response.isFavorited, slide.imageData);
       if (response.favoriteCount !== undefined) {
         useImageFavoriteCountStore.getState().updateFavoriteCount(slide.id, response.favoriteCount);
       }
       toast.success(response.isFavorited ? t('favorites.added') : t('favorites.removed'));
     } catch {
-      toast.error(t('favorites.updateFailed'));
+      if (!sessionEnded) {
+        updateFavoriteCache(slide.id, previousState, slide.imageData);
+        toast.error(t('favorites.updateFailed'));
+      }
     } finally {
+      unsubscribeLogout();
+      unsubscribeAuth();
       favoriteBusyRef.current = false;
       setFavoriteBusy(false);
     }

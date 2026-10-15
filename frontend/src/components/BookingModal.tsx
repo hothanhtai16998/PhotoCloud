@@ -167,7 +167,7 @@ export function BookingModal() {
             <p className="booking-modal-eyebrow">{isCustomQuote ? 'BÁO GIÁ RIÊNG' : 'PHOTO CLOUD SERVICES'}</p>
             <Dialog.Title asChild><h2>{isCustomQuote ? 'Nhận báo giá riêng' : 'Đặt lịch chụp'}</h2></Dialog.Title>
           </div>
-          <button type="button" className="booking-modal-close" onClick={close} aria-label="Đóng"><X size={20} /></button>
+          <button type="button" className="booking-modal-close" onClick={close} aria-label="Đóng đặt lịch" title="Đóng đặt lịch"><X size={24} /></button>
         </header>
 
         {submittedCode ? (

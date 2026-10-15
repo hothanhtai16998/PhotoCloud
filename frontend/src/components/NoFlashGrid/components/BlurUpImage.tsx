@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useDownloadHistoryStore } from '@/stores/useDownloadHistoryStore';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { captureImageActionSession } from '@/utils/imageActionSession';
 import type { DownloadSize } from './DownloadSizeSelector';
 import { detectAvifSupport } from '@/utils/avifSupport';
 import './BlurUpImage.css';
@@ -269,11 +270,19 @@ export function BlurUpImage({
 
         favoriteBusyRef.current = true;
         setIsTogglingFavorite(true);
-        const requestToken = useAuthStore.getState().accessToken;
+        const session = captureImageActionSession();
+        const previousState = isFavorited;
+        const publish = (favorited: boolean) => {
+            updateFavoriteCache(image._id, favorited);
+            window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
+                detail: { imageId: image._id, isFavorited: favorited, image: favorited ? image : undefined },
+            }));
+        };
+        publish(!previousState);
         try {
             const response = await favoriteService.toggleFavorite(image._id);
-            if (useAuthStore.getState().accessToken !== requestToken) return;
-            updateFavoriteCache(image._id, response.isFavorited);
+            if (!session.isCurrent()) return;
+            publish(response.isFavorited);
             
             // Update favorite count from response (optimistic update)
             if (response.favoriteCount !== undefined) {
@@ -281,28 +290,22 @@ export function BlurUpImage({
                 useImageFavoriteCountStore.getState().updateFavoriteCount(image._id, response.favoriteCount);
             }
             
-            // Dispatch event with image data for optimistic favorites list update
-            window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-                detail: { 
-                    imageId: image._id, 
-                    isFavorited: response.isFavorited,
-                    image: image // Include full image object for adding to favorites list
-                }
-            }));
-            
             if (response.isFavorited) {
                 toast.success(t('favorites.added'));
             } else {
                 toast.success(t('favorites.removed'));
             }
         } catch (error: unknown) {
+            if (!session.isCurrent()) return;
+            publish(previousState);
             console.error('Failed to toggle favorite:', error);
             toast.error((error as ApiErrorResponse)?.response?.data?.message || t('favorites.error'));
         } finally {
+            session.dispose();
             favoriteBusyRef.current = false;
             if (mountedRef.current) setIsTogglingFavorite(false);
         }
-    }, [hasUser, image, navigate]);
+    }, [hasUser, image, navigate, isFavorited]);
 
     // Handle download button
     const handleDownloadClick = useCallback(async (e: React.MouseEvent) => {

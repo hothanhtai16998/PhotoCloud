@@ -6,7 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { t, getLocale, setLocale, type Locale } from '@/i18n';
-import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useState, useEffect, useCallback, useRef, memo, startTransition } from 'react';
 import { favoriteService } from '@/services/favoriteService';
 import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import type { Image } from '@/types/image';
@@ -29,6 +29,17 @@ import { useIsMobile } from '@/hooks/useIsMobile';
  */
 const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }: { variant?: 'sidebar' | 'header' }) {
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryReady, setLibraryReady] = useState(false);
+  useEffect(() => {
+    if (!libraryOpen) return;
+    const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 280;
+    const timer = window.setTimeout(() => startTransition(() => setLibraryReady(true)), delay);
+    return () => window.clearTimeout(timer);
+  }, [libraryOpen]);
+  const changeLibraryOpen = (open: boolean) => {
+    setLibraryReady(false);
+    setLibraryOpen(open);
+  };
   const [libraryError, setLibraryError] = useState(false);
   const favoriteImages = useFavoriteStore(state => state.images);
   const favoritesLoading = useFavoriteStore(state => state.loading);
@@ -36,7 +47,9 @@ const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }:
     if (!libraryOpen) return;
     let active = true;
     setLibraryError(false);
-    void useFavoriteStore.getState().fetchFavorites().catch(() => { if (active) setLibraryError(true); });
+    const store = useFavoriteStore.getState();
+    const fetch = store.hasLoaded ? store.checkAndRefreshIfStale() : store.fetchFavorites();
+    void fetch.catch(() => { if (active) setLibraryError(true); });
     return () => { active = false; };
   }, [libraryOpen]);
   const isMobile = useIsMobile();
@@ -115,6 +128,10 @@ const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }:
       
       if (response.success && response.pagination) {
         const total = response.pagination.total || 0;
+        // Share the known total without marking the full library as loaded.
+        if (!useFavoriteStore.getState().pagination) {
+          useFavoriteStore.setState({ pagination: { ...response.pagination, limit: 20, pages: Math.ceil(total / 20) } });
+        }
         setPreview({ ownerId: userId ?? null, total, thumbnail: toFavoriteThumbnail(total > 0 ? response.images?.[0] ?? null : null) });
       }
     } catch (error) {
@@ -142,7 +159,7 @@ const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }:
   // Only the first image and total matter to this icon.
   useEffect(() => {
     if (!showAuthIcons || !userId || !hasStoreData) return;
-    setPreview(previous => ({ ownerId: userId, thumbnail: toFavoriteThumbnail(firstFavorite), total: storedFavoriteTotal ?? (previous.ownerId === userId ? previous.total : 0) }));
+    setPreview(previous => ({ ownerId: userId, thumbnail: firstFavorite ? toFavoriteThumbnail(firstFavorite) : storedFavoriteTotal === 0 ? null : previous.ownerId === userId ? previous.thumbnail : null, total: storedFavoriteTotal ?? (previous.ownerId === userId ? previous.total : 0) }));
   }, [showAuthIcons, userId, hasStoreData, firstFavorite, storedFavoriteTotal]);
 
   // Scroll to top immediately when navigating via sidebar (not smooth scroll)
@@ -207,25 +224,25 @@ const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }:
 
   if (variant === 'header') return showAuthIcons ? (
     <div className="header-library-actions">
-      <Dialog.Root open={libraryOpen} onOpenChange={setLibraryOpen}>
+      <Dialog.Root modal={false} open={libraryOpen} onOpenChange={changeLibraryOpen}>
         <Dialog.Trigger asChild>
           <button type="button" className="header-library-action" title={t('header.favorites')} aria-label={`${t('header.favorites')} (${favoriteTotal})`}>
             <Heart size={19} /><span className="header-library-count">{favoriteTotal}</span>
           </button>
         </Dialog.Trigger>
         <Dialog.Portal>
-          <Dialog.Overlay className="header-library-overlay" />
+          <div className="header-library-overlay" aria-hidden="true" onClick={() => setLibraryOpen(false)} />
           <Dialog.Content className="header-library-panel" aria-describedby={undefined}>
             <div className="header-library-heading">
               <Dialog.Title>{t('header.favorites')}</Dialog.Title>
               <Dialog.Close className="header-library-action" aria-label="Đóng" title="Đóng"><X size={20} /></Dialog.Close>
             </div>
             <div className="header-library-grid">
-              {favoritesLoading && <p role="status">Đang tải ảnh…</p>}
+              {(favoritesLoading || !libraryReady) && <p role="status">Đang tải ảnh…</p>}
               {libraryError && <p role="alert">Không tải được ảnh. Vui lòng mở lại để thử lại.</p>}
-              {!favoritesLoading && !libraryError && favoriteImages.length === 0 && <p>Chưa có ảnh yêu thích.</p>}
-              {favoriteImages.map(image => <Link key={image._id} to={`/photos/${generateImageSlug(image.imageTitle || 'Untitled', image._id)}`} onClick={() => setLibraryOpen(false)}>
-                <img src={image.thumbnailUrl || image.smallUrl || image.imageUrl} alt={image.imageTitle || 'Ảnh yêu thích'} loading="lazy" />
+              {libraryReady && !favoritesLoading && !libraryError && favoriteImages.length === 0 && <p>Chưa có ảnh yêu thích.</p>}
+              {libraryReady && favoriteImages.slice(0, 20).map(image => <Link key={image._id} to={`/photos/${generateImageSlug(image.imageTitle || 'Untitled', image._id)}`} onClick={() => setLibraryOpen(false)}>
+                <img src={image.thumbnailAvifUrl || image.thumbnailUrl || image.smallAvifUrl || image.smallUrl || image.imageUrl} alt={image.imageTitle || 'Ảnh yêu thích'} loading="lazy" decoding="async" width={160} height={160} />
               </Link>)}
             </div>
             <Link className="header-library-view-all" to="/favorites" onClick={() => setLibraryOpen(false)}>Xem tất cả ảnh yêu thích</Link>

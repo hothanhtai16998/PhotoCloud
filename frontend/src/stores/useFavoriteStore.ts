@@ -3,6 +3,12 @@ import { immer } from 'zustand/middleware/immer';
 import { favoriteService } from '@/services/favoriteService';
 import type { FavoriteState } from '@/types/store';
 import type { Image } from '@/types/image';
+import { onLogout } from '@/utils/authEvents';
+
+const publishedFavorites = new Map<string, boolean>();
+let favoriteRevision = 0;
+let favoriteRequest = 0;
+onLogout(() => publishedFavorites.clear());
 
 // PHOTOCLOUD-style: 1 minute stale threshold (matches PHOTOCLOUD behavior)
 const STALE_THRESHOLD = 1 * 60 * 1000; // 1 minute
@@ -18,6 +24,8 @@ export const useFavoriteStore = create(
 		lastFetchedAt: null,
 
 		fetchFavorites: async (page = 1, forceRefresh = false) => {
+			const request = ++favoriteRequest;
+			const revision = favoriteRevision;
 			const currentState = get();
 			
 			// If we already have loaded data and this is page 1, refresh silently (no loading state)
@@ -41,23 +49,27 @@ export const useFavoriteStore = create(
 				_refresh: forceRefresh, // Pass refresh flag to bypass cache
 			});
 
+				if (request !== favoriteRequest) return;
 				set((state) => {
+					const incoming = (response.images || []).filter(image => publishedFavorites.get(image._id) !== false);
+					const local = state.images.filter(image => publishedFavorites.get(image._id) === true);
 					if (page === 1) {
 						// Replace images for first page
-						state.images = response.images || [];
+						state.images = [...local, ...incoming.filter(image => !local.some(item => item._id === image._id))];
 						state.hasLoaded = true;
 						state.lastFetchedAt = Date.now();
 					} else {
 						// Append images for subsequent pages
 						const existingIds = new Set(state.images.map(img => img._id));
-						const newImages = (response.images || []).filter(img => !existingIds.has(img._id));
+						const newImages = incoming.filter(img => !existingIds.has(img._id));
 						state.images = [...state.images, ...newImages];
 					}
-					state.pagination = response.pagination || null;
+					state.pagination = revision === favoriteRevision || !state.pagination ? response.pagination || null : state.pagination;
 					state.currentPage = page;
 					state.loading = false;
 				});
 			} catch (error) {
+				if (request !== favoriteRequest) return;
 				set((state) => {
 					state.loading = false;
 				});
@@ -83,6 +95,9 @@ export const useFavoriteStore = create(
 		},
 
 		clearFavorites: () => {
+			favoriteRequest++;
+			favoriteRevision++;
+			publishedFavorites.clear();
 			set((state) => {
 				state.images = [];
 				state.pagination = null;
@@ -119,17 +134,7 @@ export const useFavoriteStore = create(
 			
 			// Silent background refresh - no loading state
 			try {
-				const response = await favoriteService.getFavorites({
-					page: 1,
-					limit: 20,
-				});
-				
-				set((state) => {
-					state.images = response.images || [];
-					state.pagination = response.pagination || null;
-					state.lastFetchedAt = Date.now();
-					// Don't set loading - this is a silent background refresh
-				});
+				await get().fetchFavorites(1, true);
 			} catch {
 				// Silent fail - keep showing cached data
 			}
@@ -255,16 +260,27 @@ if (typeof window !== 'undefined') {
 	window.addEventListener('favoriteCacheUpdated', ((event: CustomEvent<{ 
 		imageId: string; 
 		isFavorited: boolean; 
+		previousIsFavorited?: boolean;
 		image?: Image;
 	}>) => {
-		const { imageId, isFavorited, image } = event.detail || {};
+		const { imageId, isFavorited, image, previousIsFavorited } = event.detail || {};
 		if (!imageId) return;
 
 		const store = useFavoriteStore.getState();
+		const previous = publishedFavorites.get(imageId) ?? previousIsFavorited ?? store.images.some(item => item._id === imageId);
+		if (previous !== isFavorited) favoriteRevision++;
+		publishedFavorites.set(imageId, isFavorited);
+		const nextTotal = store.pagination ? Math.max(0, store.pagination.total + Number(isFavorited) - Number(previous)) : undefined;
+		const syncTotal = (): void => {
+			if (nextTotal !== undefined) useFavoriteStore.setState(state => ({
+				pagination: state.pagination ? { ...state.pagination, total: nextTotal, pages: Math.ceil(nextTotal / state.pagination.limit) } : null,
+			}));
+		};
 		
 		if (isFavorited && image) {
 			// Add image to favorites
 			store.addImageToFavorites(image);
+			syncTotal();
 			const updatedStore = useFavoriteStore.getState();
 			
 			// Only send total if we have pagination (actual data from server)
@@ -283,7 +299,8 @@ if (typeof window !== 'undefined') {
 			// The sidebar subscription will automatically update once pagination is fetched
 		} else {
 			// Remove image from favorites
-			store.removeImageFromFavorites(String(imageId).trim());
+			if (!isFavorited) store.removeImageFromFavorites(String(imageId).trim());
+			syncTotal();
 			const updatedStore = useFavoriteStore.getState();
 			
 			// Only send total if we have pagination (actual data from server)
