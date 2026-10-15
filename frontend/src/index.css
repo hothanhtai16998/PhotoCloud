@@ -245,7 +245,7 @@
 		/* PhotoCloud Studio Brand Tokens - Warm Premium */
 		--studio-bg-warm: #FAF8F4;
 		--studio-bg-cream: #F2EEE7;
-		--studio-bg-card: #FFFFFF;
+		--studio-bg-card: var(--bg-card, #FAF8F4);
 		--studio-text-primary: #1B1B19;
 		--studio-text-muted: #6B6B66;
 		--studio-text-faint: #8A6B2D;
@@ -861,7 +861,7 @@
 	}
 	.studio-cta-secondary:hover:not(:disabled) {
 		transform: translateY(-1px);
-		background: #ffffff;
+		background: var(--bg-card, #FAF8F4);
 		border-color: var(--studio-text-primary);
 	}
 	.studio-cta-secondary:active:not(:disabled) {

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { adminService } from '@/services/adminService';
 import api from '@/lib/axios';
 import { applyAppearanceSettings } from '@/utils/applyAppearanceSettings';
 
@@ -38,15 +37,8 @@ export function useSiteSettings() {
 
     const loadSettings = async () => {
         try {
-            // Try public endpoint first (no auth required)
-            let data;
-            try {
-                const res = await api.get('/settings');
-                data = res.data;
-            } catch {
-                // Fallback to admin endpoint if public fails
-                data = await adminService.getSettings();
-            }
+            // Public pages must never fall back to privileged admin settings.
+            const { data } = await api.get('/settings');
             if (data.settings) {
                 const settingsData = data.settings as {
                     siteName?: string;

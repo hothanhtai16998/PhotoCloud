@@ -33,6 +33,20 @@ function loadStore(cached, fetchImages = async () => { throw new Error('offline'
   assert.equal(restored.store.getState().hasLoaded, true);
   await restored.store.getState().fetchSlides();
   assert.equal(restored.store.getState().slides.length, 1, 'API failure keeps visible slides');
+  const failed = loadStore(null);
+  await failed.store.getState().fetchSlides();
+  assert.equal(failed.store.getState().error,true,'Network failure must differ from empty');
+  assert.equal(failed.store.getState().loading,false);
+  const empty = loadStore(null,async()=>({images:[]}));
+  await empty.store.getState().fetchSlides();
+  assert.equal(empty.store.getState().error,false,'Successful empty response is not an error');
+  let attempt=0;
+  const retry=loadStore(null,async()=>{if(attempt++===0)throw new Error('offline');return {images:[{_id:'retry',imageUrl:'/test.jpg',width:100,height:100}]};});
+  await retry.store.getState().fetchSlides();
+  assert.equal(retry.store.getState().error,true);
+  await retry.store.getState().fetchSlides();
+  assert.equal(retry.store.getState().error,false);
+  assert.equal(retry.store.getState().slides[0].id,'retry');
   restored.store.getState().clearSlides();
   assert.equal(restored.cached(), null);
   for (const invalid of ['{broken', 'null', JSON.stringify({ slides: [null], lastFetchedAt: Date.now() }), JSON.stringify({ slides: [slide], lastFetchedAt: Date.now() - 16 * 60 * 1000 })]) {

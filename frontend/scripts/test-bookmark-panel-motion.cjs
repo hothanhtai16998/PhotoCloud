@@ -8,7 +8,24 @@ const { chromium } = require('C:/Users/Fenn/.cache/codex-runtimes/codex-primary-
 (async () => {
   const root = path.resolve(__dirname, '..');
   const build = await esbuild.build({
-    stdin: { contents: `
+    stdin: { contents: process.argv.includes('--booking') ? `
+      import React from 'react';import {createRoot} from 'react-dom/client';import {MemoryRouter} from 'react-router-dom';
+      import {BookingModal} from './src/components/BookingModal';
+      import {useUserStore} from './src/stores/useUserStore';
+      import {bookingService} from './src/services/bookingService';
+      import {openBookingModal} from './src/utils/bookingModalEvent';
+      import './src/styles/theme.css';
+      bookingService.getPackages=async()=>({packages:['Chân dung cá nhân','Mini session','Couple','Gia đình'].map((name,i)=>({slug:'p'+i,name,basePrice:1500000,durationMinutes:60,includedPhotos:20,includedPeople:5}))});
+      useUserStore.setState({user:{_id:'fixture',displayName:'Nguyễn An',email:'an@example.com',phone:'0901234567'}});
+      createRoot(document.getElementById('root')).render(<MemoryRouter><button id="open" onClick={()=>openBookingModal()}>Đặt lịch</button><BookingModal/></MemoryRouter>);
+    ` : process.argv.includes('--slider-error') ? `
+      import React from 'react';import {createRoot} from 'react-dom/client';
+      import {VisualArtFormsSlider} from './src/components/VisualArtFormsSlider';
+      import {imageService} from './src/services/imageService';
+      let attempts=0;
+      imageService.fetchImages=async()=>{if(attempts++===0)throw new Error('offline');return {images:[{_id:'0123456789abcdef01234567',imageTitle:'Recovered',imageUrl:'/photo.jpg',width:800,height:600}]};};
+      createRoot(document.getElementById('root')).render(<VisualArtFormsSlider/>);
+    ` : `
       import React from 'react';
       import {createRoot} from 'react-dom/client';
       import {MemoryRouter} from 'react-router-dom';
@@ -25,7 +42,7 @@ const { chromium } = require('C:/Users/Fenn/.cache/codex-runtimes/codex-primary-
       createRoot(document.getElementById('root')).render(<MemoryRouter><header style={{position:'fixed',zIndex:1000,right:0}}><Sidebar variant="header"/></header><TimedCardSlider slides={photos.slice(0,6).map(p=>({id:p._id,image:p.imageUrl,title:p.imageTitle,place:'PhotoCloud',region:'Photo',description:''}))}/></MemoryRouter>);
     `, resolveDir: root, loader: 'tsx' },
     bundle: true, write: false, outdir: 'fixture', format: 'iife', jsx: 'automatic',
-    alias: { '@': path.join(root, 'src') }, loader: { '.svg': 'dataurl' },
+    alias: { '@': path.join(root, 'src') }, loader: { '.svg': 'dataurl', '.woff2': 'dataurl' },
     define: { 'import.meta.env': JSON.stringify({ MODE: 'production' }), 'process.env.NODE_ENV': '"production"' },
   });
   const js = build.outputFiles.find(file => file.path.endsWith('.js')).text;
@@ -41,10 +58,49 @@ const { chromium } = require('C:/Users/Fenn/.cache/codex-runtimes/codex-primary-
   let browser;
   try {
     browser = await chromium.launch({ channel: 'msedge', headless: true });
-    for (const width of [390, 1440]) {
+    for (const width of process.argv.includes('--booking') ? [320,390,768,1440] : [390,1440]) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
       page.on('pageerror', error => console.error(error.message));
       await page.goto(`http://127.0.0.1:${server.address().port}`);
+      if(process.argv.includes('--slider-error')) {
+        await page.getByRole('alert').waitFor();
+        assert.ok((await page.getByRole('alert').textContent()).includes('Không tải được'));
+        await page.getByRole('button',{name:'Thử lại'}).click();
+        await page.locator('.travel-stage').waitFor();
+        assert.equal(await page.getByRole('alert').count(),0);
+        console.log(`PASS A09 ${width}: error message, retry button, recovery`);
+        await page.close();continue;
+      }
+      if (process.argv.includes('--booking')) {
+        for (const theme of ['light','dark']) {
+          await page.evaluate(theme=>document.documentElement.classList.toggle('dark-theme',theme==='dark'),theme);
+          await page.locator('#open').click();
+          const modal=page.locator('.booking-modal');await modal.waitFor();await page.waitForTimeout(350);
+          const before=await modal.boundingBox();
+          assert.ok(await page.locator('.booking-modal-packages button').first().evaluate(element=>getComputedStyle(element).color===getComputedStyle(element.closest('.booking-modal')).color),'Package text must follow theme');
+          await page.locator('.booking-modal-packages button').first().click();
+          const next=page.getByRole('button',{name:'Tiếp tục'});
+          await page.screenshot({path:path.join(root,`booking-redesign-${theme}-${width}.png`)});
+          await next.click();
+          await page.locator('input[type="date"]').fill('2027-01-10');
+          await page.getByPlaceholder('Ví dụ: Hồ Tây, Hà Nội').fill('Hồ Tây');
+          assert.equal(await page.locator('.booking-stepper .completed').count(),1);
+          assert.deepEqual(await modal.boundingBox(),before);
+          await next.click();
+          assert.equal(await page.locator('.booking-stepper .completed').count(),2);
+          assert.deepEqual(await modal.boundingBox(),before);
+          await next.click();
+          assert.equal(await page.locator('.booking-stepper .completed').count(),3);
+          assert.deepEqual(await modal.boundingBox(),before);
+          const fits=await page.locator('.booking-modal-footer').evaluate(element=>{const box=element.getBoundingClientRect();return box.bottom<=innerHeight && box.left>=0 && box.right<=innerWidth;});
+          assert.ok(fits,'Footer must remain visible');
+          await page.getByRole('button',{name:'Quay lại'}).click();
+          assert.equal(await page.locator('.booking-stepper .completed').count(),2);
+          await page.getByRole('button',{name:'Đóng đặt lịch',exact:true}).click();
+          console.log(`PASS booking ${width} ${theme}: stable bounds, completed steps, Back, footer visible`);
+        }
+        await page.close();continue;
+      }
       await page.locator('.travel-stage').waitFor();
       await page.waitForTimeout(1000);
       await page.evaluate(() => {

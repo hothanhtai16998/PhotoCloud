@@ -61,7 +61,7 @@ export const authService = {
 	fetchMe: async (): Promise<User> => {
 		const res = await api.get<FetchMeResponse>(
 			'/users/me',
-			{ withCredentials: true }
+			{ withCredentials: true, params: { _t: Date.now() }, headers: { 'Cache-Control': 'no-cache' } }
 		);
 		return res.data.user;
 	},

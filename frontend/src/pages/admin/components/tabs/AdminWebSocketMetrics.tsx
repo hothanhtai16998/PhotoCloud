@@ -111,26 +111,6 @@ export const AdminWebSocketMetrics = memo(function AdminWebSocketMetrics() {
     }
 
     if (!metrics && !loading) {
-    const getHealthColor = (status?: string) => {
-        if (!status) return 'text-gray-600';
-        switch (status) {
-            case 'healthy': return 'text-green-600';
-            case 'warning': return 'text-yellow-600';
-            case 'critical': return 'text-red-600';
-            default: return 'text-gray-600';
-        }
-    };
-
-    const getHealthBgColor = (status?: string) => {
-        if (!status) return 'bg-gray-100';
-        switch (status) {
-            case 'healthy': return 'bg-green-50 border-green-200';
-            case 'warning': return 'bg-yellow-50 border-yellow-200';
-            case 'critical': return 'bg-red-50 border-red-200';
-            default: return 'bg-gray-100';
-        }
-    };
-
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -140,31 +120,6 @@ export const AdminWebSocketMetrics = memo(function AdminWebSocketMetrics() {
                         Real-time WebSocket connection and event statistics
                     </p>
                 </div>
-                {metrics.health && (
-                    <Card className={`${getHealthBgColor(metrics.health.status)} border-2`}>
-                        <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                                <div>
-                                    <div className="text-xs text-muted-foreground mb-1">{t('admin.systemHealth')}</div>
-                                    <div className={`text-3xl font-bold ${getHealthColor(metrics.health.status)}`}>
-                                        {metrics.health.score}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                        {metrics.health.status === 'healthy' ? t('admin.healthy') : 
-                                         metrics.health.status === 'warning' ? t('admin.warning') : 
-                                         t('admin.critical')}
-                                    </div>
-                                </div>
-                                <div className="text-xs space-y-1">
-                                    <div>Conn: {metrics.health.factors.connectionSuccess.toFixed(1)}%</div>
-                                    <div>Events: {metrics.health.factors.eventDelivery}%</div>
-                                    <div>Errors: {metrics.health.factors.errorRate}%</div>
-                                    <div>Latency: {metrics.health.factors.latency}ms</div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
             </div>
                 <Card>
                     <CardHeader>

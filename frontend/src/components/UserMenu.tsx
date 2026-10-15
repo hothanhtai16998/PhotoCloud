@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Upload } from 'lucide-react'
+import { Upload, Shield } from 'lucide-react'
 import { t } from '@/i18n'
 import type { User } from '@/types/user'
 import { useIsMobile } from '@/hooks/useIsMobile'
@@ -24,6 +24,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const hoverCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currentUser = user
+  const canOpenAdmin = Boolean(user?.isAdmin || user?.isSuperAdmin || (user?.permissions && Object.keys(user.permissions).length > 0))
   const isMobile = useIsMobile()
 
   const handleMenuItemClick = () => {
@@ -177,6 +178,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
           }}
         >
           <div className="user-menu-items">
+            {canOpenAdmin && <Link to="/admin" className="user-menu-item" onClick={handleMenuItemClick}><Shield size={18} /> Quản trị</Link>}
             {!isMobile && <>
             {/* Desktop Menu - User Info Section */}
             <Link

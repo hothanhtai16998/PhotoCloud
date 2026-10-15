@@ -12,12 +12,16 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './utils/verifyAppearanceSettings';
 import './styles/dark-surfaces.css';
 import './styles/public-surfaces.css';
+import { removeDevServiceWorker } from './utils/removeDevServiceWorker';
 
 // Enable Immer MapSet plugin for Map and Set support in Zustand stores
 enableMapSet();
 
 // Register Service Worker for image caching and offline support
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && import.meta.env.DEV) {
+  // Remove this app's old worker in dev without touching auth or image caches.
+  void removeDevServiceWorker().catch(() => {});
+} else if ('serviceWorker' in navigator) {
 	window.addEventListener('load', () => {
 		navigator.serviceWorker
 			.register('/sw.js')

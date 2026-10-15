@@ -4,6 +4,8 @@
  * Reduces unnecessary network requests and improves performance
  */
 
+import { getAuthSessionVersion } from './authSessionVersion';
+
 interface PendingRequest {
 	promise: Promise<unknown>;
 	timestamp: number;
@@ -22,7 +24,7 @@ const DEDUPLICATION_WINDOW = 1000; // 1 second window
  */
 function generateRequestKey(method: string, url: string, data?: unknown): string {
 	const dataStr = data ? JSON.stringify(data) : '';
-	return `${method}:${url}:${dataStr}`;
+	return `${getAuthSessionVersion()}:${method}:${url}:${dataStr}`;
 }
 
 /**

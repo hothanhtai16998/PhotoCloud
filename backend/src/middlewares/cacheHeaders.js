@@ -16,6 +16,14 @@ export const setCacheHeaders = (req, res, next) => {
     }
 
     const path = req.path;
+    if (req.headers.authorization || req.headers.cookie || /^\/(?:auth|users\/me|admin|csrf-token)(?:\/|$)/.test(path)) {
+        res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.vary('Authorization');
+        res.vary('Cookie');
+        return next();
+    }
 
     // Static/immutable data - long cache
     if (path.includes('/categories') || path.includes('/settings/public')) {

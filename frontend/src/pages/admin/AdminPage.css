@@ -1,7 +1,7 @@
 /* Studio Warm Theme — Booking Photography */
 :root {
   --admin-bg: #FAF8F4;
-  --admin-card-bg: #FFFFFF;
+  --admin-card-bg: var(--bg-card, #FAF8F4);
   --admin-text: #1B1B19;
   --admin-text-secondary: #6B6B66;
   --admin-border: #E8E2D6;
@@ -17,12 +17,12 @@
 
 .dark,
 .dark-theme {
-  --admin-bg: #16140F;
-  --admin-card-bg: #1F1C16;
+  --admin-bg: var(--bg-primary);
+  --admin-card-bg: var(--bg-card);
   --admin-text: #F2EEE7;
   --admin-text-secondary: #9C988E;
-  --admin-border: #2D2A22;
-  --admin-hover: #25221C;
+  --admin-border: var(--border-color);
+  --admin-hover: var(--hover-bg);
   --admin-shadow: rgba(0, 0, 0, 0.4);
 }
 
@@ -45,6 +45,7 @@
 /* Sidebar */
 .admin-sidebar {
   width: 250px;
+  flex-shrink: 0;
   background: var(--admin-card-bg);
   border-radius: 8px;
   padding: 20px;
@@ -98,7 +99,7 @@
 .admin-sidebar-toggle {
   position: relative;
   right: -12px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 50%;
   width: 32px;
@@ -266,6 +267,7 @@
 /* Main Content */
 .admin-content {
   flex: 1;
+  min-width: 0;
   background: var(--admin-card-bg);
   border-radius: 8px;
   padding: 30px;
@@ -427,7 +429,7 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 8px;
   cursor: pointer;
@@ -585,7 +587,7 @@
 /* Tables */
 .admin-table {
   overflow-x: auto;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -705,7 +707,7 @@
   padding: 10px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
@@ -797,7 +799,7 @@
 
 .admin-search input:focus {
   outline: none;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border-color: rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
 }
@@ -998,7 +1000,7 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
   overflow: hidden;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -1120,7 +1122,7 @@
   padding: 20px;
   position: relative;
   z-index: 2;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
 }
 
 .admin-image-info h3 {
@@ -1185,7 +1187,7 @@
   transition: all 0.2s ease;
   font-weight: 500;
   /* Clean white background with single border */
-  background: white !important;
+  background: var(--bg-card, #FAF8F4) !important;
   border: 1px solid #d1d5db !important;
   color: #374151 !important;
   box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05) !important;
@@ -1223,7 +1225,7 @@
   font-weight: 600;
   color: #374151;
   padding: 8px 16px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border-radius: 8px;
   box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05);
   border: 1px solid #e5e7eb;
@@ -1246,7 +1248,7 @@
 }
 
 .admin-modal {
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border-radius: 8px;
   width: 95%;
   max-width: min(1400px, 98%);
@@ -1265,7 +1267,7 @@
   padding: 20px;
   border-bottom: 1px solid var(--border-color, #E8E2D6);
   flex-shrink: 0;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -1402,7 +1404,7 @@
   padding: 20px 0 0 0;
   border-top: 1px solid #e5e5e5;
   flex-shrink: 0;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   margin-top: 20px;
   width: 100%;
   flex-wrap: wrap;
@@ -1480,7 +1482,7 @@
 
 /* Permission Matrix */
 .permission-matrix {
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 4px rgba(27, 27, 25, 0.08);
@@ -3781,7 +3783,7 @@
 .admin-permission-tag {
   display: inline-block;
   padding: 3px 8px;
-  background: #ffffff;
+  background: var(--bg-card, #FAF8F4);
   color: #495057;
   border-radius: 4px;
   font-size: 0.6875rem;
@@ -3874,7 +3876,7 @@
 }
 
 .admin-security-field {
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 12px;
@@ -3907,7 +3909,7 @@
   border-radius: 6px;
   font-size: 0.9375rem;
   transition: all 0.2s ease;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
 }
 
 .admin-security-input:focus {
@@ -3970,7 +3972,7 @@
   padding: 16px;
   border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--bg-card, #FAF8F4);
   flex: 1;
   min-height: 0;
   max-height: 100%;
@@ -4003,7 +4005,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   padding: 12px;
   border-radius: 6px;
   border: 1px solid #e5e7eb;
@@ -4086,7 +4088,7 @@
   border-radius: 6px;
   font-family: inherit;
   font-size: 0.9375rem;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
 }
 
 .admin-empty-state {
@@ -4140,7 +4142,7 @@
 }
 
 .falcon-metric-tab {
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 20px;
@@ -4208,7 +4210,7 @@
   padding: 8px 32px 8px 12px;
   border: 1px solid #e9ecef;
   border-radius: 6px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   font-size: 0.875rem;
   color: #495057;
   cursor: pointer;
@@ -4245,7 +4247,7 @@
 
 /* Falcon Card */
 .falcon-card {
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   border: 1px solid #e9ecef;
   border-radius: 8px;
   overflow: hidden;
@@ -4369,7 +4371,7 @@
   padding: 4px 24px 4px 8px;
   border: 1px solid #e9ecef;
   border-radius: 4px;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   font-size: 0.8125rem;
   color: #495057;
   cursor: pointer;
@@ -4959,7 +4961,7 @@
   border: 1px solid var(--border-strong, #D8D1C5);
   border-radius: 6px;
   font-size: 0.9375rem;
-  background: white;
+  background: var(--bg-card, #FAF8F4);
   cursor: pointer;
   transition: border-color 0.2s;
 }

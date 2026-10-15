@@ -25,6 +25,59 @@
 }
 .booking-modal-header { gap:16px; }
 .booking-modal-header > div { min-width:0; }
+.booking-modal {
+  width:min(820px,100%);
+  height:min(680px,calc(100dvh - 48px));
+  max-height:calc(100dvh - 48px);
+  background:var(--bg-primary,#FAF8F4);
+  border:1px solid var(--border-color,#E8E2D6);
+  border-radius:16px;
+  font-size:16px;
+  font-family:var(--studio-font-body, 'Manrope', Arial, sans-serif);
+  box-sizing:border-box;
+}
+.booking-modal > form { display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden; }
+.booking-modal-header,.booking-modal-footer { flex-shrink:0;background:var(--bg-primary,#FAF8F4);border-color:var(--border-color,#E8E2D6); }
+.booking-modal-header h2 { font-size:28px;letter-spacing:0; }
+.booking-modal-eyebrow { display:none; }
+.booking-modal-content { flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:24px 28px; }
+.booking-modal-step h3 { font-size:22px;font-weight:600; }
+.booking-modal-help { font-size:15px;line-height:1.6;margin-bottom:20px; }
+.booking-modal-fields { grid-template-columns:repeat(2,minmax(0,1fr));gap:20px; }
+.booking-modal-fields label,.booking-modal-notes { font-size:15px;line-height:1.5; }
+.booking-modal-fields :is(input,select,textarea),.booking-modal-notes textarea { font-size:16px;min-height:48px;border-color:var(--border-strong,#D8D1C5);border-radius:6px; }
+.booking-modal-fields :is(input,select,textarea):focus-visible,.booking-modal-notes textarea:focus-visible { outline:2px solid var(--text-primary,#1B1B19);outline-offset:2px; }
+.booking-modal-packages button { border-color:var(--border-strong,#D8D1C5);border-radius:8px;gap:6px 12px;color:var(--text-primary,#1B1B19);font-family:inherit; }
+.booking-modal-packages strong { font-size:17px;line-height:1.4;padding-right:24px; }
+.booking-modal-packages button > span:not(.booking-package-thumb) { font-size:16px; }
+.booking-modal-packages small { font-size:14px;line-height:1.4; }
+.booking-modal-packages button.selected { border-color:#356653;box-shadow:inset 0 0 0 1px #356653;background:var(--bg-secondary,#F2EEE7); }
+.booking-modal-packages button.selected::after { background:#356653;color:#fff; }
+.booking-modal-packages button:focus-visible { outline:2px solid var(--text-primary,#1B1B19);outline-offset:3px; }
+.booking-modal-footer button { font-size:15px;min-height:48px;border-radius:6px; }
+.booking-modal-next { background:#273E36;border-color:#273E36;color:#fff; }
+.booking-modal-summary { background:var(--bg-card,#fff);border-color:var(--border-color,#E8E2D6);border-radius:8px; }
+.booking-modal-summary div { font-size:15px;line-height:1.6;border-color:var(--border-color,#E8E2D6); }
+.booking-modal-policy { font-size:14px;line-height:1.6;background:var(--bg-secondary,#F2EEE7);color:var(--text-secondary,#6B6B66);border-color:var(--border-color,#E8E2D6); }
+.booking-modal-success { flex:1;min-height:0;overflow:auto; }
+.booking-modal-success p { font-size:16px;line-height:1.6; }
+.booking-stepper { display:grid;grid-template-columns:repeat(var(--step-count),minmax(0,1fr));list-style:none;margin:0;padding:18px 28px;gap:12px;border-bottom:1px solid var(--border-color,#E8E2D6);flex-shrink:0; }
+.booking-stepper li { display:flex;align-items:center;gap:8px;min-width:0;font-size:14px;color:var(--text-secondary,#6B6B66); }
+.booking-step-marker { width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border:1px solid var(--border-strong,#D8D1C5);border-radius:50%;font-size:13px; }
+.booking-stepper .current { color:var(--text-primary,#1B1B19);font-weight:600; }
+.booking-stepper .current .booking-step-marker { border:2px solid var(--text-primary,#1B1B19); }
+.booking-stepper .completed .booking-step-marker { background:#356653;border-color:#356653;color:#fff; }
+@media(max-width:600px) {
+  .booking-modal { height:92dvh;max-height:92dvh;border-radius:16px 16px 0 0; }
+  .booking-modal-header h2 { font-size:24px; }
+  .booking-modal-content { padding:20px 16px; }
+  .booking-modal-fields { grid-template-columns:1fr;gap:16px; }
+  .booking-modal-step h3 { font-size:20px; }
+  .booking-stepper { padding:14px 16px;gap:8px; }
+  .booking-stepper li { flex-direction:column;gap:6px;font-size:12px; }
+  .booking-modal-footer { padding:12px 16px;gap:8px; }
+  .booking-modal-footer .booking-modal-full-page { font-size:13px!important; }
+}
 .booking-modal-packages button > .booking-package-thumb {
   grid-column:1;
   grid-row:1 / span 3;

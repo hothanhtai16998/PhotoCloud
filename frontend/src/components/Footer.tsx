@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { newsletterService } from '@/services/newsletterService';
+import { getErrorMessage } from '@/lib/utils';
 import {
     Camera,
     Compass,
     Facebook,
-    Heart,
+    Send,
     Instagram,
     Linkedin,
     Mail,
@@ -43,6 +46,10 @@ interface FooterProps {
 
 export function Footer({ compact = false }: FooterProps) {
     const year = new Date().getFullYear();
+    const [newsletterBusy, setNewsletterBusy] = useState(false);
+    const newsletterPending = useRef(false);
+    const [newsletterMessage, setNewsletterMessage] = useState('');
+    const [newsletterError, setNewsletterError] = useState(false);
 
     if (compact) {
         return (
@@ -126,25 +133,41 @@ export function Footer({ compact = false }: FooterProps) {
                     {/* Newsletter column */}
                     <section className="studio-footer-section studio-footer-newsletter">
                         <h3>
-                            <Mail size={14} /> Đăng ký nhận tin
+                            <Mail size={14} /> Nhận tin từ studio
                         </h3>
-                        <p>Nhận mẹo chụp ảnh, ưu đãi gói mới mỗi tháng.</p>
+                        <p>Nhận mẹo chụp ảnh và tin từ studio. Xác nhận qua email trước khi nhận tin; bạn có thể hủy bất cứ lúc nào.</p>
                         <form
                             className="studio-footer-newsletter-form"
-                            onSubmit={(event) => {
+                            onSubmit={async (event) => {
                                 event.preventDefault();
+                                if (newsletterPending.current) return;
                                 const target = event.currentTarget;
                                 const input = target.querySelector('input[type="email"]') as HTMLInputElement | null;
-                                if (input?.value) {
-                                    window.location.href = `mailto:${BRAND.personality.tone}?subject=Đăng ký nhận tin&body=Email: ${input.value}`;
+                                if (input?.value.trim()) {
+                                    newsletterPending.current = true;
+                                    setNewsletterBusy(true);
+                                    setNewsletterMessage('');
+                                    setNewsletterError(false);
+                                    try {
+                                        const response = await newsletterService.subscribe(input.value.trim());
+                                        setNewsletterMessage(response.message);
+                                        target.reset();
+                                    } catch (error) {
+                                        setNewsletterError(true);
+                                        setNewsletterMessage(getErrorMessage(error, 'Chưa đăng ký được. Vui lòng thử lại.'));
+                                    } finally {
+                                        newsletterPending.current = false;
+                                        setNewsletterBusy(false);
+                                    }
                                 }
                             }}
                         >
-                            <input type="email" placeholder="you@example.com" aria-label="Email đăng ký" required />
-                            <button type="submit" aria-label="Đăng ký">
-                                <Heart size={14} />
+                            <input type="email" placeholder="you@example.com" aria-label="Email đăng ký" maxLength={254} disabled={newsletterBusy} required />
+                            <button type="submit" disabled={newsletterBusy} aria-busy={newsletterBusy} aria-label={newsletterBusy ? 'Đang gửi yêu cầu' : 'Đăng ký nhận tin'} title="Đăng ký nhận tin">
+                                <Send size={18} />
                             </button>
                         </form>
+                        {newsletterMessage && <p role={newsletterError ? 'alert' : 'status'}>{newsletterMessage}</p>}
                     </section>
                 </div>
 

@@ -956,7 +956,7 @@
   border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 12px 12px 0 0; /* Only top corners rounded */
   padding: 0;
-  background-color: white;
+  background-color: var(--bg-card, #FAF8F4);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   height: fit-content;
   display: flex;
@@ -993,7 +993,7 @@
   padding-left: 32px;
   padding-right: 32px;
   border-top: 1px solid #e5e5e5;
-  background-color: white;
+  background-color: var(--bg-card, #FAF8F4);
 }
 
 .upload-modal-footer--form .footer-buttons {
@@ -1063,7 +1063,7 @@
   align-self: stretch;
   border-radius: 0;
   border-top: none;
-  background-color: white;
+  background-color: var(--bg-card, #FAF8F4);
   padding: 0;
 }
 

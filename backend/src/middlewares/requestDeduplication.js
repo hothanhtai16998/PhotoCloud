@@ -39,8 +39,10 @@ function generateRequestKey(req) {
  * If the same request is made within the deduplication window, return the cached response
  */
 export const requestDeduplication = (req, res, next) => {
-    // Only deduplicate GET and POST requests
-    if (req.method !== 'GET' && req.method !== 'POST') {
+    // This middleware runs before authentication. Never share private responses
+    // or mutations: replaying JSON also drops authentication Set-Cookie headers.
+    if (req.method !== 'GET' || req.headers.authorization || req.headers.cookie || req.user ||
+        /^\/(?:auth|users\/me|csrf-token)(?:\/|$)/.test(req.path)) {
         return next();
     }
 
@@ -136,7 +138,7 @@ export const requestDeduplication = (req, res, next) => {
 /**
  * Cleanup old pending requests periodically
  */
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
     const now = Date.now();
     for (const [key, value] of pendingRequests.entries()) {
         if (now - value.timestamp > DEDUPLICATION_WINDOW * 2) {
@@ -144,4 +146,5 @@ setInterval(() => {
         }
     }
 }, 5000); // Cleanup every 5 seconds
+cleanupTimer.unref?.();
 

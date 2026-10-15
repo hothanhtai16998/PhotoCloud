@@ -139,6 +139,8 @@
     gap: 6px;
     align-items: stretch;
 }
+.studio-footer-newsletter-form button { min-width:44px;min-height:44px; }
+.studio-footer-newsletter-form button:disabled { opacity:.6;cursor:wait; }
 
 .studio-footer-newsletter-form input {
     flex: 1;

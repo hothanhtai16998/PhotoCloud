@@ -500,7 +500,7 @@
 }
 
 .hero-cta--secondary:hover {
-  background: #ffffff;
+  background: var(--bg-card, #FAF8F4);
   border-color: #B8865B;
   color: #966339;
   transform: translateY(-2px);

@@ -33,7 +33,7 @@
   border-top: 1px solid #e5e5e5;
   border-radius: 0;
   font-size: 16px;
-  background-color: white;
+  background-color: var(--bg-card, #FAF8F4);
   outline: none;
   box-sizing: border-box;
   cursor: pointer;

@@ -52,6 +52,7 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
 const BlogDetailPage = lazy(() => import("./pages/BlogDetailPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const NewsletterPage = lazy(() => import('./pages/NewsletterPage'));
 
 
 // Loading animation fallback for lazy-loaded routes
@@ -238,6 +239,8 @@ function App() {
           <Route path="/photos/:slug" element={<ImagePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/newsletter/confirm" element={<NewsletterPage />} />
+          <Route path="/newsletter/unsubscribe" element={<NewsletterPage />} />
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/packages/:slug" element={<PackagesPage />} />
           <Route path="/blog" element={<BlogPage />} />

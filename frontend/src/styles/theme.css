@@ -1,8 +1,9 @@
 /* Global Theme Variables — PhotoCloud Warm Studio */
 :root {
   --bg-primary: #FAF8F4;
+  --bg-header: #F0EAE0;
   --bg-secondary: #F2EEE7;
-  --bg-card: #FFFFFF;
+  --bg-card: #FAF8F4;
   --text-primary: #1B1B19;
   --text-secondary: #6B6B66;
   --text-muted: #6B6B66;
@@ -13,18 +14,20 @@
   --accent-soft: #D9A441;
   --shadow: rgba(27, 27, 25, 0.08);
   --shadow-strong: rgba(27, 27, 25, 0.16);
+  --page-heading-wash: radial-gradient(ellipse at 70% 0%, rgba(184,134,91,.10), transparent 60%), linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%);
 }
 
 .dark-theme {
-  --bg-primary: #16140F;
-  --bg-secondary: #1F1C16;
-  --bg-card: #25221C;
+  --bg-primary: #242017;
+  --bg-header: #30291E;
+  --bg-secondary: #2B251B;
+  --bg-card: #332C21;
   --text-primary: #F2EEE7;
   --text-secondary: #B8B2A4;
   --text-muted: #AAA493;
-  --border-color: #2D2A22;
-  --border-strong: #3A362C;
-  --hover-bg: #25221C;
+  --border-color: #4A402F;
+  --border-strong: #66563E;
+  --hover-bg: #3C3326;
   --accent: #B8865B;
   --accent-soft: #D9A441;
   --shadow: rgba(0, 0, 0, 0.4);
@@ -45,7 +48,7 @@
 }
 
 .dark-theme .PHOTOCLOUD-header {
-  background: var(--bg-primary);
+  background: var(--header-surface, var(--bg-header));
   border-bottom-color: var(--border-color);
 }
 

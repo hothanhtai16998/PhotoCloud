@@ -11,7 +11,7 @@
   padding: 8px 12px;
   border: 1px solid var(--border-color, #E8E2D6);
   border-radius: 6px;
-  background-color: white;
+  background-color: var(--bg-card, #FAF8F4);
   min-height: 42px;
   align-items: center;
   transition: border-color 0.2s ease;

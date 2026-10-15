@@ -19,7 +19,8 @@
 
 .global-loading-overlay.visible {
   opacity: 1;
-  pointer-events: auto;
+  /* Loading feedback must not block the persistent header or its menus. */
+  pointer-events: none;
 }
 
 /* Hide content while loading overlay is visible or fading out */

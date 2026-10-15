@@ -3,10 +3,8 @@
 
 const CACHE_NAME = 'photo-app-images-v3';
 const PRELOAD_CACHE = 'photo-app-preload-v3';
-const API_CACHE = 'photo-app-api-v3';
 const STATIC_CACHE = 'photo-app-static-v3';
 const MAX_CACHE_SIZE = 100 * 1024 * 1024; // 100MB max cache size
-const API_CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes for API responses
 
 // Install event - set up cache
 self.addEventListener('install', (event) => {
@@ -19,7 +17,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== PRELOAD_CACHE && name !== API_CACHE && name !== STATIC_CACHE)
+          .filter((name) => name !== CACHE_NAME && name !== PRELOAD_CACHE && name !== STATIC_CACHE)
           .map((name) => caches.delete(name))
       );
     })
@@ -31,6 +29,11 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  // Vite source and HMR modules are mutable, unlike production hashed assets.
+  if (/^\/(?:src\/|node_modules\/|@vite\/|@id\/|@fs\/|@react-refresh(?:\?|$))/.test(url.pathname)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   if (event.request.mode === 'navigate' || event.request.destination === 'document') {
     event.respondWith(
@@ -42,37 +45,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Priority order: API > Images > Static assets
-  // Handle API requests with network-first, fallback to cache
+  // API responses may contain session data. Never cache or replay them offline.
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Cache successful GET requests
-          if (event.request.method === 'GET' && response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(API_CACHE).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Network failed, try cache
-          return caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-              return cachedResponse;
-            }
-            // Return offline response for API calls
-            return new Response(
-              JSON.stringify({ error: 'Offline', message: 'No internet connection' }),
-              {
-                status: 503,
-                headers: { 'Content-Type': 'application/json' }
-              }
-            );
-          });
-        })
-    );
+    event.respondWith(fetch(event.request));
     return;
   }
 

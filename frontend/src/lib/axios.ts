@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/useAuthStore';
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { appConfig } from '@/config/appConfig';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
 
 // Helper to get the API base URL
 const getApiBaseURL = () => {
@@ -89,6 +90,9 @@ const getCsrfTokenFromCookie = (): string | null => {
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const sessionConfig = config as InternalAxiosRequestConfig & { _authSessionVersion?: number };
+    sessionConfig._authSessionVersion ??= getAuthSessionVersion();
+    if (sessionConfig._authSessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
     // Create AbortController if not already provided
     if (!config.signal) {
       const controller = new AbortController();
@@ -143,6 +147,8 @@ api.interceptors.request.use(
  */
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    const sessionConfig = config as InternalAxiosRequestConfig & { _authSessionVersion?: number };
+    sessionConfig._authSessionVersion ??= getAuthSessionVersion();
     const isStateChangingMethod = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(
       config.method?.toUpperCase() ?? ''
     );
@@ -195,10 +201,14 @@ api.interceptors.response.use(
     if (config._cleanupAbort) {
       config._cleanupAbort();
     }
+    if ((config as typeof config & { _authSessionVersion?: number })._authSessionVersion !== getAuthSessionVersion()) {
+      return Promise.reject(new axios.CanceledError('Session changed'));
+    }
     return response;
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _authSessionVersion?: number;
       _retryCount?: number;
       _cleanupAbort?: () => void;
     };
@@ -216,6 +226,7 @@ api.interceptors.response.use(
     if (!originalRequest) {
       return Promise.reject(error);
     }
+    if (originalRequest._authSessionVersion !== getAuthSessionVersion()) return Promise.reject(new axios.CanceledError('Session changed'));
 
     // Skip retries for certain endpoints
     const skipRetryPaths = ['/auth/signin', '/auth/signup', '/auth/refresh'];
@@ -275,6 +286,7 @@ api.interceptors.response.use(
 
         // Create a new refresh promise
         const refreshPromise = (async () => {
+          const sessionVersion = getAuthSessionVersion();
           try {
             const refreshResponse = await api.post(
               '/auth/refresh',
@@ -283,10 +295,12 @@ api.interceptors.response.use(
             );
 
             const newAccessToken = refreshResponse.data.accessToken;
+            if (sessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
             useAuthStore.getState().setAccessToken(newAccessToken);
 
             return newAccessToken;
           } catch (refreshError: any) {
+            if (sessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
             // Don't sign out user on rate limit (429) or cancelled requests
             // Only clear auth for actual auth failures (401, 403, etc.)
             const status = refreshError?.response?.status;

@@ -2,6 +2,79 @@
 
 ## 0. Bảng điều khiển chung
 
+### Guest startup 401 và cấu hình admin trên homepage - 2026-10-15
+
+- Ảnh người dùng có refresh 401 lặp và /admin/settings 401. Public /api/settings backend local kiểm tra trực tiếp trả 200. Frontend refresh guest 401 gọi clearAuth làm tăng generation, hủy response public đang chờ; useSiteSettings catch lại fallback sang API admin gây thêm 401. StrictMode initializer cũng gọi refresh hai lần.
+- Startup initialization dùng single-flight và không chạy lại sau hoàn tất. Refresh guest không token chỉ xóa dấu hasAuth/dispatch logout, không tăng generation; refresh khi có token vẫn clearAuth để giữ cách ly tài khoản. Public settings chỉ gọi /settings, lỗi thì dùng defaults, tuyệt đối không fallback /admin/settings.
+- Store regression guest 401 giữ generation + startup dedup PASS; account switch/stale profile/stale refresh/logout ordering PASS. Test trình duyệt dev StrictMode 390, public settings trả chậm sau refresh401: nhận đúng title; settings503 không gọi admin; cả hai chỉ một refresh PASS. Type-check/build PASS. Refresh401 khi không có cookie là trạng thái guest hợp lệ, không phải đã xác nhận cookie đăng nhập thật hoạt động.
+
+### Admin vẫn không phản hồi và lag - 2026-10-15
+
+- Người dùng báo bản sửa overlay chưa giải quyết hết. Test trước chỉ trả lỗi API analytics nên chưa mount widget con. Bổ sung analytics thành công tái hiện global ErrorBoundary: Cannot read properties of null (reading health), do AdminWebSocketMetrics nhánh không có metrics vẫn đọc metrics.health. Xóa phần health khỏi nhánh lỗi, giữ giao diện lỗi widget.
+- Bỏ theo dõi/đo bố cục đổi màu header trên admin (không có heading wash) để mutation biểu đồ không gây query/getComputedStyle/layout read toàn trang cho header. Test đo số lần getComputedStyle(admin-page) bằng 0.
+- SW trước đây cache-first cả /src CSS/JS và module Vite, có thể giữ CSS chặn pointer cũ dù đã sửa. SW mới bypass source/HMR/dependency dev; main.tsx không đăng ký worker trong DEV và unregister worker /sw.js của app, không xóa auth hay cache ảnh. Trang đang do worker cũ kiểm soát cần đóng/mở lại sau unregister.
+- Regression 390/1440: analytics có dữ liệu + WebSocket lỗi hoặc thành công, header/avatar và Người dùng/Ảnh/điều hướng logo PASS; 1s heartbeat headless có 242 frame, gap tối đa 4-8ms trong fixture (không đại diện thiết bị/phiên thật). SW regression source CSS/HMR không lấy cache PASS. Type-check/build PASS. Chưa truy cập được session Chrome thật, chưa xác nhận hết lag trên dữ liệu thật; cần người dùng kiểm tra lại.
+
+### Header bị chặn khi tải Admin - 2026-10-15
+
+- Người dùng bổ sung: cả header lẫn các tab admin đều không phản ứng. Mở rộng regression sau sửa: bấm tab Người dùng rồi Ảnh, kiểm tra active tab thay đổi và sidebar mobile tự đóng; PASS 390/1440 kể cả API admin giả lập trả lỗi. Chưa xác nhận lại phiên thực tế của người dùng.
+- Tái hiện bằng cách giữ chunk AdminPage chưa tải xong: global-loading-overlay.visible trong suốt phủ toàn màn hình, z-index 9999 và pointer-events auto chặn click avatar/header. Khi tải xong, header hoạt động trong thử nghiệm giả lập.
+- Giữ loading feedback nhưng bỏ chặn pointer của overlay. Không thay phân quyền, dữ liệu hay chức năng header.
+- Regression scripts/test-admin-header.cjs: trước sửa thất bại với lỗi overlay intercepts pointer events; sau sửa PASS 390/1440: mở avatar lúc chunk còn pending, đổi theme desktop, tải xong và bấm logo về homepage. API giả lập, admin data trả lỗi chủ động; không xác nhận dashboard dữ liệu thật. Build PASS; detector CSS không phát hiện lỗi. Chờ người dùng kiểm tra lại tình huống thực tế.
+
+### Lỗi nghiêm trọng cách ly tài khoản admin/user — 2026-10-15
+
+- Người dùng báo đăng nhập admin nhưng header hiện user111. Rà source xác nhận nhiều đường giữ/ghi đè phiên: global requestDeduplication trước auth gộp request theo anonymous (kể cả POST refresh cùng body), `/users/me` cache HTTP300s, SW cache/replay mọi GET API và frontend nhận refresh/profile trễ. Không sửa vai trò tài khoản trong DB hoặc cấp quyền bằng giao diện.
+- Backend chỉ gộp GET guest không credential, không replay mutation/auth/cookie/Authorization; dữ liệu có credential và auth/me/admin dùng no-store + Vary. Frontend /me cache-bust để né cache HTTP cũ; SW bỏ cache API và xóa cache API cũ khi activate, giữ cache ảnh. Thêm generation phiên để bỏ kết quả cũ ở auth/user/axios, cách ly dedup frontend theo generation; đăng nhập mới xóa user trước và chờ logout cookie kết thúc.
+- Regression backend HTTP local hai danh tính/cookie và Set-Cookie PASS; frontend store stale profile/refresh + logout/login ordering PASS; UI production API giả 390/1440 sáng/tối đăng nhập admin trong khi refresh cũ trả trễ rồi reload vẫn admin PASS. Build/type-check PASS; ESLint store không lỗi, warning any có sẵn. Chưa thử tài khoản/mật khẩu thật. Cần restart backend và reload frontend để SW mới active trước kiểm tra lại.
+
+### Khôi phục lối vào Admin — 2026-10-15
+
+- Người dùng báo thiếu nút vào Admin. Thêm nút khiên desktop header và mục “Quản trị” trong menu avatar cả desktop/mobile; hamburger mobile giữ link admin. Điều kiện hiển thị khớp AdminRoute: isAdmin/isSuperAdmin hoặc permissions không rỗng, không đổi phân quyền API. Tài khoản thường không hiện link.
+- Kiểm tra phát hiện grid desktop chia cột đều làm avatar tràn khi thêm nút: sửa cột auto/minmax/auto, thu upload thành icon có tooltip. Fixture390/1440 sáng/tối: admin mở menu và tới /admin, member không có link PASS; type-check/build PASS, ESLint không lỗi (warning effect cũ trong UserMenu).
+
+### A10: newsletter có xác nhận và hủy — 2026-10-15
+
+- Theo yêu cầu “làm dùm tôi”: thay mailto footer bằng POST subscribe, trạng thái đang gửi/kết quả/lỗi; Mongo model email unique với pending/subscribed/unsubscribed. Dùng lại SMTP `sendUserEmail`, link confirm24h và unsubscribe token hash; GET không mutation, hai trang public yêu cầu bấm xác nhận; cooldown60s và limiter20/giờ/IP. SMTP lỗi trả503 không báo thành công; không gửi thư thật trong QA.
+- Backend service/schema 3 test PASS (trùng/đồng thời, expiry/replay, hủy/đăng ký lại, delivery failure); frontend ESLint/type-check/build PASS; UI production mock API 390/1440 sáng/tối subscribe thành công/lỗi, confirm/unsubscribe và không mutation lúc mở link PASS. Chưa test Mongo/SMTP thật. Cấu hình và checklist tại `NEWSLETTER-SETUP.md`; công cụ chiến dịch chưa thuộc lượt này.
+
+### A10: yêu cầu nhận tin footer — 2026-10-15
+
+- Người dùng xác nhận header homepage đã chuẩn chỉnh và yêu cầu chuyển mục tiếp theo. A10: sửa mailto dùng nhầm `BRAND.personality.tone` thành `BRAND.email`; encode subject/body và trim email. Thay icon tim bằng Send, nhãn rõ mở email để gửi yêu cầu; bỏ hứa hẹn gửi ưu đãi hàng tháng khi chưa có backend newsletter. Không gửi thư thật hoặc thêm đăng ký tự động.
+
+### Header homepage giữ gold hết HeroBooking — 2026-10-15
+
+- Sửa mốc chuyển màu homepage: ưu tiên đáy `.homepage .hero-section` thay cho đáy slideshow. Theo dõi resize HeroBooking để cập nhật mốc khi nội dung/viewport đổi. Fixture production 390/1440 sáng/tối: trong HeroBooking giữ gold, qua cuối section đổi canvas, cuộn lên trả gold PASS. Build/ESLint hook PASS; dữ liệu fixture, chờ người dùng xem lại trang chủ thật.
+
+### Header chuyển theo vùng nền khi cuộn — 2026-10-15
+
+- Theo yêu cầu thử: header dùng vàng nhẹ ở dải heading, chuyển sang canvas khi đáy dải đi qua header, quay lại vàng khi cuộn lên. Đo ranh giới khi route/layout đổi, scroll chỉ kiểm tra ngưỡng bằng rAF với hysteresis3px; dùng data attribute để không bị render isScrolled xóa trạng thái. Giữ nền đặc, transition180ms có sẵn và tắt theo reduced-motion; home slideshow vẫn giữ header trong suốt theo cinematic.
+- Production fixture Packages 390/1440 sáng/tối: cuộn xuống header=canvas và cuộn lên trả đúng gold PASS; 20 mẫu route/theme không lỗi fixture. Build/type-check/ESLint hook PASS. Chờ người dùng xem chuyển tiếp trên app thật.
+
+### Header ngả vàng theo gradient — 2026-10-15
+
+- Theo phản hồi header trắng ngà tách khỏi dải gold: dùng token nền header đặc riêng #F0EAE0 ở sáng và #30291E ở tối, gần đầu gradient hơn. Đồng bộ trạng thái cuộn; header trong suốt trên slideshow giữ hành vi hiện có.
+
+### Sửa đúng dải gold đầu trang — 2026-10-15
+
+- Người dùng chỉ rõ “vàng vàng” là dải gradient đầu trang Khám phá trong light mode. Lượt trước hiểu nhầm và chỉ đổi canvas dark. Đã tách token `--page-heading-wash` từ gradient Explore, dùng cho các hero Blog/About/Explore và dải đầu các trang Packages, profile, thư viện, booking, settings, thông báo, upload, liên hệ, tìm kiếm. Dải cao360px desktop/300px mobile chuyển về canvas, không phủ màu lên ảnh/card hay header toàn site.
+
+### Nền dark gold chung — 2026-10-15
+
+- Người dùng thích sắc gold của Blog nhưng các trang tối khác còn gần đen. Đã nâng theme dark chung: canvas/header #242017, nền phụ #2B251B, card #332C21, viền #4A402F và hover #3C3326. Đồng bộ HSL tokens của các trang hồ sơ/cài đặt/thư viện và admin aliases để không giữ palette gần đen cũ; light palette giữ nguyên.
+- Build PASS; rà production Explore/Packages/Blog/Favorites/Settings desktop/mobile sáng/tối bằng API fixture. Checklist cập nhật màu dark mới; các nội dung cần dữ liệu thật vẫn giữ giới hạn kiểm chứng của lượt trước.
+
+### Đồng bộ nền toàn site và tiếp tục A09 — 2026-10-15
+
+- Header source đã dùng `--bg-primary` cùng body; màu sáng #FAF8F4 nhìn gần trắng. Đồng bộ nền root/page, card/popover token, auth và 53 khai báo nền trắng cố định trong 15 CSS (gồm admin/upload/ảnh); màu trang tối #16140F, nền phụ/card tối vẫn có phân cấp. Không đổi nền ảnh/biểu tượng trắng của slideshow hay preview độc lập.
+- Build/type-check PASS. Bài rà production 22 route x2 viewport x2 theme =88 mẫu: 84 mẫu đọc được không có nền trắng thuần trong viewport; 4 mẫu upload bị watchdog dừng. Admin fixture render ErrorBoundary do thiếu số liệu nên không coi là xác nhận admin; chi tiết collection/booking redirect do ID giả. Ảnh/bài/profile và nội dung có dữ liệu thật chưa kiểm chứng đầy đủ. Đã xem screenshot Explore/auth dark; sửa thêm chữ phụ auth dùng text-secondary sau lượt route. Danh sách kiểm tra tại `THEME-CHECKLIST.md`, raw report `frontend/route-surfaces-report.json`.
+- A09: phân biệt lỗi mạng với danh sách rỗng, thêm “Thử lại” khi slideshow không tải được; retry xóa error, không xóa ảnh đang có khi fetch thất bại. Store regression và fixture UI 390/1440 lỗi→retry→ảnh phục hồi PASS. Chờ người dùng kiểm tra app thật.
+### Bảng booking responsive: chữ/nền/kích thước/tiến trình — 2026-10-15
+
+- Theo yêu cầu, tăng chữ form/help/footer và nội dung gói trên desktop/mobile; nền bảng dùng `--bg-primary` (body sáng #FAF8F4, dark #16140F), card/input dùng nền phân cấp theo theme. Thay progress cũ bằng bước đánh số, bước đã qua có icon Check và aria-current cho bước hiện tại, áp dụng cả báo giá riêng.
+- Bảng desktop cao cố định theo viewport tối đa680px; mobile92dvh. Form flex với vùng nội dung cuộn riêng, header/stepper/footer không co; success cũng nằm trong cùng khung. Không đổi validation/API/gửi booking.
+- Fixture component BookingModal thật (mock gói/user, không gửi yêu cầu): 320/390/768/1440 sáng/tối PASS kích thước ổn định bốn bước, dấu hoàn thành, Back, footer luôn nhìn thấy và chữ gói theo theme. Đã xem screenshot desktop sáng/mobile tối. Type-check PASS; ESLint không lỗi, còn warning effect setForm có sẵn. Chờ người dùng kiểm tra trên app thật.
+
 ### A08: vùng bấm tối thiểu 44px — 2026-10-15
 
 - Tăng độ đọc ô gói mobile: tên16px, giá14px, thời lượng/số ảnh13px trong breakpoint <=600px. Desktop giữ cỡ chữ/bố cục hai cột; sửa thumbnail đúng cột trước đó áp dụng cả desktop.
@@ -310,8 +383,8 @@ ID giữ theo audit để tránh mất liên kết lịch sử. Chi tiết đầ
 | A06 | P1 | Chuông bỏ outline; NotificationBell.css | ĐÃ SỬA; người dùng xác nhận đạt toàn bộ focus/thao tác/theme | 5 |
 | A07 | P2 | Card ngoài màn hình vẫn tabbable; TimedCardSlider.tsx | ĐÃ SỬA; người dùng xác nhận đạt toàn bộ | 1, 5 |
 | A08 | P2 | Vùng bấm nhỏ; Header/TimedCardSlider/BookingModal CSS | ĐÃ SỬA target >=44px; fixture5width PASS; chờ kiểm tra app thật | 1, 5 |
-| A09 | P2 | Lỗi slide giống rỗng, thiếu retry; useSliderStore/VisualArtFormsSlider | CHƯA SỬA; test abort trước chưa đủ kết luận UI lỗi | 4 |
-| A10 | P2 | Newsletter mailto dùng tone thương hiệu; Footer.tsx:138 | CHƯA SỬA; không submit thật trong audit | 3 |
+| A09 | P2 | Lỗi slide giống rỗng, thiếu retry; useSliderStore/VisualArtFormsSlider | ĐÃ SỬA error/empty/retry; store + UI fixture PASS; chờ kiểm tra app thật | 4 |
+| A10 | P2 | Newsletter footer | ĐÃ TRIỂN KHAI đăng ký/xác nhận/hủy trong website; test giả PASS; chờ SMTP/DB và hộp thư thật | 3 |
 | A11 | P2 | Payload/startup và animation layout nặng; App/TimedCardSlider | ĐÃ SỬA PHẦN FONT; JS~918KB/trace slider còn mở | 7 |
 | A12 | P2 | Hardcode màu lệch dark tokens; HomePageLayouts.css/theme.css | NGHI VẤN TỪ CODE; live dark chưa kiểm tra | 5, 6 |
 | A13 | P2 | Collections redirect guest về home; CollectionsPage.tsx:82 | ĐÃ TÁI HIỆN; CHỜ CHỐT public/private | 3 |

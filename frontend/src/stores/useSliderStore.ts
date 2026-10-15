@@ -84,6 +84,7 @@ function saveSliderCache(slides: SlideData[], lastFetchedAt: number) {
 export interface SliderState {
 	slides: SlideData[];
 	loading: boolean;
+	error: boolean;
 	hasLoaded: boolean;
 	lastFetchedAt: number | null;
 	fetchSlides: (signal?: AbortSignal) => Promise<void>;
@@ -96,11 +97,13 @@ export const useSliderStore = create(
 	immer<SliderState>((set, get) => ({
 		slides: initialCache.slides,
 		loading: false,
+		error: false,
 		hasLoaded: initialCache.slides.length > 0,
 		lastFetchedAt: initialCache.lastFetchedAt,
 
 		fetchSlides: async (signal?: AbortSignal) => {
 			const currentState = get();
+			set(state => { state.error = false; });
 			
 			// Set loading if we have no slides (simple - same as NoFlashGrid pattern)
 			if (currentState.slides.length === 0) {
@@ -152,6 +155,7 @@ export const useSliderStore = create(
 				if (!signal?.aborted) {
 					set((state) => {
 						state.loading = false;
+						state.error = true;
 					});
 				}
 			}
@@ -173,6 +177,7 @@ export const useSliderStore = create(
 				state.hasLoaded = false;
 				state.lastFetchedAt = null;
 				state.loading = false;
+				state.error = false;
 			});
 		},
 

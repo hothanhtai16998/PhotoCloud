@@ -1,6 +1,6 @@
 /* Image Page - Base styles */
 .image-page-modal .image-page-close {
-  background: #FFFFFF;
+  background: var(--bg-card, #FAF8F4);
   color: #1B1B19;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
@@ -11,7 +11,7 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
-  background: #ffffff;
+  background: var(--bg-card, #FAF8F4);
 }
 
 /* Modal-style mode - full page that looks like modal */

@@ -2,23 +2,47 @@
 body:not(:has(.admin-page)) {
   --background:40 37.5% 96.8627%;
   --foreground:60 3.8462% 10.1961%;
-  --card:0 0% 100%; --card-foreground:60 3.8462% 10.1961%;
-  --popover:0 0% 100%; --popover-foreground:60 3.8462% 10.1961%;
+  --card:40 37.5% 96.8627%; --card-foreground:60 3.8462% 10.1961%;
+  --popover:40 37.5% 96.8627%; --popover-foreground:60 3.8462% 10.1961%;
   --muted:38.1818 29.7297% 92.7451%; --secondary:38.1818 29.7297% 92.7451%;
   --muted-foreground:60 2.3923% 40.9804%; --secondary-foreground:60 3.8462% 10.1961%;
   --border:40 28.125% 87.451%; --input:40 28.125% 87.451%;
 }
 html.dark-theme body:not(:has(.admin-page)) {
-  --background:42.8571 18.9189% 7.2549%;
+  --background:41.5385 22.0339% 11.5686%;
   --foreground:38.1818 29.7297% 92.7451%;
-  --card:40 13.8462% 12.7451%; --card-foreground:38.1818 29.7297% 92.7451%;
-  --popover:40 13.8462% 12.7451%; --popover-foreground:38.1818 29.7297% 92.7451%;
-  --muted:40 16.9811% 10.3922%; --secondary:40 16.9811% 10.3922%;
+  --card:36.6667 21.4286% 16.4706%; --card-foreground:38.1818 29.7297% 92.7451%;
+  --popover:36.6667 21.4286% 16.4706%; --popover-foreground:38.1818 29.7297% 92.7451%;
+  --muted:37.5 22.8571% 13.7255%; --secondary:37.5 22.8571% 13.7255%;
   --muted-foreground:44.3478 11.9247% 62.1569%; --secondary-foreground:38.1818 29.7297% 92.7451%;
-  --border:43.6364 14.6667% 14.7059%; --input:43.6364 14.6667% 14.7059%;
+  --border:37.7778 22.3140% 23.7255%; --input:37.7778 22.3140% 23.7255%;
 }
 .app-body :is(.download-history-page,.profile-page,.profile-settings-page,.search-results-page,.favorite-collections-page,.collection-detail-page) { margin-left:0; }
 .app-body :is(.booking-detail-page,.profile-settings-page,.search-results-page) { background:var(--bg-primary); }
+.app-body :is(.image-page,.upload-page,.about-page,.contact-page,.packages-page,.blog-page,.blog-detail-page,.booking-page,.my-bookings-page,.notification-page,.download-history-page,.favorites-page,.favorite-collections-page,.collections-page,.collection-detail-page,.explore-page,.not-found-page) { background:var(--bg-primary);color:var(--text-primary); }
+html .auth-layout { background:var(--bg-primary);color:var(--text-primary); }
+html .auth-layout :is(input,select,.social-btn) { background:var(--bg-card);color:var(--text-primary);border-color:var(--border-strong); }
+html .auth-layout .auth-panel { background:var(--bg-primary);color:var(--text-primary); }
+html.dark-theme .auth-layout :is(.form-switch,.password-toggle,.auth-divider) { color:var(--text-secondary); }
+html.dark-theme .auth-layout .form-link { color:#DFC29F; }
+html .auth-layout :is(.auth-subtitle,.auth-separator,.form-switch,.password-toggle) { color:var(--text-secondary); }
+html .auth-layout .auth-separator::before,html .auth-layout .auth-separator::after { background:var(--border-strong); }
+html .auth-layout input::placeholder { color:var(--text-secondary); }
+html .admin-page { background:var(--bg-primary);color:var(--text-primary); }
+html,html body,html #root { background-color:var(--bg-primary); }
+html { --color-bg-primary:var(--bg-primary);--color-bg-secondary:var(--bg-secondary); }
+
+/* The gold heading wash is a page band, independent of the canvas color. */
+html .app-body :is(.packages-page,.profile-page,.favorites-page,.favorite-collections-page,.collections-page,.collection-detail-page,.download-history-page,.notification-page,.my-bookings-page,.booking-page,.booking-detail-page,.profile-settings-page,.search-results-page,.upload-page,.contact-page,.not-found-page) {
+  background-color:var(--bg-primary);
+  background-image:var(--page-heading-wash);
+  background-size:100% 360px;
+  background-repeat:no-repeat;
+}
+html :is(.explore-hero,.blog-hero,.about-hero) { background:var(--page-heading-wash); }
+@media(max-width:600px) {
+  html .app-body :is(.packages-page,.profile-page,.favorites-page,.favorite-collections-page,.collections-page,.collection-detail-page,.download-history-page,.notification-page,.my-bookings-page,.booking-page,.booking-detail-page,.profile-settings-page,.search-results-page,.upload-page,.contact-page,.not-found-page) { background-size:100% 300px; }
+}
 @media(min-width:769px) {
   .app-body > .booking-page { padding-left:40px; }
   .app-body > .booking-detail-page { padding-left:40px; }

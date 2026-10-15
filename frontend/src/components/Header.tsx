@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect, useLayoutEffect, lazy, Suspense, type MouseEvent } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
-import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen } from "lucide-react"
+import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen, Upload } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
 import { getSessionItem, setSessionItem, removeSessionItem } from "@/utils/safeStorage"
@@ -20,6 +20,7 @@ import { useIsMobile } from "@/hooks/useIsMobile"
 import './Header.css'
 import ImagePageSidebar from './ImagePageSidebar'
 import './UserMenu.css'
+import { useHeaderSurface } from '@/hooks/useHeaderSurface'
 
 // Lazy load UploadModal to improve initial page load
 const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default: module.default })))
@@ -34,8 +35,10 @@ export const Header = memo(function Header() {
   const user = useUserStore(state => state.user)
   const navigate = useNavigate()
   const location = useLocation()
+  useHeaderSurface(location.pathname)
   const isMobile = useIsMobile()
   const isAdmin = Boolean(user?.isAdmin)
+  const canOpenAdmin = Boolean(user?.isAdmin || user?.isSuperAdmin || (user?.permissions && Object.keys(user.permissions).length > 0))
   const [isScrolled, setIsScrolled] = useState(false)
   useEffect(() => {
     let frame = 0
@@ -330,17 +333,18 @@ export const Header = memo(function Header() {
                   <CalendarDays size={16} />
                   <span>Đặt lịch chụp</span>
                 </Button>
-                {isAdmin && <Button
-                  variant="ghost"
+                {canOpenAdmin && <Link to="/admin" className="header-library-action" aria-label="Quản trị" title="Quản trị"><Shield size={20} /></Link>}
+                {isAdmin && <button type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setUploadModalOpen(true);
                   }}
-                  className="header-link header-upload-button"
+                  className="header-library-action header-upload-button"
+                  title={t('header.addImage')} aria-label={t('header.addImage')}
                 >
-                  {t('header.addImage')}
-                </Button>}
+                  <Upload size={20} />
+                </button>}
                 <NotificationBell />
                 <UserMenu
                   user={user}
@@ -464,7 +468,7 @@ export const Header = memo(function Header() {
                 {t('profile.downloadHistory')}
               </Link>
 
-              {user?.isAdmin && (
+              {canOpenAdmin && (
                 <Link 
                   to="/admin" 
                   className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 

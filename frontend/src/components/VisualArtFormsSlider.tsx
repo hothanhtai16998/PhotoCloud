@@ -10,10 +10,12 @@ import { FixedSlideStage } from './FixedSlideStage';
 import { CardOpeningStage } from './CardOpeningStage';
 import { SliderZoomImage } from './SliderZoomImage';
 import { ImmersiveHomeChrome } from './ImmersiveHomeChrome';
+import { RefreshCw } from 'lucide-react';
 
 export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapsed = false}: {collapsed?: boolean}) {
   const slides = useSliderStore(state => state.slides);
   const loading = useSliderStore(state => state.loading);
+  const error = useSliderStore(state => state.error);
   const reducedMotion = useReducedMotion();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -85,7 +87,10 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
       : <CardOpeningStage slides={slides} current={Math.min(currentSlide, slides.length - 1)} select={selectSlide}
         playing={playing} togglePlaying={() => setPlaying(value => !value)}
         zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
-      : <div className="travel-empty">{loading ? 'Đang tải ảnh…' : 'Chưa có ảnh nổi bật'}</div>}
+      : <div className="travel-empty"><div role={error ? 'alert' : 'status'}>
+        <p>{loading ? 'Đang tải ảnh…' : error ? 'Không tải được ảnh nổi bật.' : 'Chưa có ảnh nổi bật'}</p>
+        {error && !loading && <button type="button" className="slider-retry" onClick={() => void useSliderStore.getState().fetchSlides()}><RefreshCw size={18} /> Thử lại</button>}
+      </div></div>}
     {collapsed && <div className="travel-controls">
       <button className="slider-previous" type="button" disabled={slides.length < 2} aria-label={t('visualArtSlider.previousSlide')} onClick={() => selectSlide(currentSlide - 1)}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7" /></svg>

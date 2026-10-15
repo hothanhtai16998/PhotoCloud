@@ -183,24 +183,16 @@ export function BookingModal() {
           </div>
         ) : (
           <form onSubmit={submit}>
-            <div className="booking-modal-progress" aria-label={`Bước ${step}/${totalSteps}`}>
-              {isCustomQuote ? (
-                <>
-                  <span className="active">01 Thời gian & địa điểm</span>
-                  <span className={step >= 2 ? 'active' : ''}>02 Liên hệ</span>
-                  <span className={step >= 3 ? 'active' : ''}>03 Mô tả yêu cầu</span>
-                  <small>{Array.from({ length: totalSteps }, (_, index) => <i key={index} className={step >= index + 1 ? 'active' : ''} />)} Bước {step}/{totalSteps}</small>
-                </>
-              ) : (
-                <>
-                  <span className="active">01 Gói chụp</span>
-                  <span className={step >= 2 ? 'active' : ''}>02 Thời gian</span>
-                  <span className={step >= 3 ? 'active' : ''}>03 Liên hệ</span>
-                  <span className={step >= 4 ? 'active' : ''}>04 Xác nhận</span>
-                  <small>{Array.from({ length: totalSteps }, (_, index) => <i key={index} className={step >= index + 1 ? 'active' : ''} />)} Bước {step}/{totalSteps}</small>
-                </>
-              )}
-            </div>
+            <ol className="booking-stepper" aria-label={`Bước ${step}/${totalSteps}`} style={{ '--step-count': totalSteps } as React.CSSProperties}>
+              {(isCustomQuote ? ['Thời gian', 'Liên hệ', 'Yêu cầu'] : ['Gói chụp', 'Thời gian', 'Liên hệ', 'Xác nhận']).map((label, index) => {
+                const completed = step > index + 1;
+                const current = step === index + 1;
+                return <li key={label} className={completed ? 'completed' : current ? 'current' : ''} aria-current={current ? 'step' : undefined} aria-label={`${label}${completed ? ': Đã hoàn thành' : ''}`}>
+                  <div className="booking-step-marker" aria-hidden="true">{completed ? <Check size={16} /> : index + 1}</div>
+                  <span>{label}</span>
+                </li>;
+              })}
+            </ol>
 
             <div className="booking-modal-content">
               {!isCustomQuote && step === 1 && (
@@ -209,7 +201,7 @@ export function BookingModal() {
                   <p className="booking-modal-help">Bạn có thể trao đổi thêm về gói sau khi gửi yêu cầu.</p>
                   <div className="booking-modal-packages">
                     {packages.map((item, index) => (
-                      <button type="button" key={item.slug} className={form.packageSlug === item.slug ? 'selected' : ''} onClick={() => update('packageSlug', item.slug)}>
+                      <button type="button" key={item.slug} aria-pressed={form.packageSlug === item.slug} className={form.packageSlug === item.slug ? 'selected' : ''} onClick={() => update('packageSlug', item.slug)}>
                         <span className="booking-package-thumb" data-tone={index % 4} aria-hidden="true" />
                         <strong>{item.name}</strong>
                         <span>{formatPrice(item.basePrice)}</span>
