@@ -31,7 +31,10 @@ const path = require('node:path');
           }
         }).observe(document, { subtree: true, childList: true });
       }, theme);
-      let byIdCalls = 0, failDetail = false;
+      let byIdCalls = 0, failDetail = false, brokenPhoto = false, saved = false;
+      await context.route("**/photo-fixture.svg*", route => brokenPhoto
+        ? route.abort()
+        : route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><rect width="900" height="600" fill="tan"/></svg>' }));
       await context.route('**/api/**', async route => {
         const url = new URL(route.request().url());
         if (url.pathname.includes('/images/by-id/')) {
@@ -41,11 +44,16 @@ const path = require('node:path');
           const image = images.find(image => image._id === id || image._id.endsWith(id));
           if (!image) return route.fulfill({ status: 404, json: { message: 'Không tìm thấy ảnh' } });
           await new Promise(resolve => setTimeout(resolve, 1200));
-          return route.fulfill({ json: { image } });
+          return route.fulfill({ json: { image: brokenPhoto ? { ...image, imageUrl: origin + "/photo-fixture.svg", regularUrl: origin + "/photo-fixture.svg", smallUrl: origin + "/photo-fixture.svg" } : image } });
         }
         if (url.pathname === '/api/images') return route.fulfill({ json: { images, pagination: { page: 1, pages: 1, total: 3, limit: 20 } } });
         if (/\/images\/[^/]+\/(view|download)$/.test(url.pathname)) return route.fulfill({ json: { views: 11, downloads: 2, dailyViews: [], dailyDownloads: [] } });
         if (url.pathname.startsWith('/api/search/')) return route.fulfill({ json: { suggestions: [], popular: [] } });
+        if (/\/favorites\/[a-f0-9]{24}$/.test(url.pathname) && route.request().method() === 'POST') {
+          await new Promise(resolve => setTimeout(resolve, 1200));
+          saved = !saved;
+          return route.fulfill({ json: { isFavorited: saved, favoriteCount: saved ? 1 : 0 } });
+        }
         if (url.pathname.includes('/favorites')) return route.fulfill({ json: { favorites: [], favoriteIds: [], isFavorited: false } });
         const response = await fetch(origin + url.pathname + url.search);
         return route.fulfill({ status: response.status, contentType: 'application/json', body: await response.text() });
@@ -75,6 +83,14 @@ const path = require('node:path');
       assert.equal(await page.locator('.image-page-modal').count(), 0);
       await page.locator('.image-page-photo.is-ready').waitFor();
       await page.screenshot({ path: path.resolve(__dirname, `../qa-policy-checkbox/image-page-${theme}.png`) });
+      const saveButton = page.locator('.image-modal-favorite-button[aria-pressed]');
+      await saveButton.click();
+      await page.waitForFunction(() => {
+        const button = document.querySelector('.image-modal-favorite-button');
+        return button.getAttribute('aria-pressed') === 'true' && button.getAttribute('aria-busy') === 'true';
+      }, null, { timeout: 800 });
+      await page.waitForFunction(() => document.querySelector('.image-modal-favorite-button').getAttribute('aria-busy') === 'false');
+      assert.equal(await saveButton.getAttribute('aria-pressed'), 'true');
       await page.getByRole('button', { name: 'Chỉnh sửa', exact: true }).click();
       await page.locator('.edit-modal-tab').first().waitFor();
       assert.deepEqual((await page.locator('.edit-modal-tab').allTextContents()).map(t => t.trim()), ['Chi tiết', 'Tags', 'Exif']);
@@ -99,6 +115,21 @@ const path = require('node:path');
       failDetail = false;
       await page.getByRole('button', { name: 'Thử lại', exact: true }).click();
       await page.locator('.image-page .image-modal-surface').waitFor();
+      await page.goto(origin + '/photos/missing-ffffffffffff');
+      await page.getByRole('alert').filter({ hasText: 'Không tìm thấy ảnh' }).waitFor();
+      await context.setOffline(true);
+      await page.getByRole('button', { name: 'Thử lại', exact: true }).click();
+      await page.getByRole('alert').filter({ hasText: 'ngoại tuyến' }).waitFor();
+      await context.setOffline(false);
+      brokenPhoto = true;
+      await page.goto(origin + '/photos/khung-hinh-1-000000000001');
+      await page.locator('.image-page-photo-error').waitFor();
+      const failedUrl = page.url();
+      brokenPhoto = false;
+      await page.locator('.image-page-photo-error button').click();
+      await page.locator('.image-page-photo.is-ready').waitFor();
+      assert.equal(page.url(), failedUrl, 'Retry keeps the selected photo URL');
+      assert.equal(await page.locator('.image-page-photo-error').count(), 0);
       assert.deepEqual(errors, []);
       fs.writeFileSync(path.resolve(__dirname, `../qa-policy-checkbox/image-latency-${theme}.json`), JSON.stringify({ theme, clickToModalDOMMs: duration, reloadModalInserted: false, note: 'Local fixture; detail API delayed 1200ms. Does not measure production latency.' }, null, 2));
       console.log('PASS image page', theme, `click-to-modal DOM ${Math.round(duration)}ms`, 'reload-no-modal-frame/arrows-close/author/error-retry');

@@ -23,6 +23,12 @@ export function useImagePageData({ imageId, attempt, navigationState, initialLoc
       setLoading(false);
       return;
     }
+    const failOffline = () => {
+      if (!active) return;
+      setError('Bạn đang ngoại tuyến. Kết nối mạng rồi bấm Thử lại.');
+      setLoading(false);
+      controller.abort();
+    };
     const matchesId = (id: string) => (imageId.length === 24 ? id : id.slice(-12)).toLowerCase() === imageId.toLowerCase();
 
     const fetchImage = async () => {
@@ -69,8 +75,12 @@ export function useImagePageData({ imageId, attempt, navigationState, initialLoc
         }
 
         // 3) Fallback: fetch from API (direct URL / refresh)
+        window.addEventListener('offline', failOffline);
+        if (!navigator.onLine) { failOffline(); return; }
         const foundImage = await imageService.fetchImageById(imageId, controller.signal);
         if (!active) return;
+        window.removeEventListener('offline', failOffline);
+        if (!foundImage?._id) throw new Error('Missing image');
         setImage(foundImage);
         setImages([foundImage]);
         setLoading(false);
@@ -83,6 +93,7 @@ export function useImagePageData({ imageId, attempt, navigationState, initialLoc
         if (!active) return;
         // Error handled by error boundary
         const axiosError = err as { response?: { data?: { message?: string } } };
+        if (controller.signal.aborted) return;
         setError(axiosError.response?.data?.message || 'Không thể tải thông tin ảnh. Vui lòng thử lại.');
       } finally {
         if (active) setLoading(false);
@@ -91,6 +102,7 @@ export function useImagePageData({ imageId, attempt, navigationState, initialLoc
 
     fetchImage();
     return () => {
+      window.removeEventListener('offline', failOffline);
       active = false;
       controller.abort();
     };

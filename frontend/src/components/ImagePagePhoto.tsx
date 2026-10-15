@@ -27,15 +27,38 @@ export const ImagePagePhoto = memo(function ImagePagePhoto({ src, fallback, prev
 
   useEffect(() => {
     if (!activeSrc || !imageRef.current) return;
-    return watchDecodedImage(imageRef.current, () => {
+    let settled = false;
+    const fail = () => {
+      if (settled) return;
+      settled = true;
+      loadedImages.delete(activeSrc);
+      setReadySrc('');
+      setFailed(true);
+    };
+    const timeout = window.setTimeout(fail, 15000);
+    window.addEventListener('offline', fail);
+    const unwatch = watchDecodedImage(imageRef.current, () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeout);
+      setFailed(false);
       loadedImages.add(activeSrc);
       setReadySrc(activeSrc);
     }, () => {
+      if (settled) return;
+      window.clearTimeout(timeout);
       loadedImages.delete(activeSrc);
       setReadySrc('');
       if (activeSrc !== fallback && fallback) setActiveSrc(fallback);
-      else setFailed(true);
+      else fail();
     });
+    if (!navigator.onLine && !imageRef.current.complete) fail();
+    return () => {
+      settled = true;
+      window.clearTimeout(timeout);
+      window.removeEventListener('offline', fail);
+      unwatch();
+    };
   }, [activeSrc, fallback, attempt]);
 
   const error = failed || !activeSrc;

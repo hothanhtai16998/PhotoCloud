@@ -12,6 +12,7 @@ export const imageFetchService = {
     // Each detail request owns its signal; do not reuse an aborted deduplicated request.
     const response = await api.get<{ image: Image }>(`/images/by-id/${encodeURIComponent(id)}`, {
       withCredentials: true,
+      timeout: 15000,
       signal,
     });
     return response.data.image;

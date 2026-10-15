@@ -282,11 +282,12 @@ function ImagePage() {
             onClick={handleToggleFavorite}
             disabled={isTogglingFavorite}
             aria-busy={isTogglingFavorite}
+            aria-pressed={isFavorited}
             aria-label={t('image.save')}
             title={t('image.save')}
             className="image-modal-favorite-button"
           >
-            {isTogglingFavorite ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} />}
+            <Heart size={16} fill={isFavorited ? 'currentColor' : 'none'} aria-hidden="true" />
             <span className="image-action-label">{t('image.save')}</span>
             {favoriteCount > 0 && (
               <span className="image-modal-favorite-count">{favoriteCount.toLocaleString()}</span>

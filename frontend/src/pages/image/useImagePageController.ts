@@ -642,10 +642,7 @@ export function useImagePageController() {
     const imageId = image._id;
     const previousState = isFavorited;
     const publish = (favorited: boolean) => {
-      updateFavoriteCache(imageId, favorited);
-      window.dispatchEvent(new CustomEvent('favoriteCacheUpdated', {
-        detail: { imageId, isFavorited: favorited, image: favorited ? image : undefined },
-      }));
+      updateFavoriteCache(imageId, favorited, favorited ? image : undefined);
     };
     publish(!previousState);
     try {

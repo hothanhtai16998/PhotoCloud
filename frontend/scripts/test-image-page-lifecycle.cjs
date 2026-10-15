@@ -16,6 +16,7 @@ const related = [];
 function runFetch(id, passedState) {
   let cleanup;
   const context = {
+    window:{addEventListener(){},removeEventListener(){}}, navigator:{onLine:true},
     AbortController, imageId:id, attempt:0, navigationState:passedState, locationWithState:{state:passedState},
     initialLocationStateRef:{current:passedState}, manuallySetImageRef:{current:null},
     useEffect:fn => {cleanup=fn();},

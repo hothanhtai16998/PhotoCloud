@@ -4,7 +4,7 @@
 
 <span style="color: #d32f2f;">**[o] IMG-01 — Bấm ảnh mở modal chậm.** Đã chỉnh luồng mở ảnh, ưu tiên ảnh chính và tách module; fixture đo click → có DOM modal khoảng35–47ms, không chờ API chi tiết bị làm chậm1,2giây. Chưa đo hiệu năng production; **NGƯỜI DÙNG KIỂM LẠI VẪN CHƯA ĐẠT** ở PHO-01, mục15, không tự đóng lỗi.</span>
 
-<span style="color: #d32f2f;">**[o] PHO-21 / PHO-22 — Lỗi mở link ảnh và tải file ảnh lớn chưa đạt.** Người dùng đã đánh o; cần sửa và kiểm lại. **PHO-10:** Lưu đúng chức năng nhưng phản hồi còn chậm.</span>
+<span style="color: #d32f2f;">**[o] PHO-21 / PHO-22 — Lỗi mở link ảnh và tải file ảnh lớn chưa đạt.** Đã bổ sung xử lý offline, timeout và thử lại ngày 16/10; fixture 404/offline/file lỗi → thử lại đã qua. **CHỜ NGƯỜI DÙNG KIỂM LẠI**, giữ o. **PHO-10:** giữ tim phản hồi ngay trong lúc API chờ, bỏ phát sự kiện đồng bộ trùng; cần kiểm lại cảm giác phản hồi.</span>
 
 <span style="color: #d32f2f;">**[o] EXP-F05 — Khám phá: sắp xếp chưa đạt.** Người dùng đã đánh o trong checklist. Cần đối chiếu từng lựa chọn với thứ tự ảnh thực tế và API; chưa tự suy ra nguyên nhân hoặc đánh dấu đã sửa.</span>
 
@@ -14,7 +14,7 @@
 
 **Thứ tự hiện tại:** Trang chủ để sau → Khám phá còn EXP-F05 → ~~Kết quả tìm kiếm (#3) — chức năng đạt~~ → **Chi tiết ảnh (#4), còn PHO-01/21/22 chưa đạt ở mục15**. **Responsive test sau cùng, khi xong chức năng tất cả các trang.**
 
-Ngày đối chiếu: 15/10/2026. Cơ sở: route và mã nguồn hiện tại, không phải kết quả nghiệm thu production.
+Ngày đối chiếu: 16/10/2026. Cơ sở: route và mã nguồn hiện tại, không phải kết quả nghiệm thu production.
 
 ## 1. Có bao nhiêu trang?
 
@@ -472,3 +472,12 @@ Bằng chứng: build/lint phần sửa đạt; `test-search-results.cjs` PASS E
 - Xóa module editor/CSS, state/handler lưu pixel, service thay file và hai API replace đơn/hàng loạt cùng controller riêng. Upload ảnh mới và cập nhật metadata vẫn giữ.
 - Form còn ba tab: Chi tiết, Tags, Exif; PHO-17 vẫn áp dụng. PHO-18/19 chuyển N/A, không tính vào kết quả nghiệm thu hiện tại.
 - Responsive kiểm riêng sau khi hoàn tất chức năng tất cả trang.
+
+### 15.6. Sửa các ca còn mở — 16/10/2026
+
+-[x] **PHO-21:** mở link khi offline báo rõ mất mạng; mất mạng trong lúc chờ hủy request và thoát loading. Request chi tiết có timeout 15 giây. API trả thiếu ảnh cũng hiện lỗi để thử lại.
+-[x] **PHO-22:** tải file ảnh gặp lỗi/offline hoặc chờ quá 15 giây hiện lỗi và nút Thử lại. Retry giữ URL trang/ảnh; dọn listener và timer khi đổi ảnh để tránh cập nhật nhầm.
+-[x] **PHO-10:** giữ tim phản ánh trạng thái Lưu ngay trong lúc request chờ, thêm aria-pressed, vẫn khóa bấm trùng và rollback khi lỗi. Bỏ phát sự kiện favoriteCacheUpdated lần hai vì updateFavoriteCache đã tự phát. Fixture API chậm 1,2 giây kiểm tim đổi trước phản hồi.
+-[x] **PHO-01:** fixture hiện khung modal khoảng 26–32 ms trên desktop sáng/tối, không chờ API chi tiết chậm 1,2 giây. Mốc lượt trước 29–34 ms; chưa có bằng chứng cải thiện đáng kể hoặc hết lag trên dữ liệu thật. Hook mở ảnh thiếu state phát hiện khi rà là mã hiện không được dùng, không coi đó là nguyên nhân luồng hiện tại. **Giữ o, cần kiểm trên máy và dữ liệu thật.**
+-[x] Build, ESLint các module tải ảnh thay đổi và script lifecycle/actions/navigation đã qua. Browser fixture kiểm 404, offline, ảnh file lỗi → retry, Lưu chờ API, ba tab metadata, F5 và điều hướng trên sáng/tối.
+- Giữ nguyên x/o của người dùng. Bạn kiểm lại PHO-01, PHO-10, PHO-21, PHO-22 trước khi nghiệm thu Chi tiết ảnh; responsive vẫn làm cuối.

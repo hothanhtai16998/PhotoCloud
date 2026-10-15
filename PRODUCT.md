@@ -5190,3 +5190,7 @@ Sau 3 việc này, website sẽ chuyển từ cảm giác “xem ảnh” sang c
 
 ### 15/10/2026 — Bỏ editor chỉnh pixel
 Bỏ tab Chỉnh ảnh và editor canvas cùng API replace riêng theo yêu cầu. Giữ sửa tên/mô tả/tag/EXIF và upload ảnh mới. Inventory ghi nhận PHO-01/21/22 chưa đạt, PHO-10 còn chậm, PHO-03 F5 đã đạt; PHO-18/19 không còn áp dụng.
+
+
+### 16/10/2026 — Chi tiết ảnh: tải lỗi và phản hồi Lưu
+Bổ sung trạng thái offline/hủy request chi tiết, timeout 15 giây, lỗi payload thiếu ảnh; vùng ảnh lớn có timeout/offline và retry giữ URL. Nút Lưu giữ tim phản ánh optimistic state trong lúc chờ, thêm aria-pressed, bỏ sự kiện đồng bộ bị phát trùng. PHO-01 vẫn mở vì đo fixture chưa tái hiện lag thật. Không tự thay dấu nghiệm thu, responsive để cuối.
