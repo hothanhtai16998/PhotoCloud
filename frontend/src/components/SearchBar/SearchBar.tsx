@@ -60,32 +60,14 @@ export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }
         });
     }, []);
 
-    // Sync with URL query param when on search page
+    // URL navigation updates the field; editing/clearing the field does not navigate.
     useEffect(() => {
         if (location.pathname.startsWith('/s/photos/')) {
-            // Only update if we have a urlQuery (wait for params to be ready)
-            if (urlQuery) {
-                try {
-                    const decodedQuery = urlQuery;
-                    if (decodedQuery !== searchQuery && !isFocused) {
-                        setSearchQuery(decodedQuery);
-                    }
-                } catch (error) {
-                    // Invalid URL encoding, ignore
-                    console.warn('Failed to decode search query:', error);
-                }
-            } else if (!isFocused) {
-                // If we're on search page but no query param, clear search
-                setSearchQuery('');
-            }
-        } else if (location.pathname === '/' && !isFocused) {
-            // Only clear search query when on homepage and not focused
-            // But only if it's different from what's in the URL
-            if (searchQuery && !urlQuery) {
-                setSearchQuery('');
-            }
+            setSearchQuery(urlQuery || '');
+        } else if (location.pathname === '/') {
+            setSearchQuery('');
         }
-    }, [urlQuery, location.pathname, searchQuery, isFocused]);
+    }, [urlQuery, location.pathname]);
 
     useEffect(() => () => {
         if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
@@ -115,8 +97,9 @@ export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }
                     navigate(`/s/photos/${trimmedSearch}`, { replace: false });
                 }
             } else {
-                // Clear search - navigate to homepage
-                navigate('/', { replace: true });
+                // An empty search is an edit, not a request to leave the page.
+                setIsFocused(true);
+                inputRef.current?.focus();
             }
         },
         [navigate, saveToHistory]
@@ -128,13 +111,9 @@ export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }
         setSearchQuery('');
         setShowSuggestions(false);
         setSelectedIndex(-1);
-        inputRef.current?.blur();
-        
-        // Navigate to homepage when clearing search
-        if (location.pathname.startsWith('/s/')) {
-            navigate('/', { replace: true });
-        }
-    }, [location.pathname, navigate]);
+        setIsFocused(true);
+        inputRef.current?.focus();
+    }, []);
 
     // Handle keyboard navigation
     const handleKeyDown = useCallback(
@@ -253,7 +232,7 @@ export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }
             // Apply filters on homepage and category pages
             // NOTE: setFilters no longer dispatches filterChange event, so this is the only place
             // that triggers the fetch for normal filter changes
-            if (location.pathname === '/' || location.pathname.startsWith('/t/') || location.pathname.startsWith('/s/')) {
+            if (location.pathname === '/' || location.pathname.startsWith('/t/')) {
                 const fetchParams = buildFetchParams(newFilters);
                 fetchImages(fetchParams);
             }
@@ -268,7 +247,7 @@ export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }
         const handleFilterReset = () => {
             // Only trigger fetch if resetFilters was called directly (outside of handleFiltersChange)
             // This happens when ActiveFiltersIndicator calls resetFilters directly
-            if (location.pathname === '/' || location.pathname.startsWith('/t/') || location.pathname.startsWith('/s/')) {
+            if (location.pathname === '/' || location.pathname.startsWith('/t/')) {
                 // Read the shared snapshot synchronously after reset.
                 const fetchParams = buildFetchParams(useSearchFilters.getState().filters);
                 fetchImages(fetchParams);
@@ -374,4 +353,5 @@ export const SearchBar = forwardRef<SearchBarRef, { filterButtonLabel?: string }
 });
 
 SearchBar.displayName = 'SearchBar';
+
 

@@ -1,5 +1,19 @@
 # PhotoCloud — Danh sách trang và phân tích hệ thống
 
+## 🔴 LỖI QUAN TRỌNG ĐANG MỞ — XEM TRƯỚC KHI NGHIỆM THU
+
+<span style="color: #d32f2f;">**[o] IMG-01 — Bấm ảnh mở modal rất lag, phản hồi chậm.** Người dùng báo trên giao diện đang chạy; ảnh hưởng các trang có lưới ảnh. Chưa đo thời gian hoặc xác định nguyên nhân, chưa sửa, chưa xác nhận đạt.</span>
+
+<span style="color: #d32f2f;">**[o] IMG-02 — F5 khi đang xem ảnh dạng modal: vẫn hiện modal khoảng 2 giây rồi mới thành trang ảnh.** Mong đợi: sau reload mở thẳng trang ảnh, không nháy modal trung gian. Mốc 2 giây là quan sát người dùng, chưa phải số đo tự động. Chưa sửa, chưa xác nhận đạt.</span>
+
+<span style="color: #d32f2f;">**[o] EXP-F05 — Khám phá: sắp xếp chưa đạt.** Người dùng đã đánh o trong checklist. Cần đối chiếu từng lựa chọn với thứ tự ảnh thực tế và API; chưa tự suy ra nguyên nhân hoặc đánh dấu đã sửa.</span>
+
+<span style="color: #d32f2f;">**[o] SEA-17 — Nút × xóa chữ tìm kiếm lại chuyển về trang chủ.** Nguyên nhân: handler gọi navigate('/') và blur ô nhập. Đã sửa chỉ xóa chữ, giữ focus, URL/bộ lọc/kết quả hiện tại; Enter khi ô trống cũng không chuyển trang. **CHỜ NGƯỜI DÙNG KIỂM LẠI.** SEA-11/SEA-12 đã được người dùng xác nhận đạt, chuyển khỏi danh sách lỗi mở.</span>
+
+**Quy ước chung:** `x` = ĐẠT · `o` = CHƯA ĐẠT · để trống = CHƯA KIỂM. Chấp nhận chữ hoa/thường và khoảng trắng khi đọc kết quả. Màu đỏ dùng HTML trong trình xem hỗ trợ; biểu tượng 🔴 vẫn chỉ rõ mức ưu tiên ở trình xem không hỗ trợ màu.
+
+**Thứ tự hiện tại:** Trang chủ để sau → Khám phá đã kiểm, còn lỗi → đang làm **Kết quả tìm kiếm (#3)** → tiếp theo Chi tiết ảnh (#4), xử lý chung IMG-01/IMG-02 tại lượt đó. **Responsive test sau cùng, khi xong chức năng tất cả các trang.**
+
 Ngày đối chiếu: 15/10/2026. Cơ sở: route và mã nguồn hiện tại, không phải kết quả nghiệm thu production.
 
 ## 1. Có bao nhiêu trang?
@@ -164,7 +178,7 @@ Ma trận tối thiểu: 320/390/768/1280/1440px, màn hình thấp 568/720px, s
 ## 8. Tình trạng và giới hạn kết luận
 
 - Lịch chụp & dịch vụ: hoàn tất đợt chỉnh sửa UI/luồng theo yêu cầu; có kiểm thử fixture được ghi trong `PRODUCT.md`. Vẫn cần nghiệm thu tích hợp thật, đặc biệt tab Đánh giá và việc cấu hình được API khách thực thi.
-- 39 trang còn lại trong danh sách không được tự coi là đã PASS chỉ vì có route hoặc build được.
+- Các trang trong danh sách không được tự coi là đã PASS chỉ vì có route hoặc build được.
 - Phân tích này tập trung cấu trúc trang, nguồn dữ liệu và điểm cần nghiệm thu; chưa phải audit bảo mật đầy đủ, đo hiệu năng hoặc rà soát từng endpoint backend.
 - Chưa thực hiện deploy, cập nhật dữ liệu thật hoặc gửi email để lập tài liệu này.
 
@@ -192,13 +206,13 @@ Khi thêm/xóa route hoặc thay nguồn dữ liệu, cập nhật bản đồ n
 
 ## 11. Khám phá — checklist nghiệm thu chi tiết sau chỉnh sửa
 
-**Trang:** `/explore` — mục số 2 trong danh sách. **Trạng thái: ĐÃ SỬA, CHỜ NGƯỜI DÙNG KIỂM TRA.**
+**Trang:** `/explore` — mục số 2. **Người dùng đã kiểm: 19/20 ca đạt; EXP-F05 chưa đạt.** Có thêm hai lỗi dùng chung khi mở ảnh (xem đầu file), vì vậy chưa gạch ngang xác nhận xong.
 
 ### 11.1. Quy ước xác nhận
 
-- Người dùng đánh `[x]` khi đạt; giữ `[ ]` và ghi mô tả lỗi khi chưa đạt. Chưa kiểm tra cũng để trống, không coi là thất bại đã tái hiện.
+- Quy ước: `[x]` hoặc `x` = ĐẠT; `[o]` hoặc `o` = CHƯA ĐẠT; `[ ]` = CHƯA KIỂM. Không dùng ô trống thay cho ca đã kiểm nhưng thất bại. Không tự đổi `o` thành `x` sau khi sửa; chờ người dùng kiểm lại.
 - Chưa gạch ngang trang Khám phá hoặc các lỗi bên dưới. Chỉ khi tất cả ca chức năng đạt và không còn lỗi mở mới đổi nhãn thành `~~Khám phá — chức năng~~ · ĐÃ XÁC NHẬN XONG`, kèm ngày và build được kiểm tra.
-- Responsive được kiểm và xác nhận độc lập ở mục 12. Đạt chức năng không tự đồng nghĩa đạt responsive. Chỉ gạch ngang mục trang tổng thể `~~Khám phá~~` khi cả chức năng và responsive đều được người dùng xác nhận đạt.
+- Responsive làm SAU CÙNG, khi đã test chức năng hết tất cả các trang. Chức năng có thể được gạch ngang xác nhận riêng khi mọi ca đạt và lỗi liên quan đã đóng; không bắt chờ responsive mới chuyển sang trang kế tiếp. Responsive giữ trạng thái chưa kiểm ở mục 12 cho đến vòng cuối.
 - Kết quả fixture do Codex chạy là bằng chứng kỹ thuật tham khảo, không tự tích các ô nghiệm thu của người dùng.
 
 ### 11.2. Các điểm đã sửa và cách kiểm tra lỗi
@@ -216,40 +230,42 @@ Khi thêm/xóa route hoặc thay nguồn dữ liệu, cập nhật bản đồ n
 
 ### 11.3. Kiểm tra chức năng — người dùng tích
 
-- [ ] EXP-F01 — Vào `/explore` trực tiếp và F5: tiêu đề/mô tả mới đúng, không câu “hàng nghìn”/“tuyển chọn”; header không che phần đầu.
-- [ ] EXP-F02 — Ban đầu hiển thị đúng danh mục và các lựa chọn được lưu; tổng kết quả bằng `pagination.total` API, không phải chỉ số ảnh của trang 1.
-- [ ] EXP-F03 — Chọn từng danh mục rồi Tất cả: trạng thái chọn đúng, request category đúng và ảnh thuộc đúng nhóm; nhãn tổng kết quả đổi theo.
-- [ ] EXP-F04 — Chọn Ngang/Dọc/Vuông/Tất cả: request orientation và kết quả đúng; nút được chọn đọc/nhìn rõ.
-- [ ] EXP-F05 — Đổi từng cách sắp xếp: request sortBy đúng, dữ liệu theo thứ tự server; không tự bỏ danh mục hoặc bố cục.
-- [ ] EXP-F06 — Mở Bộ lọc nâng cao, thay màu/khoảng ngày/thông số có trên panel, Áp dụng: giữ draft trước áp dụng, áp dụng xong kết quả và hàng lọc nhanh đồng bộ.
-- [ ] EXP-F07 — Có hơn 30 ảnh: cuộn cuối danh sách gọi page 2 rồi trang tiếp theo, không gọi lại page 1, không mất ảnh đầu hoặc thêm ảnh trùng ID.
-- [ ] EXP-F08 — Kết hợp danh mục + bố cục + sort + filter nâng cao rồi tải thêm: mọi request trang sau giữ đủ params và cùng limit, chỉ tăng page.
-- [ ] EXP-F09 — Hết trang: không có request tải tiếp vô hạn hoặc spinner đứng mãi; tổng ảnh giữ đúng.
-- [ ] EXP-F10 — Đổi filter nhanh khi request cũ chưa xong: kết quả cuối theo lựa chọn cuối, không bị response cũ ghi đè; không còn ảnh cũ dưới nhãn mới trong lúc đang tải trang đầu.
-- [ ] EXP-F11 — Bộ lọc không có kết quả: hiện “Chưa có ảnh phù hợp”, hướng dẫn và nút xóa filter; không nhầm lỗi mạng thành danh sách rỗng.
-- [ ] EXP-F12 — Xóa bộ lọc từ toolbar hoặc empty: danh mục Tất cả, bố cục Tất cả, sort Mới nhất, màu/ngày/nâng cao về mặc định; kết quả tải lại tương ứng.
-- [ ] EXP-F13 — Giả lập lỗi ảnh trang đầu: hiện thông báo và Thử lại tải ảnh; phục hồi mạng và thử lại thành công, không bị request lặp vô hạn.
-- [ ] EXP-F14 — Giả lập lỗi trang 2: ảnh đã tải không mất; retry đúng page 2 với đủ filter; thành công nối thêm và có thể tiếp tục tải trang sau.
-- [ ] EXP-F15 — Giả lập lỗi categories: thông báo có thử lại; khôi phục mạng tải được danh mục, không chặn việc xem ảnh không lọc.
-- [ ] EXP-F16 — Tìm kiếm từ ô tìm: Enter/gợi ý mở đúng `/s/photos/:query`, tiếng Việt được giữ đúng, filter không tự mất ngoài dự kiến; Back quay về Khám phá.
-- [ ] EXP-F17 — Desktop mở ảnh dạng modal: đóng/Esc/Back đúng ảnh và vị trí cuộn, danh mục và filter đang chọn không tự reset.
-- [ ] EXP-F18 — Link trực tiếp chi tiết ảnh và F5 không hiện modal với nền sai; quay lại Khám phá không hiển thị dữ liệu từ nguồn khác.
-- [ ] EXP-F19 — Tab/Shift+Tab/Enter/Space chọn được danh mục, bố cục, sort, xóa và retry; label/focus/aria-pressed phản ánh đúng trạng thái.
-- [ ] EXP-F20 — Sáng/tối trên desktop: chữ/ảnh/nút/focus rõ, không gradient chữ hoặc màu bị mất tương phản; không phát sinh lỗi console chưa xử lý.
+- [x] EXP-F01 — Vào `/explore` trực tiếp và F5: tiêu đề/mô tả mới đúng, không câu “hàng nghìn”/“tuyển chọn”; header không che phần đầu.
+- [x] EXP-F02 — Ban đầu hiển thị đúng danh mục và các lựa chọn được lưu; tổng kết quả bằng `pagination.total` API, không phải chỉ số ảnh của trang 1.
+- [x] EXP-F03 — Chọn từng danh mục rồi Tất cả: trạng thái chọn đúng, request category đúng và ảnh thuộc đúng nhóm; nhãn tổng kết quả đổi theo.
+- [x] EXP-F04 — Chọn Ngang/Dọc/Vuông/Tất cả: request orientation và kết quả đúng; nút được chọn đọc/nhìn rõ.
+- [o] EXP-F05 — Đổi từng cách sắp xếp: request sortBy đúng, dữ liệu theo thứ tự server; không tự bỏ danh mục hoặc bố cục.
+- [x] EXP-F06 — Mở Bộ lọc nâng cao, thay màu/khoảng ngày/thông số có trên panel, Áp dụng: giữ draft trước áp dụng, áp dụng xong kết quả và hàng lọc nhanh đồng bộ.
+- [x] EXP-F07 — Có hơn 30 ảnh: cuộn cuối danh sách gọi page 2 rồi trang tiếp theo, không gọi lại page 1, không mất ảnh đầu hoặc thêm ảnh trùng ID.
+- [x] EXP-F08 — Kết hợp danh mục + bố cục + sort + filter nâng cao rồi tải thêm: mọi request trang sau giữ đủ params và cùng limit, chỉ tăng page.
+- [x] EXP-F09 — Hết trang: không có request tải tiếp vô hạn hoặc spinner đứng mãi; tổng ảnh giữ đúng.
+- [x] EXP-F10 — Đổi filter nhanh khi request cũ chưa xong: kết quả cuối theo lựa chọn cuối, không bị response cũ ghi đè; không còn ảnh cũ dưới nhãn mới trong lúc đang tải trang đầu.
+- [x] EXP-F11 — Bộ lọc không có kết quả: hiện “Chưa có ảnh phù hợp”, hướng dẫn và nút xóa filter; không nhầm lỗi mạng thành danh sách rỗng.
+- [x] EXP-F12 — Xóa bộ lọc từ toolbar hoặc empty: danh mục Tất cả, bố cục Tất cả, sort Mới nhất, màu/ngày/nâng cao về mặc định; kết quả tải lại tương ứng.
+- [x] EXP-F13 — Giả lập lỗi ảnh trang đầu: hiện thông báo và Thử lại tải ảnh; phục hồi mạng và thử lại thành công, không bị request lặp vô hạn.
+- [x] EXP-F14 — Giả lập lỗi trang 2: ảnh đã tải không mất; retry đúng page 2 với đủ filter; thành công nối thêm và có thể tiếp tục tải trang sau.
+- [x] EXP-F15 — Giả lập lỗi categories: thông báo có thử lại; khôi phục mạng tải được danh mục, không chặn việc xem ảnh không lọc.
+- [x] EXP-F16 — Tìm kiếm từ ô tìm: Enter/gợi ý mở đúng `/s/photos/:query`, tiếng Việt được giữ đúng, filter không tự mất ngoài dự kiến; Back quay về Khám phá.
+- [x] EXP-F17 — Desktop mở ảnh dạng modal: đóng/Esc/Back đúng ảnh và vị trí cuộn, danh mục và filter đang chọn không tự reset.
+- [x] EXP-F18 — Link trực tiếp chi tiết ảnh và F5 không hiện modal với nền sai; quay lại Khám phá không hiển thị dữ liệu từ nguồn khác.
+- [x] EXP-F19 — Tab/Shift+Tab/Enter/Space chọn được danh mục, bố cục, sort, xóa và retry; label/focus/aria-pressed phản ánh đúng trạng thái.
+- [x] EXP-F20 — Sáng/tối trên desktop: chữ/ảnh/nút/focus rõ, không gradient chữ hoặc màu bị mất tương phản; không phát sinh lỗi console chưa xử lý.
 
 ### 11.4. Bằng chứng kỹ thuật và nhật ký lỗi
 
 Script tham khảo: `frontend/scripts/test-explore-page.cjs`. Đã chạy PASS trên Edge desktop 1440×900, sáng/tối: request page 2 giữ category/orientation/sort, lỗi trang đầu và retry, empty, reset về truy vấn mặc định; không có pageerror. Vite build PASS, ESLint ba file UI sửa không có error. Fixture nội bộ dùng API giả lập, không sửa dữ liệu thật. Đây không thay thế kiểm tra dữ liệu thật trên staging, ca lỗi page 2 hoặc nghiệm thu responsive và các ca người dùng ở trên.
 
+Kết quả người dùng mới nhất: **19 dấu x, 1 dấu o (EXP-F05)**. Chuẩn hóa khoảng trắng/chữ hoa trong dấu đánh giá, không thay đổi ý nghĩa. Giữ dấu x ở EXP-F17/F18 theo lần kiểm trước, nhưng hai lỗi IMG-01/IMG-02 mới báo được theo dõi riêng ở đầu file; không dùng các dấu x cũ để đóng hai lỗi này.
+
 | Ca | Đạt/chưa đạt | Mô tả lỗi, bước tái hiện | Bằng chứng/build | Ngày kiểm |
 |---|---|---|---|---|
 | EXP-F… | Chưa kiểm | — | — | — |
 
-**Xác nhận chức năng:** Chưa xác nhận. Người kiểm: __________. Ngày/build: __________.
+**Xác nhận chức năng:** Chưa hoàn tất: EXP-F05 = o; lỗi mở ảnh chậm và F5 nháy modal còn mở. Người kiểm: __________. Ngày/build: __________.
 
 ## 12. Responsive — nghiệm thu riêng
 
-Theo yêu cầu, responsive không gộp vào các ô chức năng và không tự xác nhận sau kiểm thử desktop. Mục này bắt đầu với Khám phá; có thể thêm trang khác dưới cùng phần khi đến lượt kiểm.
+**LÀM SAU CÙNG, SAU KHI TEST CHỨC NĂNG TẤT CẢ CÁC TRANG.** Không chạy hoặc yêu cầu người dùng nghiệm thu responsive ở từng lượt trang hiện tại. Giữ riêng danh sách bên dưới để dùng ở vòng cuối.
 
 ### 12.1. Khám phá — CHƯA NGHIỆM THU RESPONSIVE
 
@@ -265,3 +281,126 @@ Theo yêu cầu, responsive không gộp vào các ô chức năng và không t�
 - [ ] EXP-R10 — Mạng chậm trên mobile: ảnh giữ chỗ đúng tỷ lệ, tải thêm không nhảy cuộn bất thường, không tải lặp vô hạn.
 
 **Xác nhận responsive:** Chưa xác nhận. Người kiểm: __________. Thiết bị/build: __________.
+
+## 13. Dọn mã cũ và kiểm tra khả năng bảo trì — 15/10/2026
+
+### 13.1. Quy trình đi từng trang
+
+- Thứ tự theo danh sách mục 2–3, bắt đầu **Khám phá (#2)**. **Trang chủ (#1) để làm sau**, không chỉnh hoặc nghiệm thu trong lượt này.
+- Mỗi trang: đối chiếu chức năng và lỗi → kiểm dependency/file dài → tách file trên 1.000 dòng theo trách nhiệm → build/lint/kiểm thử phù hợp → người dùng nghiệm thu.
+- **Responsive để sau cùng khi đã test chức năng toàn bộ trang**, không phải điều kiện bắt người dùng dừng ở từng trang. Checklist mới viết ngắn theo “thao tác → kết quả cần thấy”; thuật ngữ API chỉ để ở phần bằng chứng kỹ thuật.
+- Không tách file máy móc thành các đoạn số dòng hoặc đổi hành vi chỉ để giảm độ dài; giữ API/import ổn định khi chia module.
+- Ca chức năng do người dùng xác nhận ở mục 11; responsive riêng ở mục 12. Chưa chuyển trang Khám phá thành đã hoàn tất và không tự tích checklist.
+- Trang tiếp theo sau Khám phá theo danh sách: **Kết quả tìm kiếm (#3)**. Chưa bắt đầu chỉnh trang này trong lượt hiện tại.
+
+### 13.2. Đã dọn mã admin không còn dùng
+
+Đã kiểm đồ thị import từ `frontend/src/main.tsx`, gồm import tĩnh, lazy import literal, re-export và CSS; đối chiếu thêm các tham chiếu trong source/scripts. Đã xóa **24 file** không còn được ứng dụng hiện hành dùng:
+
+- Entry/layout cũ: `AdminPage.tsx`, `AdminPage.css`, `AdminAppRoutes.tsx`, `components/AdminSidebar.tsx`.
+- Component cũ: `components/AdminForm.tsx`, `PermissionBadge.tsx`, `PermissionButton.tsx`, `PermissionMatrix.tsx`, `PermissionTooltip.tsx`.
+- Tab cũ: `AdminAnalytics`, `AdminCategories`, `AdminDashboard`, `AdminFavorites`, `AdminImages`, `AdminModeration`, `AdminSettings`, `AdminTrafficAnalytics`, `AdminUsers`, `AdminWebSocketMetrics` trong `components/tabs/`, cùng barrel `index.ts` cũ.
+- Hook cũ: `hooks/useAdminCategories.ts`, `useAdminDashboard.ts`, `useAdminImages.ts` và barrel `hooks/index.ts`.
+
+Giữ lại `AdminLayout`, `AdminAccess`, các trang admin mới, tab Bookings/Collections/Roles/Logs, hook users/roles/resource, modal và CSS còn được dùng. Đặc biệt **`AdminForm.css` vẫn được UserModal/CategoryModal sử dụng**, nên chỉ xóa component `AdminForm.tsx`, không xóa CSS này. Shared CSS vẫn có thể chứa selector cũ; chưa bóc từng selector trong lượt dọn module để tránh làm hỏng giao diện mới.
+
+Script đọc dependency: `frontend/scripts/audit-admin-dependencies.cjs` (chỉ báo cáo, không tự xóa). Sau dọn, không còn file admin không được entry hiện hành truy cập theo đồ thị import đã quét. Tải module bằng đường dẫn động không literal cần kiểm thủ công nếu được thêm sau này.
+
+### 13.3. Khám phá — độ dài và chia module
+
+- `ExplorePage.tsx`: **263 dòng**, không vượt 1.000 nên giữ nguyên cấu trúc trang.
+- Đã kiểm toàn bộ dependency trong `src` của trang. Hai file bản dịch `vi.ts`/`en.ts` trước đây lần lượt khoảng 1.146/1.147 dòng, đã tách theo nhóm `common`, `account`, `gallery`, `admin` dưới `frontend/src/i18n/locales/vi/` và `en/`.
+- Entry `vi.ts`/`en.ts`, export `vi`/`en` và type `TranslationKeys` giữ nguyên. Đã so sánh toàn bộ object bản dịch trước/sau bằng deep equality: cả hai ngôn ngữ giữ nguyên 20 namespace và nội dung.
+- Sau chia, không còn dependency nào của Khám phá vượt 1.000 dòng. Việc chia bản dịch dùng chung không thay nội dung hay layout trang chủ.
+
+### 13.4. Bằng chứng kiểm tra của lượt dọn code
+
+- Vite build sau dọn: **PASS**; còn cảnh báo bundle/dynamic import từ dự án.
+- ESLint Khám phá và các module locale: **không có error**.
+- TypeScript toàn dự án vẫn còn diagnostic ngoài phạm vi; không có diagnostic ở ExplorePage, locale hoặc các trang admin trong lần kiểm này. Không coi toàn dự án đã type-check PASS.
+- Fixture admin: **PASS** mutation payloads, moderation endpoints, hủy xóa, lỗi/thử lại và route thiếu quyền. Không cập nhật dữ liệu thật.
+- Fixture Khám phá, Edge desktop sáng/tối: **PASS** tải page 2 giữ category/orientation/sort, **thứ tự asc + minWidth**, lỗi page 2 giữ grid và retry đúng trang, lỗi danh mục và retry, lỗi trang đầu/retry, empty/reset; không có pageerror.
+- Script fixture: `frontend/scripts/test-explore-page.cjs` và `test-admin-actions.cjs`. Kết quả kỹ thuật không thay thế người dùng tích các ca EXP-F; chưa thực hiện nghiệm thu responsive trong lượt này.
+
+## 14. ~~Kết quả tìm kiếm (#3) — 16 ca ban đầu ĐẠT~~
+
+**Đường dẫn:** gõ từ khóa rồi Enter, hoặc mở `/s/photos/chan%20dung`. **Trạng thái: người dùng xác nhận đủ 16/16 ca đạt. Có lỗi bổ sung SEA-17 (nút ×), đã sửa và chờ kiểm lại ở mục 14.5.**
+
+Điền `x` nếu đúng, `o` nếu sai, để trống nếu chưa thử. Nếu sai, ghi ngay dưới ca: đã gõ gì/bấm gì, lỗi đang thấy, ảnh chụp nếu có. Không cần xem request/API để làm các bước này. **Chưa test responsive ở lượt này.**
+
+### 14.1. Những điểm đã xử lý
+
+- Từ khóa có ký tự `%` không còn bị giải mã thêm lần nữa gây lỗi hoặc biến thành từ khóa khác.
+- Bỏ bước chờ tải và giải mã tất cả ảnh trước khi hiện lưới. Ảnh có thể hiện dần theo cơ chế grid hiện có; không hứa đã giải quyết lỗi modal dùng chung IMG-01.
+- Bỏ cache riêng chỉ dựa trên từ khóa, tránh lấy lại kết quả không khớp bộ lọc. Request trang đầu/tải thêm dùng chung từ khóa và filter.
+- Đổi bộ lọc chỉ có một nơi gửi request; trang không tự giữ danh mục cũ từ Khám phá ngoài ý muốn.
+- Tải lỗi có nút thử lại, lỗi trang tiếp theo giữ ảnh đã tải; kết quả rỗng có thông báo tiếng Việt.
+- Đổi từ khóa không hiện ảnh của truy vấn cũ; gợi ý trả về chậm không ghi đè gợi ý của từ khóa mới.
+- Gỡ khoảng chừa sidebar cũ trên desktop; tiêu đề, số kết quả, ô tìm và ảnh dùng tông chung.
+- Mã trang và dữ liệu tách thành `SearchResultsPage.tsx` và `pages/search/useSearchResultsData.ts`; mỗi file dưới 1.000 dòng.
+
+### 14.2. Checklist dễ thao tác
+
+- [x] SEA-01 — Gõ **chân dung**, nhấn Enter → tiêu đề hiện đúng từ đã gõ, có số ảnh và lưới kết quả; không trắng trang.
+- [x] SEA-02 — Thử từ có dấu và ký tự đặc biệt, ví dụ **100% Việt**, **a & b**, **%20** → không báo lỗi, tiêu đề vẫn đúng chữ bạn nhập; không biến `%20` thành khoảng trắng.
+- [x] SEA-03 — Đang xem kết quả, nhập từ khác rồi Enter → tiêu đề và ảnh đổi theo từ mới, không còn ảnh cũ nằm dưới tiêu đề mới.
+- [x] SEA-04 — Đổi nhanh hai từ khóa liên tiếp → kết quả cuối theo từ gõ sau, không tự nhảy ngược về từ trước.
+- [x] SEA-05 — Mở **Bộ lọc tìm kiếm**, chọn **Dọc**, bấm **Áp dụng** → lựa chọn có hiệu lực, phần nhãn lọc hiển thị đúng; kết quả vẫn thuộc từ khóa đang tìm.
+- [x] SEA-06 — Đổi màu/khoảng ngày/cách sắp xếp trong bộ lọc → kết quả thay đổi phù hợp; đóng panel khi chưa Áp dụng không tự đổi kết quả.
+- [x] SEA-07 — Bấm **Xóa tất cả** ở hàng bộ lọc → xóa điều kiện đang chọn, vẫn giữ từ khóa tìm kiếm; ảnh tải lại.
+- [x] SEA-08 — Với từ khóa có nhiều ảnh, cuộn xuống cuối → ảnh mới nối tiếp, ảnh đầu không biến mất, không lặp đi lặp lại cùng một nhóm ảnh.
+- [x] SEA-09 — Có lọc Dọc/màu hoặc cách sắp xếp rồi cuộn tải thêm → ảnh mới vẫn tuân theo điều kiện đã chọn.
+- [x] SEA-10 — Tìm một chuỗi không có ảnh → hiện **Chưa tìm thấy ảnh phù hợp** và gợi ý đổi từ/xóa lọc; không quay spinner mãi.
+- [x] SEA-11 — Ngắt mạng rồi đổi từ khóa → hiện thông báo tải lỗi và nút **Thử lại tải ảnh**. Bật mạng rồi bấm thử lại → tải được đúng từ khóa hiện tại.
+- [x] SEA-12 — Nếu mất mạng lúc tải thêm → ảnh đang xem không bị xóa. Có mạng rồi thử lại → nối thêm đúng phần còn thiếu.
+- [x] SEA-13 — Nếu có các từ gợi ý dưới tiêu đề, bấm một từ → sang kết quả của đúng từ đó; không hiển thị gợi ý cũ sau khi đổi từ mới.
+- [x] SEA-14 — Bấm ảnh rồi đóng/Back → trở về đúng từ khóa và bộ lọc. Nếu modal chậm, ghi thêm vào IMG-01 ở đầu file, không bỏ qua vì ảnh cuối cùng vẫn mở được.
+- [x] SEA-15 — F5 ngay trên trang kết quả → vẫn giữ đúng từ khóa và tải được kết quả. F5 khi đang trong modal theo dõi riêng ở IMG-02.
+- [x] SEA-16 — Chuyển sáng/tối trên desktop và dùng Tab/Enter → chữ/nút đọc được, focus rõ, không có nút cần dùng bị che. Đây chưa phải vòng responsive.
+
+### 14.3. Bằng chứng kỹ thuật và kết quả người dùng
+
+Script: `frontend/scripts/test-search-results.cjs`. Edge desktop 1440×900 sáng/tối: **PASS** từ khóa `100% Việt %20`, một request khi áp dụng filter, page 2 lỗi/retry giữ 20 ảnh và nối thành 21 ảnh, giữ order asc/minWidth, empty, lỗi truy vấn, đổi từ khóa và F5 trang kết quả. Không có pageerror. Vite build PASS; ESLint phần sửa không error. Đây là fixture API giả lập, chưa chứng minh thứ tự xếp hạng dữ liệu thật hoặc hiệu năng modal. Không sửa dữ liệu thật, không tự tích checklist của người dùng.
+
+Mã sau chỉnh: `SearchResultsPage.tsx` khoảng 100 dòng và `pages/search/useSearchResultsData.ts` dưới 100 dòng. Không có file trang tìm kiếm vượt 1.000 dòng. TypeScript toàn dự án còn lỗi legacy, được theo dõi riêng; không coi build Vite là type-check toàn dự án đạt.
+
+**Người dùng xác nhận:** 16/16 ca ban đầu đạt, bao gồm SEA-11/SEA-12 sau sửa. Đã gạch ngang phạm vi 16 ca này. Lỗi mới SEA-17 chờ kiểm lại; IMG-01/IMG-02 và EXP-F05 vẫn mở. Responsive chưa kiểm, làm vòng cuối.
+
+### 14.4. Kết quả người dùng và bản sửa hai ca mất mạng
+
+**Lịch sử:** lần đầu người dùng kiểm được 14 ca x, 2 ca o là SEA-11 và SEA-12. Sau bản sửa bên dưới, người dùng xác nhận phần 14 đạt hết; hai ca đã đổi x theo xác nhận trực tiếp.
+
+Ảnh đính kèm: trình duyệt chọn Offline, từ khóa `fdsfj`, hiện “0 ảnh phù hợp / Chưa tìm thấy ảnh phù hợp”; tab Network trống. Ảnh đủ chứng minh UI chưa báo mất mạng tại thời điểm chụp, nhưng chưa chứng minh có request mới thất bại. Trước sửa, trang chỉ báo lỗi từ request, không theo dõi sự kiện mất mạng khi đang đứng ở một kết quả đã tải.
+
+Đã sửa:
+
+- Chuyển Offline → hiện thông báo kết nối bị gián đoạn ngay, không tiếp tục báo 0 ảnh/empty như dữ liệu mới vừa kiểm tra.
+- Hủy request ảnh đang chờ khi mất mạng; không để nút thử lại bị khóa theo timeout dài của request.
+- Đổi từ khóa khi Offline → giữ đúng từ khóa trên tiêu đề, hiện lỗi mạng, không báo không có ảnh.
+- Giữ ảnh đã tải nếu mất mạng khi xem hoặc tải trang tiếp theo. Bật mạng rồi Thử lại → request đúng trang lỗi, cùng từ khóa/bộ lọc; chỉ bỏ lỗi khi tải thành công.
+
+**Kiểm lại bằng thao tác đơn giản:**
+
+1. SEA-11: Tìm một từ bất kỳ khi Online → chọn Offline → phải thấy thông báo mạng. Gõ từ khác, Enter khi vẫn Offline → vẫn thấy thông báo mạng. Chuyển No throttling/Online → bấm **Thử lại tải ảnh** → kết quả của từ mới hiện đúng. Không cần F5; F5 khi Offline còn phụ thuộc việc tải lại toàn bộ ứng dụng.
+2. SEA-12: Tìm từ có hơn một trang ảnh. Nếu muốn ngắt đúng giữa request, chọn Slow 3G, cuộn gần cuối để tải thêm rồi chọn Offline trong lúc đang chờ → ảnh cũ còn nguyên, hiện lỗi mạng. Chuyển lại Online, bấm **Thử lại tải ảnh** → nối đúng phần tiếp theo, không mất/lặp ảnh đầu. Nếu từ khóa chỉ có 0 hoặc ít ảnh thì không đủ dữ liệu để kết luận ca tải thêm.
+
+Bằng chứng mới: `frontend/scripts/test-search-offline.cjs` dùng HTTP ảnh nội bộ thật với `context.setOffline(true/false)` (không mock thành công request ảnh lúc Offline), abort request page 2 đang chờ và reconnect/retry. **PASS desktop sáng/tối**: empty không hiện như kết quả mới khi mất mạng; đổi query offline/retry; giữ20 ảnh và retry page2 nối thành21 ảnh. Script hồi quy `test-search-results.cjs` PASS cả hai theme. Build/lint phần sửa không error; không có diagnostic TypeScript ở hai file trang/hook sửa (toàn dự án vẫn còn lỗi ngoài phạm vi).
+
+**Trạng thái mới nhất: SEA-11 = x, SEA-12 = x — NGƯỜI DÙNG ĐÃ XÁC NHẬN ĐẠT.** Các dấu x khác giữ nguyên. Đây là test chức năng kết nối, không phải nghiệm thu responsive dù ảnh người dùng chụp bằng chế độ mobile.
+
+### 14.5. Lỗi bổ sung — nút × trong ô tìm kiếm
+
+Người dùng đã xác nhận **16 ca ban đầu của mục 14 đạt hết**. Giữ xác nhận đó, bổ sung lỗi riêng này thay vì đổi ngược các ca cũ thành chưa đạt.
+
+Nguyên nhân tìm thấy trong `SearchBar.tsx`: `handleClear` gọi `navigate('/', { replace: true })`. Ngoài ra, Enter khi ô trống cũng điều hướng về `/`; cơ chế đồng bộ URL cũ có thể điền lại chữ vừa xóa khi mất focus.
+
+Đã sửa nút × chỉ xóa chữ và đưa con trỏ vào ô nhập, giữ trang/kết quả/bộ lọc đang xem. Bấm ra ngoài không tự điền lại chữ cũ. Enter khi ô trống không chuyển trang; nhập từ mới rồi Enter mới cập nhật kết quả.
+
+- [x] SEA-17 — Đang ở trang kết quả, bấm **×** → chữ trong ô biến mất, con trỏ vẫn ở ô, không về trang chủ; tiêu đề/kết quả/bộ lọc cũ giữ nguyên để chờ tìm từ mới. Bấm ra ngoài rồi quay lại → ô vẫn trống. Enter khi trống → không chuyển trang. Nhập từ mới, Enter → tìm đúng từ mới.
+
+**Đã sửa, chờ người dùng test lại.** Không tự đổi SEA-17 thành x. Responsive vẫn làm sau cùng.
+
+Bằng chứng: build/lint phần sửa đạt; `test-search-results.cjs` PASS Edge desktop sáng/tối, có assertion xóa trống, giữ focus/URL, blur không điền lại, Enter trống không điều hướng và không phát request ảnh mới. Các ca hồi quy tìm kiếm trước đó vẫn PASS.
+
+
+

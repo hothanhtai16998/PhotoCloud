@@ -2,6 +2,29 @@
 
 ## 0. Bảng điều khiển chung
 
+### Xác nhận16 ca tìm kiếm, sửa nút × — 2026-10-15
+
+- Người dùng xác nhận mục14 đạt hết:16/16 ca x, đã đóng SEA-11/12 theo xác nhận và gạch ngang phạm vi16 ca ban đầu. Responsive vẫn để cuối; lỗi mới ghi riêng SEA-17.
+- Nút × trước đây gọi navigate('/') nên về trang chủ. Đã sửa chỉ xóa chữ, giữ focus/URL/kết quả/filter; blur không điền lại từ URL cũ, Enter trống không chuyển trang. Build/lint và fixture tìm kiếm desktop sáng/tối PASS gồm các assertion mới. SEA-17 giữ o chờ người dùng kiểm lại.
+
+### Sửa hai ca mất mạng của trang tìm kiếm — 2026-10-15
+
+- Đọc checklist người dùng:14/16 ca x, SEA-11/12 o. Ảnh Offline vẫn hiện0 ảnh, Network trống; chưa đủ kết luận request trả sai. Hook trước đó chỉ phản ánh lỗi request, chưa phản hồi sự kiện mất mạng khi đứng ở kết quả đã tải.
+- Thêm theo dõi offline, hủy request ảnh đang chờ, giữ grid và trang cần retry, ẩn empty/tổng0 như kết quả mới khi mạng gián đoạn. Bật lại mạng và thử lại chỉ hết lỗi sau khi request thành công.
+- Build/lint phần sửa đạt; TypeScript không diagnostic ở trang/hook sửa, toàn dự án còn lỗi khác. Test HTTP nội bộ + Edge setOffline thật sáng/tối PASS empty/offline/new-query, page2 abort giữ20 ảnh rồi retry nối21; hồi quy tìm kiếm PASS. Inventory thêm mục14.4 và lỗi đỏ đầu file; giữ SEA-11/12 o chờ người dùng kiểm lại. Responsive vẫn để cuối.
+
+### Nghiệm thu x/o, ghi lỗi ảnh và chuẩn bị Kết quả tìm kiếm — 2026-10-15
+
+- Người dùng quy ước x=đạt, o=chưa đạt; Khám phá19/20 ca đạt, EXP-F05 sắp xếp chưa đạt. Đã giữ nguyên ý nghĩa các dấu, đưa lỗi này cùng IMG-01 modal ảnh lag và IMG-02 F5 nháy modal khoảng2 giây lên đầu inventory bằng màu đỏ/biểu tượng. Hai lỗi ảnh mới chỉ ghi nhận, chưa sửa/đo nguyên nhân.
+- Responsive làm sau cùng khi test chức năng hết các trang; trang chủ để sau. Tiếp tục đúng thứ tự với Kết quả tìm kiếm (#3), checklist16 bước dễ thao tác ở PAGE_INVENTORY mục14. Chưa tự đánh dấu nghiệm thu hoặc gạch ngang.
+- Tìm kiếm bỏ decodeURIComponent lặp và chờ preload toàn bộ ảnh, bỏ cache riêng theo từ khóa, tách hook dữ liệu; trang sở hữu request filter, thêm empty/error/retry và tổng kết quả. Fixture desktop sáng/tối PASS từ khóa%, filter một request, pagination/retry, empty/error/query change/reload; Vite build và lint phần sửa đạt. TypeScript toàn dự án còn lỗi ngoài phạm vi. Không sửa dữ liệu thật.
+
+### Dọn admin cũ, bắt đầu nghiệm thu từng trang từ Khám phá — 2026-10-15
+
+- Xóa24 file admin không còn dùng sau khi kiểm import từ main.tsx; giữ component/hook/CSS mà admin mới tái sử dụng. Build và fixture admin actions PASS; audit hiện không còn file admin ngoài đồ thị import đang dùng.
+- Khám phá263 dòng, dependency không còn file trên1.000 dòng sau khi tách locale Việt/Anh thành common/account/gallery/admin; toàn bộ nội dung bản dịch trước/sau giữ nguyên qua deep equality. Fixture Khám phá sáng/tối PASS gồm lỗi trang2/thử lại, lỗi danh mục, giữ order asc và minWidth; TypeScript còn diagnostic ngoài phạm vi, không có diagnostic Explore/locale/admin trong lần này.
+- Theo thứ tự PAGE_INVENTORY, bỏ qua trang chủ để làm sau. Khám phá đang chờ người dùng tích checklist; responsive có phần riêng. Chưa tự đánh dấu đạt hoặc chuyển sang sửa trang tiếp theo. Chi tiết tại PAGE_INVENTORY_AND_ANALYSIS.md mục13.
+
 ### Xác nhận hoàn tất đợt chỉnh sửa Lịch chụp & dịch vụ admin — 2026-10-15
 
 - Đã hoàn tất phạm vi giao diện và luồng thao tác của `/admin/bookings`: Yêu cầu, Lịch, Lịch rảnh, Gói chụp, Đánh giá và Chính sách. Các thay đổi mới nhất gồm modal thêm/sửa gói có vùng cuộn và footer cố định, danh sách gói có thông số/icon, công tắc đồng bộ ở Lịch rảnh và Chính sách, ngày nghỉ riêng và bảo vệ bản nháp.

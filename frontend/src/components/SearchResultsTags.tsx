@@ -16,6 +16,7 @@ export function SearchResultsTags({ query }: SearchResultsTagsProps) {
     const [canScrollRight, setCanScrollRight] = useState(false);
 
     useEffect(() => {
+        let active = true;
         const fetchSuggestions = async () => {
             if (!query) return;
             
@@ -33,16 +34,19 @@ export function SearchResultsTags({ query }: SearchResultsTagsProps) {
                     )
                     .slice(0, 12); // Limit to 12 tags
                 
-                setSuggestedTags(tags);
+                if (active) setSuggestedTags(tags);
             } catch (error) {
-                console.error('Failed to fetch suggested tags:', error);
-                setSuggestedTags([]);
+                if (active) {
+                    console.error('Failed to fetch suggested tags:', error);
+                    setSuggestedTags([]);
+                }
             } finally {
-                setLoading(false);
+                if (active) setLoading(false);
             }
         };
 
         fetchSuggestions();
+        return () => { active = false; };
     }, [query]);
 
     // Check if tags container can scroll

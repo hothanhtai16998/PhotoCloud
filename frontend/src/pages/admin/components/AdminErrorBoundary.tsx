@@ -19,9 +19,8 @@ interface AdminErrorBoundaryState {
  * instead of unmounting the entire admin shell. The user can retry the
  * tab without losing their navigation state.
  *
- * Critical: before this existed, an uncaught render error inside a lazy
- * tab would propagate up and unmount AdminPage entirely — which left the
- * header frozen and the page unresponsive to clicks.
+ * Keep failures inside the active page so the shared admin navigation
+ * remains available for recovery.
  */
 export class AdminErrorBoundary extends Component<AdminErrorBoundaryProps, AdminErrorBoundaryState> {
     state: AdminErrorBoundaryState = { hasError: false, error: null };

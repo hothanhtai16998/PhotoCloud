@@ -1,157 +1,46 @@
 .search-results-page {
-    min-height: 100vh;
-    background: var(--bg-card, #FFFFFF);
-  padding: 0;
-  padding-top: 48px; /* Header + SearchResultsNavigation */
-    margin-top: 0;
-    /* Prevent layout shift during navigation */
-    contain: layout style;
-    /* Prevent any scroll position changes */
-    scroll-behavior: auto;
-    /* Ensure stable layout from the start */
-    display: block;
-    position: relative;
-    /* Smooth transitions */
-    transition: opacity 0.15s ease-in-out, visibility 0.15s ease-in-out;
+  min-height: 100vh;
+  padding: 108px 24px 80px;
+  background: var(--studio-bg-warm);
+  color: var(--studio-text-primary);
 }
-
-/* Hide content immediately during navigation to prevent flashing */
-.search-results-page.transitioning {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    /* Prevent any interaction during transition */
-    pointer-events: none;
-    /* Prevent layout shift by maintaining position */
-    position: relative;
-    /* Ensure content doesn't move */
-    contain: layout style paint;
-    /* Immediate hide - no transition delay */
-    transition: none;
+.search-results-content,
+.search-results-grid-container,
+.search-results-grid-wrapper,
+.search-results-error {
+  max-width: 1280px;
+  margin: 0 auto;
 }
-
-/* Ensure main content is hidden during transition */
-.search-results-page.transitioning > * {
-    opacity: 0;
-    visibility: hidden;
-}
-
-/* Account for sidebar on desktop */
-@media (min-width: 768px) {
-    .search-results-page {
-        margin-left: 64px; /* Sidebar width */
-    }
-}
-
-.search-results-content {
-    width: 100%;
-    max-width: 1296px;
-    margin: 0 auto;
-    padding: 0 16px; /* No top padding - grid will handle its own spacing */
-    background: var(--bg-card, #FFFFFF);
-    /* Reserve space for heading (3rem) + margin-bottom (16px) + tags (40px min-height) to prevent layout shift */
-    min-height: calc(3rem + 16px + 40px);
-    /* Prevent layout shift during content changes */
-    contain: layout style;
-    /* Ensure it's always rendered */
-    display: block;
-}
-
+.search-results-content { margin-top: 28px; margin-bottom: 20px; }
 .search-results-heading {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-primary, #1B1B19);
-    margin: 16px 0 16px 0; /* Top margin to match homepage grid top padding (16px) */
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    display: block;
-    visibility: visible;
-    /* Reserve space to prevent layout shift */
-    min-height: 3rem;
+  font-family: var(--studio-font-display);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  line-height: 1.25;
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
 }
-
-@media (max-width: 768px) {
-    .search-results-page {
-        padding-top: calc(var(--header-height, 48px) + 48px); /* Header + SearchResultsNavigation */
-    }
-
-    .search-results-content {
-        padding: 0 16px; /* No top padding - grid will handle its own spacing */
-        min-height: 100px;
-    }
-
-    .search-results-heading {
-        font-size: 1.75rem;
-        margin: 16px 0 12px 0; /* Top margin to match homepage grid top padding (16px) */
-        min-height: 2.5rem;
-    }
-}
-
-.search-results-loading {
-    width: 100%;
-    max-width: 1296px;
-    margin: 0 auto;
-    padding: 16px 16px 40px; /* Match grid container padding exactly (16px top) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Reserve minimum space to match grid container min-height exactly */
-    min-height: 500px;
-    /* Prevent layout shift */
-    box-sizing: border-box;
-    /* Ensure it takes up the same space as grid */
-    position: relative;
-}
-
+.search-results-summary { color: var(--studio-text-muted); font-size: 14px; margin: 0 0 18px; }
+.search-results-grid-container { margin-top: 24px; }
+.search-results-grid-container .no-flash-grid-container { padding-top: 0; }
+.search-results-grid-wrapper { min-height: 400px; }
 .search-results-empty {
-    width: 100%;
-    max-width: 1296px;
-    margin: 0 auto;
-    padding: 80px 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    min-height: 400px;
+  max-width: 640px;
+  margin: 48px auto;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--studio-text-muted);
 }
-
-.search-results-empty-text {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: var(--text-primary, #1B1B19);
-    margin: 0 0 8px 0;
+.search-results-empty svg { color: var(--studio-accent-copper); }
+.search-results-empty h2 { font-size: 22px; color: var(--studio-text-primary); margin: 20px 0 10px; }
+.search-results-empty p { font-size: 15px; line-height: 1.7; }
+.search-results-error { border: 1px solid var(--studio-border-soft); border-radius: 10px; padding: 20px; }
+.search-results-error p { margin: 0 0 12px; }
+.search-results-error button {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+  padding: 10px 14px; border: 1px solid var(--studio-border-soft); border-radius: 8px;
+  background: var(--studio-bg-card); color: var(--studio-text-primary); cursor: pointer; font: inherit;
 }
-
-.search-results-empty-hint {
-    font-size: 0.9375rem;
-    color: #767676;
-    margin: 0;
-}
-
-/* Grid wrapper - maintains consistent position to prevent layout shift */
-.search-results-grid-wrapper {
-    width: 100%;
-    max-width: 1296px;
-    margin: 0 auto;
-    /* Reserve space to prevent layout shift - matches grid container min-height */
-    min-height: 500px;
-    /* Prevent layout shift during content changes */
-    contain: layout style paint;
-    /* Ensure consistent positioning */
-    position: relative;
-    /* Prevent any visual changes */
-    display: block;
-}
-
-/* Grid container - maintains position when grid is shown */
-.search-results-grid-container {
-    width: 100%;
-    max-width: 1296px;
-    margin: 0 auto;
-    /* Same min-height as wrapper to prevent layout shift */
-    min-height: 500px;
-    /* Prevent layout shift */
-    contain: layout style paint;
-    position: relative;
-    display: block;
+.search-results-page :is(button, input, select):focus-visible {
+  outline: 2px solid var(--studio-accent-copper); outline-offset: 3px;
 }
