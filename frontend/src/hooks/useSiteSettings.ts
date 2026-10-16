@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/axios';
 import { applySitePalette, getPaletteRevision } from '@/theme/paletteRuntime';
 
@@ -27,19 +27,19 @@ const defaultSettings: SiteSettings = {
  * Hook to fetch and use site settings
  * Updates document title when site name changes
  */
+let pendingSettings: Promise<{data:{settings?:Record<string,unknown>}}> | null = null;
+function fetchPublicSettings(): Promise<{data:{settings?:Record<string,unknown>}}> {
+ return pendingSettings ??= api.get<{settings?:Record<string,unknown>}>('/settings').finally(() => { pendingSettings=null; });
+}
 export function useSiteSettings() {
     const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadSettings();
-    }, []);
-
-    const loadSettings = async () => {
+const loadSettings = useCallback(async () => {
         const paletteRevision = getPaletteRevision();
         try {
             // Public pages must never fall back to privileged admin settings.
-            const { data } = await api.get('/settings');
+            const { data } = await fetchPublicSettings();
             if (data.settings) {
                 const settingsData = data.settings as {
                     sitePalette?: unknown;
@@ -83,15 +83,13 @@ export function useSiteSettings() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    // Update document title when site name changes
-    useEffect(() => {
-        if (settings.siteName && !loading) {
-            document.title = settings.siteName;
-        }
-    }, [settings.siteName, loading]);
+    useEffect(() => { void loadSettings(); }, [loadSettings]);
 
+    // The site name drives brand chrome (header, footer) and palette.
+    // Document title is owned by per-page `useDocumentMeta`; do not overwrite
+    // it here, otherwise any user-set title gets clobbered once settings load.
     return {
         settings,
         loading,

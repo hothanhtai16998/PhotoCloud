@@ -81,13 +81,9 @@ export const CONNECT_DB = async () => {
             reconnectAttempts = 0;
         });
 
-        mongoose.connection.on('connecting', () => {
-            logger.info('🔄 Connecting to MongoDB...');
-        });
-
-        mongoose.connection.on('connected', () => {
-            logger.info('✅ MongoDB connection established');
-        });
+        // Suppress verbose connection state logs
+        // mongoose.connection.on('connecting', () => { ... });
+        // mongoose.connection.on('connected', () => { ... });
 
         // Graceful shutdown
         const gracefulShutdown = async (signal) => {

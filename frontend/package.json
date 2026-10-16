@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode development",
     "build": "vite build",
     "build:check": "tsc -b && vite build",
     "build:analyze": "tsc -b && vite build && echo Bundle analysis complete! Open dist/stats.html in your browser",

@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "puts": 2,
+  "about": {
+    "title": "PhotoCloud Studio — Về PhotoCloud Studio",
+    "phone": null,
+    "errors": []
+  },
+  "environment": "Edge headless 1440x1000, isolated API fixture; responsive not tested"
+}

@@ -1,0 +1,6 @@
+Đọc AGENTS.md và PAGE_INVENTORY_AND_ANALYSIS.md trước khi làm. Dùng [$impeccable](C:\\Users\\Fenn\\Desktop\\PhotoCloud\\.agents\\skills\\impeccable\\SKILL.md) rà soát và sửa lần lượt theo inventory; giữ chức năng đã nghiệm thu, trang chủ để sau, responsive kiểm riêng ở vòng cuối.
+Đọc luồng code và tìm phần dùng chung trước khi sửa. Đơn giản hóa state/effect, bỏ xử lý trùng và code chết; tách theo trách nhiệm, file nguồn trên 1.000 dòng phải chia nhỏ hợp lý. Không copy-paste hoặc tổng quát hóa quá mức.
+Dùng component và token hiện có; màu giao diện phải theo hệ màu tập trung và cài đặt admin, không hardcode. Giữ phong cách PhotoCloud nhất quán trong sáng/tối.
+Không tự bịa hoặc suy diễn nội dung nghiệp vụ. Phân biệt dữ liệu thật với dữ liệu mẫu; báo rõ thông tin cần chủ website xác nhận.
+Kiểm đầy đủ trạng thái, quyền, điều hướng, bất đồng bộ, accessibility và các luồng dễ hồi quy. Dọn tài nguyên khi component ngừng sử dụng. Chỉ kết luận hiệu năng khi có đo đạc.
+Thực hiện sửa code và kiểm giao diện chạy thực. Báo chính xác đã kiểm gì, kết quả và phần chưa kiểm; không coi build thành công là trang đã đạt. Cập nhật checklist dễ hiểu, giữ dấu x/o của tôi và chỉ gạch ngang khi tôi xác nhận đạt.

@@ -11,7 +11,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
         User.countDocuments(),
         Image.countDocuments(),
         User.find().sort({ createdAt: -1 }).limit(5).select('username email displayName createdAt isAdmin').lean(),
-        Image.find().sort({ createdAt: -1 }).limit(10).populate('uploadedBy', 'username displayName').populate('imageCategory', 'name').select('imageTitle imageUrl imageCategory createdAt uploadedBy').lean(),
+        Image.find().sort({ createdAt: -1 }).limit(10).populate('uploadedBy', 'username displayName').populate('imageCategory', 'name').select('imageTitle imageUrl thumbnailUrl smallUrl imageCategory createdAt uploadedBy').lean(),
         Category.countDocuments(),
     ]);
 

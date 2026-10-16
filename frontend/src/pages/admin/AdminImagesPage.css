@@ -526,3 +526,11 @@
 
 .admin-table-action.danger { color: var(--button-danger-text); }
 .admin-table-action.danger:hover { background: var(--button-danger-soft); color: var(--button-danger-text); }
+.admin-image-library .admin-library-note { font-size:13px;line-height:1.6;color:var(--admin-text-secondary);margin:0 0 18px; }
+.admin-image-library .admin-table th { font-size:12px; }
+.admin-image-library .admin-record-name strong { font-size:14px; }
+.admin-image-library .admin-record-name small { font-size:12px;line-height:1.5; }
+.admin-image-library .admin-table-thumb { display:grid;place-items:center;color:var(--admin-text-secondary); }
+.admin-image-library input[type=checkbox] { accent-color:var(--button-primary-bg); }
+.admin-image-library .admin-bulk-bar { position:sticky;top:0;z-index:2;background:var(--admin-card-bg);border:1px solid var(--admin-border);border-radius:8px;padding:12px 16px; }
+.admin-image-library :is(button,a,input):focus-visible { outline:2px solid var(--button-focus);outline-offset:3px; }

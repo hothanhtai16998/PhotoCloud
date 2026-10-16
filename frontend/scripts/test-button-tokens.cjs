@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),postcss=require('postcss');
-const root=path.resolve(__dirname,'../src'),file=path.join(root,'styles/button-tokens.css'),ast=postcss.parse(fs.readFileSync(file,'utf8')),themes={light:{},dark:{}};
+const root=path.resolve(__dirname,'../src'),file=path.join(root,'styles/button-tokens.css'),ast=postcss.parse(fs.readFileSync(file,'utf8')),themes=JSON.parse(JSON.stringify(require('../../shared/sitePalette.json')));
 ast.walkRules(r=>{if(r.selector===':root'||r.selector==='html.dark-theme')r.walkDecls(d=>{themes[r.selector===':root'?'light':'dark'][d.prop]=d.value;});});
 function lum(hex){const rgb=hex.slice(1).match(/../g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;}
 const ratios=[];for(const theme of ['light','dark']){const t={...themes.light,...themes[theme]};for(const role of ['primary','secondary','selected','danger','success']){for(const state of ['bg','hover']){const bg=t[`--button-${role}-${state}`];if(!bg)continue;const fg=t[`--button-${role}-fg`],a=lum(bg),b=lum(fg),ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);assert.ok(ratio>=4.5,`${theme} ${role}/${state}: ${ratio}`);ratios.push({theme,role,state,ratio:+ratio.toFixed(2)});}}}

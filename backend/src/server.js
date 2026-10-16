@@ -390,14 +390,11 @@ const startServer = async () => {
         initializeSocketServer(httpServer);
         
         httpServer.listen(PORT, '0.0.0.0', () => {
-            logger.info(`🚀 Server is running on port ${PORT}`);
-            logger.info(`📦 Environment: ${env.NODE_ENV}`);
-            logger.info(`🔌 WebSocket server ready for real-time notifications`);
+            // Server started silently - only errors shown
         });
 
         // Graceful shutdown handlers
         process.on('SIGTERM', async () => {
-            logger.info('SIGTERM received, shutting down gracefully...');
             stopSessionCleanup();
             stopPreUploadCleanup();
             stopBookingReminders();
@@ -407,7 +404,6 @@ const startServer = async () => {
         });
 
         process.on('SIGINT', async () => {
-            logger.info('SIGINT received, shutting down gracefully...');
             stopSessionCleanup();
             stopPreUploadCleanup();
             const { stopMonitoring } = await import('./utils/alertMonitor.js');

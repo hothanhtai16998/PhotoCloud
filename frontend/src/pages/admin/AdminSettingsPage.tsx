@@ -4,8 +4,13 @@ import { toast } from 'sonner';
 import { adminService } from '@/services/adminService';
 import { AdminHeading, AdminFeedback } from './components/AdminPrimitives';
 import { useAdminResource, adminError } from './hooks/useAdminResource';
+import { SitePaletteEditor } from './components/SitePaletteEditor';
+import { normalizePalette, HEX_COLOR, type SitePalette } from '@/theme/sitePalette';
+import { applySitePalette } from '@/theme/paletteRuntime';
 import './AdminImagesPage.css';
+import './AdminSettingsPage.css';
 interface Draft {
+  sitePalette: SitePalette;
   siteName: string;
   siteDescription: string;
   maxUploadSize: number;
@@ -14,6 +19,7 @@ interface Draft {
 }
 function toDraft(s: Record<string, unknown>): Draft {
   return {
+    sitePalette: normalizePalette(s.sitePalette),
     siteName: String(s.siteName || ''),
     siteDescription: String(s.siteDescription || ''),
     maxUploadSize: Number(s.maxUploadSize || 10),
@@ -27,6 +33,7 @@ export function AdminSettingsPage() {
   const loader = useCallback(() => adminService.getSettings(), []);
   const { data, loading, error, reload, setData } = useAdminResource(loader);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [section,setSection] = useState<'general' | 'appearance'>('general');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   useEffect(() => {
@@ -36,9 +43,24 @@ export function AdminSettingsPage() {
     !!draft &&
     !!data &&
     JSON.stringify(draft) !== JSON.stringify(toDraft(data.settings));
+  useEffect(() => {
+    if (!dirty) return;
+    const beforeUnload = (event: BeforeUnloadEvent): void => { event.preventDefault(); event.returnValue = ''; };
+    const navigate = (event: MouseEvent): void => {
+      const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
+      if (!link || link.getAttribute('href')?.startsWith('#')) return;
+      if (!window.confirm('Có thay đổi chưa lưu. Rời trang và bỏ các thay đổi?')) { event.preventDefault(); event.stopPropagation(); }
+    };
+    window.addEventListener('beforeunload', beforeUnload);
+    document.addEventListener('click', navigate, true);
+    return () => { window.removeEventListener('beforeunload', beforeUnload); document.removeEventListener('click', navigate, true); };
+  }, [dirty]);
   const save = async (e: FormEvent) => {
     e.preventDefault();
     if (!draft || !dirty || saving) return;
+    if (!draft.siteName.trim() || !Number.isFinite(draft.maxUploadSize) || draft.maxUploadSize < 1 || draft.maxUploadSize > 100) {
+      setSection('general'); setSaveError('Nhập tên website và dung lượng tải ảnh từ 1 đến 100 MB.'); return;
+    }
     const allowedFileTypes = draft.allowedFileTypes
       .split(',')
       .map((t) => t.trim().toLowerCase().replace(/^\./, ''))
@@ -49,11 +71,13 @@ export function AdminSettingsPage() {
         (t) => !['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'].includes(t)
       )
     ) {
+      setSection('general');
       setSaveError(
         'Chọn định dạng ảnh hợp lệ: jpg, jpeg, png, webp, gif hoặc avif.'
       );
       return;
     }
+    if (Object.values(draft.sitePalette.light).concat(Object.values(draft.sitePalette.dark)).some(color => !HEX_COLOR.test(color))) { setSection('appearance'); setSaveError('Kiểm tra mã màu: cần dạng #77502E với sáu chữ số HEX.'); return; }
     setSaving(true);
     setSaveError(null);
     try {
@@ -63,6 +87,7 @@ export function AdminSettingsPage() {
         allowedFileTypes,
       });
       setData(result);
+      applySitePalette(result.settings.sitePalette ?? draft.sitePalette);
       toast.success('Đã lưu cài đặt website');
     } catch (cause) {
       setSaveError(adminError(cause));
@@ -71,17 +96,22 @@ export function AdminSettingsPage() {
     }
   };
   return (
-    <section>
+    <section className="website-settings">
       <AdminHeading
         title="Cài đặt website"
-        description="Thông tin chung và quy định tải ảnh của PhotoCloud."
+        description="Thông tin, quy định tải ảnh và bảng màu của PhotoCloud."
       />
       <AdminFeedback error={error} retry={() => void reload()} />
       {!draft ? (
         loading && <div className="admin-skeleton tall" />
       ) : (
         <form onSubmit={save}>
+          <div className="settings-navigation" role="group" aria-label="Phần cài đặt">
+            <button type="button" aria-pressed={section==='general'} onClick={()=>setSection('general')}>Cài đặt chung<small>Thông tin, tải ảnh và bảo trì</small></button>
+            <button type="button" aria-pressed={section==='appearance'} onClick={()=>setSection('appearance')}>Giao diện<small>Bảng màu sáng và tối</small></button>
+          </div>
           <fieldset disabled={saving} className="admin-settings-form">
+            {section==='general' && <div className="settings-general">
             <section className="admin-settings-section">
               <div>
                 <h2>Thông tin website</h2>
@@ -167,7 +197,12 @@ export function AdminSettingsPage() {
                 <span>Bật chế độ bảo trì</span>
               </label>
             </section>
+            </div>}
+            <div hidden={section!=='appearance'}>
+              <SitePaletteEditor savedValue={normalizePalette(data?.settings.sitePalette)} value={draft.sitePalette} onChange={sitePalette => setDraft({ ...draft, sitePalette })} />
+            </div>
           </fieldset>
+          <div className="settings-save-dock" aria-busy={saving}>
           {saveError && (
             <p className="admin-form-error" role="alert">
               {saveError}
@@ -179,7 +214,7 @@ export function AdminSettingsPage() {
                 ? 'Đang lưu…'
                 : dirty
                   ? 'Có thay đổi chưa lưu'
-                  : 'Các thay đổi đã được lưu'}
+                  : 'Đã đồng bộ với bản lưu'}
             </span>
             <div>
               <button
@@ -199,6 +234,7 @@ export function AdminSettingsPage() {
                 {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
               </button>
             </div>
+          </div>
           </div>
         </form>
       )}

@@ -196,7 +196,7 @@ export const useImageStore = create(
           else {
             const same = draft.currentCategory === params?.category && draft.currentSearch === params?.search && draft.currentLocation === params?.location;
             const recent = filterRecentUploads(same && !hasFilters ? draft.images : [], params, params?._refresh === true);
-            draft.images = mergeImages([], incoming, recent);
+            draft.images = mergeImages([], incoming, recent, params?.sortBy);
           }
           draft.currentCategory = params?.category; draft.currentSearch = params?.search; draft.currentLocation = params?.location;
           draft.pagination = Array.isArray(response) ? null : response.pagination || null;

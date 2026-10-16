@@ -19,6 +19,30 @@ Các cách gọi theo mục đích:
 
 `$impeccable` là tên skill, các từ audit/optimize/harden là yêu cầu cho skill, không phải lệnh shell. Nếu skill không có trong chat mới, báo rõ và tiếp tục theo tiêu chuẩn trong file này; không giả vờ đã chạy skill.
 
+## Phân chia khu vực làm việc
+
+### Inventory tách riêng theo yêu cầu người dùng
+
+- Trang user: chỉ cập nhật `PAGE_INVENTORY_AND_ANALYSIS.md`.
+- Trang admin: chỉ cập nhật `ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md`; đọc file này trước khi làm admin. Không sao chép checklist PAL/SET/DASH sang inventory user.
+- Phiên Cursor phụ trách user không được sửa/ghi đè inventory admin; phiên phụ trách admin không sửa inventory user, trừ khi người dùng yêu cầu trực tiếp. Quy tắc phạm vi bên dưới về “chat này” là dành cho phiên user; không cấm phiên được người dùng giao việc admin làm trong khu vực admin.
+- Giữ nguyên ID trang, dấu x/o và nghiệm thu responsive riêng; dùng link để tham chiếu giữa hai file thay vì tạo bản sao trạng thái.
+
+
+- **Trang user (do Cursor sửa):** các trang người dùng cuối và phần hỗ trợ liên quan (home, explore, image, collections, booking, signin/signup, profile, contact, about, blog, newsletter, v.v.). Đây là phạm vi làm việc chính trong chat này.
+- **Trang admin (do chat khác sửa):** toàn bộ code dưới `frontend/src/pages/admin/**`, `frontend/src/components/admin/**`, `frontend/src/pages/admin/components/**` và `backend/src/controllers/admin/**`. Chat này **tuyệt đối không đọc để sửa, refactor, định dạng, import, xóa thành phần phụ, đổi CSS, đổi hook, đổi API client hay chạm vào bất kỳ file nào trong khu vực admin**, kể cả khi file đó có vẻ "an toàn". Mục đích tránh xung đột với phiên sửa song song và bảo vệ tiến độ người khác.
+- **Dùng chung nhưng KHÔNG đụng trong chat này:** `frontend/src/hooks/useSiteSettings.ts` (admin dùng để cấu hình site). Không refactor hook này; nếu cần hook khác cho trang user, tạo mới hoặc fork trong thư mục phù hợp.
+- **Phạm vi chung có thể chạm (cẩn trọng):** `index.css`, `main.tsx`, các hook chỉ phục vụ user (useAuthStore, useUpload… chỉ khi chắc không admin dùng). Khi refactor phạm vi chung, kiểm tra xem admin có phụ thuộc không bằng grep `from '@/...'` trong thư mục admin trước.
+- **Khi cần thay đổi "chung" mà admin cũng dùng:** dừng lại, hỏi người dùng trước khi sửa, kể cả khi thay đổi có vẻ tương thích ngược.
+- **Báo cáo kết quả:** khi liệt kê thay đổi, phân loại rõ file thuộc nhóm nào (user / admin / chung) để người dùng kiểm soát.
+
+## Nguyên tắc chung khi sửa (cập nhật 16/10/2026)
+
+- **Không tự bịa hoặc suy diễn nội dung nghiệp vụ.** Phân biệt rõ dữ liệu thật với dữ liệu mẫu/giả chỗ nghiệp vụ; với số liệu thống kê, danh tính, số điện thoại, thông tin đội ngũ, ảnh chân dung, FAQ cam kết chính sách — báo rõ mục nào cần chủ website/studio xác nhận. Không tự chuyển dữ liệu mẫu thành "dữ kiện thật" trên giao diện. Khi chưa có số liệu thật, đặt `null`/rỗng trong cấu hình để UI ẩn phần đó thay vì in số 0 hoặc số giả.
+- **Dọn tài nguyên khi component ngừng sử dụng.** Bỏ class, import, hook, dependency, listener, timer, observer và CSS không còn ai dùng. Với mỗi mục gỡ, kiểm tra các nơi có thể bị ảnh hưởng trước khi xóa. Hành vi, layout, focus, hiệu năng và phụ thuộc khác phải giữ nguyên khi người dùng đã xác nhận đạt.
+- **Chỉ kết luận hiệu năng khi có đo đạc.** Không gán nguyên nhân nhanh/chậm khi chỉ thấy số trước/sau; mỗi kết luận phải kèm điều kiện đo (môi trường, dữ liệu, phiên) và đối chiếu với thay đổi. Fixture nhanh, số build, lint pass hay kết quả một lượt kiểm chưa chứng minh hiệu năng production.
+- **Một nơi sở hữu metadata trang.** `useDocumentMeta` của từng trang là nguồn chính cho `document.title` và thẻ meta. `useSiteSettings` (cũng như mọi hook tải settings toàn cục) không được ghi đè `document.title` sau khi trang đã set, nếu không tab người dùng sẽ mất tên trang.
+
 ## Website tốt nghĩa là gì trong dự án này?
 
 Người dùng hoàn thành được việc họ đến để làm, hiểu trạng thái hiện tại, nhận phản hồi kịp thời và phục hồi được khi lỗi. Người bảo trì có thể tìm đúng nơi sửa mà không phải lần theo nhiều bản sao dữ liệu hoặc chuỗi effect khó đoán.

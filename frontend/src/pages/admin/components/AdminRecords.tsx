@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UploadTrigger } from '@/components/UploadTrigger';
 import {
@@ -35,6 +35,8 @@ import { CategoryModal } from './CategoryModal';
 import { UserModal } from './UserModal';
 import { AdminImageModal } from './AdminImageModal';
 import '../AdminImagesPage.css';
+import { AdminImagePreview } from './AdminImagePreview';
+import { adminImageDate } from './adminRecordFormatting';
 
 type Kind = 'images' | 'categories' | 'users';
 type Row = AdminImage & User & Category;
@@ -49,7 +51,8 @@ export function AdminRecords({ kind }: { kind: Kind }) {
     isSuperAdmin() || hasPermission(permission);
   const self = useUserStore((s) => s.user?._id);
   const [params, setParams] = useSearchParams();
-  const page = Math.max(1, Number(params.get('page')) || 1);
+  const requestedPage=Number(params.get('page'));
+  const page = Number.isSafeInteger(requestedPage) && requestedPage>0 ? requestedPage : 1;
   const query = params.get('q') || '';
   const [search, setSearch] = useState(query);
   useEffect(() => {
@@ -62,7 +65,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
         limit: 20,
         search: query || undefined,
       });
-      return { rows: r.images as Row[], pagination: r.pagination };
+      return { rows: r.images as Row[], pagination: r.pagination, context:`${kind}:${page}:${query}` };
     }
     if (kind === 'users') {
       const r = await adminService.getAllUsers({
@@ -70,21 +73,27 @@ export function AdminRecords({ kind }: { kind: Kind }) {
         limit: 20,
         search: query || undefined,
       });
-      return { rows: r.users as Row[], pagination: r.pagination };
+      return { rows: r.users as Row[], pagination: r.pagination, context:`${kind}:${page}:${query}` };
     }
     const all = await categoryService.getAllCategoriesAdmin();
     const rows = all.filter((c) =>
       c.name.toLocaleLowerCase('vi').includes(query.toLocaleLowerCase('vi'))
     );
     return {
+      context:`${kind}:${page}:${query}`,
       rows: rows as Row[],
       pagination: { page: 1, pages: 1, total: rows.length },
     };
   }, [kind, page, query]);
   const { data, loading, error, reload } = useAdminResource(loader);
-  const rows = data?.rows || [];
-  const pages = data?.pagination?.pages || 1;
-  const [selection, setSelection] = useState<string[]>([]);
+  const currentData=data?.context===`${kind}:${page}:${query}` ? data : null;
+  const rows = currentData?.rows || [];
+  const pages = currentData?.pagination?.pages || 1;
+  const [storedSelection, setSelection] = useState<string[]>([]);
+  const selection=storedSelection.filter(id=>rows.some(row=>row._id===id));
+  const categoryRequest=useRef(0);
+  const [categoriesLoading,setCategoriesLoading]=useState(false);
+  useEffect(()=>()=>{categoryRequest.current++;},[]);
   const [target, setTarget] = useState<Row | null>(null);
   const [editing, setEditing] = useState<Row | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -97,12 +106,12 @@ export function AdminRecords({ kind }: { kind: Kind }) {
     setSelection([]);
   }, [page, query]);
   useEffect(() => {
-    if (data && !loading && page > pages) {
+    if (currentData && !loading && page > pages) {
       const p = new URLSearchParams(params);
       p.set('page', String(pages));
       setParams(p, { replace: true });
     }
-  }, [data, loading, page, pages, params, setParams]);
+  }, [currentData, loading, page, pages, params, setParams]);
   const canDelete = can(
     kind === 'images'
       ? 'deleteImages'
@@ -130,6 +139,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
   };
   const close = () => {
     if (!busy) {
+      categoryRequest.current++;
       setTarget(null);
       setBulk(null);
       setMutationError(null);
@@ -174,18 +184,15 @@ export function AdminRecords({ kind }: { kind: Kind }) {
       );
     void reload();
   };
-  const openBulkCategory = async () => {
-    setMutationError(null);
-    setCategory('');
-    setBulk('category');
-    try {
-      setCategories(await categoryService.getAllCategoriesAdmin());
-    } catch (cause) {
-      setMutationError(adminError(cause));
-    }
+  const loadBulkCategories=async()=>{
+    const request=++categoryRequest.current; setCategoriesLoading(true);setMutationError(null);
+    try {const result=await categoryService.getAllCategoriesAdmin();if(request===categoryRequest.current) setCategories(result);}
+    catch(cause){if(request===categoryRequest.current) setMutationError(adminError(cause));}
+    finally {if(request===categoryRequest.current) setCategoriesLoading(false);}
   };
+  const openBulkCategory=()=>{setCategory('');setCategories([]);setBulk('category');void loadBulkCategories();};
   const changeCategory = async () => {
-    if (!canEdit || !category || busy) return;
+    if (!canEdit || !category || busy || categoriesLoading) return;
     setBusy(true);
     setMutationError(null);
     const failed: string[] = [];
@@ -207,14 +214,14 @@ export function AdminRecords({ kind }: { kind: Kind }) {
   };
   const title = (r: Row) =>
     kind === 'images'
-      ? r.imageTitle
+      ? r.imageTitle?.trim() || 'Ảnh chưa có tiêu đề'
       : kind === 'users'
         ? r.displayName || r.username
         : r.name;
   const selectedAll =
     rows.length > 0 && rows.every((r) => selection.includes(r._id));
   return (
-    <section>
+    <section className={kind==='images'?'admin-image-library':undefined}>
       <AdminHeading
         title={names[kind]}
         description={
@@ -255,6 +262,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
           </button>
         )}
       </AdminHeading>
+      {kind==='images' && <p className="admin-library-note" role="status">{loading ? 'Đang tải danh sách…' : error ? 'Chưa thể cập nhật danh sách. Hãy thử lại.' : `${currentData?.pagination?.total ?? 0} ảnh${query ? ` khớp “${query}”` : ' trong thư viện'}. Chọn tất cả chỉ áp dụng cho trang hiện tại.`}</p>}
       <AdminFeedback error={error} retry={() => void reload()} />
       <form className="admin-page-toolbar" onSubmit={submitSearch}>
         <label className="admin-page-search">
@@ -266,7 +274,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
               kind === 'users'
                 ? 'Tìm tên hoặc email…'
                 : kind === 'images'
-                  ? 'Tìm theo tiêu đề ảnh…'
+                  ? 'Tìm tiêu đề hoặc mô tả ảnh…'
                   : 'Tìm danh mục…'
             }
             value={search}
@@ -293,6 +301,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
             {canEdit && can('viewCategories') && (
               <button
                 className="admin-btn"
+                disabled={loading || !!error}
                 onClick={() => void openBulkCategory()}
               >
                 <FolderInput size={16} />
@@ -302,6 +311,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
             {canDelete && (
               <button
                 className="admin-btn danger"
+                disabled={loading || !!error}
                 onClick={() => setBulk('delete')}
               >
                 <Trash2 size={16} />
@@ -328,6 +338,8 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                   <input
                     type="checkbox"
                     aria-label="Chọn tất cả ảnh trên trang"
+                    disabled={loading || !!error || rows.length===0}
+                    ref={element=>{if(element) element.indeterminate=!selectedAll && selection.length>0;}}
                     checked={selectedAll}
                     onChange={() =>
                       setSelection(selectedAll ? [] : rows.map((r) => r._id))
@@ -363,7 +375,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
             </tr>
           </thead>
           <tbody>
-            {loading && !data
+            {loading && !currentData
               ? Array.from({ length: 5 }, (_, i) => (
                   <tr key={i}>
                     <td colSpan={6}>
@@ -378,6 +390,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                         <input
                           type="checkbox"
                           aria-label={'Chọn ' + title(r)}
+                          disabled={loading || !!error}
                           checked={selection.includes(r._id)}
                           onChange={() =>
                             setSelection((s) =>
@@ -392,15 +405,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                     <td>
                       <div className="admin-record-name">
                         {kind === 'images' ? (
-                          <a
-                            href={r.imageUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="admin-table-thumb"
-                            aria-label={'Xem ảnh ' + title(r)}
-                          >
-                            <img src={r.imageUrl} alt="" loading="lazy" />
-                          </a>
+                          <AdminImagePreview key={r.imageUrl} url={r.imageUrl} thumbnail={(r as Row & {thumbnailUrl?:string}).thumbnailUrl} title={title(r)} />
                         ) : kind === 'users' ? (
                           <span className="admin-avatar">
                             {(r.displayName || r.username || '?')
@@ -413,9 +418,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                           {kind === 'users' && <small>@{r.username}</small>}
                           {kind === 'images' && (
                             <small>
-                              {new Date(r.createdAt).toLocaleDateString(
-                                'vi-VN'
-                              )}
+                              {adminImageDate(r.createdAt)}
                             </small>
                           )}
                         </div>
@@ -470,7 +473,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                                 approved: 'Đã duyệt',
                                 rejected: 'Từ chối',
                                 flagged: 'Gắn cờ',
-                              }[r.moderationStatus || 'pending']}
+                              }[r.moderationStatus || 'pending'] || 'Chưa rõ trạng thái'}
                       </span>
                     </td>
                     <td>
@@ -478,6 +481,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                         {canEdit && (
                           <button
                             className="admin-table-action"
+                            disabled={loading || !!error}
                             aria-label={'Sửa ' + title(r)}
                             onClick={() => {
                               setEditing(r);
@@ -494,6 +498,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                           ) && (
                             <button
                               className="admin-table-action danger"
+                              disabled={loading || !!error}
                               aria-label={'Xóa ' + title(r)}
                               onClick={() => {
                                 setMutationError(null);
@@ -523,7 +528,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
       <AdminPagination
         page={page}
         pages={pages}
-        total={data?.pagination?.total || 0}
+        total={currentData?.pagination?.total || 0}
         loading={loading}
         onChange={setPage}
       />
@@ -550,7 +555,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                 className={
                   'admin-btn ' + (bulk === 'category' ? 'primary' : 'danger')
                 }
-                disabled={busy || (bulk === 'category' && !category)}
+                disabled={busy || loading || !!error || (bulk === 'category' && (!category || categoriesLoading || categories.length===0))}
                 onClick={() =>
                   void (bulk === 'category' ? changeCategory() : remove())
                 }
@@ -569,6 +574,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
               Danh mục mới
               <select
                 className="admin-input"
+                disabled={busy || categoriesLoading}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -581,6 +587,8 @@ export function AdminRecords({ kind }: { kind: Kind }) {
               </select>
             </label>
           )}
+          {bulk==='category' && categoriesLoading && <p role="status">Đang tải danh mục…</p>}
+          {bulk==='category' && !categoriesLoading && categories.length===0 && <button type="button" className="admin-btn" onClick={()=>void loadBulkCategories()}>Tải lại danh mục</button>}
           {mutationError && (
             <p className="admin-form-error" role="alert">
               {mutationError}

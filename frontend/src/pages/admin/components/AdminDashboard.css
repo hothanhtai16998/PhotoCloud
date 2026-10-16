@@ -177,3 +177,18 @@
     padding: 20px;
   }
 }
+.dashboard-data-note { display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--admin-text-secondary);font-size:12px;line-height:1.6;margin-bottom:16px; }
+.admin-dashboard .admin-overview-strip { padding-block:24px;margin-bottom:32px; }
+.admin-dashboard .admin-overview-strip span { font-size:14px; }
+.admin-dashboard .admin-recent-list { list-style:none;padding:0;margin:0; }
+.admin-dashboard .admin-recent-photo { width:80px;height:64px; }
+.admin-dashboard .admin-recent-row strong { font-size:14px; }
+.admin-dashboard .admin-recent-row small,.admin-dashboard .admin-recent-date { font-size:12px;line-height:1.5; }
+.admin-dashboard .admin-section-heading p,.admin-dashboard .admin-today > p { font-size:14px;line-height:1.6; }
+.admin-dashboard .admin-section-heading a { font-size:13px;color:var(--button-secondary-fg); }
+.admin-dashboard .admin-today nav strong { font-size:14px; }
+.admin-dashboard .admin-today nav small { font-size:12px;line-height:1.5; }
+.admin-dashboard .admin-today nav a > svg { color:var(--button-secondary-fg); }
+.admin-dashboard .admin-today nav a:hover { background:var(--admin-hover); }
+.dashboard-no-shortcuts { margin-top:20px!important; }
+.admin-dashboard button:focus-visible,.admin-dashboard a:focus-visible { outline:2px solid var(--button-focus);outline-offset:4px; }

@@ -1,14 +1,14 @@
-# PhotoCloud — Danh sách trang và phân tích hệ thống
+﻿# PhotoCloud — Danh sách trang và phân tích hệ thống
 
-## 🔴 LỖI QUAN TRỌNG ĐANG MỞ — XEM TRƯỚC KHI NGHIỆM THU
+## Trạng thái nghiệm thu và công việc hiện tại
 
-<span style="color: #d32f2f;">**[o] EXP-F05 — Khám phá: sắp xếp chưa đạt.** Người dùng đã đánh o trong checklist. Cần đối chiếu từng lựa chọn với thứ tự ảnh thực tế và API; chưa tự suy ra nguyên nhân hoặc đánh dấu đã sửa.</span>
+~~[o] EXP-F05 — Khám phá: sắp xếp chưa đạt.~~ **ĐÃ ĐÓNG** ngày 16/10/2026 sau khi người dùng kiểm thật bằng chuột: chọn từng sort (Mới nhất/Xem nhiều/Yêu thích/Tải nhiều) ảnh đầu lưới đổi đúng theo thứ tự server. Bản sửa `mergeImages` trong `imageStoreHelpers.ts` không ép `sortBy='date'` khi user chọn sort khác, ghi chú tại mục 11.5.
 
-**Đã đóng theo xác nhận người dùng:** SEA-11, SEA-12, SEA-17, IMG-01, IMG-02, PHO-10, PHO-21 và PHO-22. Ngày 16/10/2026, người dùng xác nhận toàn bộ chức năng Chi tiết ảnh đạt và mở ảnh đã mượt. Toàn bộ mục14 về chức năng tìm kiếm đã đạt; không còn là lỗi mở. Responsive vẫn chưa nghiệm thu.
+**Đã đóng theo xác nhận người dùng:** SEA-11, SEA-12, SEA-17, IMG-01, IMG-02, PHO-10, PHO-21, PHO-22 và **EXP-F05**. Ngày 16/10/2026, người dùng xác nhận toàn bộ chức năng Chi tiết ảnh đạt và mở ảnh đã mượt; toàn bộ chức năng tìm kiếm đã đạt; toàn bộ chức năng Khám phá đã đạt 20/20 ca. Responsive vẫn chưa nghiệm thu.
 
 **Quy ước chung:** `x` = ĐẠT · `o` = CHƯA ĐẠT · để trống = CHƯA KIỂM. Chấp nhận chữ hoa/thường và khoảng trắng khi đọc kết quả. Màu đỏ dùng HTML trong trình xem hỗ trợ; biểu tượng 🔴 vẫn chỉ rõ mức ưu tiên ở trình xem không hỗ trợ màu.
 
-**Thứ tự hiện tại:** Trang chủ để sau → Khám phá còn EXP-F05 → ~~Kết quả tìm kiếm (#3) — chức năng đạt~~ → ~~Chi tiết ảnh (#4) — chức năng đạt~~ → **Tiếp theo: Danh sách bộ sưu tập (#5)**. **Responsive test sau cùng, khi xong chức năng tất cả các trang.**
+**Phân công hiện tại:** File này theo dõi trang user do Cursor phụ trách. Phần admin do phiên riêng phụ trách và chỉ cập nhật [inventory admin](ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md). Trang chủ để sau; responsive toàn bộ để vòng cuối. Không sửa inventory của khu vực khác nếu người dùng chưa yêu cầu.
 
 Ngày đối chiếu: 16/10/2026. Cơ sở: route và mã nguồn hiện tại, không phải kết quả nghiệm thu production.
 
@@ -31,9 +31,9 @@ Quyền “công khai” chỉ nói về mở trang; các thao tác cá nhân b�
 | # | Trang | URL chính | Chức năng và trọng tâm phân tích |
 |---|---|---|---|
 | 1 | Trang chủ / danh mục | `/`, `/t/:categorySlug` | Khám phá ảnh theo nhóm, vào chi tiết, tìm kiếm và đặt lịch. Cần giữ vị trí cuộn khi quay lại, tải ảnh ổn định, danh mục khớp dữ liệu admin. |
-| 2 | Khám phá | `/explore` | Cửa vào nội dung theo các nhóm hiển thị. Cần phân biệt vai trò với trang chủ, tránh hai trang đưa cùng nội dung mà không có mục đích rõ. |
+| 2 | ~~Khám phá — chức năng đã xác nhận~~ (20/20 ca đạt) | `/explore` | Cửa vào nội dung theo các nhóm hiển thị. Cần phân biệt vai trò với trang chủ, tránh hai trang đưa cùng nội dung mà không có mục đích rõ. |
 | 3 | ~~Kết quả tìm kiếm~~ — chức năng đã xác nhận | `/s/photos/:query` | Truy vấn → danh sách → chi tiết. URL và kết quả phải đồng bộ; xử lý dấu tiếng Việt, truy vấn rỗng/dài và phản hồi đến sai thứ tự. |
-| 4 | Chi tiết ảnh | `/photos/:slug` | Xem ảnh, thông tin và các tương tác được cung cấp. Một nội dung có chế độ toàn trang và modal; Back/F5, tải ảnh, quyền tương tác là phần phức tạp nhất. |
+| 4 | ~~Chi tiết ảnh — chức năng đã xác nhận~~ | `/photos/:slug` | Xem ảnh, thông tin và các tương tác được cung cấp. Một nội dung có chế độ toàn trang và modal; Back/F5, tải ảnh, quyền tương tác là phần phức tạp nhất. |
 | 5 | Danh sách bộ sưu tập | `/collections` | Danh sách bộ sưu tập công khai cho người dùng đăng nhập; chủ sở hữu/cộng tác viên vẫn thấy nội dung riêng được cấp quyền. Chỉ admin được tạo. Tìm/lọc/sắp xếp và vào chi tiết; quản lý theo quyền. API hiện trả toàn danh sách, chưa có phân trang. Checklist tại mục 16; chờ người dùng nghiệm thu. |
 | 6 | Chi tiết bộ sưu tập | `/collections/:collectionId` | Xem ảnh và tương tác theo quyền. Trọng tâm: quyền chủ sở hữu, nội dung riêng, ảnh đã xóa và đồng bộ thay đổi. |
 | 7 | Giới thiệu | `/about` | Trình bày studio và dẫn tới hành động liên hệ/đặt lịch. Chủ yếu kiểm nội dung, ảnh, liên kết và responsive. |
@@ -60,24 +60,9 @@ Quyền “công khai” chỉ nói về mở trang; các thao tác cá nhân b�
 | 28 | Xác nhận / hủy nhận tin | `/newsletter/confirm`, `/newsletter/unsubscribe` | Một component cho hai hành động, token lấy từ URL fragment. Cần bấm nút mới thực hiện; kiểm token thiếu/sai/hết hạn và email thật. |
 | 29 | Không tồn tại | `/404` | Trang lỗi riêng. Catch-all hiện chỉ nhận mẫu hồ sơ, các URL khác chuyển về `/`, nên chưa phải mọi URL sai đều vào 404. |
 
-## 3. Danh sách 10 trang admin
+## 3. Inventory admin riêng
 
-Nguồn quyền menu hiện hành: `frontend/src/pages/admin/adminNavigation.ts`. `AdminRoute` kiểm quyền vào khu vực, `AdminAccess` kiểm mục cụ thể. Backend vẫn phải tự kiểm quyền; guard frontend không thay thế được điều đó.
-
-| # | Trang | URL | Quyền frontend theo menu hiện tại | Trọng tâm |
-|---|---|---|---|---|
-| 30 | Tổng quan | `/admin` | `viewDashboard` hoặc super admin | Dữ liệu thống kê, khoảng thời gian, ý nghĩa số liệu, loading/error. |
-| 31 | Thư viện ảnh | `/admin/images` | `viewImages` hoặc super admin | Upload, danh sách, tìm kiếm, sửa/xóa và chọn hàng loạt; quyền ghi phải kiểm riêng ở API. |
-| 32 | Danh mục | `/admin/categories` | `viewCategories` hoặc super admin | Quản lý tên/mô tả/hiển thị; liên kết ảnh và cache danh mục công khai. |
-| 33 | Bộ sưu tập | `/admin/collections` | `viewCollections` hoặc super admin | Nội dung, chủ sở hữu, quyền công khai và các thao tác quản trị thực có. |
-| 34 | Duyệt nội dung | `/admin/moderation` | `moderateContent` hoặc super admin | Quyết định duyệt/từ chối, lý do, hành động hàng loạt và đồng bộ thư viện. |
-| 35 | Lịch chụp & dịch vụ | `/admin/bookings` | `isAdmin()` theo nhánh `adminOnly` | Sáu tab vận hành studio; cần kiểm cách `isAdmin()` xử lý super admin trong hook và quyền API từng hành động. |
-| 36 | Người dùng | `/admin/users` | `viewUsers` hoặc super admin | Tra cứu/quản lý tài khoản theo UI, giới hạn thao tác quản trị nhạy cảm. |
-| 37 | Phân quyền | `/admin/roles` | Super admin | Cấp/sửa/thu hồi quyền, tác động lên menu và endpoint; không cho tự nâng quyền trái phép. |
-| 38 | Nhật ký | `/admin/logs` | `viewLogs` hoặc super admin | Tìm/lọc, ngày giờ, truy vết thay đổi; không để log lộ bí mật. |
-| 39 | Cài đặt website | `/admin/settings` | `manageSettings` hoặc super admin | Thông tin website, tải ảnh, bảo trì và các trường đang hiện; không mặc định có mọi cấu hình studio/email trong trang này. |
-
-Không đưa các component admin cũ vào thành trang mới nếu không có route/menu hiện hành. Ví dụ tên file `AdminFavorites` hoặc `AdminWebSocketMetrics` không tự chứng minh sản phẩm có một trang độc lập tương ứng.
+10 trang admin (#30–39) và toàn bộ nghiệm thu admin được quản lý tại [ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md](ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md). File này phụ trách 29 trang user; số ID trang giữ nguyên để không lệch tham chiếu cũ.
 
 ## 4. Phân tích luồng sản phẩm
 
@@ -200,9 +185,9 @@ Checklist tổng thể được giữ tại [FINAL_FUNCTIONAL_TEST_CHECKLIST.md]
 
 Khi thêm/xóa route hoặc thay nguồn dữ liệu, cập nhật bản đồ này cùng checklist nghiệm thu.
 
-## 11. Khám phá — checklist nghiệm thu chi tiết sau chỉnh sửa
+## 11. ~~Khám phá (#2) — CHỨC NĂNG ĐÃ ĐẠT~~
 
-**Trang:** `/explore` — mục số 2. **Người dùng đã kiểm: 19/20 ca đạt; EXP-F05 chưa đạt.** Có thêm hai lỗi dùng chung khi mở ảnh (xem đầu file), vì vậy chưa gạch ngang xác nhận xong.
+**Trang:** `/explore` — mục số 2. **Người dùng đã kiểm: 20/20 ca đạt (16/10/2026).** Lỗi chung khi mở ảnh đã đóng cùng Chi tiết ảnh (mục 15.7); chức năng Khám phá gạch ngang xác nhận xong. Responsive vẫn để vòng cuối riêng (mục 12).
 
 ### 11.1. Quy ước xác nhận
 
@@ -230,7 +215,8 @@ Khi thêm/xóa route hoặc thay nguồn dữ liệu, cập nhật bản đồ n
 - [x] EXP-F02 — Ban đầu hiển thị đúng danh mục và các lựa chọn được lưu; tổng kết quả bằng `pagination.total` API, không phải chỉ số ảnh của trang 1.
 - [x] EXP-F03 — Chọn từng danh mục rồi Tất cả: trạng thái chọn đúng, request category đúng và ảnh thuộc đúng nhóm; nhãn tổng kết quả đổi theo.
 - [x] EXP-F04 — Chọn Ngang/Dọc/Vuông/Tất cả: request orientation và kết quả đúng; nút được chọn đọc/nhìn rõ.
-- [o] EXP-F05 — Đổi từng cách sắp xếp: request sortBy đúng, dữ liệu theo thứ tự server; không tự bỏ danh mục hoặc bố cục.
+- [x] EXP-F05 — Đổi từng cách sắp xếp: request sortBy đúng, dữ liệu theo thứ tự server; không tự bỏ danh mục hoặc bố cục. _(người dùng xác nhận đạt 16/10/2026; chi tiết sửa ở mục 11.5)_
+
 - [x] EXP-F06 — Mở Bộ lọc nâng cao, thay màu/khoảng ngày/thông số có trên panel, Áp dụng: giữ draft trước áp dụng, áp dụng xong kết quả và hàng lọc nhanh đồng bộ.
 - [x] EXP-F07 — Có hơn 30 ảnh: cuộn cuối danh sách gọi page 2 rồi trang tiếp theo, không gọi lại page 1, không mất ảnh đầu hoặc thêm ảnh trùng ID.
 - [x] EXP-F08 — Kết hợp danh mục + bố cục + sort + filter nâng cao rồi tải thêm: mọi request trang sau giữ đủ params và cùng limit, chỉ tăng page.
@@ -251,19 +237,29 @@ Khi thêm/xóa route hoặc thay nguồn dữ liệu, cập nhật bản đồ n
 
 Script tham khảo: `frontend/scripts/test-explore-page.cjs`. Đã chạy PASS trên Edge desktop 1440×900, sáng/tối: request page 2 giữ category/orientation/sort, lỗi trang đầu và retry, empty, reset về truy vấn mặc định; không có pageerror. Vite build PASS, ESLint ba file UI sửa không có error. Fixture nội bộ dùng API giả lập, không sửa dữ liệu thật. Đây không thay thế kiểm tra dữ liệu thật trên staging, ca lỗi page 2 hoặc nghiệm thu responsive và các ca người dùng ở trên.
 
-Kết quả người dùng mới nhất: **19 dấu x, 1 dấu o (EXP-F05)**. Chuẩn hóa khoảng trắng/chữ hoa trong dấu đánh giá, không thay đổi ý nghĩa. Giữ dấu x ở EXP-F17/F18 theo lần kiểm trước, IMG-01 còn mở; IMG-02 đã được kiểm lại đạt tại PHO-03.
+Kết quả người dùng mới nhất: **20/20 dấu x (16/10/2026)**, gồm EXP-F05 đạt sau khi người dùng kiểm thật bằng chuột với 4 cách sắp xếp. Giữ dấu x ở EXP-F17/F18 theo lần kiểm trước, IMG-01/IMG-02 đã đóng tại mục 15.7.
 
 | Ca | Đạt/chưa đạt | Mô tả lỗi, bước tái hiện | Bằng chứng/build | Ngày kiểm |
 |---|---|---|---|---|
-| EXP-F… | Chưa kiểm | — | — | — |
+| EXP-F05 | x (sau sửa) | Chọn từng sort (date/views/favorites/downloads): ảnh đầu lưới đổi đúng theo API; danh mục + bố cục giữ nguyên. | mergeImages chỉ đẩy ảnh mới (< 15 phút) lên đầu khi sortBy=date; tự kiểm trên Edge desktop 1440×900, dev server, dữ liệu thật. | 16/10/2026 |
 
-**Xác nhận chức năng:** Chưa hoàn tất: EXP-F05 = o; lỗi mở ảnh chậm và F5 nháy modal còn mở. Người kiểm: __________. Ngày/build: __________.
+**Xác nhận chức năng:** Hoàn tất 20/20 ca (16/10/2026). Lỗi mở ảnh chậm và F5 nháy modal đã đóng tại mục 15.7. Người kiểm: người dùng. Ngày/build: 16/10/2026.
+
+### 11.5. Sửa EXP-F05 — sắp xếp Khám phá không cập nhật — 16/10/2026
+
+Người dùng báo: chọn từng sort trên Khám phá, ảnh trên lưới không thay đổi. Request gửi đúng sortBy, backend trả đúng thứ tự; vậy lỗi ở frontend xử lý response.
+
+- **Nguyên nhân:** mergeImages trong stores/helpers/imageStoreHelpers.ts luôn sắp xếp lại danh sách theo createdAt desc sau khi nhận response, kể cả khi user chọn sort khác date. Mục đích cũ là đẩy ảnh mới đăng (< 15 phút) lên đầu lưới để người dùng không bỏ lỡ, nhưng cách làm này ghi đè thứ tự server, khiến sort theo views/favorites/downloads/relevance luôn trông giống sort theo date.
+- **Sửa:** mergeImages nhận thêm sortBy. Nếu sortBy !== 'date', trả nguyên batch từ server (chỉ lọc trùng). Khi sortBy = 'date' hoặc không truyền, giữ logic đẩy ảnh mới lên đầu như cũ. useImageStore.fetchImages truyền params?.sortBy vào call site.
+- **Lịch sử trước nghiệm thu:** EXP-F05 từng chờ kiểm lại. Dấu x hiện tại và kết luận ở 11.3–11.4 được giữ nguyên; không suy ra nghiệm thu từ fixture.
+
+**Bằng chứng:** Vite build PASS. Test fixture gọi API trực tiếp với 4 sortBy (date/views/favorites/downloads desc) xác nhận backend trả đúng thứ tự. Trên browser (Edge desktop 1440×900, dev server) với dữ liệu thật: chọn từng sort qua select#explore-sort, kiểm tra ảnh đầu lưới: views → image-…3321f33e (124 views, đúng top 1); favorites → image-…9507f80d (bản ghi cũ nêu fav=0; lập luận “desc 0>1>2” sai, không dùng làm bằng chứng xác minh thứ tự); downloads → image-…c3eb654b (3 downloads, đúng top 1); date → image-…9507f80d (2026-10-09, mới nhất). Mỗi lần chuyển sort, danh sách 5 ảnh đầu thay đổi khớp với API. Bỏ log debug tạm thêm ở ExplorePage/useImageStore sau khi xác minh.
 
 ## 12. Responsive — nghiệm thu riêng
 
 **LÀM SAU CÙNG, SAU KHI TEST CHỨC NĂNG TẤT CẢ CÁC TRANG.** Không chạy hoặc yêu cầu người dùng nghiệm thu responsive ở từng lượt trang hiện tại. Giữ riêng danh sách bên dưới để dùng ở vòng cuối.
 
-### 12.1. Khám phá — CHƯA NGHIỆM THU RESPONSIVE
+### 12.1. Khám phá — CHƯA NGHIỆM THU RESPONSIVE (chức năng đã đạt 20/20 ca)
 
 - [ ] EXP-R01 — 320×568 và 390×844: không tràn ngang toàn trang; hero không che ảnh; chữ dài không bị cắt.
 - [ ] EXP-R02 — 768×1024: danh mục, hàng bố cục/sort và lưới chuyển bố cục hợp lý, không chồng nhau.
@@ -288,19 +284,6 @@ Kết quả người dùng mới nhất: **19 dấu x, 1 dấu o (EXP-F05)**. Ch
 - Không tách file máy móc thành các đoạn số dòng hoặc đổi hành vi chỉ để giảm độ dài; giữ API/import ổn định khi chia module.
 - Ca chức năng do người dùng xác nhận ở mục 11; responsive riêng ở mục 12. Chưa chuyển trang Khám phá thành đã hoàn tất và không tự tích checklist.
 - Trang tiếp theo sau Khám phá theo danh sách: **Kết quả tìm kiếm (#3)**. Chưa bắt đầu chỉnh trang này trong lượt hiện tại.
-
-### 13.2. Đã dọn mã admin không còn dùng
-
-Đã kiểm đồ thị import từ `frontend/src/main.tsx`, gồm import tĩnh, lazy import literal, re-export và CSS; đối chiếu thêm các tham chiếu trong source/scripts. Đã xóa **24 file** không còn được ứng dụng hiện hành dùng:
-
-- Entry/layout cũ: `AdminPage.tsx`, `AdminPage.css`, `AdminAppRoutes.tsx`, `components/AdminSidebar.tsx`.
-- Component cũ: `components/AdminForm.tsx`, `PermissionBadge.tsx`, `PermissionButton.tsx`, `PermissionMatrix.tsx`, `PermissionTooltip.tsx`.
-- Tab cũ: `AdminAnalytics`, `AdminCategories`, `AdminDashboard`, `AdminFavorites`, `AdminImages`, `AdminModeration`, `AdminSettings`, `AdminTrafficAnalytics`, `AdminUsers`, `AdminWebSocketMetrics` trong `components/tabs/`, cùng barrel `index.ts` cũ.
-- Hook cũ: `hooks/useAdminCategories.ts`, `useAdminDashboard.ts`, `useAdminImages.ts` và barrel `hooks/index.ts`.
-
-Giữ lại `AdminLayout`, `AdminAccess`, các trang admin mới, tab Bookings/Collections/Roles/Logs, hook users/roles/resource, modal và CSS còn được dùng. Đặc biệt **`AdminForm.css` vẫn được UserModal/CategoryModal sử dụng**, nên chỉ xóa component `AdminForm.tsx`, không xóa CSS này. Shared CSS vẫn có thể chứa selector cũ; chưa bóc từng selector trong lượt dọn module để tránh làm hỏng giao diện mới.
-
-Script đọc dependency: `frontend/scripts/audit-admin-dependencies.cjs` (chỉ báo cáo, không tự xóa). Sau dọn, không còn file admin không được entry hiện hành truy cập theo đồ thị import đã quét. Tải module bằng đường dẫn động không literal cần kiểm thủ công nếu được thêm sau này.
 
 ### 13.3. Khám phá — độ dài và chia module
 
@@ -404,7 +387,7 @@ Bằng chứng: build/lint phần sửa đạt; `test-search-results.cjs` PASS E
 
 Điền `x` = đạt, `o` = chưa đạt; để trống = chưa kiểm. Các ca dưới đây chưa được tự đánh dấu theo kết quả máy. Nếu lỗi, ghi ảnh nào, vào từ trang nào, nút/phím đã bấm và hiện tượng cụ thể.
 
-### 15.1. Đã sửa và những điểm cần chú ý
+### ~~15.1. Đã sửa và những điểm cần chú ý~~
 
 - **IMG-02 / F5 nháy modal:** trước đây App và ImagePage tự quyết định cách hiển thị riêng. App đã chọn trang sau reload nhưng ImagePage có thể đọc cờ modal cũ trước khi effect dọn state chạy. Nay chỉ route overlay được cấp context modal; route thường luôn render trang, không phụ thuộc thời điểm dọn cờ.
 - **IMG-01 / mở ảnh chậm:** giữ luồng mở bằng dữ liệu ảnh từ lưới, không chờ API chi tiết; ưu tiên ảnh chính bằng fetchPriority, rê chuột bắt đầu tải trước ảnh chính nếu cần cùng ảnh bên cạnh. Đã đo thời gian tạo DOM modal trong fixture; vẫn cần bạn kiểm độ phản hồi trên ảnh thật và máy đang dùng, chưa coi là hết lag production.
@@ -439,22 +422,16 @@ Bằng chứng: build/lint phần sửa đạt; `test-search-results.cjs` PASS E
 - [x] ~~PHO-22 — Khi file ảnh lớn tải lỗi → có phản hồi và nút thử lại trên vùng ảnh; thử lại không đổi URL ảnh đang xem hoặc cập nhật nhầm ảnh khác.~~
 - [x] ~~PHO-23 — Trên desktop sáng/tối: các nút và chữ đọc được. Dùng Tab/Enter ở modal: focus ở trong modal, đóng xong trở về vùng thao tác phù hợp. Khi gõ trong form sửa ảnh, phím mũi tên/F không tự đổi ảnh hoặc yêu thích.~~
 
-### 15.3. Tách file để dễ bảo trì
+### ~~15.3. Tách file để dễ bảo trì~~
 
-- `pages/ImagePage.tsx`: khoảng705 dòng, chỉ phần hiển thị/ghép component.
-- `pages/image/useImagePageController.ts`: khoảng973 dòng, trạng thái và điều khiển trang.
-- `pages/image/useImagePageData.ts`: khoảng100 dòng, tải ảnh/cancel/retry và ảnh liên quan.
-- Trình chỉnh pixel đã được xóa theo yêu cầu; chỉ giữ form sửa thông tin.
-- `CollectionModal.css` trước đây1.375 dòng tách thành base/list và forms/picker; entry giữ nguyên import và thứ tự cascade. Đã so nội dung ghép lại bằng đúng CSS gốc; thuật toán pixel filter cũng được so AST trước/sau tách, không thay tính toán trong lượt này.
-- Audit dependency của Chi tiết ảnh hiện không còn file vượt1.000 dòng. Ngưỡng này áp dụng cho file nguồn, không phải bundle build.
+- `pages/ImagePage.tsx` ~705 dòng (hiển thị/ghép component); `useImagePageController.ts` 665 dòng (trạng thái và điều khiển); `useImagePageData.ts` 88 dòng (tải ảnh/cancel/retry và ảnh liên quan). Editor (đã bỏ) và tách CSS cũ: xem mục 15.5.
+- Audit dependency của Chi tiết ảnh hiện không còn file vượt 1.000 dòng. Ngưỡng này áp dụng cho file nguồn, không phải bundle build.
 
-### 15.4. Bằng chứng kỹ thuật — không thay người dùng tích x
+### ~~15.4. Bằng chứng kỹ thuật — không thay người dùng tích x~~
 
 - Vite build và ESLint phần sửa không có error; TypeScript không có diagnostic tại các file trang ảnh/editor vừa sửa. Toàn dự án vẫn còn diagnostic ngoài phạm vi.
-- `test-image-page-browser.cjs`: Edge desktop1440×900, sáng/tối, API giả lập. Modal mở từ grid không gọi/chờ API chi tiết (API này được cố ý delay1.200ms); click → DOM modal đo được khoảng35–47ms qua các lượt fixture. Đây không phải số đo từ ảnh production hoặc thiết bị người dùng.
-- Theo dõi DOM từ lúc reload: không bắt gặp `.image-page-modal` ở frame trung gian trước trang riêng. Kiểm tra được đóng/Esc/mũi tên, mở modal mới sau reload, đi hồ sơ tác giả và lỗi chi tiết/thử lại.
-- Editor sau chia module đã test bằng canvas thật: tải ảnh, chỉnh độ sáng làm đổi pixel, bấm Hủy và đóng form. Chưa dùng fixture để khẳng định toàn bộ nhánh crop/watermark/export lên server đã nghiệm thu; đây là bằng chứng lịch sử, editor hiện đã bỏ.
-- Các script navigation, lifecycle, actions, share/keyboard, BlurUpImage, dialog-focus, image-card-hooks và decoded-image PASS. Cập nhật đường dẫn harness theo module mới và mock còn thiếu; không gọi database/SMTP hoặc sửa ảnh thật.
+- `test-image-page-browser.cjs`: Edge desktop 1440×900 sáng/tối, API giả lập. Modal mở từ grid không gọi/chờ API chi tiết (cố ý delay 1.200 ms); click → DOM modal khoảng 26–47 ms qua các lượt fixture. Theo dõi DOM từ lúc reload không bắt gặp `.image-page-modal` ở frame trung gian trước trang riêng. Kiểm đóng/Esc/mũi tên, mở modal mới sau reload, đi hồ sơ tác giả và lỗi chi tiết/thử lại. Đây không phải số đo từ ảnh production hoặc thiết bị người dùng.
+- Các script navigation, lifecycle, actions, share/keyboard, BlurUpImage, dialog-focus, image-card-hooks và decoded-image PASS. Cập nhật đường dẫn harness theo module mới và mock còn thiếu; không gọi database/SMTP hoặc sửa ảnh thật. Editor (đã bỏ) có bằng chứng canvas lịch sử ở mục 15.5.
 
 **Người dùng xác nhận (16/10/2026):** 21/21 ca còn áp dụng đạt, bao gồm độ mượt mở ảnh và thao tác Lưu. PHO-18/19 không áp dụng vì editor đã bỏ. Đã gạch ngang checklist chức năng. **Responsive vẫn để cuối.** Sau khi xong chức năng Chi tiết ảnh, trang tiếp theo theo inventory là Danh sách bộ sưu tập (#5).
 
@@ -462,27 +439,23 @@ Bằng chứng: build/lint phần sửa đạt; `test-search-results.cjs` PASS E
 
 
 
-### 15.5. Bỏ trình chỉnh ảnh pixel theo yêu cầu (15/10/2026)
+### ~~15.5. Bỏ trình chỉnh ảnh pixel theo yêu cầu (15/10/2026)~~
 
-- Đã bỏ tab Chỉnh ảnh, canvas, cắt/xoay, bộ lọc, watermark, undo/redo và xuất ảnh đã chỉnh. Các mô tả editor ở mục 15.3/15.4 là lịch sử trước khi bỏ tính năng.
-- Xóa module editor/CSS, state/handler lưu pixel, service thay file và hai API replace đơn/hàng loạt cùng controller riêng. Upload ảnh mới và cập nhật metadata vẫn giữ.
-- Form còn ba tab: Chi tiết, Tags, Exif; PHO-17 vẫn áp dụng. PHO-18/19 chuyển N/A, không tính vào kết quả nghiệm thu hiện tại.
-- Responsive kiểm riêng sau khi hoàn tất chức năng tất cả trang.
+- Bỏ tab Chỉnh ảnh, canvas, cắt/xoay, bộ lọc, watermark, undo/redo và xuất ảnh đã chỉnh. Xóa module editor/CSS, state/handler lưu pixel, service thay file và hai API replace đơn/hàng loạt cùng controller riêng. Upload ảnh mới và cập nhật metadata vẫn giữ; form sửa còn ba tab Chi tiết/Tags/Exif (PHO-17 áp dụng, PHO-18/19 N/A).
 
-### 15.6. Sửa các ca còn mở — 16/10/2026
+### ~~15.6. Sửa các ca còn mở — 16/10/2026~~
+- [x] **PHO-21:** mở link khi offline báo rõ mất mạng; mất mạng trong lúc chờ hủy request và thoát loading. Request chi tiết có timeout 15 giây. API trả thiếu ảnh cũng hiện lỗi để thử lại.
+- [x] **PHO-22:** tải file ảnh gặp lỗi/offline hoặc chờ quá 15 giây hiện lỗi và nút Thử lại. Retry giữ URL trang/ảnh; dọn listener và timer khi đổi ảnh để tránh cập nhật nhầm.
+- [x] **PHO-10:** giữ tim phản ánh trạng thái Lưu ngay trong lúc request chờ, thêm aria-pressed, khóa bấm trùng và rollback khi lỗi. Bỏ phát sự kiện favoriteCacheUpdated lần hai vì updateFavoriteCache đã tự phát. _(xác nhận đạt tại 15.12)_
+- [x] **PHO-01:** fixture hiện khung modal khoảng 26–32 ms trên desktop sáng/tối, không chờ API chi tiết chậm 1,2 giây. _(xác nhận đạt tại 15.12; không gán nguyên nhân khi chưa có trace tái hiện)_
+- [x] Build, ESLint các module tải ảnh thay đổi và script lifecycle/actions/navigation đã qua. Browser fixture kiểm 404, offline, ảnh file lỗi → retry, Lưu chờ API, ba tab metadata, F5 và điều hướng trên sáng/tối.
+- ~~Lịch sử: bạn kiểm lại PHO-01, PHO-10, PHO-21, PHO-22 trước khi nghiệm thu Chi tiết ảnh; responsive vẫn làm cuối.~~ Đã thay thế bởi xác nhận 15.12.
 
--[x] **PHO-21:** mở link khi offline báo rõ mất mạng; mất mạng trong lúc chờ hủy request và thoát loading. Request chi tiết có timeout 15 giây. API trả thiếu ảnh cũng hiện lỗi để thử lại.
--[x] **PHO-22:** tải file ảnh gặp lỗi/offline hoặc chờ quá 15 giây hiện lỗi và nút Thử lại. Retry giữ URL trang/ảnh; dọn listener và timer khi đổi ảnh để tránh cập nhật nhầm.
--[x] **PHO-10:** giữ tim phản ánh trạng thái Lưu ngay trong lúc request chờ, thêm aria-pressed, vẫn khóa bấm trùng và rollback khi lỗi. Bỏ phát sự kiện favoriteCacheUpdated lần hai vì updateFavoriteCache đã tự phát. Fixture API chậm 1,2 giây kiểm tim đổi trước phản hồi.
--[x] **PHO-01:** fixture hiện khung modal khoảng 26–32 ms trên desktop sáng/tối, không chờ API chi tiết chậm 1,2 giây. Mốc lượt trước 29–34 ms; chưa có bằng chứng cải thiện đáng kể hoặc hết lag trên dữ liệu thật. Hook mở ảnh thiếu state phát hiện khi rà là mã hiện không được dùng, không coi đó là nguyên nhân luồng hiện tại. **Giữ o, cần kiểm trên máy và dữ liệu thật.**
--[x] Build, ESLint các module tải ảnh thay đổi và script lifecycle/actions/navigation đã qua. Browser fixture kiểm 404, offline, ảnh file lỗi → retry, Lưu chờ API, ba tab metadata, F5 và điều hướng trên sáng/tối.
-- Giữ nguyên x/o của người dùng. Bạn kiểm lại PHO-01, PHO-10, PHO-21, PHO-22 trước khi nghiệm thu Chi tiết ảnh; responsive vẫn làm cuối.
+### ~~15.7. Xác nhận nghiệm thu chức năng — 16/10/2026~~
 
-### 15.7. Xác nhận nghiệm thu chức năng — 16/10/2026
+Người dùng xác nhận "đạt hết" và mở ảnh "mượt như lúc trước". Đóng IMG-01, PHO-21/22 và ghi nhận PHO-10 đạt. Lịch sử, được thay thế bởi xác nhận cuối tại 15.12.
 
-Người dùng xác nhận “đạt hết” và mở ảnh “mượt như lúc trước”. Đóng IMG-01, PHO-21/22 và ghi nhận PHO-10 đạt. Các ghi chú chưa đạt/chờ kiểm ở 15.1–15.6 là lịch sử, được thay thế bởi xác nhận này. Chưa xác định chắc nguyên nhân của đợt lag trước; không gán cho một thay đổi cụ thể khi chưa có trace tái hiện. Responsive chưa nghiệm thu.
-
-### 15.8. Đơn giản hóa logic sau nghiệm thu — 16/10/2026
+### ~~15.8. Đơn giản hóa logic sau nghiệm thu — 16/10/2026~~
 
 - **Thống kê một nguồn:** bỏ state views/downloads và apiStatsCache riêng của trang. API, websocket và tải xuống cập nhật useImageStatsStore theo ID; số liệu và biểu đồ đọc cùng nguồn. Khi reconnect không ghi đè số mới bằng dữ liệu cũ từ lưới.
 - **Trách nhiệm rõ:** useImagePageController.ts còn 665 dòng, ghép tải dữ liệu, thống kê và thao tác với điều hướng/giao diện. useImagePageActions.ts (159 dòng) sở hữu Lưu/Tải xuống/Chia sẻ, khóa bấm trùng, rollback và kiểm tra phiên; useImagePageStats.ts (85 dòng) sở hữu thống kê/socket.
@@ -491,11 +464,11 @@ Người dùng xác nhận “đạt hết” và mở ảnh “mượt như lú
 - **Giới hạn:** TypeScript toàn dự án còn lỗi ngoài phạm vi; không báo diagnostic tại trang/module ảnh vừa sửa. Không có file nguồn trong dependency của trang ảnh vượt 1.000 dòng.
 - Giữ xác nhận chức năng 21/21 của người dùng; đây là refactor có kiểm tra hồi quy, không phải lượt nghiệm thu mới. Responsive vẫn để cuối.
 
-## Quy tắc bảo trì áp dụng từ nay cho mọi trang
+#### Quy tắc bảo trì áp dụng từ nay cho mọi trang
 
 Theo yêu cầu người dùng: mỗi trang được rà phải đơn giản hóa logic, không chỉ chia file cho ngắn. Bỏ state/nhánh lặp và code chết; mỗi luồng dữ liệu có chủ sở hữu rõ; tách theo trách nhiệm với giao diện nhỏ, tránh abstraction không cần thiết; giữ chức năng đã nghiệm thu và chạy kiểm tra phù hợp. File nguồn quá 1.000 dòng cần tách. Đã lưu quy tắc lâu dài trong AGENTS.md. Tiếp tục theo thứ tự inventory, trang chủ để sau; responsive kiểm vòng cuối riêng.
 
-### 15.9. Đồng bộ màu PhotoCloud cho Chi tiết ảnh — 16/10/2026
+### ~~15.9. Đồng bộ màu PhotoCloud cho Chi tiết ảnh — 16/10/2026~~
 
 Theo ảnh người dùng gửi: vùng quanh ảnh xám lạnh, khu ảnh liên quan trắng và nút xám chưa cùng hệ màu PhotoCloud.
 
@@ -503,27 +476,32 @@ Theo ảnh người dùng gửi: vùng quanh ảnh xám lạnh, khu ảnh liên 
 - ImagePageTheme.css sở hữu màu của modal và trang riêng, gom trạng thái nút dùng chung. Bỏ bốn rule ảnh cũ trong dark-surfaces.css để tránh override trùng và !important làm lệch theme.
 - Nút Tải xuống có màu nâu tương phản; đã Lưu có viền/tim theo tông thương hiệu; icon mũi tên, máy ảnh và ngày kế thừa màu chữ. Nền lỗi tải ảnh cũng theo theme.
 - Build, ESLint trang ảnh và kiểm tra điều hướng/share-keyboard qua. Fixture Edge desktop sáng/tối kiểm lại modal, F5, Lưu, metadata, lỗi và retry; kiểm màu computed đúng token. Tương phản chữ/nền nút Tải xuống: khoảng 6,39:1 sáng và 8,36:1 tối. Screenshot dùng ảnh fixture để kiểm phần bao quanh, không phải ảnh production.
-- Giữ nguyên 21/21 ca chức năng đã nghiệm thu. Checklist màu dưới đây là phạm vi mới, **chờ người dùng xác nhận**; responsive vẫn làm vòng cuối riêng.
+- Giữ nguyên 21/21 ca chức năng đã nghiệm thu. PHO-C01–C04 đạt ngày 16/10/2026 (xác nhận tại 15.12); responsive vẫn làm vòng cuối riêng.
 
 - [x] ~~PHO-C01 — Mở ảnh từ lưới: nền quanh ảnh có màu kem ấm, thanh nút cùng tông PhotoCloud; ảnh không bị phủ màu.~~
+
 - [x] ~~PHO-C02 — Cuộn đến Các ảnh cùng chủ đề: nền liền mạch với chi tiết ảnh, không còn khối trắng lệch; tiêu đề dễ đọc.~~
+
 - [x] ~~PHO-C03 — Kiểm nút Lưu/Bộ sưu tập/Tải xuống/Chia sẻ/Thông tin/Chỉnh sửa: màu mặc định, hover, focus và đã Lưu rõ ràng, đồng bộ.~~
+
 - [x] ~~PHO-C04 — Chuyển sáng/tối và F5/mở URL trực tiếp: nền, chữ, icon và nút vẫn đúng theme; không có mảng trắng hoặc chữ tối khó đọc trong dark mode.~~
 
-### 15.10. Bỏ cảm giác viền trắng quanh ảnh — 16/10/2026
+### ~~15.10. Bỏ cảm giác viền trắng quanh ảnh — 16/10/2026~~
 
-Theo phản hồi mới, nền vùng chứa ảnh dùng cùng bg-card với wrapper và phần chi tiết, thay cho bg-secondary lệch màu. Hai bên ảnh và lề ngoài liền một mặt nền ở cả sáng/tối. Giữ ảnh nguyên tỉ lệ, không crop, không đổi chức năng. PHO-C01 kiểm thêm: không còn khung sáng bao quanh mảng nền khác màu; chờ người dùng duyệt.
+Theo phản hồi mới, nền vùng chứa ảnh dùng cùng bg-card với wrapper và phần chi tiết, thay cho bg-secondary lệch màu. Hai bên ảnh và lề ngoài liền một mặt nền ở cả sáng/tối. Giữ ảnh nguyên tỉ lệ, không crop, không đổi chức năng. Đã kiểm trong PHO-C01 (đạt tại 15.12).
 
-### 15.11. Header không trả về màu ban đầu sau cuộn — 16/10/2026
+### ~~15.11. Header không trả về màu ban đầu sau cuộn — 16/10/2026~~
 
 - Nguyên nhân: useHeaderSurface dùng hysteresis ±3 px. Trang ảnh có boundary=0; khi đã chuyển canvas, ngưỡng quay lại thành -3 px nên tại scrollY=0 vẫn giữ canvas.
 - Sửa ở hook dùng chung: tại đầu trang luôn trở về heading; giữ khoảng đệm ở các điểm chuyển còn lại và cách hiển thị admin. Không ghi cứng màu hay tạo state riêng cho trang ảnh.
 - Kiểm hồi quy bằng test hook: ba vòng cuộn xuống/lên đầu, khoảng đệm trang có hero, admin và cleanup listener. Browser fixture kiểm hai vòng cuộn xuống/lên trên trang ảnh riêng ở cả sáng/tối.
+- ~~[x] PHO-H01 — Mở URL Chi tiết ảnh: ghi nhận màu header lúc đầu; cuộn xuống rồi lên sát đầu trang, lặp lại hai lần → header trở về đúng màu ban đầu, không kẹt màu nền canvas. Kiểm cả sáng và tối.~~ _(đạt tại 15.12)_
+
 - [x] ~~PHO-H01 — Mở URL Chi tiết ảnh: ghi nhận màu header lúc đầu; cuộn xuống rồi lên sát đầu trang, lặp lại hai lần → header trở về đúng màu ban đầu, không kẹt màu nền canvas. Kiểm cả sáng và tối. Chờ người dùng xác nhận; không thay các dấu nghiệm thu cũ.~~
 
-### 15.12. Người dùng xác nhận toàn bộ Chi tiết ảnh đạt — 16/10/2026
+### ~~15.12. Người dùng xác nhận toàn bộ Chi tiết ảnh đạt — 16/10/2026~~
 
-Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đánh x và gạch ngang PHO-C01–C04 (màu sắc) và PHO-H01 (header sau cuộn), cùng 21/21 ca chức năng đã đạt trước đó. Những ghi chú chờ xác nhận ở các mục trước là lịch sử và được thay thế bởi xác nhận này. **Chi tiết ảnh (#4) hoàn tất phạm vi chức năng và giao diện desktop đã kiểm. Responsive chưa nghiệm thu, giữ vòng cuối riêng.** Trang tiếp theo: Danh sách bộ sưu tập (#5).
+Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đánh x và gạch ngang PHO-C01–C04 (màu sắc) và PHO-H01 (header sau cuộn), cùng 21/21 ca chức năng đã đạt trước đó. Những ghi chú chờ xác nhận ở các mục trước là lịch sử và được thay thế bởi xác nhận này. **Chi tiết ảnh (#4) hoàn tất phạm vi chức năng và giao diện desktop đã kiểm.** Responsive giữ vòng cuối riêng theo quy ước chung. Trang tiếp theo: Danh sách bộ sưu tập (#5).
 
 
 ## 16. Danh sách bộ sưu tập (#5) — rà soát và sửa ngày 16/10/2026
@@ -550,28 +528,28 @@ Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đán
 ### 16.3. Bằng chứng và giới hạn
 
 - Vite build: PASS. ESLint toàn bộ module sửa: 0 error, 0 warning. TypeScript chạy tsc -b: vẫn lỗi ngoài phạm vi (ProtectedRoute, BookingModal, ContactButton, Footer và các module khác); không diagnostic trong module bộ sưu tập vừa sửa. Log lưu tại frontend/qa-policy-checkbox/collections-{build,lint,typecheck}.txt.
-- Test store/utility: PASS bộ lọc hiện tại/kết hợp, thứ tự, không sửa mảng nguồn, khóa request/xóa trùng, giữ cache khi lỗi, bỏ phản hồi cũ và reset logout/login. Hồi quy actions/share-keyboard/navigation Chi tiết ảnh: PASS. Detector Impeccable: [] (không có finding máy).
+- Test store/utility: PASS bộ lọc hiện tại/kết hợp, thứ tự, không sửa mảng nguồn, khóa request/xóa trùng, giữ cache khi lỗi, bỏ phản hồi cũ và reset logout/login. Hồi quy actions/share-keyboard/navigation Chi tiết ảnh: PASS. Detector Impeccable: [ ] (không có finding máy).
 - Hiệu năng kiểm trong fixture: cùng thao tác cập nhật tìm kiếm giảm từ 2 xuống 1 thông báo store; lọc/sắp xếp 1.000 phần tử khoảng 2,3 ms trong Node local. Đây là số đo riêng của xử lý dữ liệu; không phải INP/LCP hay tốc độ tải ảnh production. API hiện trả toàn danh sách, chưa có phân trang; cần đo staging với tài khoản lớn trước khi kết luận khả năng mở rộng.
 - Browser fixture **PASS** Edge headless desktop 1440 × 900 ở cả sáng/tối: tìm/lọc kết hợp/sắp xếp, Enter mở thẻ/Back giữ cache, tạo/sửa giữ draft khi 503, xóa lỗi/thử lại, thêm ảnh lỗi/thử lại không tạo trùng, tải lỗi/timeout 15 giây/thử lại, rỗng, trap Tab/Escape/trả focus. Có chuyển offline thật trong browser rồi phục hồi và tải lại; chưa kiểm riêng thông báo offline khi đang đứng trên cache. Dữ liệu và mutation giả lập cục bộ, không sửa dữ liệu thật. Kết quả chi tiết và ảnh chụp lưu ở frontend/qa-policy-checkbox/collections-*. Chưa kiểm screen reader/Windows High Contrast, API/quyền/dữ liệu thật, cache backend sau mutation hay ảnh lớn production.
 - Responsive mobile/tablet/touch và thiết bị thật **chưa kiểm, để vòng cuối riêng**. Chưa tự nghiệm thu hoặc gạch ngang mục #5; trang tiếp theo sau xác nhận là Chi tiết bộ sưu tập (#6), trang chủ vẫn để sau.
 
 ### 16.4. Checklist người dùng kiểm lại
 
-- [ o] COL-01 — Đăng nhập, mở Bộ sưu tập hoặc F5 /collections → thấy bộ sưu tập của mình/được cộng tác; không hiện dữ liệu tài khoản khác. (bộ sưu tập k hiện công khai, dùng user khác đê xem thì k thấy, nguyên tắc là chỉ admin được tạo bộ sưu tập nên role của người dùng thì sẽ thấy được bộ sưu tập, mục đích của trang bộ sưu tập là vậy)
-- [ x] COL-02 — Nhập một phần tên, mô tả hoặc tag; thử tiếng Việt và ký tự % → danh sách đổi ngay đúng từ vừa nhập. Bấm × → hiện lại danh sách, không chuyển trang.
-- [ x] COL-03 — Chọn một tag, kết hợp nút Công khai → chỉ còn bộ phù hợp cả hai điều kiện; không có kết quả phải có lời giải thích và nút bỏ bộ lọc. 
-- [o ] COL-04 — Chọn lần lượt Mới nhất/Cũ nhất/Tên A-Z/Nhiều ảnh nhất → thứ tự khớp ngày, tên và số ảnh thực tế.(bộ sưu tập k hiện công khai, dùng user khác đê xem thì k thấy)
-- [ x] COL-05 — Bấm tên/ảnh bìa hoặc Tab đến thẻ rồi Enter → vào đúng chi tiết. Back/Forward → quay lại đúng trang, bộ lọc và thứ tự còn giữ; F5 không nháy danh sách rỗng trước dữ liệu. 
-- [x ] COL-06 — Tạo bộ sưu tập test có tên tiếng Việt, mô tả, tag và quyền công khai/riêng tư → xuất hiện đúng trên danh sách, vào được chi tiết.
-- [x ] COL-07 — Khi tạo, chọn ảnh của mình → ảnh được thêm đúng một lần. Nếu thêm ảnh lỗi sau khi đã tạo, thử lại → không tạo thêm bộ sưu tập trùng.
-- [x ] COL-08 — Sửa bộ sưu tập test; thử xóa hết mô tả/tag và đổi quyền → lưu đúng. API lỗi → form giữ nội dung để sửa hoặc thử lại.
-- [x ] COL-09 — Xóa bộ sưu tập test: Hủy/Escape không xóa; xác nhận xóa đang xử lý không gửi trùng; lỗi vẫn giữ hộp thoại, thử lại thành công mới bỏ thẻ. Ảnh gốc không bị xóa.
-- [o ] COL-10 — Mất mạng hoặc API lỗi/timeout khi mở trang → hiện lỗi có Thử lại, không báo chưa có bộ sưu tập. Bật lại mạng và thử lại → tải được danh sách.
-- [o ] COL-11 — Tài khoản chưa có bộ sưu tập → có lời giải thích và nút tạo/khám phá; lọc không khớp → hiện trạng thái không có kết quả riêng. (chỉ admin mới được thêm)
-- [ x] COL-12 — Dùng Tab/Shift+Tab/Enter/Escape cho tìm/lọc, thẻ, tạo/sửa/xóa → focus luôn thấy, không thoát khỏi dialog, đóng xong trả về nút mở.
-- [x ] COL-13 — Đổi sáng/tối; kiểm chữ tìm kiếm, tên dài, số ảnh, icon khóa và nút sửa/xóa → dễ đọc, không có mảng trắng/chữ chìm sai theme.
-- [ x] COL-14 — Đăng xuất/đổi tài khoản lúc đang tải → danh sách riêng của phiên cũ không xuất hiện lại. Kiểm cả tạo/sửa/xóa bằng dữ liệu test.
-- [ o] COL-15 — Mở Chi tiết ảnh → Bộ sưu tập: nhóm gần đây/tất cả vẫn thêm/bỏ đúng ảnh sau khi gom hàng dùng chung.
+- [o] COL-01 — Đăng nhập, mở Bộ sưu tập hoặc F5 /collections → thấy bộ sưu tập của mình/được cộng tác; không hiện dữ liệu tài khoản khác. (bộ sưu tập k hiện công khai, dùng user khác đê xem thì k thấy, nguyên tắc là chỉ admin được tạo bộ sưu tập nên role của người dùng thì sẽ thấy được bộ sưu tập, mục đích của trang bộ sưu tập là vậy)
+- [x] COL-02 — Nhập một phần tên, mô tả hoặc tag; thử tiếng Việt và ký tự % → danh sách đổi ngay đúng từ vừa nhập. Bấm × → hiện lại danh sách, không chuyển trang.
+- [x] COL-03 — Chọn một tag, kết hợp nút Công khai → chỉ còn bộ phù hợp cả hai điều kiện; không có kết quả phải có lời giải thích và nút bỏ bộ lọc. 
+- [o] COL-04 — Chọn lần lượt Mới nhất/Cũ nhất/Tên A-Z/Nhiều ảnh nhất → thứ tự khớp ngày, tên và số ảnh thực tế.(bộ sưu tập k hiện công khai, dùng user khác đê xem thì k thấy)
+- [x] COL-05 — Bấm tên/ảnh bìa hoặc Tab đến thẻ rồi Enter → vào đúng chi tiết. Back/Forward → quay lại đúng trang, bộ lọc và thứ tự còn giữ; F5 không nháy danh sách rỗng trước dữ liệu. 
+- [x] COL-06 — Tạo bộ sưu tập test có tên tiếng Việt, mô tả, tag và quyền công khai/riêng tư → xuất hiện đúng trên danh sách, vào được chi tiết.
+- [x] COL-07 — Khi tạo, chọn ảnh của mình → ảnh được thêm đúng một lần. Nếu thêm ảnh lỗi sau khi đã tạo, thử lại → không tạo thêm bộ sưu tập trùng.
+- [x] COL-08 — Sửa bộ sưu tập test; thử xóa hết mô tả/tag và đổi quyền → lưu đúng. API lỗi → form giữ nội dung để sửa hoặc thử lại.
+- [x] COL-09 — Xóa bộ sưu tập test: Hủy/Escape không xóa; xác nhận xóa đang xử lý không gửi trùng; lỗi vẫn giữ hộp thoại, thử lại thành công mới bỏ thẻ. Ảnh gốc không bị xóa.
+- [o] COL-10 — Mất mạng hoặc API lỗi/timeout khi mở trang → hiện lỗi có Thử lại, không báo chưa có bộ sưu tập. Bật lại mạng và thử lại → tải được danh sách.
+- [o] COL-11 — Tài khoản chưa có bộ sưu tập → có lời giải thích và nút tạo/khám phá; lọc không khớp → hiện trạng thái không có kết quả riêng. (chỉ admin mới được thêm)
+- [x] COL-12 — Dùng Tab/Shift+Tab/Enter/Escape cho tìm/lọc, thẻ, tạo/sửa/xóa → focus luôn thấy, không thoát khỏi dialog, đóng xong trả về nút mở.
+- [x] COL-13 — Đổi sáng/tối; kiểm chữ tìm kiếm, tên dài, số ảnh, icon khóa và nút sửa/xóa → dễ đọc, không có mảng trắng/chữ chìm sai theme.
+- [x] COL-14 — Đăng xuất/đổi tài khoản lúc đang tải → danh sách riêng của phiên cũ không xuất hiện lại. Kiểm cả tạo/sửa/xóa bằng dữ liệu test.
+- [o] COL-15 — Mở Chi tiết ảnh → Bộ sưu tập: nhóm gần đây/tất cả vẫn thêm/bỏ đúng ảnh sau khi gom hàng dùng chung.
 - [ ] COL-R01 — Responsive: CHƯA KIỂM; thực hiện trong vòng cuối sau khi xong chức năng tất cả trang.
 
 
@@ -588,10 +566,10 @@ Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đán
 
 **Cần kiểm lại với backend chạy mã mới và dữ liệu test:** chưa thử Mongo thật, API phân quyền thật hay thiết bị thật. Responsive giữ vòng cuối. Chưa đóng các ô o hoặc gạch ngang mục #5.
 
-- [ x] COL-16 — Mở chi tiết từ danh sách, bấm Quay lại bộ sưu tập → về /collections và giữ bộ lọc/thứ tự. Mở chi tiết bằng URL trực tiếp cũng thấy link quay lại. (đạt nhưng cần chỉnh lại nút)
-- [x ] COL-17 — Đăng nhập user thường → thấy bộ công khai do admin tạo, không thấy bộ riêng của admin và không có Tạo/Sửa/Xóa. Đăng nhập admin → tạo bộ test, đổi công khai/riêng tư rồi đối chiếu bằng user thường.
-- [ x] COL-18 — Trong modal Chi tiết ảnh, bấm Bộ sưu tập → hộp mở ngay dưới nút, không trôi vào giữa ảnh; nhóm gần đây/tất cả và tạo mới của admin vẫn hoạt động. (đạt nhưng cần sửa lại chút)
-- [ x] COL-19 — Đứng ở danh sách đã tải rồi ngắt mạng → giữ thẻ, hiện thông báo ngoại tuyến và Thử lại trong trang, không chồng toast. Bật mạng, bấm Thử lại → lỗi chỉ biến mất sau khi tải thành công. Thử cả mở/F5 chi tiết khi offline: giữ URL, có thử lại/quay về danh sách. (đạt nhưng cần chỉnh lại màu các nút)
+- [x] COL-16 — Mở chi tiết từ danh sách, bấm Quay lại bộ sưu tập → về /collections và giữ bộ lọc/thứ tự. Mở chi tiết bằng URL trực tiếp cũng thấy link quay lại. (đạt nhưng cần chỉnh lại nút)
+- [x] COL-17 — Đăng nhập user thường → thấy bộ công khai do admin tạo, không thấy bộ riêng của admin và không có Tạo/Sửa/Xóa. Đăng nhập admin → tạo bộ test, đổi công khai/riêng tư rồi đối chiếu bằng user thường.
+- [x] COL-18 — Trong modal Chi tiết ảnh, bấm Bộ sưu tập → hộp mở ngay dưới nút, không trôi vào giữa ảnh; nhóm gần đây/tất cả và tạo mới của admin vẫn hoạt động. (đạt nhưng cần sửa lại chút)
+- [x] COL-19 — Đứng ở danh sách đã tải rồi ngắt mạng → giữ thẻ, hiện thông báo ngoại tuyến và Thử lại trong trang, không chồng toast. Bật mạng, bấm Thử lại → lỗi chỉ biến mất sau khi tải thành công. Thử cả mở/F5 chi tiết khi offline: giữ URL, có thử lại/quay về danh sách. (đạt nhưng cần chỉnh lại màu các nút)
 
 
 ### 16.6. Chỉnh bố cục/nền và tác vụ của user thường — 16/10/2026
@@ -602,7 +580,7 @@ Theo bốn ảnh phản hồi mới; giữ nguyên tất cả dấu x/o và chư
 - Nền trang và header trong suốt để dùng cùng nền PhotoCloud, không còn mảng nền trắng riêng giới hạn theo chiều rộng header. Giữ nguyên màu/nội dung ảnh.
 - CollectionLoadError sở hữu cả nhóm hành động: Thử lại là nút chính, Quay lại danh sách là link phụ viền nhẹ cùng hàng. Bỏ nút quay lại rời bên ngoài và rule CSS ghi cứng mọi nút lỗi thành nền đen.
 - User thường chỉ xem bộ sưu tập: ẩn thao tác thêm ảnh vào Bộ sưu tập trong chi tiết ảnh; vẫn có Lưu và điều hướng Bộ sưu tập trên header. Admin giữ dropdown thêm ảnh. Bộ sưu tập rỗng với người xem ghi Khám phá ảnh khác; không mời thêm ảnh khi không có tác vụ đó. Nút rỗng dùng token để chữ dễ đọc cả dark mode.
-- Kiểm: build PASS; lint phần sửa 0 error (6 warning any có sẵn ở ImagePage). Typecheck toàn dự án còn lỗi legacy đã ghi trước; không diagnostic tại phần bố cục/ImagePage vừa sửa. Fixture Edge headless 1440×900 sáng/tối PASS: link căn trái cùng tiêu đề, header không nền riêng, hai nút lỗi cùng hàng, retry và quay lại; user không thấy nút thêm Bộ sưu tập, admin vẫn dùng dropdown. Hồi quy danh sách/tạo/sửa/xóa/thử lại/timeout PASS. Detector các TSX/component lỗi sửa trả []. Đã xem screenshot sáng/tối; ảnh fixture, chưa xác nhận dữ liệu thật hoặc responsive.
+- Kiểm: build PASS; lint phần sửa 0 error (6 warning any có sẵn ở ImagePage). Typecheck toàn dự án còn lỗi legacy đã ghi trước; không diagnostic tại phần bố cục/ImagePage vừa sửa. Fixture Edge headless 1440×900 sáng/tối PASS: link căn trái cùng tiêu đề, header không nền riêng, hai nút lỗi cùng hàng, retry và quay lại; user không thấy nút thêm Bộ sưu tập, admin vẫn dùng dropdown. Hồi quy danh sách/tạo/sửa/xóa/thử lại/timeout PASS. Detector các TSX/component lỗi sửa trả [ ]. Đã xem screenshot sáng/tối; ảnh fixture, chưa xác nhận dữ liệu thật hoặc responsive.
 - Người dùng kiểm lại COL-16/18/19 và thêm: mở ảnh bằng user thường không còn nút thêm Bộ sưu tập; vào chi tiết bộ sưu tập không thấy mảng trắng riêng, link quay lại nằm góc trái trên tên; lỗi offline có hai hành động gọn cùng nhóm. Không tự đổi các ô cũ thành x.
 
 
@@ -612,7 +590,7 @@ Theo yêu cầu người dùng, áp dụng hệ nâu–kem như nút Tạo danh 
 
 ### 17.1. Cách quản lý màu từ nay
 
-- **Một nguồn palette:** frontend/src/styles/button-tokens.css. Primary nâu/chữ kem ở sáng; be/chữ tối ở dark. Secondary kem/tối, chữ nâu/be, viền nhẹ. Selected có nền/viền riêng; danger đỏ gạch, giữ phân biệt tác vụ xóa; focus và disabled có token chung. Mã màu chỉ nằm trong định nghĩa token; CSS của nút ở trang/component tham chiếu token.
+- **Một nguồn palette mặc định:** shared/sitePalette.json; màu đang vận hành lưu qua Cài đặt website admin. frontend/src/styles/button-tokens.css giữ quy tắc và alias nút (chi tiết ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md, mục 19–20). Primary nâu/chữ kem ở sáng; be/chữ tối ở dark. Secondary kem/tối, chữ nâu/be, viền nhẹ. Selected có nền/viền riêng; danger đỏ gạch, giữ phân biệt tác vụ xóa; focus và disabled có token chung. Mã màu chỉ nằm trong định nghĩa token; CSS của nút ở trang/component tham chiếu token.
 - Button dùng data-variant để nhận màu theo default/outline/secondary/ghost/link/destructive. Giữ API, nội dung, khóa gửi, loading, kích thước và xử lý sự kiện hiện có. Nút legacy và action link vẫn giữ cấu trúc nhưng dùng cùng token.
 - Bỏ các rule toàn cục ép Button thành đen/trắng bằng !important trong index.css; bỏ màu inline ghi đè ở nút cài PWA; nút phục hồi ErrorBoundary cũng dùng primary. Header Đặt lịch và Tạo/Lưu/Gửi/Tải/Thử lại theo primary; Upload ở header là secondary để giữ phân cấp với Đặt lịch.
 - Thay màu thường/hover/đã chọn/viền/bóng nút ở các module public, thành viên và admin; CSS có tham chiếu token ở 95 file sau tách. Khôi phục/giữ riêng màu của ảnh, swatch, biểu đồ, badge trạng thái và tiến trình — các phần này không phải palette nút. Chữ/icon con của nút kế thừa màu để không chìm vào nền, gồm nút Liên hệ nổi. Icon xóa có danger-text/danger-soft.
@@ -627,7 +605,7 @@ Trong phạm vi có AdminTools.css, HeroBooking.css, UploadModal.css và index.c
 - Vite build PASS; lint TSX/phần import thay đổi không error, còn 2 warning có sẵn tại PWAInstallPrompt (effect) và UploadPreview (optional chain). TypeScript toàn dự án còn lỗi legacy đã ghi ở các mục trước, không diagnostic ở Button/PWA/ErrorBoundary/UploadPreview/main vừa sửa.
 - Test token PASS: không có token được dùng mà thiếu khai báo; các cặp chữ/nền thường và hover cho primary/secondary/selected/danger/success đều ≥4,5:1 ở cả hai theme. Primary sáng khoảng 6,66:1, hover 8,56:1. Đây là tỷ lệ của các cặp token, không thay thế kiểm toàn bộ nội dung thực tế.
 - Edge headless 1440×1000, API fixture cục bộ, sáng/tối: rà Bộ sưu tập, Khám phá, Đặt lịch, Danh mục admin, Lịch chụp admin và Đăng nhập. Kiểm header/nút tạo có cùng primary; thử đổi primary token lúc chạy để kiểm truyền tới nút legacy, kiểm hover và chữ Liên hệ. Ảnh/log: frontend/qa-policy-checkbox/buttons-*.
-- Hồi quy store bộ sưu tập, actions/navigation ảnh PASS. Fixture thao tác admin PASS payload/mutation, hủy xóa, lỗi/thử lại và quyền hạn. Kiểm dropdown/modal ảnh và user thường tiếp tục bằng fixture riêng. Detector các điểm gốc Button/token/Header/Collections trả [].
+- Hồi quy store bộ sưu tập, actions/navigation ảnh PASS. Fixture thao tác admin PASS payload/mutation, hủy xóa, lỗi/thử lại và quyền hạn. Kiểm dropdown/modal ảnh và user thường tiếp tục bằng fixture riêng. Detector các điểm gốc Button/token/Header/Collections trả [ ].
 - Giới hạn: chưa bấm mọi thao tác trên 39 mục trang với backend/dữ liệu thật; các route đại diện dùng fixture, không sửa dữ liệu thật. Responsive/touch/thiết bị thật vẫn để vòng cuối. Giữ nguyên x/o của người dùng; toàn bộ checklist dưới đây chờ người dùng xác nhận.
 
 ### 17.4. Checklist kiểm màu chung
@@ -639,3 +617,70 @@ Trong phạm vi có AdminTools.css, HeroBooking.css, UploadModal.css và index.c
 - [ ] BTN-05 — Đổi dark mode và F5 → nút chính be/chữ tối, nút phụ tối/chữ be; không còn mảng trắng hoặc chữ sáng trên nền sáng.
 - [ ] BTN-06 — Tab qua nút → focus rõ; khi loading/disabled không gửi trùng và chữ/icon vẫn phù hợp trạng thái. Kiểm cả modal tạo/sửa/xóa, tải ảnh và admin.
 - [ ] BTN-R01 — Responsive chưa nghiệm thu; giữ vòng cuối như quy ước dự án.
+
+## 18. Giới thiệu (#7) — rà soát và sửa ngày 16/10/2026
+
+### 18.1. Phạm vi và lỗi đã sửa
+
+Trang About là landing nội dung tĩnh. Sửa tối giản, không đổi bố cục và nội dung. Bám sát rule Impeccable craft-floor: một CTA chính, phụ thuộc nội dung chứ không trang trí, và tận dụng component dùng chung thay vì CSS riêng trùng lặp.
+
+- **P2 — Hai nút CTA tự viết CSS bằng tay:** .booking-primary-button và .booking-secondary-button chỉnh màu, hover và token nội bộ của trang, không qua component Button dùng chung. Thay bằng <Button> (CTA chính dùng openBookingModal) và Link với class token cho CTA phụ. Tận dụng cùng hệ thống nút với các trang khác, không còn rule màu cứng trong AboutPage.css.
+- **P2 — Selector phụ thuộc class nút cũ:** rule @media (max-width: 640px) chọn .booking-primary-button/.booking-secondary-button đã xoá; thay bằng .about-cta-actions > * để áp dụng cho mọi nút/link dù cấu trúc thay đổi sau.
+- **P3 — Tổ chức file:** trang ~250 dòng, chưa cần tách. FAQ và Value grid là pattern lặp trong dự án (đã có component BookingFAQ riêng với button custom). AboutPage giữ <details> vì mỗi trang chỉ có một FAQ, không cần thành component dùng chung.
+- **P0 — Trang trắng do reveal không chạy:** AboutPage gọi useRevealOnScroll() không gắn `ref` vào DOM, hook trả về [ref, ...] mà ref.current luôn null, IntersectionObserver không bao giờ chạy, mọi section vẫn ở opacity: 0 (CSS gốc). Thêm useRevealOnScrollScope quan sát tất cả .studio-reveal (ưu tiên trong container, fallback document) và đổi AboutPage dùng hook mới. Không phá API useRevealOnScroll hiện có.
+
+### 18.2. Tái sử dụng và không lặp
+
+- CTA dùng Button từ @/components/ui/button; CTA phụ là Link với class .about-cta-secondary-link dùng token màu nút dùng chung (--button-secondary-*). Không viết lại token màu, hover hay focus.
+- useRevealOnScroll, useDocumentMeta, useStructuredData đã có từ trước, không tạo hook mới. Schema FAQPage dùng helper có sẵn.
+- Các cấu hình `authorInfo`, `BRAND`, `bookingModalEvent` là nguồn tập trung; thay đổi tiếp theo ghi tại 18.5.
+
+### 18.3. Bằng chứng kiểm tra
+
+- Vite build PASS, không có cảnh báo mới. ESLint AboutPage 0 error, 0 warning. TypeScript toàn dự án vẫn còn lỗi legacy đã ghi ở các mục trước; không diagnostic mới tại AboutPage.
+- Browser fixture Edge headless 1440×900 sáng/tối: trang render đầy đủ hero, stats, story, team, values, FAQ, CTA, contact, footer. Mở /about trực tiếp, F5, click FAQ mở/đóng, click Đặt lịch chụp mở BookingModal, click Xem các gói chụp điều hướng sang /packages. Không có pageerror hay console error.
+- Screenshot sáng/tối xác nhận màu nền kem/nâu theo token PhotoCloud, text đọc rõ ở cả hai theme, CTA phụ dùng viền và chữ theo tông nút phụ dùng chung.
+- Responsive theo yêu cầu dự án: chưa test vòng cuối, sẽ làm cùng các trang khác sau khi hoàn tất chức năng.
+
+### 18.4. Checklist người dùng kiểm lại
+
+- [ ] ABT-01 — Mở /about trực tiếp và F5: hero, stats, story, team, values, FAQ, CTA, contact hiển thị đầy đủ; meta title đúng, không lỗi console.
+- [ ] ABT-02 — Click từng FAQ: mở/đóng đúng, mũi tên xoay; nhiều FAQ mở cùng lúc đều giữ trạng thái.
+- [ ] ABT-03 — Click Đặt lịch chụp: mở BookingModal đầy đủ 4 bước (Gói → Thời gian → Liên hệ → Xác nhận); đóng modal về đúng trang About.
+- [ ] ABT-04 — Click Xem các gói chụp: chuyển sang /packages đúng; Back quay lại /about đầy đủ nội dung.
+- [ ] ABT-05 — Email/số điện thoại/địa chỉ/mạng xã hội: mỗi liên kết dùng mailto:/`tel:`/mạng xã hội tương ứng; mở tab mới không có lỗi.
+- [ ] ABT-06 — Sáng/tối: màu nền, chữ, nút CTA theo token PhotoCloud; text/ảnh không chìm; nút focus rõ.
+- [ ] ABT-07 — Tiếng Việt có dấu, ký tự đặc biệt (@, +84, –, 100%) hiển thị đúng ở bio, FAQ, CTA, contact.
+- [ ] ABT-08 — Schema FAQPage xuất hiện trong <head> (mở DevTools); JSON-LD đúng cấu trúc.
+- [ ] ABT-R01 — Responsive chưa nghiệm thu; giữ vòng cuối theo quy ước dự án.
+
+
+### 18.5. Sửa theo ABOUT_REVIEW — 16/10/2026
+
+Ghi nhận lượt sửa của Cursor theo ABOUT_REVIEW.md (báo cáo kiểm độc lập từ phiên phụ trách admin). Giữ nguyên tất cả dấu ABT; các ca dưới đây bổ sung hoặc sửa phạm vi, không tự đổi x/o của người dùng.
+
+- **P2 — Số điện thoại giả:** `authorInfo.phone` là +84 9xx xxx xxx và AboutPage xuất thẳng thành `tel:` link, người dùng bấm gọi thất bại. Tách thành phoneDisplay/phoneHref (E.164, không dấu cách) trong `authorInfo.ts`; AboutPage chỉ hiện item khi cả hai có giá trị. Để trống khi chưa có số thật thay vì in số giả. Khi chủ studio cung cấp số thật, cập nhật cả hai trường.
+- **P2 — Mâu thuẫn số liệu:** AboutPage dùng bookingsCompleted cho cả tổng buổi và khẳng định 'Mỗi năm, hơn 500 buổi'. Tách thành bookingsPerYear: number | null riêng. Khi null, đổi câu chuyện thành 'Mỗi buổi là một câu chuyện mới' — không tự bịa con số theo năm.
+- **P2 — Fallback ảnh khi URL ngoài lỗi:** ảnh Unsplash tải thất bại để lộ alt. Thêm SafeImage ngay trong AboutPage (chưa tách component vì chỉ About dùng): khi onError hoặc src rỗng, hiển thị khung icon ImageOff với nhãn thay thế. Dùng cho story image và 3 avatar team.
+- **P2 — Title bị ghi đè:** useSiteSettings chạy effect gán document.title = settings.siteName ở App.tsx, ghi đè useDocumentMeta của mỗi trang. Bỏ effect này trong useSiteSettings; useDocumentMeta của từng trang là nguồn chính. Ghi chú nguyên tắc vào AGENTS.md.
+- **P3 — Reveal chưa gắn ref container:** AboutPage gọi useRevealOnScrollScope() không gắn ref. Hook quan sát document (fallback); AboutPage giờ gắn `ref={pageRef}` cho container .about-page. Nhánh reduced-motion và nhánh thường dùng cùng cách tìm target (qua container khi có ref, fallback document).
+- **P3 — Craft-floor:** bỏ linear-gradient text trên hero (giữ chữ 'ánh sáng' với màu đồng đậm + italic, không gradient). Bỏ 5 <p class='booking-eyebrow'> viết hoa trùng heading ở hero/story/team/values/FAQ; heading tự mang trọng lượng. Thay key={index} ở FAQ thành key={item.q} ổn định hơn.
+
+**Bằng chứng:** Vite build PASS. TypeScript không diagnostic tại các file sửa. ESLint phần mới không error; cảnh báo/error 'Cannot access refs during render' và 'Prefer using an optional chain' ở useRevealOnScroll.ts dòng 38/77 có sẵn từ trước, không do lần sửa này tạo ra. Browser fixture Edge 1440×900 sáng/tối: mở /about, title đúng PhotoCloud Studio — Về PhotoCloud Studio (không bị ghi đè về 'PhotoCloud'); reveal từng section khi cuộn; FAQ mở/đóng; CTA mở BookingModal; link Xem các gói chụp điều hướng /packages. Test fallback ảnh: gán img.src = '/invalid.jpg' cho tất cả ảnh About → hiện khung icon ImageOff với nhãn (tên thành viên / 'Ảnh minh họa đang tải lại') thay vì ảnh hỏng. Không có pageerror.
+
+**Nguyên tắc chung đã bổ sung vào AGENTS.md:** (1) không tự bịa/suy diễn nội dung nghiệp vụ, dùng null/rỗng khi chưa có dữ liệu thật; (2) dọn tài nguyên khi component ngừng dùng; (3) chỉ kết luận hiệu năng khi có đo đạc; (4) useDocumentMeta của trang là nguồn chính cho title, useSiteSettings không ghi đè.
+
+
+## 19. Theo dõi admin đã chuyển sang file riêng
+
+Nguồn duy nhất cho danh sách trang #30–39, checklist PAL/SET/DASH và lịch sử sửa admin: [ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md](ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md). Không chép checklist admin trở lại file user.
+
+### Bổ sung theo dõi Giới thiệu (#7)
+
+- [ ] ABT-09 — Xác nhận số liệu, đội ngũ, ảnh thật, số điện thoại và cam kết trong FAQ trước khi phát hành.
+
+- Giới thiệu: xem screenshot sáng/tối, scroll section, mở FAQ, không pageerror. Title sau API bị ghi đè PhotoCloud; tel còn placeholder; ảnh story hỏng trong môi trường kiểm. Đánh giá chi tiết và nội dung cần chủ studio xác thực: ABOUT_REVIEW.md. Chưa sửa nội dung/số liệu của người khác để tránh tự bịa dữ kiện.
+
+## 22. Sửa cấu trúc inventory — 16/10/2026
+
+Theo yêu cầu người dùng: di chuyển nhật ký sửa sort về 11.5 để checklist EXP-F01–20 liền mạch; đưa 18.5 về sau 18.4; sửa ký tự điều khiển và checkbox Markdown; cập nhật phân công admin/user và nguồn palette hiện tại. Khôi phục PHO-C01–04 và PHO-H01 đã bị xóa khỏi checklist bằng nội dung/dấu x có trong Git. Giữ ý nghĩa toàn bộ 130 dấu đánh giá hiện có trước sửa, gồm 6 dấu x DASH; không tự nghiệm thu thêm responsive hoặc trang khác. Ghi chú test của phiên khác được giữ như lịch sử báo cáo, không coi là lần kiểm mới ở đây.

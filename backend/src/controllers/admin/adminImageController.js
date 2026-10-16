@@ -5,7 +5,7 @@ import User from '../../models/User.js';
 import Notification from '../../models/Notification.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import { logger } from '../../utils/logger.js';
-const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
+const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 import { deleteImageFromR2 } from '../../libs/s3.js';
 import { clearCache } from '../../middlewares/cacheMiddleware.js';
 import { sendImageApprovedEmail, sendImageRejectedEmail } from '../../utils/emailAlerts.js';

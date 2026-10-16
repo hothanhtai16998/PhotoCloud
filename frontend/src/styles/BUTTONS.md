@@ -1,6 +1,6 @@
 # Màu nút PhotoCloud
 
-Nguồn duy nhất của palette nút: src/styles/button-tokens.css. Các giá trị màu chỉ khai báo trong :root và html.dark-theme ở file đó. CSS của trang chỉ tham chiếu token, không thêm mã màu hoặc tự pha nâu khác.
+Nguồn mặc định duy nhất: shared/sitePalette.json ở gốc repository. Admin → Cài đặt website → Bảng màu website cho phép lưu palette sáng/tối; CSS của trang chỉ tham chiếu token, không thêm mã màu hoặc tự pha nâu khác. button-tokens.css giữ alias và quy tắc nút, không giữ bản sao mã màu mặc định.
 
 - primary: Đặt lịch, Tạo, Gửi, Lưu thay đổi, Tải xuống, Thử lại.
 - secondary: Chia sẻ, Xuất, Hủy, các thao tác phụ. Nền kem/tối, chữ nâu/be, viền nhẹ.
@@ -15,4 +15,8 @@ Ví dụ CSS: background: var(--button-primary-bg); color: var(--button-primary-
 
 Không đổi màu ảnh, swatch chọn màu, biểu đồ hoặc badge trạng thái để đồng bộ nút. Nút đặt trên ảnh dùng cùng token và nền đủ rõ. Giữ hiệu ứng/geometry hiện có trong phạm vi thay màu.
 
-Đổi thương hiệu: chỉnh các cặp bg/fg và hover ở button-tokens.css cho cả hai theme; chạy node scripts/test-button-tokens.cjs để kiểm token thiếu và tương phản, sau đó kiểm browser. Bộ kiểm tra browser còn đổi primary token lúc chạy để bảo đảm header và nút legacy đều nhận thay đổi.
+Đổi màu đang vận hành: dùng bảng màu trong admin, xem ví dụ rồi Lưu thay đổi. Khôi phục mặc định chỉ sửa bản nháp cho tới khi lưu. Màu được lưu qua settings API có kiểm quyền/CSRF; public API chỉ trả dữ liệu màu đã kiểm tra. Không chấp nhận CSS tùy ý.
+
+Đổi mặc định của sản phẩm: chỉnh shared/sitePalette.json; chạy node scripts/generate-palette-defaults.cjs (predev/prebuild cũng chạy) để sinh palette-defaults.css. Chạy node scripts/test-button-tokens.cjs và node scripts/test-site-palette.cjs, rồi kiểm browser. Cache local được áp dụng trước React mount; settings công khai đối soát sau đó. Không gọi API mỗi khi kéo color picker, không polling.
+
+Phạm vi là các màu giao diện ngữ nghĩa đã nối token: nền/chữ/viền/điểm nhấn/nút/trạng thái và alias studio/admin. Màu ảnh, logo, biểu đồ dữ liệu, màu riêng nhà cung cấp và mọi màu legacy chưa dùng token không được cam kết đổi hết bằng editor. Khi thêm giao diện, dùng token để hưởng palette chung.

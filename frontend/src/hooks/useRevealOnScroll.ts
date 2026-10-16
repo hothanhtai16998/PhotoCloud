@@ -76,3 +76,58 @@ export function useRevealOnScroll<T extends HTMLElement = HTMLDivElement>(
 
   return [ref, revealedRef.current];
 }
+
+/**
+ * Observe every `[data-reveal]` (or `.studio-reveal`) descendant inside the
+ * returned ref's element. Use for pages that already decorate many sections
+ * with `class="... studio-reveal"` and want a single observer. When the
+ * returned ref is never attached, the hook falls back to observing the whole
+ * document so the rest of the page still reveals correctly.
+ */
+export function useRevealOnScrollScope<T extends HTMLElement = HTMLDivElement>(
+  options: UseRevealOnScrollOptions = {}
+): RefObject<T | null> {
+  const { threshold = 0.1, once = true, rootMargin = '0px 0px -5% 0px' } = options;
+  const ref = useRef<T | null>(null);
+
+  useEffect(() => {
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduceMotion || typeof IntersectionObserver === 'undefined') {
+      const all = document.querySelectorAll<HTMLElement>('.studio-reveal');
+      all.forEach((el) => el.classList.add('is-revealed'));
+      return;
+    }
+
+    // Find every unrevealed target. Prefer the ref scope when available so
+    // pages with multiple observers do not double-handle elements.
+    const root = ref.current;
+    const selector = '.studio-reveal:not(.is-revealed)';
+    const targets = root
+      ? Array.from(root.querySelectorAll<HTMLElement>(selector))
+      : Array.from(document.querySelectorAll<HTMLElement>(selector));
+    if (targets.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+            if (once) observer.unobserve(entry.target);
+          } else if (!once) {
+            entry.target.classList.remove('is-revealed');
+          }
+        }
+      },
+      { threshold, rootMargin }
+    );
+
+    targets.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [threshold, once, rootMargin]);
+
+  return ref;
+}

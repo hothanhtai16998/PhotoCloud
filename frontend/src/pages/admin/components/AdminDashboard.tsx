@@ -13,13 +13,16 @@ import { useUserStore } from '@/stores/useUserStore';
 import { useAdminResource } from '../hooks/useAdminResource';
 import { AdminHeading, AdminFeedback, AdminEmpty } from './AdminPrimitives';
 import './AdminDashboard.css';
+import { DashboardRecentImages } from './DashboardRecentImages';
+function formatCount(value: number | undefined): string { return typeof value==='number' && Number.isFinite(value) && value>=0 ? value.toLocaleString('vi-VN') : '—'; }
 export function AdminDashboard() {
   const user = useUserStore((s) => s.user);
   const { hasPermission, isSuperAdmin } = usePermissions();
   const can = (p: Parameters<typeof hasPermission>[0]) =>
     isSuperAdmin() || hasPermission(p);
-  const loader = useCallback(() => adminService.getDashboardStats(), []);
+  const loader = useCallback(async () => ({ ...await adminService.getDashboardStats(), loadedAt:new Date() }), []);
   const { data, loading, error, reload } = useAdminResource(loader);
+  const updatedAt = data?.loadedAt;
   return (
     <section className="admin-dashboard">
       <AdminHeading
@@ -36,45 +39,24 @@ export function AdminDashboard() {
           onClick={() => void reload()}
         >
           <RefreshCw size={16} />
-          Làm mới
+          {loading ? 'Đang cập nhật…' : 'Làm mới'}
         </button>
       </AdminHeading>
       <AdminFeedback error={error} retry={() => void reload()} />
-      <div className="admin-overview-strip" aria-label="Số liệu tổng quan">
-        <div>
-          <span>Ảnh trong thư viện</span>
-          <strong>
-            {data
-              ? data.stats.totalImages.toLocaleString('vi-VN')
-              : loading
-                ? '…'
-                : '—'}
-          </strong>
-        </div>
-        <div>
-          <span>Thành viên</span>
-          <strong>
-            {data
-              ? data.stats.totalUsers.toLocaleString('vi-VN')
-              : loading
-                ? '…'
-                : '—'}
-          </strong>
-        </div>
-        <div>
-          <span>Danh mục</span>
-          <strong>
-            {data?.stats.totalCategories?.toLocaleString('vi-VN') ??
-              (loading ? '…' : '—')}
-          </strong>
-        </div>
+      <div className="dashboard-data-note" role="status"><span>{error && data ? 'Chưa thể cập nhật. Đang hiển thị dữ liệu lần tải thành công trước.' : updatedAt ? `Cập nhật lúc ${updatedAt.toLocaleTimeString('vi-VN')}` : loading ? 'Đang tải số liệu…' : 'Chưa có dữ liệu thống kê'}</span><span>Tổng toàn hệ thống · Không giới hạn thời gian</span></div>
+      <div className="admin-overview-strip" aria-busy={loading} aria-label="Số liệu tổng quan">
+        {[
+          { label:'Ảnh trong thư viện', value:data?.stats.totalImages },
+          { label:'Thành viên', value:data?.stats.totalUsers },
+          { label:'Danh mục', value:data?.stats.totalCategories },
+        ].map(metric=><div key={metric.label}><span>{metric.label}</span><strong>{data ? formatCount(metric.value) : loading ? '…' : '—'}</strong></div>)}
       </div>
       <div className="admin-dashboard-workspace">
         <section className="admin-recent-section">
           <div className="admin-section-heading">
             <div>
-              <h2>Những khung hình mới</h2>
-              <p>Các ảnh được tải lên gần đây nhất.</p>
+              <h2>Ảnh tải lên gần đây</h2>
+              <p>Tối đa 6 ảnh mới nhất, gồm cả ảnh chưa xuất bản.</p>
             </div>
             {can('viewImages') && (
               <Link to="/admin/images">
@@ -85,31 +67,8 @@ export function AdminDashboard() {
           </div>
           {loading && !data ? (
             <div className="admin-skeleton tall" />
-          ) : data?.recentImages.length ? (
-            <div className="admin-recent-list">
-              {data.recentImages.slice(0, 6).map((image) => (
-                <div key={image._id} className="admin-recent-row">
-                  <span className="admin-recent-photo">
-                    {image.imageUrl ? (
-                      <img src={image.imageUrl} alt="" loading="lazy" />
-                    ) : (
-                      <Images size={22} />
-                    )}
-                  </span>
-                  <div>
-                    <strong>{image.imageTitle || 'Chưa đặt tên'}</strong>
-                    <small>
-                      {image.uploadedBy?.displayName ||
-                        image.uploadedBy?.username ||
-                        'Chưa rõ tác giả'}
-                    </small>
-                  </div>
-                  <span className="admin-recent-date">
-                    {new Date(image.createdAt).toLocaleDateString('vi-VN')}
-                  </span>
-                </div>
-              ))}
-            </div>
+          ) : data?.recentImages?.length ? (
+            <DashboardRecentImages images={data.recentImages} />
           ) : (
             !error && (
               <AdminEmpty
@@ -122,6 +81,7 @@ export function AdminDashboard() {
         <aside className="admin-today">
           <h2>Không gian làm việc</h2>
           <p>Đi thẳng đến công việc bạn cần xử lý.</p>
+          {!can('moderateContent') && !isSuperAdmin() && !can('viewImages') && <p className="dashboard-no-shortcuts">Tài khoản hiện chỉ có quyền xem tổng quan. Liên hệ quản trị viên nếu cần quyền xử lý công việc.</p>}
           <nav aria-label="Công việc nhanh">
             {can('moderateContent') && (
               <Link to="/admin/moderation">

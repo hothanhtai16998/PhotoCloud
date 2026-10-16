@@ -37,5 +37,7 @@ export function paletteVariables(colors: Record<PaletteToken,string>): Record<st
  const vars: Record<string,string> = {};
  for(const [key,color] of Object.entries(colors)) if(HEX_COLOR.test(color)) vars[key]=color;
  for(const [alias,key] of Object.entries(aliases)) if(HEX_COLOR.test(colors[key])) vars[alias]=hexHsl(colors[key]);
+ const studioAliases: Record<string,PaletteToken> = { '--studio-bg-warm':'--bg-primary','--studio-bg-cream':'--bg-secondary','--studio-bg-card':'--bg-card','--studio-text-primary':'--text-primary','--studio-text-muted':'--text-secondary','--studio-text-faint':'--text-muted','--studio-border-soft':'--border-color','--studio-accent-copper':'--accent','--studio-accent-copper-dark':'--button-primary-hover','--studio-status-confirmed':'--status-success','--studio-status-confirmed-text':'--status-success','--studio-status-pending':'--status-warning','--studio-status-pending-text':'--status-warning','--studio-status-danger':'--status-error','--studio-status-danger-text':'--status-error' };
+ for (const [alias,key] of Object.entries(studioAliases)) if(HEX_COLOR.test(colors[key])) vars[alias]=colors[key];
  return vars;
 }

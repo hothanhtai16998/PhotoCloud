@@ -114,13 +114,32 @@ export function filterRecentUploads(
 }
 
 /**
- * Merge new images with existing ones, avoiding duplicates
+ * Merge new images with existing ones, avoiding duplicates.
+ *
+ * When the user has chosen a non-date sort (views/favorites/downloads/relevance),
+ * server output already reflects the chosen order; re-sorting by createdAt would
+ * clobber that order, so we return the new batch as-is (minus duplicates).
+ *
+ * For the default "newest" sort we keep the recent-uploads-first behaviour
+ * so an upload that hasn't reached the server yet still shows up top.
  */
 export function mergeImages(
   _existingImages: Image[],
   newImages: Image[],
-  recentUploads: Image[]
+  recentUploads: Image[],
+  sortBy?: FetchImagesParams['sortBy']
 ): Image[] {
+  const isServerOrder = sortBy && sortBy !== 'date';
+  if (isServerOrder) {
+    // Trust the server order; just drop IDs that already appear in the batch.
+    const seen = new Set<string>();
+    return newImages.filter((img) => {
+      if (!img._id || seen.has(img._id)) return false;
+      seen.add(img._id);
+      return true;
+    });
+  }
+
   const fetchedIds = new Set(newImages.map((img) => img._id));
 
   // Keep recent uploads that aren't in the fetched response

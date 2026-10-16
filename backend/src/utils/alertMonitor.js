@@ -242,12 +242,11 @@ export function startMonitoring() {
     getMonitoringSettings().then(settings => {
         const interval = (settings?.healthCheckInterval || 60) * 1000;
         monitoringInterval = setInterval(checkThresholds, interval);
-        logger.info(`Monitoring started with interval: ${interval}ms`);
+        // Monitoring starts silently
     }).catch(error => {
         // Default to 60 seconds if we can't read settings
         const interval = 60 * 1000;
         monitoringInterval = setInterval(checkThresholds, interval);
-        logger.info(`Monitoring started with default interval: ${interval}ms`);
     });
 }
 
@@ -258,7 +257,6 @@ export function stopMonitoring() {
     if (monitoringInterval) {
         clearInterval(monitoringInterval);
         monitoringInterval = null;
-        logger.info('Monitoring stopped');
     }
 }
 

@@ -1,12 +1,45 @@
-import { Mail, Phone, MapPin, Instagram, Facebook, Star, Award, Users, CalendarDays } from 'lucide-react';
+import { useState, type ImgHTMLAttributes } from 'react';
+import { Mail, Phone, MapPin, Instagram, Facebook, Star, Award, Users, CalendarDays, ImageOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { authorInfo } from '@/config/authorInfo';
 import { BRAND } from '@/constants/brand';
 import { openBookingModal } from '@/utils/bookingModalEvent';
-import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
+import { useRevealOnScrollScope } from '@/hooks/useRevealOnScroll';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { useStructuredData, schemaHelpers } from '@/hooks/useStructuredData';
+import { Button } from '@/components/ui/button';
 import './AboutPage.css';
+
+interface SafeImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+  src?: string;
+  fallbackLabel?: string;
+}
+
+/**
+ * Ảnh ngoại tuyến dễ tải lỗi (CDN, ảnh Unsplash, ảnh demo). Khi lỗi,
+ * hiển thị khung tối giản với icon và nhãn thay vì để vỡ bố cục hoặc
+ * in alt rỗng.
+ */
+function SafeImage({ src, alt, fallbackLabel, className, ...rest }: SafeImageProps) {
+  const [errored, setErrored] = useState(false);
+  if (!src || errored) {
+    return (
+      <div className={`about-img-fallback ${className ?? ''}`} role="img" aria-label={alt}>
+        <ImageOff size={28} aria-hidden />
+        {fallbackLabel && <span className="about-img-fallback-label">{fallbackLabel}</span>}
+      </div>
+    );
+  }
+  return (
+    <img
+      {...rest}
+      src={src}
+      alt={alt}
+      onError={() => setErrored(true)}
+      className={className}
+    />
+  );
+}
 
 const VALUE_PROPS = [
   {
@@ -57,17 +90,42 @@ export default function AboutPage() {
     title: 'Về PhotoCloud Studio',
     description: `Tìm hiểu về đội ngũ và câu chuyện của ${BRAND.nameLong}. ${authorInfo.bio}`,
   });
-  useRevealOnScroll();
+  const pageRef = useRevealOnScrollScope<HTMLDivElement>();
   useStructuredData(schemaHelpers.faqPage(FAQ_ITEMS));
 
+  // Lọc stats có giá trị thật. Số liệu mẫu cần được chủ studio xác nhận.
+  const stats = [
+    authorInfo.stats.bookingsCompleted != null && {
+      value: `${authorInfo.stats.bookingsCompleted}+`,
+      label: 'Buổi chụp đã hoàn thành',
+    },
+    authorInfo.stats.averageRating != null && {
+      value: `${authorInfo.stats.averageRating}/5`,
+      label: 'Điểm trung bình từ khách',
+    },
+    authorInfo.stats.yearsActive != null && {
+      value: `${authorInfo.stats.yearsActive} năm`,
+      label: 'Hoạt động tại TP.HCM',
+    },
+    authorInfo.stats.clientSatisfaction != null && {
+      value: `${authorInfo.stats.clientSatisfaction}%`,
+      label: 'Khách hàng hài lòng',
+    },
+  ].filter(Boolean) as { value: string; label: string }[];
+
+  const phoneAvailable = Boolean(authorInfo.phoneDisplay && authorInfo.phoneHref);
+  const perYearSentence =
+    authorInfo.stats.bookingsPerYear != null
+      ? `Mỗi năm, hơn ${authorInfo.stats.bookingsPerYear} buổi chụp được thực hiện.`
+      : 'Mỗi buổi là một câu chuyện mới. Đó là lý do chúng tôi vẫn làm điều này.';
+
   return (
-    <div className="about-page">
+    <div className="about-page" ref={pageRef}>
       {/* Hero */}
       <section className="about-hero studio-reveal">
         <div className="about-container">
-          <p className="booking-eyebrow">VỀ {BRAND.nameLong.toUpperCase()}</p>
           <h1 className="about-title">
-            Kể chuyện bằng <em>ánh sáng</em>
+            Kể chuyện bằng <span className="about-title-accent">ánh sáng</span>
           </h1>
           <p className="about-hero-sub">
             {authorInfo.bio}
@@ -76,35 +134,26 @@ export default function AboutPage() {
       </section>
 
       {/* Stats */}
-      <section className="about-stats studio-reveal">
-        <div className="about-container">
-          <div className="about-stats-grid">
-            <div className="about-stat">
-              <strong>{authorInfo.stats.bookingsCompleted}+</strong>
-              <span>Buổi chụp đã hoàn thành</span>
-            </div>
-            <div className="about-stat">
-              <strong>{authorInfo.stats.averageRating}/5</strong>
-              <span>Điểm trung bình từ khách</span>
-            </div>
-            <div className="about-stat">
-              <strong>{authorInfo.stats.yearsActive} năm</strong>
-              <span>Hoạt động tại TP.HCM</span>
-            </div>
-            <div className="about-stat">
-              <strong>{authorInfo.stats.clientSatisfaction}%</strong>
-              <span>Khách hàng hài lòng</span>
+      {stats.length > 0 && (
+        <section className="about-stats studio-reveal">
+          <div className="about-container">
+            <div className="about-stats-grid">
+              {stats.map((stat) => (
+                <div key={stat.label} className="about-stat">
+                  <strong>{stat.value}</strong>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Story */}
       <section className="about-story studio-reveal">
         <div className="about-container">
           <div className="about-story-inner">
             <div className="about-story-text">
-              <p className="booking-eyebrow">CÂU CHUYỆN</p>
               <h2>Tại sao chúng tôi bắt đầu</h2>
               <p>
                 PhotoCloud bắt đầu từ một chiếc máy ảnh và một ý tưởng đơn giản: hầu hết các buổi chụp ảnh đều quá giống nhau. Cùng một góc chụp, cùng một pose, cùng một bộ lọc màu.
@@ -112,14 +161,13 @@ export default function AboutPage() {
               <p>
                 Chúng tôi muốn tạo ra điều khác biệt — một quy trình mà khách hàng cảm thấy được lắng nghe, được tư vấn, và cuối cùng nhận được những bức ảnh đúng với con người họ, không phải một bản sao của ai đó trên mạng.
               </p>
-              <p>
-                Mỗi năm, hơn {authorInfo.stats.bookingsCompleted} buổi chụp được thực hiện. Mỗi buổi là một câu chuyện mới. Đó là lý do chúng tôi vẫn làm điều này.
-              </p>
+              <p>{perYearSentence}</p>
             </div>
             <div className="about-story-image">
-              <img
+              <SafeImage
                 src="https://images.unsplash.com/photo-1606216794079-73c1c46c6cf5?w=800&q=80&auto=format&fit=crop"
                 alt="Minh Châu — Lead Photographer tại PhotoCloud Studio"
+                fallbackLabel="Ảnh minh họa đang tải lại"
                 loading="lazy"
               />
             </div>
@@ -130,13 +178,17 @@ export default function AboutPage() {
       {/* Team */}
       <section className="about-team studio-reveal">
         <div className="about-container">
-          <p className="booking-eyebrow">ĐỘI NGŨ</p>
           <h2 className="about-section-title">Những người đứng sau ống kính</h2>
           <div className="about-team-grid">
             {authorInfo.team.map((member) => (
               <div key={member.name} className="about-team-card">
                 <div className="about-team-avatar">
-                  <img src={member.avatar} alt={member.name} loading="lazy" />
+                  <SafeImage
+                    src={member.avatar}
+                    alt={member.name}
+                    fallbackLabel={member.name}
+                    loading="lazy"
+                  />
                 </div>
                 <div className="about-team-info">
                   <h3>{member.name}</h3>
@@ -152,7 +204,6 @@ export default function AboutPage() {
       {/* Values */}
       <section className="about-values studio-reveal">
         <div className="about-container">
-          <p className="booking-eyebrow">GIÁ TRỊ CỐT LÕI</p>
           <h2 className="about-section-title">Cam kết với từng buổi chụp</h2>
           <div className="about-values-grid">
             {VALUE_PROPS.map((item) => (
@@ -171,11 +222,10 @@ export default function AboutPage() {
       {/* FAQ */}
       <section className="about-faq studio-reveal">
         <div className="about-container about-container--narrow">
-          <p className="booking-eyebrow">THẮC MẮC THƯỜNG GẶP</p>
           <h2 className="about-section-title">Câu hỏi thường gặp</h2>
           <div className="about-faq-list">
-            {FAQ_ITEMS.map((item, index) => (
-              <details key={index} className="about-faq-item">
+            {FAQ_ITEMS.map((item) => (
+              <details key={item.q} className="about-faq-item">
                 <summary className="about-faq-question">
                   <span>{item.q}</span>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
@@ -197,10 +247,10 @@ export default function AboutPage() {
           <h2>Sẵn sàng cho buổi chụp tiếp theo?</h2>
           <p>Đặt lịch ngay — phản hồi trong 24h, chưa cần thanh toán trước.</p>
           <div className="about-cta-actions">
-            <button type="button" className="booking-primary-button" onClick={openBookingModal}>
+            <Button onClick={openBookingModal}>
               <CalendarDays size={17} /> Đặt lịch chụp
-            </button>
-            <Link to="/packages" className="booking-secondary-button">
+            </Button>
+            <Link to="/packages" className="about-cta-secondary-link">
               Xem các gói chụp
             </Link>
           </div>
@@ -215,10 +265,12 @@ export default function AboutPage() {
               <Mail size={17} />
               <a href={`mailto:${authorInfo.email}`}>{authorInfo.email}</a>
             </div>
-            <div className="about-contact-item">
-              <Phone size={17} />
-              <a href={`tel:${authorInfo.phone}`}>{authorInfo.phone}</a>
-            </div>
+            {phoneAvailable && (
+              <div className="about-contact-item">
+                <Phone size={17} />
+                <a href={`tel:${authorInfo.phoneHref}`}>{authorInfo.phoneDisplay}</a>
+              </div>
+            )}
             <div className="about-contact-item">
               <MapPin size={17} />
               <span>{authorInfo.address}</span>

@@ -97,7 +97,9 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  // Load site settings to update document title and meta tags
+  // Load site settings for runtime use (e.g. palette, upload limits).
+  // Document title is owned by per-page `useDocumentMeta` — App must not
+  // overwrite it after the page has set its own title.
   const { settings } = useSiteSettings();
 
   // Global structured data (Organization + PhotographyBusiness) — persists across routes

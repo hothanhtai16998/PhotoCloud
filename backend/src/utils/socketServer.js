@@ -198,7 +198,7 @@ export const initializeSocketServer = (httpServer) => {
 	// Handle connections
 	io.on('connection', (socket) => {
 		const userId = socket.userId;
-		logger.info(`Socket connected: ${userId}`);
+		// Connection logged at debug level only
 
 		// Record connection in metrics (with userId for unique user tracking)
 		socketMetrics.recordConnection(socket.id, userId);
@@ -229,7 +229,7 @@ export const initializeSocketServer = (httpServer) => {
 			
 			socket.join(`collection:${collectionId}`);
 			socketMetrics.recordRoomJoin(`collection:${collectionId}`);
-			logger.info(`User ${userId} joined collection room: ${collectionId}`);
+			// Room join logged silently
 				
 				// Acknowledge successful join
 				socket.emit('collection:joined', { collectionId });
@@ -247,7 +247,7 @@ export const initializeSocketServer = (httpServer) => {
 			if (collectionId && typeof collectionId === 'string') {
 				socket.leave(`collection:${collectionId}`);
 				socketMetrics.recordRoomLeave(`collection:${collectionId}`);
-				logger.info(`User ${userId} left collection room: ${collectionId}`);
+				// Room leave logged silently
 			}
 		});
 
@@ -274,7 +274,7 @@ export const initializeSocketServer = (httpServer) => {
 			
 			socket.join(`image:${imageId}`);
 			socketMetrics.recordRoomJoin(`image:${imageId}`);
-			logger.info(`User ${userId} joined image room: ${imageId}`);
+			// Room join logged silently
 				
 				// Acknowledge successful join
 				socket.emit('image:joined', { imageId });
@@ -292,7 +292,7 @@ export const initializeSocketServer = (httpServer) => {
 			if (imageId && typeof imageId === 'string') {
 				socket.leave(`image:${imageId}`);
 				socketMetrics.recordRoomLeave(`image:${imageId}`);
-				logger.info(`User ${userId} left image room: ${imageId}`);
+				// Room leave logged silently
 			}
 		});
 
@@ -319,7 +319,7 @@ export const initializeSocketServer = (httpServer) => {
 			
 			socket.join(`profile:${targetUserId}`);
 			socketMetrics.recordRoomJoin(`profile:${targetUserId}`);
-			logger.info(`User ${socket.userId} joined profile room: ${targetUserId}`);
+			// Room join logged silently
 				
 				// Acknowledge successful join
 				socket.emit('profile:joined', { userId: targetUserId });
@@ -337,13 +337,13 @@ export const initializeSocketServer = (httpServer) => {
 			if (userId && typeof userId === 'string') {
 				socket.leave(`profile:${userId}`);
 				socketMetrics.recordRoomLeave(`profile:${userId}`);
-				logger.info(`User ${socket.userId} left profile room: ${userId}`);
+				// Room leave logged silently
 			}
 		});
 
 		// Handle disconnection
 		socket.on('disconnect', (reason) => {
-			logger.info(`Socket disconnected: ${userId}, reason: ${reason}`);
+			// Disconnection logged at debug level only
 			// Record disconnection in metrics
 			socketMetrics.recordDisconnection(socket.id);
 		});
@@ -355,7 +355,7 @@ export const initializeSocketServer = (httpServer) => {
 		});
 	});
 
-	logger.info('✅ Socket.io server initialized');
+	// Socket.io initialized silently
 	return io;
 };
 
@@ -376,7 +376,7 @@ export const getSocketServer = () => {
  */
 export const emitNotification = (userId, notification) => {
 	if (!io) {
-		logger.warn('Socket.io not initialized, notification not sent via WebSocket');
+		// Socket not initialized - skip silently (expected in some scenarios)
 		return;
 	}
 
@@ -385,7 +385,7 @@ export const emitNotification = (userId, notification) => {
 		io.to(`user:${userId}`).emit('notification', notification);
 		const latency = Date.now() - startTime;
 		socketMetrics.recordEvent('notification', latency);
-		logger.info(`Notification emitted to user ${userId}:`, notification.type);
+		// Notification emitted silently
 	} catch (error) {
 		socketMetrics.recordError('emit');
 		logger.error('Failed to emit notification:', error);
@@ -416,7 +416,7 @@ export const emitUnreadCount = (userId, unreadCount) => {
  */
 export const emitCollectionUpdate = (collectionId, update) => {
 	if (!io) {
-		logger.warn('Socket.io not initialized, collection update not sent via WebSocket');
+		// Socket not initialized - skip silently
 		return;
 	}
 
@@ -426,7 +426,7 @@ export const emitCollectionUpdate = (collectionId, update) => {
 		io.to(`collection:${collectionId}`).emit('collection:updated', update);
 		const latency = Date.now() - startTime;
 		socketMetrics.recordEvent('collection:updated', latency);
-		logger.info(`Collection update emitted to collection ${collectionId}:`, update.type);
+		// Collection update emitted silently
 	} catch (error) {
 		socketMetrics.recordError('emit');
 		logger.error('Failed to emit collection update:', error);
@@ -476,7 +476,7 @@ export const getCollectionRecipients = (collection) => {
  */
 export const emitImageFavoriteUpdate = (imageId, update) => {
 	if (!io) {
-		logger.warn('Socket.io not initialized, image favorite update not sent via WebSocket');
+		// Socket not initialized - skip silently
 		return;
 	}
 
@@ -486,7 +486,7 @@ export const emitImageFavoriteUpdate = (imageId, update) => {
 		io.to(`image:${imageId}`).emit('image:favorite_updated', update);
 		const latency = Date.now() - startTime;
 		socketMetrics.recordEvent('image:favorite_updated', latency);
-		logger.info(`Image favorite update emitted to image ${imageId}:`, update.action);
+		// Favorite update emitted silently
 	} catch (error) {
 		socketMetrics.recordError('emit');
 		logger.error('Failed to emit image favorite update:', error);
@@ -500,7 +500,7 @@ export const emitImageFavoriteUpdate = (imageId, update) => {
  */
 export const emitUserFollowUpdate = (userId, update) => {
 	if (!io) {
-		logger.warn('Socket.io not initialized, user follow update not sent via WebSocket');
+		// Socket not initialized - skip silently
 		return;
 	}
 
@@ -512,7 +512,7 @@ export const emitUserFollowUpdate = (userId, update) => {
 		io.to(`profile:${userId}`).emit('user:follow_updated', update);
 		const latency = Date.now() - startTime;
 		socketMetrics.recordEvent('user:follow_updated', latency);
-		logger.info(`User follow update emitted to profile ${userId}:`, update.action);
+		// Follow update emitted silently
 	} catch (error) {
 		socketMetrics.recordError('emit');
 		logger.error('Failed to emit user follow update:', error);
@@ -526,7 +526,7 @@ export const emitUserFollowUpdate = (userId, update) => {
  */
 export const emitImageStatsUpdate = (imageId, update) => {
 	if (!io) {
-		logger.warn('Socket.io not initialized, image stats update not sent via WebSocket');
+		// Socket not initialized - skip silently
 		return;
 	}
 
@@ -536,7 +536,7 @@ export const emitImageStatsUpdate = (imageId, update) => {
 		io.to(`image:${imageId}`).emit('image:stats_updated', update);
 		const latency = Date.now() - startTime;
 		socketMetrics.recordEvent('image:stats_updated', latency);
-		logger.info(`Image stats update emitted to image ${imageId}:`, update.action);
+		// Stats update emitted silently
 	} catch (error) {
 		socketMetrics.recordError('emit');
 		logger.error('Failed to emit image stats update:', error);

@@ -1,5 +1,6 @@
-/* PhotoCloud action palette. Change button colors here, never in page CSS. */
+/* PhotoCloud action rules. Defaults: shared/sitePalette.json; live colors: admin settings. */
 :root {
+ --button-secondary-border-hover: var(--button-selected-border);
  --button-radius: 8px;
  --button-disabled-opacity: .5;
  --button-shadow: 0 2px 6px rgb(70 44 24 / .12);

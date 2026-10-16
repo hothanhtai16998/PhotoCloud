@@ -37,8 +37,8 @@
 .collection-detail-loading .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e5e5;
-  border-top-color: var(--text-primary, #1B1B19);
+  border: 3px solid var(--border-color);
+  border-top-color: var(--text-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin-bottom: 16px;
@@ -326,110 +326,24 @@
   padding: 0 16px 48px;
 }
 
-/* OLD STYLES - No longer used since we switched to NoFlashGrid */
-/* Kept for reference but not active */
-/*
-.collection-images-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 24px;
-}
-
-.collection-image-item {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 12px;
-  cursor: pointer;
-  background: hsl(var(--muted));
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.collection-image-item.portrait {
-  aspect-ratio: 3 / 4;
-}
-
-.collection-image-item.landscape {
-  aspect-ratio: 4 / 3;
-}
-
-.collection-image-item:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.collection-image-item.is-cover {
-  border: 4px solid #111;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-
-.collection-image-item[draggable='true'] {
-  cursor: grab;
-}
-
-.collection-image-item[draggable='true']:active {
-  cursor: grabbing;
-}
-
-.collection-image-item.dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
-  cursor: grabbing !important;
-  z-index: 10;
-}
-
-.collection-image-item.drag-over {
-  border: 3px dashed #111;
-  background: rgba(27, 27, 25, 0.05);
-  transform: scale(1.05);
-  z-index: 5;
-}
-
-.collection-image-item.drag-over::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.collection-image-item .progressive-image-wrapper {
-  width: 100%;
-  height: 100%;
-}
-
-.collection-image-item img,
-.collection-image-item .progressive-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-*/
-
 /* Loading Spinner for Cover Update */
 .cover-loading-spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: var(--bg-card, #FFFFFF);
+  border: 2px solid color-mix(in srgb, var(--bg-card) 30%, transparent);
+  border-top-color: var(--bg-card);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
 
-/* Drag Handle */
+/* Drag Handle - colors derive from palette so the admin editor retints it. */
 .collection-image-drag-handle {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--button-primary-bg) 80%, transparent);
   backdrop-filter: blur(8px);
-  color: var(--bg-card, #FFFFFF);
+  color: var(--bg-card);
   padding: 6px;
   border-radius: 6px;
   z-index: 2;
@@ -440,7 +354,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: all;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--button-primary-bg) 30%, transparent);
 }
 
 .collection-image-item:hover .collection-image-drag-handle {
@@ -448,7 +362,7 @@
 }
 
 .collection-image-drag-handle:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--button-primary-bg);
 }
 
 .collection-image-drag-handle:active {
@@ -460,15 +374,15 @@
   opacity: 0;
 }
 
-/* Bulk Selection Styles - Modern Floating Design */
+/* Bulk Selection Styles - Modern Floating Design - palette driven */
 .collection-bulk-action-bar {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.98);
+  background: color-mix(in srgb, var(--bg-card) 98%, transparent);
   backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
   border-radius: 24px;
   padding: 16px 24px;
   display: flex;
@@ -476,8 +390,9 @@
   justify-content: space-between;
   gap: 24px;
   z-index: 1000;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--button-primary-bg) 20%, transparent),
+    0 2px 8px color-mix(in srgb, var(--button-primary-bg) 12%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 90%, transparent);
   max-width: calc(100% - 48px);
   width: auto;
   min-width: 320px;
@@ -518,11 +433,11 @@
   color: hsl(var(--foreground));
   letter-spacing: -0.01em;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--button-primary-bg) 30%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--bg-card) 20%, transparent);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -549,7 +464,7 @@
   left: 12px;
   right: 12px;
   height: 2px;
-  background: #0066cc;
+  background: var(--accent);
   transform: scaleX(0);
   transition: transform 0.2s ease;
 }
@@ -592,7 +507,7 @@
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: color-mix(in srgb, var(--bg-card) 30%, transparent);
   transform: translate(-50%, -50%);
   transition: width 0.4s ease, height 0.4s ease;
 }
@@ -663,19 +578,19 @@
 .collection-image-checkbox svg {
   width: 28px;
   height: 28px;
-  color: var(--bg-card, #FFFFFF);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  color: var(--bg-card);
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--button-primary-bg) 50%, transparent));
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .collection-image-checkbox:hover svg {
   transform: scale(1.2);
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--button-primary-bg) 60%, transparent));
 }
 
 .collection-image-checkbox.checked svg {
-  color: #0066cc;
-  filter: drop-shadow(0 2px 6px rgba(0, 102, 204, 0.6));
+  color: var(--accent);
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--accent) 60%, transparent));
   animation: checkboxCheck 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -700,9 +615,10 @@
 }
 
 .collection-image-item.selected {
-  border: 5px solid #0066cc;
-  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.3),
-    0 8px 24px rgba(0, 102, 204, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+  border: 5px solid var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--bg-card) 20%, transparent);
   position: relative;
   transform: scale(1.02);
   z-index: 2;
@@ -715,11 +631,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 102, 204, 0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 8px;
   pointer-events: none;
   z-index: 1;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid color-mix(in srgb, var(--bg-card) 30%, transparent);
 }
 
 .collection-image-item.selection-mode .collection-image-overlay {

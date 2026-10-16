@@ -36,7 +36,7 @@ export const startSessionCleanup = () => {
         cleanupExpiredSessions();
     }, 60 * 60 * 1000); // 1 hour
 
-    logger.info('Session cleanup scheduler started');
+    // Scheduler runs silently - only logs on errors or actual cleanup
 };
 
 /**
@@ -47,7 +47,6 @@ export const stopSessionCleanup = () => {
     if (cleanupIntervalId) {
         clearInterval(cleanupIntervalId);
         cleanupIntervalId = null;
-        logger.info('Session cleanup scheduler stopped');
     }
 };
 

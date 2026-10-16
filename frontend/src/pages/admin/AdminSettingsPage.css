@@ -1,0 +1,20 @@
+.website-settings { max-width:1440px;margin-inline:auto; }
+.settings-navigation { display:flex;gap:28px;border-bottom:1px solid var(--admin-border);margin-bottom:28px; }
+.settings-navigation button { display:grid;gap:5px;text-align:left;padding:12px 0 16px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--admin-text-secondary);font:inherit;font-size:15px;font-weight:600;cursor:pointer; }
+.settings-navigation button small { font-size:12px;font-weight:400; }
+.settings-navigation button[aria-pressed=true] { color:var(--button-secondary-fg);border-bottom-color:var(--button-primary-bg); }
+.settings-navigation button:hover { color:var(--admin-text); }
+.website-settings .settings-general { max-width:980px; }
+.website-settings .admin-settings-section:first-child { border-top:0;padding-top:0; }
+.website-settings .admin-settings-section { gap:32px;padding-block:26px; }
+.website-settings .admin-settings-section p { font-size:14px;line-height:1.6;max-width:40ch; }
+.website-settings .admin-settings-field { font-size:14px;gap:9px; }
+.website-settings .admin-settings-field small { font-size:12px;line-height:1.5; }
+.website-settings .admin-input { font-size:14px; }
+.website-settings .admin-check-row { padding:16px;border:1px solid var(--admin-border);border-radius:8px;background:var(--admin-card-bg);align-self:start; }
+.website-settings .admin-check-row input { accent-color:var(--button-primary-bg); }
+.settings-save-dock { position:sticky;bottom:0;z-index:5;background:var(--admin-bg);border-top:1px solid var(--admin-border);padding:16px 0;margin-top:28px; }
+.website-settings .admin-save-bar { padding:0;border:0;font-size:13px; }
+.website-settings .admin-form-error { margin:0 0 12px;padding:0; }
+.website-settings [hidden] { display:none; }
+@media(max-width:800px) { .settings-navigation { gap:20px; }.website-settings .admin-settings-section { grid-template-columns:minmax(0,1fr);gap:12px; }.website-settings .admin-save-bar { flex-wrap:wrap; } }

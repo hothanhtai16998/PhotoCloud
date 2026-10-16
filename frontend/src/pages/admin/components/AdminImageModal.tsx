@@ -15,7 +15,7 @@ export function AdminImageModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [title, setTitle] = useState(image.imageTitle);
+  const [title, setTitle] = useState(image.imageTitle || '');
   const originalCategory =
     typeof image.imageCategory === 'object'
       ? image.imageCategory?._id || ''
@@ -23,27 +23,33 @@ export function AdminImageModal({
   const [category, setCategory] = useState(originalCategory);
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [categoryError,setCategoryError]=useState<string | null>(null);
+  const [categoriesLoading,setCategoriesLoading]=useState(false);
+  const [categoryAttempt,setCategoryAttempt]=useState(0);
   const [busy, setBusy] = useState(false);
   const { hasPermission, isSuperAdmin } = usePermissions();
   const canCategories = isSuperAdmin() || hasPermission('viewCategories');
   useEffect(() => {
     let active = true;
-    if (canCategories)
+    if (canCategories) {
+      setCategoriesLoading(true);setCategoryError(null);
       categoryService
         .getAllCategoriesAdmin()
         .then((data) => {
           if (active) setCategories(data);
         })
         .catch((cause) => {
-          if (active) setError(adminError(cause));
-        });
+          if (active) setCategoryError(adminError(cause));
+        }).finally(()=>{if(active) setCategoriesLoading(false);});
+    }
     return () => {
       active = false;
     };
-  }, [canCategories]);
+  }, [canCategories,categoryAttempt]);
   const save = async (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
+    if(!title.trim()) {setError('Nhập tiêu đề ảnh, không chỉ khoảng trắng.');return;}
     setBusy(true);
     setError(null);
     try {
@@ -77,6 +83,7 @@ export function AdminImageModal({
             className="admin-input"
             required
             maxLength={200}
+            aria-describedby={error ? 'image-edit-error' : undefined}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -86,10 +93,12 @@ export function AdminImageModal({
             Danh mục
             <select
               className="admin-input"
+              disabled={busy || categoriesLoading || !!categoryError}
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
               <option value="">Chưa phân loại</option>
+              {originalCategory && !categories.some(item=>item._id===originalCategory) && <option value={originalCategory}>{typeof image.imageCategory==='object' ? image.imageCategory?.name || 'Danh mục hiện tại' : 'Danh mục hiện tại'}</option>}
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.name}
@@ -98,8 +107,10 @@ export function AdminImageModal({
             </select>
           </label>
         )}
+        {canCategories && categoriesLoading && <p role="status">Đang tải danh mục…</p>}
+        {categoryError && <div className="admin-form-error" role="alert">{categoryError} <button type="button" className="admin-btn" disabled={busy} onClick={()=>setCategoryAttempt(value=>value+1)}>Tải lại danh mục</button></div>}
         {error && (
-          <p className="admin-form-error" role="alert">
+          <p id="image-edit-error" className="admin-form-error" role="alert">
             {error}
           </p>
         )}

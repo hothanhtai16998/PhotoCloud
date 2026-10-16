@@ -8,7 +8,7 @@ export function applySitePalette(value: unknown, cache = true): SitePalette {
   const selector = theme === 'light' ? 'html[data-site-palette]:not(.dark-theme)' : 'html[data-site-palette].dark-theme';
   const colors = palette[theme], vars = variables(paletteVariables(colors));
   const admin = variables({ '--admin-bg':colors['--bg-primary'],'--admin-card-bg':colors['--bg-card'],'--admin-text':colors['--text-primary'],'--admin-text-secondary':colors['--text-secondary'],'--admin-border':colors['--border-color'],'--admin-hover':colors['--hover-bg'],'--admin-accent':colors['--button-primary-bg'],'--admin-danger':colors['--button-danger-text'] });
-  return `${selector}{${vars}}${selector} body{${vars}}${selector} .admin-layout,${selector} .admin-modal{${admin}}`;
+  return `${selector}{${vars}}${selector} body{${vars}}${selector} .admin-layout,${selector} .admin-tools,${selector} .admin-modal{${admin}}`;
  }).join('\n');
  let style = document.getElementById('site-palette') as HTMLStyleElement | null;
  if (!style) { style=document.createElement('style');style.id='site-palette';document.head.append(style); }

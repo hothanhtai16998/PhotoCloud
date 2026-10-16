@@ -20,3 +20,17 @@ export function paletteField(key: PaletteToken): {label:string;hint:string;group
  const group = /danger|success|--status-/.test(key) ? 'states' : key.startsWith('--button-') ? 'buttons' : 'surfaces';
  return {label,hint,group};
 }
+
+export const paletteSections: {label:string;hint:string;keys:PaletteToken[]}[] = [
+ {label:'Nền giao diện',hint:'Nền trang, thanh điều hướng và hộp nội dung.',keys:['--bg-primary','--bg-header','--bg-secondary','--bg-card','--hover-bg']},
+ {label:'Chữ và đường viền',hint:'Các màu nội dung dùng chung trên website.',keys:['--text-primary','--text-secondary','--text-muted','--border-color','--border-strong']},
+ {label:'Thương hiệu',hint:'Điểm nhấn và chi tiết bổ sung.',keys:['--accent','--accent-soft']},
+ {label:'Nút chính · Đặt lịch / Lưu / Tạo',hint:'Nền, chữ và rê chuột cùng một bộ. Viền nút chính dùng chung màu nền.',keys:['--button-primary-bg','--button-primary-fg','--button-primary-hover']},
+ {label:'Nút phụ · Chia sẻ / Hủy / Xuất',hint:'Bộ màu cho thao tác phụ, gồm cả đường viền.',keys:['--button-secondary-bg','--button-secondary-fg','--button-secondary-border','--button-secondary-hover']},
+ {label:'Đã chọn · Yêu thích / Bộ lọc',hint:'Nền, chữ và viền khi thao tác đang được chọn.',keys:['--button-selected-bg','--button-selected-fg','--button-selected-border']},
+ {label:'Focus bàn phím',hint:'Viền nhận biết khi di chuyển bằng phím Tab.',keys:['--button-focus']},
+ {label:'Nút xóa',hint:'Bộ màu cho xác nhận xóa.',keys:['--button-danger-bg','--button-danger-fg','--button-danger-hover']},
+ {label:'Icon xóa nhẹ',hint:'Nền và icon cho thao tác xóa dạng nhỏ.',keys:['--button-danger-soft','--button-danger-text']},
+ {label:'Nút duyệt / Chấp thuận',hint:'Bộ màu cho thao tác chấp thuận trong admin.',keys:['--button-success-bg','--button-success-fg','--button-success-hover']},
+ {label:'Thông báo',hint:'Màu chữ theo ý nghĩa thông báo.',keys:['--status-success','--status-warning','--status-error','--status-info']},
+];

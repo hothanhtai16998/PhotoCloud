@@ -90,7 +90,7 @@ export const startPreUploadCleanup = () => {
         cleanupOldPreUploadedFiles();
     }, 6 * 60 * 60 * 1000); // 6 hours
 
-    logger.info('Pre-upload cleanup scheduler started (runs every 6 hours)');
+    // Scheduler runs silently - only logs when files are actually cleaned up
 };
 
 /**
@@ -101,7 +101,6 @@ export const stopPreUploadCleanup = () => {
     if (cleanupIntervalId) {
         clearInterval(cleanupIntervalId);
         cleanupIntervalId = null;
-        logger.info('Pre-upload cleanup scheduler stopped');
     }
 };
 
