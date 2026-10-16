@@ -87,14 +87,14 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: var(--admin-text);
+  color: var(--button-secondary-fg);
   font: inherit;
   cursor: pointer;
   margin-bottom: 6px;
 }
 .pc-calendar-cell.today .pc-calendar-date {
-  background: var(--admin-accent);
-  color: var(--admin-bg);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   font-weight: 700;
 }
 .pc-calendar .pc-calendar-event {
@@ -109,10 +109,10 @@
   font: inherit;
   font-size: 13px;
   line-height: 1.5;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  background: var(--admin-card-bg);
-  color: var(--admin-text);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   overflow-wrap: anywhere;
 }
@@ -124,11 +124,12 @@
   color: var(--admin-text-secondary);
 }
 .pc-calendar .pc-calendar-event:hover {
-  border-color: var(--admin-accent);
-  background: var(--admin-hover);
+  border-color: var(--button-secondary-border);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 .pc-calendar button:focus-visible {
-  outline: 2px solid var(--admin-accent);
+  outline: 2px solid var(--button-focus);
   outline-offset: 2px;
 }
 .pc-calendar-agenda {
@@ -193,14 +194,14 @@
 .admin-layout .admin-tools .pc-calendar .pc-calendar-date {
   border: 0;
   background: transparent;
-  color: var(--admin-text);
+  color: var(--button-secondary-fg);
   padding: 4px;
 }
 .admin-layout .admin-tools .pc-calendar .today .pc-calendar-date,
 .admin-layout .admin-tools .pc-calendar-modes .admin-btn[aria-pressed='true'] {
-  background: var(--admin-accent);
-  color: var(--admin-bg);
-  border-color: var(--admin-accent);
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
+  border-color: var(--button-selected-border);
 }
 .pc-calendar h2 {
   font-weight: 700;

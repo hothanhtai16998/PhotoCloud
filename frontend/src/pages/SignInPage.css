@@ -101,8 +101,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 1px solid hsl(var(--border));
-  background: hsl(var(--card));
+  border: 1px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -111,9 +111,9 @@
 }
 
 .social-btn:hover {
-  border-color: hsl(var(--foreground));
+  border-color: var(--button-secondary-border);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--button-shadow);
 }
 
 .google-btn {
@@ -217,7 +217,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: hsl(var(--muted-foreground));
+  color: var(--button-secondary-fg);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -226,7 +226,7 @@
 }
 
 .password-toggle:hover {
-  color: hsl(var(--foreground));
+  color: var(--button-secondary-fg);
 }
 
 .form-group input {
@@ -259,8 +259,8 @@
 .continue-btn {
   width: 100%;
   padding: 14px 24px;
-  background: #0066cc;
-  color: #fff;
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   border: none;
   border-radius: 6px;
   font-size: 1rem;
@@ -271,7 +271,8 @@
 }
 
 .continue-btn:hover:not(:disabled) {
-  background: #0052a3;
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .continue-btn:disabled {

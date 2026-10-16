@@ -1,35 +1,12 @@
+@import './palette-defaults.css';
 /* Global Theme Variables — PhotoCloud Warm Studio */
 :root {
-  --bg-primary: #FAF8F4;
-  --bg-header: #F0EAE0;
-  --bg-secondary: #F2EEE7;
-  --bg-card: #FAF8F4;
-  --text-primary: #1B1B19;
-  --text-secondary: #6B6B66;
-  --text-muted: #6B6B66;
-  --border-color: #E8E2D6;
-  --border-strong: #D8D1C5;
-  --hover-bg: #F2EEE7;
-  --accent: #B8865B;
-  --accent-soft: #D9A441;
   --shadow: rgba(27, 27, 25, 0.08);
   --shadow-strong: rgba(27, 27, 25, 0.16);
   --page-heading-wash: radial-gradient(ellipse at 70% 0%, rgba(184,134,91,.10), transparent 60%), linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%);
 }
 
 .dark-theme {
-  --bg-primary: #242017;
-  --bg-header: #30291E;
-  --bg-secondary: #2B251B;
-  --bg-card: #332C21;
-  --text-primary: #F2EEE7;
-  --text-secondary: #B8B2A4;
-  --text-muted: #AAA493;
-  --border-color: #4A402F;
-  --border-strong: #66563E;
-  --hover-bg: #3C3326;
-  --accent: #B8865B;
-  --accent-soft: #D9A441;
   --shadow: rgba(0, 0, 0, 0.4);
   --shadow-strong: rgba(0, 0, 0, 0.6);
 }
@@ -53,11 +30,11 @@
 }
 
 .dark-theme .header-link {
-  color: var(--text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .dark-theme .header-link:hover {
-  background: var(--hover-bg);
+  background: var(--button-secondary-hover);
 }
 
 .dark-theme .user-menu-content {
@@ -66,11 +43,11 @@
 }
 
 .dark-theme .user-menu-item {
-  color: var(--text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .dark-theme .user-menu-item:hover {
-  background: var(--hover-bg);
+  background: var(--button-secondary-hover);
 }
 
 /* Category Navigation */
@@ -80,15 +57,15 @@
 }
 
 .dark-theme .category-nav-link {
-  color: var(--text-secondary);
+  color: var(--button-secondary-fg);
 }
 
 .dark-theme .category-nav-link:hover {
-  color: var(--text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .dark-theme .category-nav-link.active {
-  color: var(--text-primary);
+  color: var(--button-selected-fg);
 }
 
 .dark-theme .category-nav-link.active::after {
@@ -97,7 +74,7 @@
 
 .dark-theme .category-scroll-btn {
   background: transparent !important; /* No background - only show arrow */
-  color: var(--text-primary);
+  color: var(--button-secondary-fg);
   border: none !important; /* No border */
   box-shadow: none !important; /* No shadow */
 }
@@ -135,11 +112,11 @@
 }
 
 .dark-theme .suggestion-item {
-  color: var(--text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .dark-theme .suggestion-item:hover {
-  background: var(--hover-bg);
+  background: var(--button-secondary-hover);
 }
 
 /* Homepage */
@@ -238,15 +215,16 @@ main.homepage {
 .dark-theme .image-grid-action-btn,
 .dark-theme .masonry-action-btn,
 .dark-theme .image-action-btn {
-  background: rgba(26, 26, 26, 0.9) !important;
-  color: var(--text-primary) !important;
-  border-color: var(--border-color);
+  background: var(--button-secondary-bg) !important;
+  color: var(--button-secondary-fg) !important;
+  border-color: var(--button-secondary-border);
 }
 
 .dark-theme .image-grid-action-btn:hover,
 .dark-theme .masonry-action-btn:hover,
 .dark-theme .image-action-btn:hover {
-  background: rgba(45, 45, 45, 1) !important;
+  background: var(--button-secondary-hover) !important;
+  color: var(--button-secondary-fg);
 }
 
 .dark-theme .image-action-btn.bookmarked {
@@ -321,7 +299,7 @@ main.homepage {
 
 /* Contact button */
 .dark-theme .contact-button {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  border-color: var(--button-secondary-border);
 }

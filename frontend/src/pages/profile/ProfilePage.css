@@ -114,9 +114,9 @@
   padding: 8px 16px;
   font-size: 0.9375rem;
   font-weight: 500;
-  border: 1.5px solid hsl(var(--border));
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  border: 1.5px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -130,9 +130,9 @@
   padding: 8px 16px;
   font-size: 0.9375rem;
   font-weight: 500;
-  border: 1.5px solid hsl(var(--border));
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  border: 1.5px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -145,13 +145,15 @@
 }
 
 .edit-profile-btn:hover {
-  background: hsl(var(--muted) / 0.5);
-  border-color: hsl(var(--foreground) / 0.6);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .edit-pins-btn:hover {
-  background: hsl(var(--muted) / 0.5);
-  border-color: hsl(var(--foreground) / 0.6);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .edit-profile-btn:hover,
@@ -164,9 +166,9 @@
   padding: 8px 16px;
   font-size: 0.9375rem;
   font-weight: 500;
-  border: 1.5px solid hsl(var(--border));
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  border: 1.5px solid var(--button-secondary-border);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -179,12 +181,12 @@
 }
 
 .follow-btn:hover:not(:disabled) {
-  background: hsl(var(--muted) / 0.5);
-  border-color: hsl(var(--foreground) / 0.3);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
 }
 
 .follow-btn:active:not(:disabled) {
-  background: hsl(var(--muted));
+  background: var(--button-secondary-hover);
 }
 
 .follow-btn:disabled {
@@ -350,18 +352,18 @@
   border-bottom: 2px solid transparent;
   font-size: 0.9375rem;
   font-weight: 500;
-  color: hsl(var(--muted-foreground));
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
 }
 
 .profile-tab:hover {
-  color: hsl(var(--foreground));
+  color: var(--button-secondary-fg);
 }
 
 .profile-tab.active {
-  color: hsl(var(--foreground));
+  color: var(--button-selected-fg);
   border-bottom-color: hsl(var(--foreground));
 }
 

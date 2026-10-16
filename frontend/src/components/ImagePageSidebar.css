@@ -91,7 +91,7 @@ body:has(.homepage-header) .image-page-sidebar::before {
   height: 44px;
   flex-shrink: 0;
   border-radius: 8px;
-  color: var(--text-secondary, #6B6B66);
+  color: var(--button-secondary-fg);
   text-decoration: none;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -105,13 +105,13 @@ body:has(.homepage-header) .image-page-sidebar::before {
 }
 
 .sidebar-nav-item:hover {
-  background: var(--hover-bg, #F2EEE7); /* gray-100 */
-  color: var(--text-primary, #1B1B19); /* gray-900 */
+  background: var(--button-secondary-hover); /* gray-100 */
+  color: var(--button-secondary-fg); /* gray-900 */
 }
 
 .sidebar-nav-item.active {
-  color: var(--text-primary, #1B1B19); /* gray-900 */
-  background: #EDE5DA;
+  color: var(--button-selected-fg); /* gray-900 */
+  background: var(--button-selected-bg);
 }
 
 /* Active state - left border indicator */
@@ -196,7 +196,7 @@ body:has(.homepage-header) .image-page-sidebar::before {
 }
 
 .sidebar-nav-item:focus-visible {
-  outline: 2px solid #966339;
+  outline: 2px solid var(--button-focus);
   outline-offset: 3px;
 }
 

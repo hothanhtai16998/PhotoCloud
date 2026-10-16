@@ -1,0 +1,24 @@
+
+C:\Users\Fenn\Desktop\PhotoCloud\frontend\src\components\PWAInstallPrompt.tsx
+  19:13  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Fenn\Desktop\PhotoCloud\frontend\src\components\PWAInstallPrompt.tsx:19:13
+  17 |         // Check if app is already installed
+  18 |         if (window.matchMedia('(display-mode: standalone)').matches) {
+> 19 |             setIsInstalled(true);
+     |             ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  20 |             return;
+  21 |         }
+  22 |  react-hooks/set-state-in-effect
+
+C:\Users\Fenn\Desktop\PhotoCloud\frontend\src\components\upload\UploadPreview.tsx
+  99:9  warning  Prefer using an optional chain expression instead, as it's more concise and easier to read  @typescript-eslint/prefer-optional-chain
+
+✖ 2 problems (0 errors, 2 warnings)
+

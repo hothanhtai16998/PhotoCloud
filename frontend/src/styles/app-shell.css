@@ -1,0 +1,48 @@
+/* App body wrapper reserves the shared header height.
+
+   The first direct child of .app-body is always flush with the bottom of the
+   fixed header (no top margin / no top border-radius) so page content never
+   appears to "float" below the header. The original margin and corner
+   radius is preserved on subsequent children and on the bottom of the
+   first child. */
+.app-body {
+	padding-top: var(--header-height, 80px);
+	/* Pages render their own internal top spacing; this wrapper just
+	   guarantees the fixed header never overlaps page content. */
+	box-sizing: border-box;
+	border-radius: 0;
+	background: transparent;
+}
+
+/* Reserve the homepage header height before the ribbon. */
+.app-body:has(> .homepage) {
+	padding-top: var(--homepage-header-height);
+}
+
+/* First child sits flush against the bottom of the fixed header.
+   - Strip the top margin so there is no visible gap.
+   - Strip the top border-radius so the first card's top edge is a clean
+     straight line against the header. */
+.app-body > *:first-child {
+	margin-top: 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
+/* Modal page — when a photo modal is open we want the body wrapper to stay
+   transparent so the background page is still visible behind the modal. */
+body:has(.app-body) .app-body {
+	position: relative;
+	z-index: 1;
+}
+
+/* The app shell reserves the header once; content pages add only local spacing. */
+.app-body > :is(.collections-page, .favorites-page, .favorite-collections-page,
+  .download-history-page, .collection-detail-page, .search-results-page,
+  .profile-page, .edit-profile-page, .upload-page, .image-page, .my-bookings-page) {
+	padding-top: 32px;
+}
+
+.app-body :is(.about-hero, .explore-hero, .blog-hero) {
+	padding-top: 48px;
+}

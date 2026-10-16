@@ -430,8 +430,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--studio-text-primary);
-  color: var(--studio-bg-card);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border: 0;
   padding: 13px 20px;
   border-radius: var(--studio-radius-pill);
@@ -445,7 +445,7 @@
 
 .booking-primary-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(27, 27, 25, 0.18);
+  box-shadow: var(--button-shadow);
 }
 
 .booking-secondary-button {
@@ -453,8 +453,8 @@
   align-items: center;
   gap: 8px;
   background: transparent;
-  color: var(--studio-text-primary);
-  border: 1px solid var(--studio-border-soft);
+  color: var(--button-secondary-fg);
+  border: 1px solid var(--button-secondary-border);
   padding: 13px 20px;
   border-radius: var(--studio-radius-pill);
   font-family: var(--studio-font-body);
@@ -466,8 +466,8 @@
 }
 
 .booking-secondary-button:hover {
-  background: var(--studio-bg-cream);
-  border-color: var(--studio-text-primary);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
 }
 
 /* Responsive */

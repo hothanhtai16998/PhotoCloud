@@ -39,9 +39,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid var(--studio-border-soft);
-  background: var(--studio-bg-card);
-  color: var(--studio-text-muted);
+  border: 1px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -49,9 +49,9 @@
 }
 
 .testimonials-nav-btn:hover {
-  border-color: var(--studio-accent-copper);
-  color: var(--studio-accent-copper-dark);
-  background: var(--studio-bg-cream);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
 }
 
 /* Track + slides */
@@ -142,14 +142,14 @@
   height: 8px;
   border-radius: 50%;
   border: 0;
-  background: var(--studio-border-soft);
+  background: var(--button-secondary-bg);
   cursor: pointer;
   padding: 0;
   transition: all 0.3s ease;
 }
 
 .testimonials-dot.is-active {
-  background: var(--studio-accent-copper);
+  background: var(--button-secondary-bg);
   width: 24px;
   border-radius: 4px;
 }

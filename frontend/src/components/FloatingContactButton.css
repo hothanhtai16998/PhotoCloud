@@ -86,7 +86,7 @@
 .contact-modal-close {
   background: transparent;
   border: none;
-  color: #767676;
+  color: var(--button-secondary-fg);
   cursor: pointer;
   padding: 4px;
   display: flex;
@@ -97,8 +97,8 @@
 }
 
 .contact-modal-close:hover {
-  color: var(--text-primary, #1B1B19);
-  background: var(--hover-bg, #F2EEE7);
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
 }
 
 .contact-modal-content {

@@ -198,15 +198,15 @@
   flex-shrink: 0;
   border: 0;
   border-radius: 9px;
-  color: var(--admin-text-secondary);
+  color: var(--button-secondary-fg);
   background: transparent;
   display: grid;
   place-items: center;
   cursor: pointer;
 }
 .admin-layout-icon-btn:hover {
-  background: var(--admin-hover);
-  color: var(--admin-text);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 .admin-layout-icon-btn:disabled {
   opacity: 0.5;

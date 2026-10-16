@@ -217,8 +217,8 @@
     align-items: center;
     justify-content: center;
     padding: 12px 18px;
-    background: var(--studio-text-primary);
-    color: var(--studio-bg-card);
+    background: var(--button-primary-bg);
+    color: var(--button-primary-fg);
     border: 0;
     border-radius: var(--studio-radius-pill);
     font: inherit;
@@ -232,19 +232,19 @@
 
 .package-card-cta:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(27, 27, 25, 0.18);
+    box-shadow: var(--button-shadow);
 }
 
 .package-card-cta--secondary {
-    background: var(--studio-bg-card);
-    color: var(--studio-text-primary);
-    border: 1px solid var(--studio-text-primary);
+    background: var(--button-secondary-bg);
+    color: var(--button-secondary-fg);
+    border: 1px solid var(--button-secondary-border);
 }
 
 .package-card-cta--secondary:hover {
-    background: var(--studio-text-primary);
-    color: var(--studio-bg-card);
-    box-shadow: 0 6px 16px rgba(27, 27, 25, 0.15);
+    background: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
+    box-shadow: var(--button-shadow);
 }
 
 /* Detail */

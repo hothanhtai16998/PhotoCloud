@@ -12,7 +12,9 @@
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
     "preview": "vite preview",
-    "perf:budget": "node scripts/check-bundle-size.js"
+    "perf:budget": "node scripts/check-bundle-size.js",
+    "prebuild": "node scripts/generate-palette-defaults.cjs",
+    "predev": "node scripts/generate-palette-defaults.cjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",

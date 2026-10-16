@@ -10,7 +10,7 @@ body.home-cinematic-layout .contact-button{bottom:12px!important;right:12px!impo
 body.home-cinematic-active .header-logo-image{filter:brightness(0) invert(1)}
 @layer base {
   body.home-cinematic-active .PHOTOCLOUD-header{background:transparent!important;border-color:transparent!important;box-shadow:none!important}
-  body.home-cinematic-active .PHOTOCLOUD-header :is(.text-logo,.header-logo,.header-studio-nav a,.header-actions a:not(.header-booking-button),.mobile-header-icon,.header-library-action,.notification-bell-btn){color:#fff!important}
+  body.home-cinematic-active .PHOTOCLOUD-header :is(.text-logo,.header-logo,.header-studio-nav a,.header-actions a:not(.header-booking-button),.mobile-header-icon,.header-library-action,.notification-bell-btn){color:var(--button-primary-fg)!important}
 }
 body.home-cinematic-layout .PHOTOCLOUD-header :is(.header-studio-nav a,.notification-bell-btn){transition:none}
 body.home-cinematic-layout .mobile-bottom-nav{display:none}

@@ -170,7 +170,7 @@ export const CollectionNoFlashGrid = ({
       <div className="collection-detail-empty">
         <p>Bộ sưu tập này chưa có ảnh nào</p>
         <Button onClick={() => navigate('/')} variant="outline">
-          Khám phá ảnh để thêm vào bộ sưu tập
+          {isOwner ? 'Khám phá ảnh để thêm vào bộ sưu tập' : 'Khám phá ảnh khác'}
         </Button>
       </div>
     );

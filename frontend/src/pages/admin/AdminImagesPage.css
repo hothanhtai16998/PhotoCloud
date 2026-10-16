@@ -34,10 +34,10 @@
   gap: 8px;
   min-height: 44px;
   padding: 10px 15px;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  background: var(--admin-card-bg);
-  color: var(--admin-text);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   text-decoration: none;
   font-size: 12px;
   font-weight: 650;
@@ -47,19 +47,21 @@
   white-space: nowrap;
 }
 .admin-btn:hover:not(:disabled) {
-  background: var(--admin-hover);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 .admin-btn.primary {
-  background: var(--admin-accent);
-  border-color: var(--admin-accent);
-  color: var(--admin-bg);
+  background: var(--button-primary-bg);
+  border-color: var(--button-primary-bg);
+  color: var(--button-primary-fg);
 }
 .admin-btn.primary:hover:not(:disabled) {
   filter: brightness(0.93);
-  background: var(--admin-accent);
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 .admin-btn.danger {
-  color: var(--admin-danger);
+  color: var(--button-danger-text);
 }
 .admin-btn:disabled {
   opacity: 0.5;
@@ -199,15 +201,15 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--admin-text-secondary);
+  color: var(--button-secondary-fg);
   cursor: pointer;
 }
 .admin-table-action:hover {
-  background: var(--admin-hover);
-  color: var(--admin-accent);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 .admin-table-action.danger:hover {
-  color: var(--admin-danger);
+  color: var(--button-danger-text);
 }
 .admin-badge {
   display: inline-flex;
@@ -459,9 +461,9 @@
 }
 .admin-tools .admin-booking-toolbar button.active,
 .admin-tools .admin-calendar-modes button.active {
-  color: var(--admin-bg);
-  background: var(--admin-accent);
-  border-color: var(--admin-accent);
+  color: var(--button-selected-fg);
+  background: var(--button-selected-bg);
+  border-color: var(--button-selected-border);
 }
 .admin-tools .admin-calendar-day.muted {
   background: var(--admin-hover);
@@ -521,3 +523,6 @@
     flex: 1;
   }
 }
+
+.admin-table-action.danger { color: var(--button-danger-text); }
+.admin-table-action.danger:hover { background: var(--button-danger-soft); color: var(--button-danger-text); }

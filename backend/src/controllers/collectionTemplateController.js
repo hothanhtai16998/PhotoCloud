@@ -125,6 +125,7 @@ export const createTemplate = asyncHandler(async (req, res) => {
  * Create a collection from a template
  */
 export const createCollectionFromTemplate = asyncHandler(async (req, res) => {
+    if (!req.user.isAdmin && !req.user.isSuperAdmin) return res.status(403).json({ success: false, message: 'Chỉ quản trị viên được tạo bộ sưu tập.' });
     const userId = req.user._id;
     const { templateId } = req.params;
     const { name, description, isPublic, tags } = req.body;

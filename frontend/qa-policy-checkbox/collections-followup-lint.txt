@@ -1,0 +1,11 @@
+
+C:\Users\Fenn\Desktop\PhotoCloud\frontend\src\stores\useCollectionStore.ts
+  166:50  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  170:58  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  189:77  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  216:9   warning  Prefer using an optional chain expression instead, as it's more concise and easier to read  @typescript-eslint/prefer-optional-chain
+  219:41  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+  250:58  warning  Unexpected any. Specify a different type                                                    @typescript-eslint/no-explicit-any
+
+✖ 6 problems (0 errors, 6 warnings)
+

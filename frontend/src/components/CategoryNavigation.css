@@ -63,7 +63,7 @@
 .category-nav-link {
   font-size: 0.875rem;
   font-weight: 400; /* Normal weight for all categories */
-  color: var(--color-text-primary, #111); /* Same color for all */
+  color: var(--button-secondary-fg); /* Same color for all */
   opacity: 0.6; /* Low opacity for inactive (PHOTOCLOUD style) */
   text-decoration: none;
   background: transparent !important; /* Override any global button styles */
@@ -84,12 +84,12 @@
 
 .category-nav-link:hover {
   opacity: 0.8; /* Slightly higher opacity on hover */
-  color: var(--color-text-primary, #111);
+  color: var(--button-secondary-fg);
 }
 
 .category-nav-link.active {
   opacity: 1; /* Full opacity for active (PHOTOCLOUD style) */
-  color: var(--color-text-primary, #111);
+  color: var(--button-selected-fg);
   font-weight: 400; /* Same weight, not bold */
 }
 
@@ -266,7 +266,7 @@
     pointer-events: auto;
     opacity: 0.6 !important; /* Low opacity for inactive (PHOTOCLOUD style) */
     font-weight: 400 !important; /* Normal weight - same for all */
-    color: var(--text-primary, #1B1B19) !important; /* Match PHOTOCLOUD: #111 for all */
+    color: var(--button-secondary-fg) !important; /* Match PHOTOCLOUD: #111 for all */
     line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
     transition: opacity 0.2s ease !important;
     margin: 0 !important; /* Remove any default margin */
@@ -374,7 +374,7 @@
     justify-content: flex-start !important; /* Left align text like PHOTOCLOUD */
     opacity: 0.6 !important; /* Low opacity for inactive (PHOTOCLOUD style) */
     font-weight: 400 !important; /* Normal weight - same for all */
-    color: var(--text-primary, #1B1B19) !important; /* Match PHOTOCLOUD: #111 for all */
+    color: var(--button-secondary-fg) !important; /* Match PHOTOCLOUD: #111 for all */
     line-height: 1 !important; /* Tight line height to prevent text from appearing lower */
     transition: opacity 0.2s ease !important;
     margin: 0 !important; /* Remove any default margin */

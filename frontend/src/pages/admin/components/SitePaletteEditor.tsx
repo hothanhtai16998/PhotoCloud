@@ -1,0 +1,33 @@
+import { useState, type CSSProperties } from 'react';
+import { RotateCcw, Moon, Sun, Heart, Trash2, AlertTriangle } from 'lucide-react';
+import { contrastRatio, HEX_COLOR, normalizePalette, paletteDefaults, paletteVariables, type SitePalette, type PaletteToken, type PaletteTheme } from '@/theme/sitePalette';
+import { paletteField, paletteGroups, type PaletteGroup } from './PaletteFields';
+import './SitePaletteEditor.css';
+const contrastPairs: [PaletteToken,PaletteToken,string][] = [
+ ['--text-primary','--bg-primary','Chữ chính / nền trang'],['--text-secondary','--bg-card','Chữ phụ / nền hộp nội dung'],
+ ['--button-primary-fg','--button-primary-bg','Nút chính'],['--button-primary-fg','--button-primary-hover','Nút chính khi rê chuột'],
+ ['--button-secondary-fg','--button-secondary-bg','Nút phụ'],['--button-secondary-fg','--button-secondary-hover','Nút phụ khi rê chuột'],
+ ['--button-selected-fg','--button-selected-bg','Đã chọn'],['--button-danger-fg','--button-danger-bg','Nút xóa'],['--button-danger-fg','--button-danger-hover','Nút xóa khi rê chuột'],['--button-danger-text','--button-danger-soft','Icon xóa'],['--button-success-fg','--button-success-bg','Chấp thuận'],['--button-success-fg','--button-success-hover','Chấp thuận khi rê chuột'],
+];
+export function SitePaletteEditor({value,onChange}: {value:SitePalette;onChange:(value:SitePalette)=>void}) {
+ const [theme,setTheme]=useState<PaletteTheme>('light'),[group,setGroup]=useState<PaletteGroup>('surfaces');
+ const [focused,setFocused]=useState<PaletteToken>('--bg-primary');
+ const colors=value[theme], valid=normalizePalette(value)[theme];
+ const issues=(['light','dark'] as const).flatMap(t=>contrastPairs.filter(([fg,bg])=>contrastRatio(value[t][fg],value[t][bg])<4.5).map(([fg,bg,label])=>`${t==='light'?'Sáng':'Tối'} · ${label}: ${contrastRatio(value[t][fg],value[t][bg]).toFixed(2)}:1`));
+ const update=(key:PaletteToken,color:string):void=>onChange({...value,[theme]:{...colors,[key]:color.toUpperCase()}});
+ const sample=(key:PaletteToken):CSSProperties=>({outline:focused===key?'2px solid var(--button-focus)':undefined,outlineOffset:3});
+ return <section className="site-palette-editor" aria-labelledby="palette-heading">
+  <div className="palette-heading"><div><h2 id="palette-heading">Bảng màu website</h2><p>Chọn màu theo vai trò. Ví dụ bên cạnh chỉ là xem trước; website chỉ đổi sau khi bạn bấm Lưu thay đổi.</p></div><button type="button" className="admin-btn" onClick={()=>onChange(structuredClone(paletteDefaults))}><RotateCcw size={16}/>Khôi phục màu mặc định</button></div>
+  <div className="palette-controls"><div role="group" aria-label="Bảng màu sáng hoặc tối">{(['light','dark'] as const).map(t=><button key={t} type="button" className={`admin-btn ${theme===t?'primary':''}`} aria-pressed={theme===t} onClick={()=>setTheme(t)}>{t==='light'?<Sun size={16}/>:<Moon size={16}/>}Giao diện {t==='light'?'sáng':'tối'}</button>)}</div><div role="group" aria-label="Nhóm màu">{paletteGroups.map(g=><button key={g.id} type="button" className="admin-btn" aria-pressed={group===g.id} onClick={()=>setGroup(g.id)}>{g.label}</button>)}</div></div>
+  <div className="palette-layout"><div className="palette-fields"><h3>{paletteGroups.find(g=>g.id===group)?.label}</h3><p>{paletteGroups.find(g=>g.id===group)?.hint}</p>{(Object.keys(colors) as PaletteToken[]).filter(key=>paletteField(key).group===group).map(key=>{const meta=paletteField(key),id=`palette-${theme}-${key.slice(2)}`,invalid=!HEX_COLOR.test(colors[key]);return <div className="palette-field" key={key}>
+   <label htmlFor={id}>{meta.label}</label><div className="palette-color-input"><input type="color" value={invalid?valid[key]:colors[key]} aria-label={`Chọn ${meta.label.toLowerCase()}`} onFocus={()=>setFocused(key)} onChange={e=>update(key,e.target.value)}/><input id={id} aria-describedby={`${id}-hint`} aria-invalid={invalid} value={colors[key]} maxLength={7} spellCheck={false} onFocus={()=>setFocused(key)} onChange={e=>update(key,e.target.value)}/></div><small id={`${id}-hint`}>{invalid?'Nhập mã màu dạng #77502E (6 ký tự sau dấu #).':meta.hint}</small>
+  </div>;})}</div>
+  <div className="palette-example-column"><div className="palette-example" style={paletteVariables(valid) as CSSProperties} aria-label={`Ví dụ giao diện ${theme==='light'?'sáng':'tối'}`}>
+   <div className="palette-example-header" style={sample('--bg-header')}><strong>photocloud</strong><span>Khám phá</span></div>
+   <div className="palette-example-body" style={sample('--bg-primary')}><h3 style={sample('--text-primary')}>Những ngày bình yên</h3><p style={sample('--text-secondary')}>Ví dụ tên và mô tả bộ sưu tập.</p><div className="palette-example-card" style={sample('--bg-card')}><strong>Nội dung của bạn</strong><p>Ảnh và logo gốc giữ nguyên màu.</p><div className="palette-example-actions"><span className="palette-sample-primary" style={sample('--button-primary-bg')}>Đặt lịch chụp</span><span className="palette-sample-secondary" style={sample('--button-secondary-bg')}>Chia sẻ</span><span className="palette-sample-selected" style={sample('--button-selected-bg')}><Heart size={14}/>Đã yêu thích</span></div><div className="palette-example-actions"><span className="palette-sample-hover">Rê chuột nút chính</span><span className="palette-sample-secondary-hover">Rê chuột nút phụ</span></div></div>
+   <div className="palette-example-actions"><span className="palette-sample-danger" style={sample('--button-danger-bg')}>Xóa bộ sưu tập</span><span className="palette-sample-danger-soft" style={sample('--button-danger-soft')}><Trash2 size={16}/></span><span className="palette-sample-success">Chấp thuận</span></div>
+   <p className="palette-example-status" style={{color:'var(--status-success)'}}>Đã lưu thành công</p><p className="palette-example-status" style={{color:'var(--status-warning)'}}>Cần kiểm tra thông tin</p><p className="palette-example-status" style={{color:'var(--status-error)'}}>Không thể lưu. Vui lòng thử lại.</p><p className="palette-example-status" style={{color:'var(--status-info)'}}>Thông tin hướng dẫn</p></div>
+  </div><p className="palette-example-caption">Đang xem: <strong>{paletteField(focused).label}</strong> — {paletteField(focused).hint}</p><p className="palette-example-caption">Khung mẫu không gửi thao tác đặt lịch/xóa và không đổi màu toàn trang khi chưa lưu.</p></div></div>
+  {issues.length>0&&<div className="palette-contrast-warning" role="status"><p><AlertTriangle size={18}/>Một số cặp màu có tương phản dưới 4,5:1; chữ nhỏ có thể khó đọc.</p><ul>{issues.map(issue=><li key={issue}>{issue}</li>)}</ul><p>Bạn vẫn có thể lưu; nên tăng độ tương phản trước khi áp dụng.</p></div>}
+ </section>;
+}

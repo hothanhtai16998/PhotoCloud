@@ -1,35 +1,25 @@
+import { useImagePageActions } from './useImagePageActions';
+import { useImagePageStats } from './useImagePageStats';
 import { loadedImages,preloadImage } from '@/components/NoFlashGrid/utils/imagePreloader';
 import { ActualLocationContext,BackgroundRouteContext,ImagePresentationContext } from '@/contexts/ActualLocationContext';
-import { updateFavoriteCache,useBatchedFavoriteCheck } from '@/hooks/useBatchedFavoriteCheck';
 import { useFormattedDate } from '@/hooks/useFormattedDate';
 import { useImageDialogFocus } from '@/hooks/useImageDialogFocus';
 import { useImagePageScrollRestore } from '@/hooks/useImagePageScrollRestore';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { useWebSocket } from '@/hooks/useWebSocket';
-import { getLocale,t } from '@/i18n';
-import api from '@/lib/axios';
+import { getLocale } from '@/i18n';
 import { extractIdFromSlug,generateImageSlug } from '@/lib/utils';
-import { favoriteService } from '@/services/favoriteService';
 import { imageFetchService } from '@/services/imageFetchService';
-import { imageStatsService } from '@/services/imageStatsService';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
-import '@/stores/useDownloadHistoryStore';
-import { useImageFavoriteCountStore } from '@/stores/useImageFavoriteCountStore';
-import { useImageStatsStore } from '@/stores/useImageStatsStore';
 import { useUserStore } from '@/stores/useUserStore';
 import type { Image } from '@/types/image';
 import { detectAvifSupport } from '@/utils/avifSupport';
-import { captureImageActionSession } from '@/utils/imageActionSession';
 import { getImagePageScroll,saveImagePageScroll } from '@/utils/imagePageScroll';
 import { getOriginalDisplayUrl,getRegularDisplayUrl } from '@/utils/imageUrlUtils';
 import { clearModalActive,getImageNavigationBackground,restoreScrollPosition,setModalActive,validateModalState } from '@/utils/modalNavigation';
-import { sharePhotoLink } from '@/utils/sharePhotoLink';
 import { translateTags } from '@/utils/tagTranslations';
 import { useCallback,useContext,useEffect,useLayoutEffect,useMemo,useRef,useState } from 'react';
 import { useLocation,useNavigate,useParams } from 'react-router-dom';
-import { toast } from 'sonner';
 import { useImagePageData } from './useImagePageData';
-const apiStatsCache = new Map<string, { views?: number; downloads?: number }>();
 
 export function useImagePageController() {
   const { slug } = useParams<{ slug: string }>();
@@ -93,7 +83,6 @@ export function useImagePageController() {
       timer.current = null;
     }
   }, []);
-  const incrementedViewIds = useRef<Set<string>>(new Set());
   const currentImageIdRef = useRef<string | null>(null);
   const pageActiveRef = useRef(true);
   // Track container height to maintain it during transitions
@@ -163,42 +152,7 @@ export function useImagePageController() {
     };
   }, [clearAuthorTimers]);
 
-  // Stats state
-  const getInitialStats = useCallback(() => {
-    if (!image?._id) return { views: 0, downloads: 0 };
-    const apiStats = apiStatsCache.get(image._id);
-    return {
-      views: apiStats?.views ?? (image.views || 0),
-      downloads: apiStats?.downloads ?? (image.downloads || 0),
-    };
-  }, [image]);
-
-  const [views, setViews] = useState<number>(getInitialStats().views);
-  const [downloads, setDownloads] = useState<number>(getInitialStats().downloads);
-
-  // Favorite state
-  const isFavorited = useBatchedFavoriteCheck(image?._id || '');
-  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
-  const favoritePendingRef = useRef(false);
-  const downloadPendingRef = useRef(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const sharePendingRef = useRef(false);
-  const [isSharing, setIsSharing] = useState(false);
-  
-  // Favorite count state
-  const updateFavoriteCount = useImageFavoriteCountStore(state => state.updateFavoriteCount);
-  const storedFavoriteCount = useImageFavoriteCountStore(state => image?._id ? state.favoriteCounts.get(image._id) : undefined);
-  const favoriteCount = storedFavoriteCount ?? image?.favoriteCount ?? 0;
-
-  // Image stats store for real-time updates
-  const updateStats = useImageStatsStore(state => state.updateStats);
-  const getStats = useImageStatsStore(state => state.getStats);
-  const liveStats = useImageStatsStore(state => image?._id ? state.imageStats.get(image._id) : undefined);
-  const chartImage = useMemo(() => image ? {
-    ...image, views, downloads,
-    dailyViews: liveStats?.dailyViews ?? image.dailyViews,
-    dailyDownloads: liveStats?.dailyDownloads ?? image.dailyDownloads,
-  } : null, [image, views, downloads, liveStats]);
+  const { views, downloads, chartImage, favoriteCount } = useImagePageStats(image, user?._id);
 
   // Download menu state
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
@@ -257,145 +211,7 @@ export function useImagePageController() {
 
   useImagePageData({ imageId, attempt: imageAttempt, navigationState: locationWithState.state, initialLocationStateRef, setImage, setImages, setLoading, setError });
 
-  // WebSocket for real-time updates
-  const { isConnected, joinImageRoom, leaveImageRoom } = useWebSocket({
-    onImageFavoriteUpdate: useCallback((update) => {
-      if (!image?._id || update.imageId !== image._id) return;
-      
-      // Don't update if the change was made by the current user (optimistic update already handled)
-      if (update.actorId === user?._id) return;
-
-      // Update favorite count
-      updateFavoriteCount(update.imageId, update.favoriteCount);
-    }, [image, user, updateFavoriteCount]),
-    onImageStatsUpdate: useCallback((update) => {
-      if (!image?._id || update.imageId !== image._id) return;
-
-      // Update stats in store
-      updateStats(update.imageId, {
-        views: update.views,
-        downloads: update.downloads,
-        dailyViews: update.dailyViews,
-        dailyDownloads: update.dailyDownloads,
-      });
-
-      // Update local state for immediate UI update
-      setViews(update.views);
-      setDownloads(update.downloads);
-      
-      // Update API cache
-      const stats = apiStatsCache.get(update.imageId) || {};
-      stats.views = update.views;
-      stats.downloads = update.downloads;
-      apiStatsCache.set(update.imageId, stats);
-    }, [image, updateStats]),
-  });
-
-  // Join/leave image room for real-time updates
-  useEffect(() => {
-    if (!image?._id || !isConnected) return;
-
-    // Initialize favorite count from image data
-    if (image.favoriteCount !== undefined) {
-      updateFavoriteCount(image._id, image.favoriteCount);
-    }
-
-    // Initialize stats from image data
-    updateStats(image._id, {
-      views: image.views || 0,
-      downloads: image.downloads || 0,
-    });
-
-    joinImageRoom(image._id);
-
-    return () => {
-      leaveImageRoom(image._id);
-    };
-  }, [image?._id, image?.favoriteCount, image?.views, image?.downloads, isConnected, joinImageRoom, leaveImageRoom, updateFavoriteCount, updateStats]);
-
-  // Update stats when image changes
-  useLayoutEffect(() => {
-    if (!image?._id) return;
-
-    const imageId = image._id;
-    const isNewImage = currentImageIdRef.current !== imageId;
-
-    if (isNewImage) {
-      currentImageIdRef.current = imageId;
-      incrementedViewIds.current.delete(imageId);
-    }
-
-    // Check store first, then API cache, then image data
-    const storeStats = getStats(imageId);
-    const apiStats = apiStatsCache.get(imageId);
-    if (!storeStats) {
-      updateStats(imageId, {
-        views: apiStats?.views ?? image.views ?? 0,
-        downloads: apiStats?.downloads ?? image.downloads ?? 0,
-        dailyViews: image.dailyViews,
-        dailyDownloads: image.dailyDownloads,
-      });
-    }
-    
-    if (storeStats) {
-      // Use store stats (most up-to-date, includes real-time updates)
-      setViews(storeStats.views);
-      setDownloads(storeStats.downloads);
-    } else if (apiStats) {
-      if (apiStats.views !== undefined) {
-        setViews(apiStats.views);
-      } else if (isNewImage) {
-        setViews(image.views || 0);
-      }
-      if (apiStats.downloads !== undefined) {
-        setDownloads(apiStats.downloads);
-      } else if (isNewImage) {
-        setDownloads(image.downloads || 0);
-      }
-    } else if (isNewImage) {
-      setViews(image.views || 0);
-      setDownloads(image.downloads || 0);
-    }
-  }, [image?._id, image?.views, image?.downloads, image?.dailyViews, image?.dailyDownloads, getStats, updateStats]);
-
-  // Increment view count when image is viewed
-  useEffect(() => {
-    if (!image?._id) return;
-
-    let active = true;
-    const imageId = image._id;
-    if (!incrementedViewIds.current.has(imageId)) {
-      incrementedViewIds.current.add(imageId);
-      imageStatsService.incrementView(imageId)
-        .then((response) => {
-          if (active) setViews(response.views);
-          const stats = apiStatsCache.get(imageId) || {};
-          stats.views = response.views;
-          apiStatsCache.set(imageId, stats);
-          
-          // Update stats store (optimistic update)
-          updateStats(imageId, {
-            views: response.views,
-            dailyViews: response.dailyViews,
-          });
-        })
-        .catch((error: any) => {
-          if (error.response?.status === 429) {
-            const rateLimitData = error.response.data;
-            if (rateLimitData.views !== undefined) {
-              if (active) setViews(rateLimitData.views);
-              const stats = apiStatsCache.get(imageId) || {};
-              stats.views = rateLimitData.views;
-              apiStatsCache.set(imageId, stats);
-            }
-          } else {
-            // Silently fail - view tracking is non-critical
-            incrementedViewIds.current.delete(imageId);
-          }
-        });
-    }
-    return () => { active = false; };
-  }, [image?._id, updateStats]);
+  useLayoutEffect(() => { currentImageIdRef.current = image?._id ?? null; }, [image?._id]);
 
   // Image loading logic now lives in ImagePagePhoto. Only reset scroll/menus here.
   useLayoutEffect(() => {
@@ -568,129 +384,9 @@ export function useImagePageController() {
     });
   }, [navigate, images, locationWithState]);
 
-  const handleDownload = useCallback(async (size: 'small' | 'medium' | 'large' | 'original') => {
-    if (!image?._id || downloadPendingRef.current) return;
-    downloadPendingRef.current = true;
-    setIsDownloading(true);
-    setShowDownloadMenu(false);
-    const session = captureImageActionSession();
-    const isCurrentPhoto = () => pageActiveRef.current && currentImageIdRef.current === image._id;
-    try {
-      const response = await api.get('/images/' + image._id + '/download?size=' + size, {
-        responseType: 'blob', withCredentials: true,
-      });
-      const contentType = response.headers['content-type'];
-      const blob = new Blob([response.data], { type: typeof contentType === 'string' ? contentType : 'image/webp' });
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      const disposition = response.headers['content-disposition'];
-      const serverName = typeof disposition === 'string' ? disposition.match(/filename="([^"\r\n]+)"|filename=([^;\r\n]+)/i) : null;
-      const sanitizedTitle = (image.imageTitle || t('image.photo')).replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      const extension = image.imageUrl?.match(/\.([a-z]+)(?:\?|$)/i)?.[1] || 'webp';
-      link.href = blobUrl;
-      link.download = (serverName?.[1] || serverName?.[2]?.trim() || sanitizedTitle + '.' + extension).replace(/[\\/]/g, '_');
-      try {
-        document.body.appendChild(link);
-        link.click();
-      } finally {
-        link.remove();
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-      }
-      // Count only a completed transfer handed to the browser, in its original session.
-      // Browser APIs cannot confirm whether the user ultimately saves the file.
-      if (session.isCurrent()) {
-        if (session.authenticated) {
-          // The history store already listens to this event; do not add it twice.
-          window.dispatchEvent(new CustomEvent('downloadCompleted', { detail: { image } }));
-        }
-        if (isCurrentPhoto()) toast.success(t('image.downloadSuccess'));
-        try {
-          const stats = await imageStatsService.incrementDownload(image._id);
-          apiStatsCache.set(image._id, { ...apiStatsCache.get(image._id), downloads: stats.downloads });
-          updateStats(image._id, { downloads: stats.downloads, dailyDownloads: stats.dailyDownloads });
-          if (session.isCurrent() && isCurrentPhoto()) setDownloads(stats.downloads);
-        } catch (error: unknown) {
-          const limited = error as { response?: { status?: number; data?: { downloads?: number } } };
-          const count = limited.response?.data?.downloads;
-          if (limited.response?.status === 429 && count !== undefined) {
-            apiStatsCache.set(image._id, { ...apiStatsCache.get(image._id), downloads: count });
-            updateStats(image._id, { downloads: count });
-            if (session.isCurrent() && isCurrentPhoto()) setDownloads(count);
-          }
-          // A statistics failure does not turn a delivered file into a failed download.
-        }
-      }
-    } catch {
-      if (session.isCurrent() && isCurrentPhoto()) toast.error(t('image.downloadFailed'));
-    } finally {
-      session.dispose();
-      downloadPendingRef.current = false;
-      if (pageActiveRef.current) setIsDownloading(false);
-    }
-  }, [image, updateStats]);
-
-  const handleToggleFavorite = useCallback(async () => {
-    if (!image?._id || favoritePendingRef.current) return;
-    if (!user) {
-      navigate('/signin');
-      return;
-    }
-    // Lock before any await. Axios owns CSRF fetching and its specific CSRF retry.
-    favoritePendingRef.current = true;
-    setIsTogglingFavorite(true);
-    const session = captureImageActionSession();
-    const imageId = image._id;
-    const previousState = isFavorited;
-    const publish = (favorited: boolean) => {
-      updateFavoriteCache(imageId, favorited, favorited ? image : undefined);
-    };
-    publish(!previousState);
-    try {
-      const response = await favoriteService.toggleFavorite(imageId);
-      if (!session.isCurrent()) return;
-      publish(response.isFavorited);
-      if (response.favoriteCount !== undefined) updateFavoriteCount(imageId, response.favoriteCount);
-      const { useFavoriteStore } = await import('@/stores/useFavoriteStore');
-      if (!session.isCurrent()) return;
-      const store = useFavoriteStore.getState();
-      if (!store.pagination && store.images.length === 0) {
-        void store.fetchFavorites(1, true).catch(() => {});
-      }
-      if (pageActiveRef.current && currentImageIdRef.current === imageId) {
-        toast.success(t(response.isFavorited ? 'favorites.added' : 'favorites.removed'));
-      }
-    } catch {
-      if (session.isCurrent()) {
-        publish(previousState);
-        if (pageActiveRef.current && currentImageIdRef.current === imageId) toast.error(t('favorites.updateFailed'));
-      }
-    } finally {
-      session.dispose();
-      favoritePendingRef.current = false;
-      if (pageActiveRef.current) setIsTogglingFavorite(false);
-    }
-  }, [user, image, updateFavoriteCount, isFavorited, navigate]);
-
-  const handleShare = useCallback(async () => {
-    if (!image?._id || sharePendingRef.current) return;
-    sharePendingRef.current = true;
-    setIsSharing(true);
-    const selectedId = image._id;
-    const slug = generateImageSlug(image.imageTitle || t('image.untitled'), selectedId);
-    try {
-      const result = await sharePhotoLink({
-        title: image.imageTitle || t('image.photo'),
-        text: t('imagePage.shareText', { title: image.imageTitle || t('image.untitled') }),
-        url: window.location.origin + '/photos/' + slug,
-      });
-      if (!pageActiveRef.current || currentImageIdRef.current !== selectedId) return;
-      if (result === 'copied') toast.success(t('share.linkCopied'));
-      if (result === 'failed') toast.error(t('share.linkCopyFailed'));
-    } finally {
-      sharePendingRef.current = false;
-      if (pageActiveRef.current) setIsSharing(false);
-    }
-  }, [image]);
+  const closeDownloadMenu = useCallback(() => setShowDownloadMenu(false), []);
+  const { handleDownload, handleToggleFavorite, handleShare, isTogglingFavorite, isFavorited, isDownloading, isSharing } =
+    useImagePageActions({ image, pageActiveRef, currentImageIdRef, closeDownloadMenu });
 
   const handleDownloadMenuKeyDown = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));

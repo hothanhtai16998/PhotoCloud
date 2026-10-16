@@ -14,7 +14,7 @@ const moduleContext = {exports:{},require:name=>name.includes('useAuthStore')?{u
 vm.runInNewContext(compile(fs.readFileSync(path.join(root,'utils/imageActionSession.ts'),'utf8')), moduleContext);
 const capture = moduleContext.exports.captureImageActionSession;
 const deferred = () => {let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
-const source = fs.readFileSync(path.join(root,'pages/image/useImagePageController.ts'),'utf8');
+const source = fs.readFileSync(path.join(root,'pages/image/useImagePageActions.ts'),'utf8');
 assert.match(source, /import '@\/stores\/useDownloadHistoryStore';/, 'direct routes must register the history event listener');
 const block = source.slice(source.indexOf('  const handleDownload ='),source.indexOf('  const handleShare ='));
 function harness() {
@@ -24,7 +24,7 @@ function harness() {
   const context={
     useCallback:fn=>fn,image:{_id:'photo-a',imageTitle:'Title',imageUrl:'photo.webp'},user:{_id:'user-a'},isFavorited:false,
     favoritePendingRef:{current:false},downloadPendingRef:{current:false},pageActiveRef:{current:true},currentImageIdRef:{current:'photo-a'},
-    captureImageActionSession:capture,setIsDownloading:v=>seen.busy=v,setIsTogglingFavorite:()=>{},setShowDownloadMenu:()=>{},setDownloads:()=>{},
+    captureImageActionSession:capture,setIsDownloading:v=>seen.busy=v,setIsTogglingFavorite:()=>{},closeDownloadMenu:()=>{},setDownloads:()=>{},
     updateFavoriteCache:(_id,v)=>seen.favorites.push(v),updateFavoriteCount:(_id,v)=>seen.counts.push(v),updateStats:()=>{},apiStatsCache:new Map(),
     api:{get:()=>{seen.get++;return transfer.promise;}},favoriteService:{toggleFavorite:()=>{seen.toggle++;return favorite.promise;}},
     imageStatsService:{incrementDownload:async()=>{seen.stats++;return{downloads:5};}},
@@ -58,7 +58,8 @@ function harness() {
   assert.deepEqual(h.seen.favorites,[true,true]);assert.equal(h.seen.toasts[0],'favorites.added');
   assert.deepEqual(h.seen.counts,[0]);
   assert.equal(auth.listeners.size,0);assert.equal(user.listeners.size,0);
-  const menuEffect=source.slice(source.indexOf('  useLayoutEffect(() => {', source.indexOf('const downloadMenuRef')),source.indexOf('  // Edit modal state'));
+  const controller=fs.readFileSync(path.join(root,'pages/image/useImagePageController.ts'),'utf8');
+  const menuEffect=controller.slice(controller.indexOf('  useLayoutEffect(() => {', controller.indexOf('const downloadMenuRef')),controller.indexOf('  // Edit modal state'));
   let cleanup;const events=new Map(),rect={top:200,bottom:236};
   const menu={style:{},scrollHeight:276,querySelector:()=>null,parentElement:{querySelector:()=>({getBoundingClientRect:()=>rect})}};
   let observerDisconnected=false;

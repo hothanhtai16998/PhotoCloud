@@ -67,14 +67,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary, #6B6B66);
+    color: var(--button-secondary-fg);
     border-radius: 4px;
     transition: all 0.2s;
 }
 
 .confirm-modal-close:hover {
-    background-color: var(--hover-bg, #F2EEE7);
-    color: #1a1a1a;
+    background-color: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
 }
 
 .confirm-modal-content {
@@ -98,14 +98,14 @@
 
 /* Cancel button - PHOTOCLOUD style */
 .confirm-modal-actions button[data-slot="button"][class*="outline"] {
-    background: var(--bg-card, #FFFFFF) !important;
-    border: 1px solid var(--border-strong, #D8D1C5) !important;
-    color: var(--text-primary, #1B1B19) !important;
+    background: var(--button-secondary-bg) !important;
+    border: 1px solid var(--button-secondary-border) !important;
+    color: var(--button-secondary-fg) !important;
     border-radius: 6px;
     padding: 8px 16px;
     font-size: 0.9375rem;
     font-weight: 400;
-    box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05);
+    box-shadow: var(--button-shadow);
 }
 
 /* Cancel button hover - PHOTOCLOUD style with higher specificity to override global styles */
@@ -113,40 +113,42 @@
 .confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover:not([disabled]),
 .confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover[class*="border-ring"],
 .confirm-modal-overlay .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover[style*="border-color"] {
-    background: var(--bg-card, #FFFFFF) !important;
-    border-color: #999 !important;
-    color: var(--text-primary, #1B1B19) !important;
+    background: var(--button-secondary-hover) !important;
+    border-color: var(--button-secondary-border) !important;
+    color: var(--button-secondary-fg) !important;
 }
 
 /* Dark mode support */
 .dark-theme .confirm-modal-actions button[data-slot="button"][class*="outline"] {
-    background: hsl(var(--card)) !important;
-    border-color: hsl(var(--border)) !important;
-    color: hsl(var(--foreground)) !important;
+    background: var(--button-secondary-bg) !important;
+    border-color: var(--button-secondary-border) !important;
+    color: var(--button-secondary-fg) !important;
 }
 
 .dark-theme .confirm-modal-actions button[data-slot="button"][class*="outline"]:hover {
-    background: hsl(var(--card)) !important;
-    border-color: var(--bg-card, #FFFFFF) !important;
-    color: hsl(var(--foreground)) !important;
+    background: var(--button-secondary-hover) !important;
+    border-color: var(--button-secondary-border) !important;
+    color: var(--button-secondary-fg) !important;
 }
 
 .confirm-btn-danger {
-    background-color: #A6453C;
-    color: white;
+    background-color: var(--button-danger-bg);
+    color: var(--button-danger-fg);
 }
 
 .confirm-btn-danger:hover {
-    background-color: #dc2626;
+    background-color: var(--button-danger-hover);
+    color: var(--button-danger-fg);
 }
 
 .confirm-btn-warning {
-    background-color: #C9A14A;
-    color: white;
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-fg);
 }
 
 .confirm-btn-warning:hover {
-    background-color: #d97706;
+    background-color: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
 }
 
 /* Mobile responsive */

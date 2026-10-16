@@ -40,38 +40,15 @@ export function useImagePageData({ imageId, attempt, navigationState, initialLoc
           | { images?: Image[]; image?: Image; fromGrid?: boolean }
           | undefined;
 
-        // 1) Fast path: if a single image was passed in state, use it directly.
+        // Prefer the selected image, then the matching grid entry. One success path.
+        const passedImages = Array.isArray(initialState?.images) ? initialState.images : [];
         const passedImage = initialState?.image;
-        if (passedImage && passedImage._id) {
-          if (matchesId(passedImage._id)) {
-            const passedImages = Array.isArray(initialState?.images)
-              ? (initialState!.images as Image[])
-              : [passedImage];
-
-            setImage(passedImage);
-            setImages(passedImages);
-
-            
-            setLoading(false);
-            return;
-          }
-        }
-
-        // 2) Next: try passed images array (existing behavior)
-        const passedImages = initialState?.images as Image[] | undefined;
-        if (passedImages && passedImages.length > 0) {
-          const foundImage = passedImages.find((img) => {
-            return matchesId(img._id);
-          });
-
-          if (foundImage) {
-            setImage(foundImage);
-            setImages(passedImages);
-
-            
-            setLoading(false);
-            return;
-          }
+        const cachedImage = passedImage?._id && matchesId(passedImage._id)
+          ? passedImage : passedImages.find(item => matchesId(item._id));
+        if (cachedImage) {
+          setImage(cachedImage);
+          setImages(passedImages.length ? passedImages : [cachedImage]);
+          return;
         }
 
         // 3) Fallback: fetch from API (direct URL / refresh)

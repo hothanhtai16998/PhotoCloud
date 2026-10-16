@@ -6,7 +6,7 @@
 }
 
 .follow-btn.following {
-	border-color: var(--border-color);
+	border-color: var(--button-secondary-border);
 }
 
 .follow-btn:hover:not(:disabled) {

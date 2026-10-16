@@ -26,7 +26,7 @@ export const useCollectionDetail = () => {
         await fetchCollection(collectionId);
       } catch {
         // Error already handled in store
-        navigate('/collections');
+        // Keep this URL and let the page show its error with retry.
       }
     };
 

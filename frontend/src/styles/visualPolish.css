@@ -74,19 +74,20 @@
 }
 
 .glass-button {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--button-secondary-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: hsl(var(--foreground));
+  border: 1px solid var(--button-secondary-border);
+  color: var(--button-secondary-fg);
   transition: all 0.3s ease;
 }
 
 .glass-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--button-shadow);
+  color: var(--button-secondary-fg);
 }
 
 .glass-overlay {
@@ -115,13 +116,12 @@
 }
 
 .neumorphic-button {
-  background: hsl(var(--background));
+  background: var(--button-secondary-bg);
   border: none;
   border-radius: calc(var(--radius) - 2px);
   box-shadow: 
-    4px 4px 8px rgba(0, 0, 0, 0.1),
-    -4px -4px 8px rgba(255, 255, 255, 0.9);
-  color: hsl(var(--foreground));
+    var(--button-shadow);
+  color: var(--button-secondary-fg);
   padding: 0.75rem 1.5rem;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -130,14 +130,12 @@
 
 .neumorphic-button:hover {
   box-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.1),
-    -2px -2px 4px rgba(255, 255, 255, 0.9);
+    var(--button-shadow);
 }
 
 .neumorphic-button:active {
   box-shadow: 
-    inset 2px 2px 4px rgba(0, 0, 0, 0.1),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.9);
+    var(--button-shadow);
 }
 
 .dark-theme .neumorphic-card {
@@ -148,22 +146,19 @@
 }
 
 .dark-theme .neumorphic-button {
-  background: hsl(var(--background));
+  background: var(--button-secondary-bg);
   box-shadow: 
-    4px 4px 8px rgba(0, 0, 0, 0.5),
-    -4px -4px 8px rgba(255, 255, 255, 0.05);
+    var(--button-shadow);
 }
 
 .dark-theme .neumorphic-button:hover {
   box-shadow: 
-    2px 2px 4px rgba(0, 0, 0, 0.5),
-    -2px -2px 4px rgba(255, 255, 255, 0.05);
+    var(--button-shadow);
 }
 
 .dark-theme .neumorphic-button:active {
   box-shadow: 
-    inset 2px 2px 4px rgba(0, 0, 0, 0.5),
-    inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+    var(--button-shadow);
 }
 
 /* ===== 4. MICRO-INTERACTIONS ===== */

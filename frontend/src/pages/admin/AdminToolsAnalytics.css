@@ -1,0 +1,804 @@
+@scope (.admin-tools) {
+
+/* Analytics - Falcon Style */
+.admin-analytics-falcon {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Metric Tabs */
+.falcon-metric-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.falcon-metric-tab {
+  background: var(--bg-card, #FAF8F4);
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.falcon-metric-tab:hover {
+  border-color: #B8865B;
+  box-shadow: 0 2px 8px rgba(184, 134, 91, 0.1);
+}
+
+.falcon-metric-tab.active {
+  border-color: #B8865B;
+  background: linear-gradient(
+    135deg,
+    rgba(184, 134, 91, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
+  box-shadow: 0 2px 8px rgba(184, 134, 91, 0.15);
+}
+
+.falcon-metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.falcon-metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.falcon-metric-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.falcon-metric-change.positive {
+  color: #00d97e;
+}
+
+.falcon-metric-change.negative {
+  color: #e63757;
+}
+
+/* Controls Bar */
+.falcon-controls-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
+.falcon-select {
+  padding: 8px 32px 8px 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  background: var(--bg-card, #FAF8F4);
+  font-size: 0.875rem;
+  color: #495057;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23495057' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: all 0.2s ease;
+}
+
+.falcon-select:hover {
+  border-color: #B8865B;
+}
+
+.falcon-select:focus {
+  outline: none;
+  border-color: #B8865B;
+  box-shadow: 0 0 0 3px rgba(184, 134, 91, 0.1);
+}
+
+/* Analytics Grid */
+.falcon-analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.falcon-analytics-left,
+.falcon-analytics-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Falcon Card */
+.falcon-card {
+  background: var(--bg-card, #FAF8F4);
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.falcon-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.falcon-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+}
+
+.falcon-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+}
+
+.falcon-card-action {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.falcon-card-action:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.falcon-card-body {
+  padding: 20px;
+}
+
+/* Stats Row */
+.falcon-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 20px;
+}
+
+.falcon-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.falcon-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.falcon-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #212529;
+  line-height: 1.2;
+}
+
+/* Chart Container */
+.falcon-chart-container {
+  padding: 20px 0;
+}
+
+.falcon-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  height: 200px;
+  padding: 0 10px;
+}
+
+.falcon-bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+}
+
+.falcon-bar {
+  width: 100%;
+  background: linear-gradient(180deg, #1B1B19 0%, #B8865B 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.falcon-bar:hover {
+  opacity: 0.8;
+  transform: scaleY(1.05);
+}
+
+.falcon-bar-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.falcon-select-small {
+  padding: 4px 24px 4px 8px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  background: var(--bg-card, #FAF8F4);
+  font-size: 0.8125rem;
+  color: #495057;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23495057' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+/* Table Container */
+.falcon-table-container {
+  overflow-x: auto;
+}
+
+.falcon-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.falcon-table thead {
+  background: #f8f9fa;
+}
+
+.falcon-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.falcon-table td {
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: #212529;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.falcon-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.falcon-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Real-time Widget */
+.falcon-realtime-widget {
+  background: #000000;
+  color: white;
+}
+
+.falcon-realtime-widget .falcon-card-header {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.falcon-realtime-widget .falcon-card-title {
+  color: white;
+}
+
+.falcon-realtime-widget .falcon-card-action {
+  color: white;
+}
+
+.falcon-users-online-value {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 20px 0;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.falcon-views-per-second {
+  margin: 24px 0;
+  color: white;
+}
+
+.falcon-views-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  opacity: 0.9;
+  color: white;
+}
+
+.falcon-views-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.falcon-views-bar {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 2px 2px 0 0;
+  min-height: 4px;
+  transition: all 0.3s ease;
+}
+
+.falcon-most-active-pages {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.falcon-pages-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  opacity: 0.9;
+  color: white;
+}
+
+.falcon-pages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.falcon-page-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: white;
+}
+
+.falcon-page-path {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: white;
+}
+
+.falcon-page-count {
+  font-weight: 600;
+  margin-left: 12px;
+  color: white;
+}
+
+.falcon-realtime-link {
+  margin-top: 16px;
+  text-align: right;
+}
+
+.falcon-realtime-link a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.falcon-realtime-link a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Main Chart */
+/* Chart and Realtime Widget Container */
+.falcon-chart-realtime-container {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.falcon-main-chart {
+  flex: 2; /* Takes 2/3 of the space */
+  min-width: 0; /* Allows flex item to shrink below content size */
+}
+
+.falcon-realtime-widget {
+  flex: 1; /* Takes 1/3 of the space */
+  min-width: 0; /* Allows flex item to shrink below content size */
+}
+
+.falcon-main-chart .falcon-card-body {
+  padding: 24px;
+}
+
+.falcon-chart-header-left,
+.falcon-chart-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.falcon-chart-metric-info {
+  margin-bottom: 24px;
+}
+
+.falcon-chart-metric-label {
+  font-size: 0.875rem;
+  color: #767676;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.falcon-chart-metric-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-primary, #1B1B19);
+}
+
+.insights-chart-container {
+  height: 400px;
+  position: relative;
+}
+
+.falcon-link-button {
+  color: var(--button-secondary-fg);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.falcon-link-button:hover {
+  color: var(--button-secondary-fg);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .falcon-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Analytics Falcon - Mobile Fixes */
+  .admin-analytics-falcon {
+    gap: 16px;
+  }
+
+  /* Metric Tabs - Stack on very small screens */
+  .falcon-metric-tabs {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 0;
+  }
+
+  .falcon-metric-tab {
+    padding: 14px 10px;
+    min-height: 90px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .falcon-metric-tab:active {
+    transform: scale(0.98);
+  }
+
+  .falcon-metric-label {
+    font-size: 0.6875rem;
+    margin-bottom: 6px;
+  }
+
+  .falcon-metric-value {
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+
+  .falcon-metric-change {
+    font-size: 0.6875rem;
+  }
+
+  /* Chart and Realtime Container - Stack vertically */
+  .falcon-chart-realtime-container {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .falcon-main-chart,
+  .falcon-realtime-widget {
+    flex: 1;
+    width: 100%;
+  }
+
+  .falcon-main-chart .falcon-card-body {
+    padding: 16px;
+  }
+
+  /* Chart header - Adjust font sizes */
+  .falcon-chart-metric-info {
+    margin-bottom: 16px;
+  }
+
+  .falcon-chart-metric-label {
+    font-size: 0.75rem;
+    color: #767676;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .falcon-chart-metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary, #1B1B19);
+  }
+
+  .falcon-chart-header-left {
+    margin-bottom: 16px;
+  }
+
+  /* Chart container - Reduce height on mobile */
+  .insights-chart-container {
+    height: 250px !important;
+  }
+
+  /* Analytics Grid - Single column */
+  .falcon-analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .falcon-analytics-left,
+  .falcon-analytics-right {
+    gap: 16px;
+  }
+
+  /* Stats Row - Single column */
+  .falcon-stats-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .falcon-stat-item {
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+  }
+
+  .falcon-stat-label {
+    font-size: 0.6875rem;
+  }
+
+  .falcon-stat-value {
+    font-size: 1.25rem;
+  }
+
+  /* Cards - Better mobile padding */
+  .falcon-card {
+    border-radius: 8px;
+  }
+
+  .falcon-card-header {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .falcon-card-title {
+    font-size: 0.875rem;
+  }
+
+  .falcon-card-body {
+    padding: 16px;
+  }
+
+  /* Bar Chart - Better mobile display */
+  .falcon-bar-chart {
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .falcon-bar-item {
+    min-width: 40px;
+    flex: 1;
+  }
+
+  .falcon-bar-label {
+    font-size: 0.6875rem;
+  }
+
+  /* Select dropdowns - Better mobile styling */
+  .falcon-select-small {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+    min-height: 44px; /* Better touch target */
+  }
+
+  /* Realtime Widget - Better mobile layout */
+  .falcon-realtime-widget .falcon-card-header {
+    padding: 12px 16px;
+  }
+
+  .falcon-users-online-value {
+    font-size: 2rem;
+    margin: 16px 0;
+  }
+
+  .falcon-views-per-second {
+    margin: 16px 0;
+  }
+
+  .falcon-views-label {
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+  }
+
+  .falcon-views-chart {
+    height: 60px;
+    gap: 3px;
+  }
+
+  .falcon-most-active-pages {
+    margin: 16px 0;
+  }
+
+  .falcon-pages-header {
+    font-size: 0.75rem;
+    padding: 8px 0;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .falcon-page-item {
+    padding: 8px 0;
+    font-size: 0.8125rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .falcon-page-path {
+    font-size: 0.75rem;
+    word-break: break-all;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .falcon-page-count {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  /* Tables - Horizontal scroll */
+  .falcon-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .falcon-table {
+    min-width: 600px;
+    font-size: 0.8125rem;
+  }
+
+  .falcon-table th,
+  .falcon-table td {
+    padding: 10px 8px;
+    white-space: nowrap;
+  }
+
+  /* Category Chart - Better mobile */
+  .falcon-category-chart {
+    padding: 16px 0;
+  }
+
+  .falcon-category-bar-item {
+    margin-bottom: 12px;
+  }
+
+  .falcon-category-bar-header {
+    margin-bottom: 6px;
+  }
+
+  .falcon-category-bar-name {
+    font-size: 0.8125rem;
+  }
+
+  .falcon-category-bar-count {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .falcon-metric-tabs {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .falcon-metric-tab {
+    padding: 12px 10px;
+    min-height: 85px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .falcon-metric-tab:active {
+    transform: scale(0.98);
+  }
+
+  .falcon-metric-value {
+    font-size: 1.25rem;
+  }
+
+  .falcon-chart-metric-value {
+    font-size: 20px !important;
+  }
+
+  .insights-chart-container {
+    height: 200px !important;
+  }
+
+  .falcon-card-header {
+    padding: 10px 12px;
+  }
+
+  .falcon-card-body {
+    padding: 12px;
+  }
+
+  .falcon-stat-value {
+    font-size: 1.125rem;
+  }
+
+  .falcon-users-online-value {
+    font-size: 1.75rem;
+  }
+
+  .falcon-bar-item {
+    min-width: 32px;
+  }
+
+  .falcon-bar-label {
+    font-size: 0.625rem;
+  }
+}
+}

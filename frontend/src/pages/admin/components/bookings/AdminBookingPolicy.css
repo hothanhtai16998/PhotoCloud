@@ -207,7 +207,7 @@
   line-height: 1.65;
 }
 .admin-layout .admin-tools .pc-policy .admin-btn.primary {
-  background: var(--admin-accent);
-  border-color: var(--admin-accent);
-  color: var(--admin-bg);
+  background: var(--button-primary-bg);
+  border-color: var(--button-primary-bg);
+  color: var(--button-primary-fg);
 }

@@ -1,0 +1,33 @@
+{
+  "photo": [
+    250,
+    248,
+    244
+  ],
+  "expectedPhoto": [
+    250,
+    248,
+    244
+  ],
+  "related": [
+    250,
+    248,
+    244
+  ],
+  "expectedRelated": [
+    250,
+    248,
+    244
+  ],
+  "heading": [
+    27,
+    27,
+    25
+  ],
+  "expectedHeading": [
+    27,
+    27,
+    25
+  ],
+  "downloadContrast": 6.3851585762940575
+}

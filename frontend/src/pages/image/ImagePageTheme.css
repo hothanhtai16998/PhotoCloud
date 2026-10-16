@@ -1,0 +1,104 @@
+/* One palette for both the photo dialog and its standalone page.
+   Layout stays in ImagePage.css; colors inherit PhotoCloud's Warm Studio tokens. */
+:is(.image-page, .image-page-modal) {
+  --image-action-strong: color-mix(in srgb, var(--accent) 55%, var(--text-primary));
+  color: var(--text-primary);
+}
+
+:is(.image-page, .image-page-modal) :is(.image-modal-top-info, .image-modal-bottom-info, .image-modal-related-section) {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+:is(.image-page, .image-page-modal) .image-modal-image-container {
+  background: var(--bg-card);
+}
+
+:is(.image-page, .image-page-modal) .image-modal-related-section {
+  position: relative;
+  padding: 32px 16px;
+  border-top: 1px solid var(--border-color);
+}
+.image-modal-related-inner { max-width: 1296px; width: 100%; margin-inline: auto; }
+
+:is(.image-page, .image-page-modal) :is(.image-modal-related-title, .image-modal-stat-value) {
+  color: var(--text-primary);
+}
+:is(.image-page, .image-page-modal) :is(.image-modal-stat-label, .image-modal-image-details, .image-modal-image-meta, .image-modal-image-date, .image-modal-image-exif, .image-modal-download-option-dimension, .image-modal-download-option-default, .image-modal-author-tooltip-location) {
+  color: var(--text-secondary);
+}
+
+:is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-share-button, .image-modal-download-button, .image-info-trigger) {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+  border: 1px solid var(--button-primary-bg);
+  box-shadow: none;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+:is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-share-button, .image-info-trigger):hover:not(:disabled) {
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  transform: none;
+}
+:is(.image-page, .image-page-modal) .image-modal-favorite-button[aria-pressed="true"] {
+  background: var(--button-selected-bg);
+  border-color: var(--button-selected-border);
+  color: var(--button-selected-fg);
+}
+:is(.image-page, .image-page-modal) .image-modal-download-button {
+  background: var(--button-primary-bg);
+  border-color: transparent;
+  color: var(--button-primary-fg);
+}
+:is(.image-page, .image-page-modal) .image-modal-download-button:hover:not(:disabled) {
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
+}
+:is(.image-page, .image-page-modal) .image-modal-kbd {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+}
+:is(.image-page, .image-page-modal) :is(.image-modal-author-avatar, .image-modal-author-tooltip-avatar) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+:is(.image-page, .image-page-modal) .image-modal-download-menu {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 24px var(--shadow-strong);
+}
+:is(.image-page, .image-page-modal) .image-modal-download-menu-item {
+  background: transparent;
+  color: var(--button-secondary-fg);
+}
+:is(.image-page, .image-page-modal) .image-modal-download-menu-item:hover:not(:disabled) {
+  background: var(--button-secondary-hover);
+}
+:is(.image-page, .image-page-modal) .image-modal-image-tag {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+:is(.image-page, .image-page-modal) .image-modal-image-tag:hover {
+  background: var(--hover-bg);
+  border-color: var(--border-strong);
+}
+:is(.image-page, .image-page-modal) button:focus-visible {
+  outline: 2px solid var(--button-focus);
+  outline-offset: 3px;
+}
+.image-page-modal .image-modal-nav-button { color: var(--button-secondary-fg); }
+.image-page-modal .image-page-close {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  box-shadow: var(--button-shadow);
+}
+:is(.image-page, .image-page-modal) .image-page-photo-error button {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  border: 1px solid var(--button-secondary-border);
+  border-radius: 6px;
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-share-button, .image-modal-download-button, .image-info-trigger) { transition: none; }
+}

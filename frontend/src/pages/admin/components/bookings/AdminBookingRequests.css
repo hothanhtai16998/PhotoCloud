@@ -14,7 +14,7 @@
   border-bottom: 2px solid transparent;
   border-radius: 0 !important;
   background: transparent;
-  color: var(--admin-text-secondary);
+  color: var(--button-secondary-fg);
   padding: 12px 2px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -27,7 +27,7 @@
   background: transparent !important;
   border-color: transparent !important;
   border-bottom-color: var(--admin-accent) !important;
-  color: var(--admin-accent) !important;
+  color: var(--button-selected-fg) !important;
 }
 .admin-layout .admin-tools .booking-requests .admin-pagination {
   padding: 0; margin-top: 20px; background: transparent; border: 0;
@@ -38,11 +38,11 @@
   box-shadow: none; padding: 0; font-size: 11px; font-weight: 400;
 }
 .admin-layout .admin-tools .booking-requests .admin-pagination button {
-  background: var(--admin-card-bg) !important; color: var(--admin-text) !important;
-  border-color: var(--admin-border) !important; box-shadow: none !important;
+  background: var(--button-secondary-bg) !important; color: var(--button-secondary-fg) !important;
+  border-color: var(--button-secondary-border) !important; box-shadow: none !important;
 }
 .admin-layout .admin-tools .booking-requests .admin-pagination button:focus-visible {
-  outline: 2px solid var(--admin-accent) !important; outline-offset: 2px;
+  outline: 2px solid var(--button-focus) !important; outline-offset: 2px;
 }
 .booking-requests-heading {
   display: flex;
@@ -81,12 +81,12 @@
   border: 0;
   min-height: 38px;
   padding: 8px 11px;
-  color: var(--admin-text-secondary);
+  color: var(--button-secondary-fg);
   white-space: nowrap;
 }
 .admin-layout .admin-tools .booking-quick-filters button.selected {
-  background: var(--admin-card-bg);
-  color: var(--admin-accent);
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
 }
 .admin-layout .admin-tools .booking-status-filter select {
   min-height: 46px;

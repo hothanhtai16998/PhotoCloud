@@ -1,0 +1,18 @@
+[
+  {
+    "theme": "light",
+    "readyMs": 501,
+    "reads": 9,
+    "creates": 2,
+    "additions": 2,
+    "deletes": 2
+  },
+  {
+    "theme": "dark",
+    "readyMs": 953,
+    "reads": 9,
+    "creates": 2,
+    "additions": 2,
+    "deletes": 2
+  }
+]

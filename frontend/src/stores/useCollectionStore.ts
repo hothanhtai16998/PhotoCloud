@@ -5,7 +5,8 @@ import { collectionService } from '@/services/collectionService';
 import { collectionFavoriteService } from '@/services/collectionFavoriteService';
 import type { CollectionState } from '@/types/store';
 import type { ApiErrorResponse } from '@/types/errors';
-import { isCollection } from '@/utils/typeGuards';
+
+let collectionRequest = 0;
 
 export const useCollectionStore = create(
 	immer<CollectionState>((set, get) => ({
@@ -17,6 +18,7 @@ export const useCollectionStore = create(
 		updatingCover: null,
 
 		fetchCollection: async (collectionId: string) => {
+   const request = ++collectionRequest;
 			set((state) => {
 				state.loading = true;
 				state.error = null;
@@ -24,6 +26,7 @@ export const useCollectionStore = create(
 
 			try {
 				const data = await collectionService.getCollectionById(collectionId);
+    if (request !== collectionRequest) return;
 				set((state) => {
 					state.collection = data;
 					state.loading = false;
@@ -33,21 +36,20 @@ export const useCollectionStore = create(
 				try {
 					const favoritesResponse = await collectionFavoriteService.checkFavorites([collectionId]);
 					set((state) => {
-						state.isFavorited = favoritesResponse.favorites[collectionId] ?? false;
+						if (request === collectionRequest) state.isFavorited = favoritesResponse.favorites[collectionId] ?? false;
 					});
 				} catch (error) {
 					console.error('Failed to check favorite status:', error);
 				}
 			} catch (error: unknown) {
-				console.error('Failed to load collection:', error);
+				if (request !== collectionRequest) return;
 				const message =
 					(error as ApiErrorResponse)?.response?.data?.message ??
-					'Không thể tải bộ sưu tập';
+					(navigator.onLine ? 'Không thể tải bộ sưu tập. Vui lòng thử lại.' : 'Bạn đang ngoại tuyến. Kết nối mạng rồi bấm Thử lại.');
 				set((state) => {
 					state.error = message;
 					state.loading = false;
 				});
-				toast.error(message);
 				throw error;
 			}
 		},
@@ -151,6 +153,7 @@ export const useCollectionStore = create(
 
 
 		clearCollection: () => {
+   collectionRequest++;
 			set((state) => {
 				state.collection = null;
 				state.error = null;
@@ -259,3 +262,8 @@ export const useCollectionStore = create(
 	}))
 );
 
+
+export function markCollectionOffline(): void {
+ collectionRequest++;
+ useCollectionStore.setState({ loading: false, error: 'Bạn đang ngoại tuyến. Kết nối mạng rồi bấm Thử lại.' });
+}

@@ -55,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
 								this.setState({ hasError: false, error: null });
 								window.location.reload();
 							}}
-							className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+							className="mt-4 rounded bg-[var(--button-primary-bg)] px-4 py-2 text-[var(--button-primary-fg)] hover:bg-[var(--button-primary-hover)]"
 						>
 							Tải lại trang
 						</button>

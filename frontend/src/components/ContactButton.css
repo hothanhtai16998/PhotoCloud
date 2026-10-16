@@ -22,18 +22,18 @@ button.contact-button {
   max-height: 60px !important;
   padding: 0 !important;
   margin: 0 !important;
-  background: #000 !important;
-  border: 2px solid #000 !important;
+  background: var(--button-primary-bg) !important;
+  border: 2px solid var(--button-primary-bg) !important;
   border-radius: 50% !important;
   -webkit-border-radius: 50% !important;
   -moz-border-radius: 50% !important;
   font-size: 0.875rem !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: var(--button-shadow) !important;
   transition: all 0.3s ease !important;
   font-family: inherit !important;
-  color: var(--bg-card, #FFFFFF) !important;
+  color: var(--button-primary-fg) !important;
   box-sizing: border-box !important;
   overflow: visible !important;
 }
@@ -74,7 +74,6 @@ button.contact-button {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: var(--bg-card, #FFFFFF);
 }
 
 .contact-button-text.shaking {
@@ -150,8 +149,8 @@ button.contact-button {
   border: 0;
   font: inherit;
   cursor: pointer;
-  background: #000;
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   padding: 10px 14px;
   white-space: nowrap;
   font-size: 12px;
@@ -161,8 +160,9 @@ button.contact-button {
 }
 
 .contact-booking-link:hover {
-  background: #333;
+  background: var(--button-primary-hover);
   transform: translateY(-2px);
+  color: var(--button-primary-fg);
 }
 
 .contact-social-icon {

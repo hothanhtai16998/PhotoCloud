@@ -40,7 +40,7 @@
 .content-type-tab {
   font-size: 0.875rem;
   font-weight: 400;
-  color: #767676;
+  color: var(--button-secondary-fg);
   text-decoration: none;
   background: transparent;
   border: none;
@@ -57,11 +57,11 @@
 }
 
 .content-type-tab:hover {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
 }
 
 .content-type-tab.active {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-selected-fg);
   font-weight: 500;
   border-bottom-color: var(--accent, #B8865B);
   border-bottom-width: 3px;
@@ -117,13 +117,13 @@
   border: none;
   text-align: left;
   font-size: 0.875rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .more-dropdown-item:hover {
-  background-color: var(--hover-bg, #F2EEE7);
+  background-color: var(--button-secondary-hover);
 }
 
 .more-item-icon {
@@ -154,10 +154,10 @@
   gap: 6px;
   padding: 8px 12px;
   background: transparent;
-  border: 1px solid var(--border-color, #E8E2D6);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
   font-size: 0.875rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
@@ -167,13 +167,13 @@
 }
 
 .filter-dropdown-btn:hover {
-  border-color: var(--border-strong, #D8D1C5);
-  background-color: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-secondary-border);
+  background-color: var(--button-secondary-hover);
 }
 
 .filter-dropdown-btn.active {
-  border-color: var(--border-strong, #D8D1C5);
-  background-color: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-selected-border);
+  background-color: var(--button-selected-bg);
 }
 
 .filter-icon {
@@ -226,14 +226,14 @@
   border: none;
   text-align: left;
   font-size: 0.875rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: background-color 0.15s ease;
   position: relative;
 }
 
 .filter-menu-item:hover {
-  background-color: var(--hover-bg, #F2EEE7);
+  background-color: var(--button-secondary-hover);
 }
 
 .filter-menu-item.selected {

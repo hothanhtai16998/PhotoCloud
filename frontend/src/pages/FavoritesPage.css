@@ -66,30 +66,30 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: var(--bg-card, #FFFFFF);
-  color: #dc2626;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  background: var(--button-danger-bg);
+  color: var(--button-danger-fg);
+  border: 1px solid var(--button-danger-bg);
   border-radius: 20px;
   font-size: 0.9375rem;
   font-weight: 400;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05);
+  box-shadow: var(--button-shadow);
 }
 
 .favorites-delete-all-btn:hover:not(:disabled) {
-  border-color: var(--text-primary, #1B1B19);
+  border-color: var(--button-danger-bg);
 }
 
 .favorites-delete-all-btn:active:not(:disabled) {
-  border-color: var(--text-primary, #1B1B19);
+  border-color: var(--button-danger-bg);
 }
 
 .favorites-delete-all-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: var(--bg-card, #FFFFFF);
+  background: var(--button-danger-bg);
 }
 
 .favorites-delete-all-btn svg {
@@ -101,21 +101,21 @@
 
 /* Dark mode support */
 .dark-theme .favorites-delete-all-btn {
-  background: hsl(var(--card));
-  color: #dc2626;
-  border-color: hsl(var(--border));
+  background: var(--button-danger-bg);
+  color: var(--button-danger-fg);
+  border-color: var(--button-danger-bg);
 }
 
 .dark-theme .favorites-delete-all-btn:hover:not(:disabled) {
-  border-color: var(--text-primary, #1B1B19);
+  border-color: var(--button-danger-bg);
 }
 
 .dark-theme .favorites-delete-all-btn:active:not(:disabled) {
-  border-color: var(--text-primary, #1B1B19);
+  border-color: var(--button-danger-bg);
 }
 
 .dark-theme .favorites-delete-all-btn:disabled {
-  background: hsl(var(--card));
+  background: var(--button-danger-bg);
   opacity: 0.5;
 }
 
@@ -256,8 +256,8 @@
 
 .browse-button {
   padding: 12px 24px;
-  background: hsl(var(--foreground));
-  color: hsl(var(--background));
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border: none;
   border-radius: 8px;
   font-size: 0.9375rem;
@@ -267,8 +267,9 @@
 }
 
 .browse-button:hover {
-  background: hsl(var(--foreground) / 0.8);
+  background: var(--button-primary-hover);
   /* No transform on hover - prevent movement */
+  color: var(--button-primary-fg);
 }
 
 .favorites-pagination {
@@ -281,9 +282,9 @@
 
 .pagination-btn {
   padding: 10px 20px;
-  background: hsl(var(--card));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -292,8 +293,9 @@
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: var(--hover-bg, #F2EEE7);
-  border-color: #d1d5db;
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .pagination-btn:disabled {

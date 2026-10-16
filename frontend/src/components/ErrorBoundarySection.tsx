@@ -63,7 +63,7 @@ export class ErrorBoundarySection extends Component<ErrorBoundarySectionProps, S
               onClick={() => {
                 this.setState({ hasError: false, error: null });
               }}
-              className="mt-4 rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+              className="mt-4 rounded bg-[var(--button-primary-bg)] px-4 py-2 text-sm text-[var(--button-primary-fg)] hover:bg-[var(--button-primary-hover)]"
             >
               Thử lại
             </button>

@@ -27,7 +27,7 @@
 .pc-availability footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--admin-border); margin-top: 32px; padding: 22px 0; }
 .pc-availability footer > span { color: var(--admin-text-secondary); font-size: 13px; }
 .pc-availability footer > div { display: flex; gap: 10px; }
-.admin-layout .admin-tools .pc-availability .admin-btn.primary { background: var(--admin-accent); color: var(--admin-bg); border-color: var(--admin-accent); }
+.admin-layout .admin-tools .pc-availability .admin-btn.primary { background: var(--button-primary-bg); color: var(--button-primary-fg); border-color: var(--button-primary-bg); }
 @media (max-width: 700px) {
   .pc-availability-day { grid-template-columns: 1fr auto; gap: 8px 16px; }
   .pc-availability-hours { grid-column: 1 / -1; gap: 12px; }

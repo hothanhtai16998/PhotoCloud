@@ -29,12 +29,12 @@
     display: inline-flex;
     align-items: center;
     padding: 6px 14px;
-    background: var(--hover-bg, #F2EEE7);
+    background: var(--button-secondary-bg);
     border: none;
     border-radius: 20px;
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--text-primary, #1B1B19);
+    color: var(--button-secondary-fg);
     cursor: pointer;
     white-space: nowrap;
     transition: background-color 0.15s ease, color 0.15s ease;
@@ -42,8 +42,8 @@
 }
 
 .search-results-tag:hover {
-    background: #e5e5e5;
-    color: var(--text-primary, #1B1B19);
+    background: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
 }
 
 .search-results-tags-scroll-btn {
@@ -56,18 +56,19 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--border-color, #E8E2D6);
+    background: var(--button-secondary-bg);
+    border: 1px solid var(--button-secondary-border);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.15s ease;
-    box-shadow: 0 2px 4px rgba(27, 27, 25, 0.08);
+    box-shadow: var(--button-shadow);
     z-index: 10;
 }
 
 .search-results-tags-scroll-btn:hover {
-    background: var(--bg-card, #FFFFFF);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background: var(--button-secondary-hover);
+    box-shadow: var(--button-shadow);
+    color: var(--button-secondary-fg);
 }
 
 .search-results-tags-scroll-btn:active {

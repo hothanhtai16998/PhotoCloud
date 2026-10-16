@@ -37,7 +37,7 @@
     background: transparent;
     font-size: 14px;
     font-weight: 500;
-    color: var(--admin-text-secondary, #6B6B66);
+    color: var(--button-secondary-fg);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: color 0.12s ease, border-color 0.12s ease;
@@ -45,16 +45,16 @@
 }
 
 .settings-tab:hover {
-    color: var(--admin-text, #1B1B19);
+    color: var(--button-secondary-fg);
 }
 
 .settings-tab.active {
-    color: var(--admin-accent, #B8865B);
+    color: var(--button-selected-fg);
     border-bottom-color: var(--admin-accent, #B8865B);
 }
 
 .settings-tab:focus-visible {
-    outline: 2px solid var(--admin-accent, #B8865B);
+    outline: 2px solid var(--button-focus);
     outline-offset: 2px;
     border-radius: 4px;
 }

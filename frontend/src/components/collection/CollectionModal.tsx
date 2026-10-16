@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, Plus, Folder, Check, Search, Minus } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { X, Plus, Search, Folder, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
-import { collectionTemplateService, type CollectionTemplate } from '@/services/collectionTemplateService';
 import { useCollectionStore } from '@/stores/useCollectionStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { imageService } from '@/services/imageService';
@@ -12,6 +11,9 @@ import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { t } from '@/i18n';
+import { CollectionPickerRow } from './CollectionPickerRow';
+import { useImageDialogFocus } from '@/hooks/useImageDialogFocus';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
 import './CollectionModal.css';
 
 interface CollectionModalProps {
@@ -29,52 +31,56 @@ export default function CollectionModal({
 	collectionToEdit,
 	onCollectionUpdate,
 }: CollectionModalProps) {
-	const isEditMode = !!collectionToEdit;
+ const mutationBusy = useRef(false);
+ const pendingCreation = useRef<{ collection: Collection; added: Set<string> } | null>(null);
+ const dialogRef = useRef<HTMLDivElement>(null);
+ useImageDialogFocus(dialogRef, isOpen && !imageId);
+ useEffect(() => {
+  if (!isOpen || imageId) return;
+  const previous = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
+  const keydown = (event: KeyboardEvent) => { if (event.key === 'Escape' && !mutationBusy.current) onClose(); };
+  document.addEventListener('keydown', keydown);
+  return () => { document.body.style.overflow = previous; document.removeEventListener('keydown', keydown); };
+ }, [isOpen, imageId, onClose]);
+ const isEditMode = !!collectionToEdit;
 	const { collection: currentCollection, fetchCollection } = useCollectionStore();
 	const [collections, setCollections] = useState<Collection[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [creating, setCreating] = useState(false);
 	const [editing, setEditing] = useState(false);
-	const [showCreateForm, setShowCreateForm] = useState(false);
+	const [showCreateForm, setShowCreateForm] = useState(!imageId && !collectionToEdit);
 	const [newCollectionName, setNewCollectionName] = useState('');
 	const [newCollectionDescription, setNewCollectionDescription] = useState('');
 	const [newCollectionPublic, setNewCollectionPublic] = useState(true);
 	const [newCollectionTags, setNewCollectionTags] = useState<string[]>([]);
 	const [newTagInput, setNewTagInput] = useState('');
-	const [editCollectionName, setEditCollectionName] = useState('');
-	const [editCollectionDescription, setEditCollectionDescription] = useState('');
-	const [editCollectionPublic, setEditCollectionPublic] = useState(true);
-	const [editCollectionTags, setEditCollectionTags] = useState<string[]>([]);
+	const [editCollectionName, setEditCollectionName] = useState(collectionToEdit?.name ?? '');
+	const [editCollectionDescription, setEditCollectionDescription] = useState(collectionToEdit?.description ?? '');
+	const [editCollectionPublic, setEditCollectionPublic] = useState(collectionToEdit?.isPublic !== false);
+	const [editCollectionTags, setEditCollectionTags] = useState<string[]>(collectionToEdit?.tags ?? []);
 	const [editTagInput, setEditTagInput] = useState('');
 	const [collectionsContainingImage, setCollectionsContainingImage] = useState<Set<string>>(
 		new Set()
 	);
-	const [_templates, setTemplates] = useState<CollectionTemplate[]>([]);
-	const [selectedTemplate, setSelectedTemplate] = useState<CollectionTemplate | null>(null);
-	const [_showTemplates, setShowTemplates] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
-	const [recentCollectionIds, setRecentCollectionIds] = useState<string[]>([]);
+	const [recentCollectionIds, setRecentCollectionIds] = useState<string[]>(() => {
+  try { const stored: unknown = JSON.parse(localStorage.getItem('recentCollections') || '[]'); return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === 'string') : []; }
+  catch { return []; }
+ });
 	const { user } = useUserStore();
 	const [availableImages, setAvailableImages] = useState<Image[]>([]);
 	const [loadingImages, setLoadingImages] = useState(false);
+ const [imagePickerError, setImagePickerError] = useState(false);
+ const [imageRetry, setImageRetry] = useState(0);
 	const [selectedImageIds, setSelectedImageIds] = useState<Set<string>>(new Set());
 
-	// Initialize edit form when collectionToEdit changes
-	useEffect(() => {
-		if (collectionToEdit) {
-			setEditCollectionName(collectionToEdit.name || '');
-			setEditCollectionDescription(collectionToEdit.description || '');
-			setEditCollectionPublic(collectionToEdit.isPublic !== false);
-			setEditCollectionTags(collectionToEdit.tags || []);
-			setShowCreateForm(false);
-		}
-	}, [collectionToEdit]);
 
 	// Helper functions for tags
 	const addTag = (tag: string, isEdit: boolean) => {
 		const trimmedTag = tag.trim().toLowerCase();
 		if (!trimmedTag) return;
-		
+
 		if (isEdit) {
 			if (!editCollectionTags.includes(trimmedTag) && editCollectionTags.length < 10) {
 				setEditCollectionTags([...editCollectionTags, trimmedTag]);
@@ -109,38 +115,11 @@ export default function CollectionModal({
 		}
 	};
 
-	// Load templates
-	useEffect(() => {
-		if (!isOpen || isEditMode) return;
-
-		const loadTemplates = async () => {
-			try {
-				const templatesData = await collectionTemplateService.getTemplates();
-				setTemplates(templatesData);
-			} catch {
-				// Silently fail - templates are optional
-			}
-		};
-
-		loadTemplates();
-	}, [isOpen, isEditMode]);
 
 	// Load collections and check which ones contain this image
 	useEffect(() => {
 		if (!isOpen) return;
-
-		// If in edit mode, don't load collections list
-		if (isEditMode) {
-			setLoading(false);
-			return;
-		}
-
-		// If no imageId and not editing, show create form directly (create-only mode)
-		if (!imageId) {
-			setShowCreateForm(true);
-			setLoading(false);
-			return;
-		}
+  if (isEditMode || !imageId) return;
 
 		const loadData = async () => {
 			setLoading(true);
@@ -170,47 +149,27 @@ export default function CollectionModal({
 		if (!isOpen || imageId || isEditMode) return;
 		if (!user?._id) return;
 
+		let active = true;
 		const loadUserImages = async () => {
+   setImagePickerError(false);
 			setLoadingImages(true);
 			try {
 				const response = await imageService.fetchUserImages(user._id, {
 					page: 1,
 					limit: 50, // Load first 50 images
 				});
-				setAvailableImages(response.images || []);
+				if (active) setAvailableImages(response.images || []);
 			} catch {
-				// Silently fail - image picker is optional
+				if (active) setImagePickerError(true);
 			} finally {
-				setLoadingImages(false);
+				if (active) setLoadingImages(false);
 			}
 		};
 
-		loadUserImages();
-	}, [isOpen, imageId, isEditMode, user?._id]);
+		void loadUserImages();
+  return () => { active = false; };
+	}, [isOpen, imageId, isEditMode, user?._id, imageRetry]);
 
-	// Apply template when selected
-	useEffect(() => {
-		if (selectedTemplate && showCreateForm) {
-			setNewCollectionName(selectedTemplate.templateName);
-			setNewCollectionDescription(selectedTemplate.description || '');
-			setNewCollectionPublic(selectedTemplate.defaultIsPublic);
-			setNewCollectionTags([...selectedTemplate.defaultTags]);
-		}
-	}, [selectedTemplate, showCreateForm]);
-
-	// Load recent collections from localStorage
-	useEffect(() => {
-		if (typeof window !== 'undefined') {
-			const recent = localStorage.getItem('recentCollections');
-			if (recent) {
-				try {
-					setRecentCollectionIds(JSON.parse(recent));
-				} catch {
-					// Ignore parse errors
-				}
-			}
-		}
-	}, []);
 
 	// Filter collections by search query
 	const filteredCollections = useMemo(() => {
@@ -251,7 +210,7 @@ export default function CollectionModal({
 						next.delete(collectionId);
 						return next;
 					});
-					
+
 					// Update the collection in local state to reflect new image count
 					setCollections((prev) => {
 						return prev.map((c) => {
@@ -264,21 +223,21 @@ export default function CollectionModal({
 							return c;
 						});
 					});
-					
+
 					toast.success(t('collections.imageRemoved'));
-					
+
 					// Check if we're currently viewing this collection and refresh it
 					if (typeof window !== 'undefined') {
 						const currentPath = window.location.pathname;
-						
+
 						// Always dispatch event - let the detail page decide if it needs to refresh
-						window.dispatchEvent(new CustomEvent('collectionUpdated', { 
-							detail: { collectionId, collection: updatedCollection } 
+						window.dispatchEvent(new CustomEvent('collectionUpdated', {
+							detail: { collectionId, collection: updatedCollection }
 						}));
-						
+
 						// Also refresh directly if we're on that collection's page OR if the current collection matches
-						if (currentPath === `/collections/${collectionId}` || 
-						    (currentCollection && currentCollection._id === collectionId)) {
+						if (currentPath === `/collections/${collectionId}` ||
+						    (currentCollection?._id === collectionId)) {
 							// Refresh the collection to get full image data
 							fetchCollection(collectionId);
 						}
@@ -290,7 +249,7 @@ export default function CollectionModal({
 						next.add(collectionId);
 						return next;
 					});
-					
+
 					// Update the collection in local state to reflect new image count and cover image
 					setCollections((prev) => {
 						return prev.map((c) => {
@@ -304,9 +263,9 @@ export default function CollectionModal({
 							return c;
 						});
 					});
-					
+
 					toast.success(t('collections.imageAdded'));
-					
+
 					// Add to recent collections
 					setRecentCollectionIds((prev) => {
 						const updated = [collectionId, ...prev.filter((id) => id !== collectionId)].slice(0, 10);
@@ -319,16 +278,16 @@ export default function CollectionModal({
 					// Check if we're currently viewing this collection and refresh it
 					if (typeof window !== 'undefined') {
 						const currentPath = window.location.pathname;
-						
+
 						// Always dispatch event - let the detail page decide if it needs to refresh
-						const event = new CustomEvent('collectionUpdated', { 
-							detail: { collectionId, collection: updatedCollection } 
+						const event = new CustomEvent('collectionUpdated', {
+							detail: { collectionId, collection: updatedCollection }
 						});
 						window.dispatchEvent(event);
-						
+
 						// Also refresh directly if we're on that collection's page OR if the current collection matches
-						if (currentPath === `/collections/${collectionId}` || 
-						    (currentCollection && currentCollection._id === collectionId)) {
+						if (currentPath === `/collections/${collectionId}` ||
+						    (currentCollection?._id === collectionId)) {
 							// Refresh the collection to get full image data
 							fetchCollection(collectionId);
 						}
@@ -341,53 +300,41 @@ export default function CollectionModal({
 				);
 			}
 		},
-		[imageId, onCollectionUpdate]
+		[imageId, onCollectionUpdate, currentCollection, fetchCollection]
 	);
 
 	const handleCreateCollection = useCallback(async () => {
+  if (mutationBusy.current) return;
 		if (!newCollectionName.trim()) {
 			toast.error(t('collections.enterName'));
 			return;
 		}
 
+		mutationBusy.current = true;
+  const session = getAuthSessionVersion();
 		setCreating(true);
 		try {
-			let newCollection: Collection;
-
-			// Create from template if selected
-			if (selectedTemplate) {
-				const result = await collectionTemplateService.createCollectionFromTemplate(
-					selectedTemplate._id,
-					{
-						name: newCollectionName.trim(),
-						description: newCollectionDescription.trim() || undefined,
-						isPublic: newCollectionPublic,
-						tags: newCollectionTags.length > 0 ? newCollectionTags : undefined,
-					}
-				);
-				newCollection = result as unknown as Collection;
-			} else {
-				// Create normally
-				newCollection = await collectionService.createCollection({
-					name: newCollectionName.trim(),
-					description: newCollectionDescription.trim() || undefined,
-					isPublic: newCollectionPublic,
-					tags: newCollectionTags.length > 0 ? newCollectionTags : undefined,
-				});
-			}
-
-			// Add the image to the new collection if imageId is provided
-			if (imageId) {
-				await collectionService.addImageToCollection(newCollection._id, imageId);
-			}
-
-			// Add selected images if any were selected
-			if (selectedImageIds.size > 0) {
-				const addPromises = Array.from(selectedImageIds).map(imageId =>
-					collectionService.addImageToCollection(newCollection._id, imageId)
-				);
-				await Promise.all(addPromises);
-			}
+   if (pendingCreation.current) {
+    pendingCreation.current.collection = await collectionService.updateCollection(pendingCreation.current.collection._id, { name: newCollectionName.trim(), description: newCollectionDescription.trim(), isPublic: newCollectionPublic, tags: newCollectionTags });
+    if (session !== getAuthSessionVersion()) return;
+   }
+   const newCollection = pendingCreation.current?.collection ?? await collectionService.createCollection({
+    name: newCollectionName.trim(), description: newCollectionDescription.trim() || undefined,
+    isPublic: newCollectionPublic, tags: newCollectionTags,
+   });
+   if (session !== getAuthSessionVersion()) return;
+   if (!pendingCreation.current) {
+    pendingCreation.current = { collection: newCollection, added: new Set<string>() };
+    window.dispatchEvent(new CustomEvent('collectionCreated', { detail: { collection: newCollection } }));
+   }
+   // Retain the created ID and completed additions so retry cannot create duplicates.
+   const requestedImages = new Set([...(imageId ? [imageId] : []), ...selectedImageIds]);
+   for (const id of requestedImages) {
+    if (pendingCreation.current.added.has(id)) continue;
+    await collectionService.addImageToCollection(newCollection._id, id);
+    if (session !== getAuthSessionVersion()) return;
+    pendingCreation.current.added.add(id);
+   }
 
 			setCollections((prev) => [newCollection, ...prev]);
 			if (imageId) {
@@ -404,8 +351,6 @@ export default function CollectionModal({
 			setNewCollectionTags([]);
 			setNewTagInput('');
 			setShowCreateForm(false);
-			setSelectedTemplate(null);
-			setShowTemplates(false);
 			setSelectedImageIds(new Set());
 
 			// Dispatch event for global collections list update
@@ -420,14 +365,17 @@ export default function CollectionModal({
 				toast.success(t('collections.created'));
 			}
 			onCollectionUpdate?.();
-			
+
+   pendingCreation.current = null;
 			// Close the modal after successful creation
 			onClose();
 		} catch (error: unknown) {
+   if (session !== getAuthSessionVersion()) return;
 			toast.error(
-				getErrorMessage(error, t('collections.createFailed'))
+				pendingCreation.current ? 'Bộ sưu tập đã được tạo nhưng chưa thêm đủ ảnh. Bấm Tạo bộ sưu tập để thử lại các ảnh còn thiếu.' : getErrorMessage(error, t('collections.createFailed'))
 			);
 		} finally {
+			mutationBusy.current = false;
 			setCreating(false);
 		}
 	}, [
@@ -435,7 +383,6 @@ export default function CollectionModal({
 		newCollectionDescription,
 		newCollectionPublic,
 		newCollectionTags,
-		selectedTemplate,
 		imageId,
 		selectedImageIds,
 		onCollectionUpdate,
@@ -443,28 +390,34 @@ export default function CollectionModal({
 	]);
 
 	const handleUpdateCollection = useCallback(async () => {
+  if (mutationBusy.current) return;
 		if (!collectionToEdit || !editCollectionName.trim()) {
 			toast.error(t('collections.enterName'));
 			return;
 		}
 
+		mutationBusy.current = true;
+  const session = getAuthSessionVersion();
 		setEditing(true);
 		try {
 			await collectionService.updateCollection(collectionToEdit._id, {
 				name: editCollectionName.trim(),
-				description: editCollectionDescription.trim() || undefined,
+				description: editCollectionDescription.trim(),
 				isPublic: editCollectionPublic,
-				tags: editCollectionTags.length > 0 ? editCollectionTags : undefined,
+				tags: editCollectionTags,
 			});
 
+   if (session !== getAuthSessionVersion()) return;
 			toast.success(t('collections.updated'));
 			onCollectionUpdate?.();
 			onClose();
 		} catch (error: unknown) {
+   if (session !== getAuthSessionVersion()) return;
 			toast.error(
 				getErrorMessage(error, t('collections.updateFailed'))
 			);
 		} finally {
+			mutationBusy.current = false;
 			setEditing(false);
 		}
 	}, [
@@ -487,18 +440,18 @@ export default function CollectionModal({
 	return (
 		<>
 			{!isDropdown && (
-				<div className="collection-modal-overlay" onClick={onClose} />
+				<div className="collection-modal-overlay" onClick={() => { if (!mutationBusy.current) onClose(); }} />
 			)}
-			<div className={`collection-modal-wrapper ${showImagePickerSidebar ? 'with-image-picker' : ''}`}>
+			<div ref={dialogRef} role={!imageId ? "dialog" : undefined} aria-modal={!imageId ? true : undefined} aria-label={isEditMode ? t('collections.editCollection') : t('collections.createCollection')} tabIndex={-1} className={`collection-modal-wrapper ${isDropdown ? 'collection-modal-wrapper-dropdown' : ''} ${showImagePickerSidebar ? 'with-image-picker' : ''}`}>
 				<div className={`collection-modal ${isDropdown ? 'collection-modal-dropdown' : 'collection-modal-centered'} ${showImagePickerSidebar ? 'with-sidebar' : ''}`} onClick={(e) => e.stopPropagation()}>
 					{!isDropdown && (
 						<div className="collection-modal-header">
 						<h2>{isEditMode ? t('collections.editCollection') : (imageId ? t('collections.saveToCollection') : t('collections.createNew'))}</h2>
-						<Button 
-							variant="ghost" 
-							size="icon" 
-							className="collection-modal-close" 
-							onClick={onClose} 
+						<Button
+							variant="ghost"
+							size="icon"
+							className="collection-modal-close"
+							onClick={() => { if (!mutationBusy.current) onClose(); }}
 							aria-label={t('common.close')}
 						>
 							<X size={20} />
@@ -518,7 +471,7 @@ export default function CollectionModal({
 									onChange={(e) => setEditCollectionName(e.target.value)}
 									placeholder={t('collections.collectionNamePlaceholder')}
 									maxLength={100}
-									autoFocus
+									autoFocus={!!imageId}
 								/>
 							</div>
 							<div className="collection-modal-form-group">
@@ -583,7 +536,7 @@ export default function CollectionModal({
 								<Button
 									variant="outline"
 									className="collection-modal-cancel-btn"
-									onClick={onClose}
+									onClick={() => { if (!mutationBusy.current) onClose(); }}
 									disabled={editing}
 								>
 									{t('common.cancel')}
@@ -615,7 +568,7 @@ export default function CollectionModal({
 											placeholder="Find a collection"
 											value={searchQuery}
 											onChange={(e) => setSearchQuery(e.target.value)}
-											autoFocus
+											autoFocus={!!imageId}
 										/>
 										{searchQuery && (
 											<button
@@ -634,69 +587,7 @@ export default function CollectionModal({
 										<div className="collection-modal-section">
 											<h4 className="collection-modal-section-title">Recent</h4>
 											<div className="collection-modal-list">
-												{recentCollections.map((collection) => {
-													const isInCollection = collectionsContainingImage.has(
-														collection._id
-													);
-													return (
-														<button
-															key={collection._id}
-															className={`collection-modal-item ${
-																isInCollection ? 'selected' : ''
-															}`}
-															onClick={() =>
-																handleToggleCollection(
-																	collection._id,
-																	isInCollection
-																)
-															}
-														>
-															<div className="collection-modal-item-info">
-																{collection.coverImage &&
-																typeof collection.coverImage === 'object' ? (
-																	<img
-																		src={
-																			collection.coverImage.thumbnailUrl ||
-																			collection.coverImage.smallUrl ||
-																			collection.coverImage.imageUrl
-																		}
-																		alt={collection.name}
-																		className="collection-modal-item-cover"
-																	/>
-																) : (
-																	<div className="collection-modal-item-placeholder">
-																		<Folder size={20} />
-																	</div>
-																)}
-																<div className="collection-modal-item-details">
-																	<h3>{collection.name}</h3>
-																	<p className="collection-modal-item-count">
-																		{collection.imageCount || 0} {collection.imageCount === 1 ? 'image' : 'images'}
-																	</p>
-																</div>
-															</div>
-															<div className="collection-modal-item-action">
-																{isInCollection ? (
-																	<>
-																		<Check
-																			size={18}
-																			className="collection-modal-item-check collection-modal-item-check-visible"
-																		/>
-																		<Minus
-																			size={18}
-																			className="collection-modal-item-remove collection-modal-item-remove-hover"
-																		/>
-																	</>
-																) : (
-																	<Plus
-																		size={18}
-																		className="collection-modal-item-add collection-modal-item-add-hover"
-																	/>
-																)}
-															</div>
-														</button>
-													);
-												})}
+												{recentCollections.map(collection => <CollectionPickerRow key={collection._id} collection={collection} selected={collectionsContainingImage.has(collection._id)} onToggle={handleToggleCollection} />)}
 											</div>
 										</div>
 									)}
@@ -708,69 +599,7 @@ export default function CollectionModal({
 												<h4 className="collection-modal-section-title">All collections</h4>
 											)}
 											<div className="collection-modal-list">
-												{(searchQuery ? filteredCollections : otherCollections).map((collection) => {
-													const isInCollection = collectionsContainingImage.has(
-														collection._id
-													);
-													return (
-														<button
-															key={collection._id}
-															className={`collection-modal-item ${
-																isInCollection ? 'selected' : ''
-															}`}
-															onClick={() =>
-																handleToggleCollection(
-																	collection._id,
-																	isInCollection
-																)
-															}
-														>
-															<div className="collection-modal-item-info">
-																{collection.coverImage &&
-																typeof collection.coverImage === 'object' ? (
-																	<img
-																		src={
-																			collection.coverImage.thumbnailUrl ||
-																			collection.coverImage.smallUrl ||
-																			collection.coverImage.imageUrl
-																		}
-																		alt={collection.name}
-																		className="collection-modal-item-cover"
-																	/>
-																) : (
-																	<div className="collection-modal-item-placeholder">
-																		<Folder size={20} />
-																	</div>
-																)}
-																<div className="collection-modal-item-details">
-																	<h3>{collection.name}</h3>
-																	<p className="collection-modal-item-count">
-																		{collection.imageCount || 0} {collection.imageCount === 1 ? 'image' : 'images'}
-																	</p>
-																</div>
-															</div>
-															<div className="collection-modal-item-action">
-																{isInCollection ? (
-																	<>
-																		<Check
-																			size={18}
-																			className="collection-modal-item-check collection-modal-item-check-visible"
-																		/>
-																		<Minus
-																			size={18}
-																			className="collection-modal-item-remove collection-modal-item-remove-hover"
-																		/>
-																	</>
-																) : (
-																	<Plus
-																		size={18}
-																		className="collection-modal-item-add collection-modal-item-add-hover"
-																	/>
-																)}
-															</div>
-														</button>
-													);
-												})}
+												{(searchQuery ? filteredCollections : otherCollections).map(collection => <CollectionPickerRow key={collection._id} collection={collection} selected={collectionsContainingImage.has(collection._id)} onToggle={handleToggleCollection} />)}
 											</div>
 										</div>
 									) : collections.length === 0 ? (
@@ -788,44 +617,22 @@ export default function CollectionModal({
 									) : null}
 
 									{/* Create New Collection Button - at bottom like PHOTOCLOUD */}
-									<div className="collection-modal-create-bottom">
+									{(user?.isAdmin || user?.isSuperAdmin) && <div className="collection-modal-create-bottom">
 										<button
 											type="button"
 											className="collection-modal-create-new-btn"
 											onClick={() => {
 												setShowCreateForm(true);
-												setShowTemplates(false);
-												setSelectedTemplate(null);
 											}}
 										>
 											<Plus size={18} />
 											<span>{t('collections.createNew')}</span>
 										</button>
-									</div>
+									</div>}
 								</>
 							) : (
 								<div className="collection-modal-create-form">
-									{selectedTemplate && (
-										<div className="collection-modal-form-header">
-											<h3>
-												{t('collections.createFromTemplateTitle', { name: selectedTemplate.templateName })}
-											</h3>
-											<button
-												type="button"
-												className="collection-modal-clear-template"
-												onClick={() => {
-													setSelectedTemplate(null);
-													setNewCollectionName('');
-													setNewCollectionDescription('');
-													setNewCollectionPublic(true);
-													setNewCollectionTags([]);
-												}}
-												title={t('collections.clearTemplate')}
-											>
-												<X size={16} />
-											</button>
-										</div>
-									)}
+
 									<div className="collection-modal-form-group">
 										<label htmlFor="collection-name">{t('collections.collectionName')} *</label>
 										<input
@@ -835,7 +642,7 @@ export default function CollectionModal({
 											onChange={(e) => setNewCollectionName(e.target.value)}
 											placeholder={t('collections.collectionNamePlaceholder')}
 											maxLength={100}
-											autoFocus
+											autoFocus={!!imageId}
 										/>
 									</div>
 									<div className="collection-modal-form-group">
@@ -944,7 +751,9 @@ export default function CollectionModal({
 								<div className="collection-modal-image-picker-loading">
 									<p>{t('common.loading')}</p>
 								</div>
-							) : availableImages.length === 0 ? (
+							) : imagePickerError ? (
+         <div className="collection-modal-image-picker-empty" role="alert"><p>Không thể tải ảnh để chọn. Bạn vẫn có thể tạo bộ sưu tập trống.</p><button onClick={() => setImageRetry(value => value + 1)}>Thử lại tải ảnh</button></div>
+        ) : availableImages.length === 0 ? (
 								<div className="collection-modal-image-picker-empty">
 									<p>{t('collections.noImagesAvailable')}</p>
 								</div>

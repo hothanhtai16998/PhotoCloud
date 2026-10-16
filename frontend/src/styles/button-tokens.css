@@ -1,0 +1,27 @@
+/* PhotoCloud action palette. Change button colors here, never in page CSS. */
+:root {
+ --button-radius: 8px;
+ --button-disabled-opacity: .5;
+ --button-shadow: 0 2px 6px rgb(70 44 24 / .12);
+}
+html.dark-theme {
+ --button-shadow: 0 2px 6px rgb(0 0 0 / .2);
+}
+/* Shared Button variants; legacy page controls consume the same tokens. */
+[data-slot="button"][data-variant="default"] { background: var(--button-primary-bg); color: var(--button-primary-fg); border-color: var(--button-primary-bg); }
+[data-slot="button"][data-variant="default"]:hover:not(:disabled) { background: var(--button-primary-hover); }
+[data-slot="button"]:is([data-variant="outline"],[data-variant="secondary"]) { background: var(--button-secondary-bg); color: var(--button-secondary-fg); border-color: var(--button-secondary-border); }
+[data-slot="button"]:is([data-variant="outline"],[data-variant="secondary"]):hover:not(:disabled) { background: var(--button-secondary-hover); }
+[data-slot="button"][data-variant="destructive"] { background: var(--button-danger-bg); color: var(--button-danger-fg); border-color: var(--button-danger-bg); }
+[data-slot="button"][data-variant="destructive"]:hover:not(:disabled) { background: var(--button-danger-hover); }
+[data-slot="button"]:is([data-variant="ghost"],[data-variant="link"]) { background: transparent; color: var(--button-secondary-fg); }
+[data-slot="button"][data-variant="ghost"]:hover:not(:disabled) { background: var(--button-secondary-hover); }
+:where(button, [role="button"]):focus-visible { outline: 2px solid var(--button-focus); outline-offset: 3px; }
+
+/* Native page controls keep their geometry and expose the shared focus treatment. */
+button:disabled { cursor: not-allowed; opacity: var(--button-disabled-opacity); }
+
+[data-slot="button"]:is(.confirm-btn-danger,.danger,.destructive) { background: var(--button-danger-bg); color: var(--button-danger-fg); border-color: var(--button-danger-bg); }
+[data-slot="button"]:is(.confirm-btn-danger,.danger,.destructive):hover:not(:disabled) { background: var(--button-danger-hover); }
+[data-slot="button"] { border-radius: var(--button-radius); }
+:where(button) { color: var(--button-secondary-fg); }

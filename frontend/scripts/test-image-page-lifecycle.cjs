@@ -7,7 +7,8 @@ const source = fs.readFileSync(require('node:path').join(__dirname, '../src/page
 const extract = (start, end) => ts.transpileModule(source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start))), {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
 const dataSource = fs.readFileSync(require('node:path').join(__dirname, '../src/pages/image/useImagePageData.ts'), 'utf8');
 const fetchEffect = ts.transpileModule(dataSource.slice(dataSource.indexOf('  // Fetch image'), dataSource.lastIndexOf('}')), {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
-const statsEffect = extract('  // Increment view count when image is viewed', '  // Image loading logic');
+const statsSource = fs.readFileSync(require('node:path').join(__dirname, '../src/pages/image/useImagePageStats.ts'), 'utf8');
+const statsEffect = ts.transpileModule(statsSource.slice(statsSource.indexOf('  // Increment view count when image is viewed'),statsSource.indexOf('  const views = liveStats')), {compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => {resolve=a; reject=b;}); return {promise,resolve,reject}; };
 const flush = () => new Promise(resolve => setImmediate(resolve));
 const state = { image:null, images:[], loading:false, error:null, views:0 };
@@ -63,17 +64,17 @@ async function main() {
       useEffect:fn=>{cleanup=fn();},
       imageStatsService:{incrementView:id=>{const request=deferred();requests.set(id,request);return request.promise;}},
     });
-    return cleanup;
+    return cleanup || (() => {});
   };
   const leave=runStats(first);
-  leave();
+  leave?.();
   runStats(second);
   requests.get(second._id).resolve({views:222});
   await flush();
   requests.get(first._id).resolve({views:111});
   await flush();
-  assert.equal(state.views,222,'late view tracking must not update another image');
-  assert.equal(cache.get(first._id).views,111,'old image statistics may still update their own cache');
+  assert.equal(stored.find(item => item.id === second._id).value.views,222,'responses update their own image');
+  assert.equal(stored.find(item => item.id === first._id).value.views,111,'late responses update only their own keyed entry');
   assert.equal(stored.length,2);
   console.log('ImagePage lifecycle: stale success/error, abort, state fast path and view responses passed.');
 }

@@ -125,7 +125,7 @@
 .completion-item-action {
   background: none;
   border: none;
-  color: #0066cc;
+  color: var(--button-secondary-fg);
   font-size: 0.875rem;
   cursor: pointer;
   padding: 0;
@@ -135,7 +135,7 @@
 }
 
 .completion-item-action:hover {
-  color: #0052a3;
+  color: var(--button-secondary-fg);
 }
 
 .profile-completion-footer {

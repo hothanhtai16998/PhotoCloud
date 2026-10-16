@@ -148,8 +148,9 @@ export interface UserImageState {
 }
 
 export interface CollectionsListState {
+	addCollection: (collection: Collection) => void;
 	collections: Collection[];
-	filteredCollections: Collection[];
+	error: string | null;
 	loading: boolean;
 	deletingId: string | null;
 	searchQuery: string;
@@ -159,16 +160,13 @@ export interface CollectionsListState {
 	hasLoaded: boolean;
 	lastFetchedAt: number | null;
 	fetchCollections: () => Promise<void>;
-	deleteCollection: (collectionId: string) => Promise<void>;
-	updateCollection: (collectionId: string, data: { name?: string; description?: string; isPublic?: boolean; tags?: string[] }) => Promise<void>;
+	deleteCollection: (collectionId: string) => Promise<boolean>;
 	setSearchQuery: (query: string) => void;
 	setShowPublicOnly: (show: boolean) => void;
 	setSortBy: (sortBy: 'newest' | 'oldest' | 'name' | 'images') => void;
 	setSelectedTag: (tag: string | null) => void;
 	clearFilters: () => void;
 	refreshCollections: () => Promise<void>;
-	applyFilters: (collectionsToFilter: Collection[]) => void;
-	resetLoading: () => void;
 	checkAndRefreshIfStale: () => Promise<void>;
 }
 

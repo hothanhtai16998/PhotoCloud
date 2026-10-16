@@ -1,0 +1,526 @@
+@scope (.admin-tools) {
+
+/* Stats Grid */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.admin-stat-value {
+  font-size: 2.75rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.02em;
+}
+
+.admin-stat-label {
+  font-size: 0.9375rem;
+  opacity: 0.95;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Sections */
+.admin-section {
+  margin-bottom: 48px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-section:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.admin-section:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.admin-section:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.admin-section:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.admin-section:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.admin-section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  color: var(--text-primary, #1B1B19);
+}
+
+/* Category List */
+.admin-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(184, 134, 91, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(184, 134, 91, 0.1);
+  transition: all 0.3s ease;
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+}
+
+.admin-category-item:hover {
+  transform: translateX(8px);
+  box-shadow: 0 4px 12px rgba(184, 134, 91, 0.15);
+  background: linear-gradient(
+    135deg,
+    rgba(184, 134, 91, 0.1) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+}
+
+.admin-category-name {
+  font-weight: 600;
+  color: var(--text-primary, #1B1B19);
+  font-size: 1rem;
+}
+
+.admin-category-count {
+  color: #B8865B;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  background: rgba(184, 134, 91, 0.1);
+  border-radius: 8px;
+}
+
+/* Tables */
+.admin-table {
+  overflow-x: auto;
+  background: var(--bg-card, #FAF8F4);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.admin-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 16px 20px;
+  background: #000000;
+  font-weight: 600;
+  color: white;
+  border-bottom: none;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  user-select: none;
+}
+
+.admin-table th:first-child {
+  border-top-left-radius: 16px;
+}
+
+.admin-table th:last-child {
+  border-top-right-radius: 16px;
+}
+
+.admin-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  color: var(--text-primary, #1B1B19);
+  transition: all 0.2s ease;
+}
+
+.admin-table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.admin-table tbody tr {
+  cursor: pointer;
+}
+
+.admin-table tbody tr:hover {
+  background: #e8e8e8;
+}
+
+.admin-table tbody tr:active {
+  background: #d0d0d0;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Header with Search */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 28px 36px;
+  /* Gradient header effect */
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  color: white;
+}
+
+.admin-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(184, 134, 91, 0.8) 0%,
+    rgba(118, 75, 162, 0.8) 100%
+  );
+  opacity: 0.8;
+}
+
+.admin-header .admin-title {
+  color: white;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
+}
+
+/* File Types Selector */
+.admin-file-types-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.admin-file-type-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: var(--bg-card, #FAF8F4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  min-height: 44px; /* Touch target minimum - WCAG 2.1 */
+  min-width: 44px;
+}
+
+.admin-file-type-checkbox:hover {
+  border-color: #1e40af;
+  background: #f0f7ff;
+}
+
+.admin-file-type-checkbox.selected {
+  border-color: #1e40af;
+  background: #dbeafe;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+.admin-file-type-checkbox input[type='checkbox'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.admin-file-type-checkbox span {
+  font-size: 0.9375rem;
+  color: #374151;
+}
+
+.admin-file-type-checkbox.selected span {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* Add/Create Buttons - Light blue style like expiration badge */
+.admin-add-category-btn {
+  background: var(--button-primary-bg) !important;
+  color: var(--button-primary-fg) !important;
+  border: 1px solid var(--button-primary-bg) !important;
+  transition: all 0.2s ease !important;
+  min-height: 44px; /* Touch target minimum - WCAG 2.1 */
+  min-width: 44px;
+}
+
+.admin-add-category-btn:hover:not(:disabled) {
+  background: var(--button-primary-hover) !important;
+  color: var(--button-primary-fg) !important;
+  border: 1px solid var(--button-secondary-border) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--button-shadow);
+}
+
+.admin-add-category-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-search svg {
+  color: white;
+  opacity: 0.9;
+}
+
+.admin-search input {
+  width: 300px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--text-primary, #1B1B19);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.admin-search input::placeholder {
+  color: #999;
+}
+
+.admin-search input:focus {
+  outline: none;
+  background: var(--bg-card, #FAF8F4);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.admin-search button {
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
+  color: var(--button-secondary-fg);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+}
+
+.admin-search button:hover {
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
+}
+
+/* Actions */
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-actions button {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+/* Fix any buttons that might have flex-direction: column */
+.admin-actions [data-slot='button'],
+.admin-actions button {
+  flex-direction: row;
+}
+
+.admin-actions button:hover {
+  /* No transform on hover - prevent movement */
+  box-shadow: var(--button-shadow);
+}
+
+/* Edit button hover - Blue (edit/update action) */
+.admin-actions .admin-action-edit:hover,
+.admin-image-actions .admin-action-edit:hover {
+  background: var(--button-secondary-hover) !important;
+  color: var(--button-secondary-fg) !important;
+  border: 1px solid var(--button-secondary-border) !important;
+}
+
+/* Delete button hover - Red (destructive action) */
+.admin-actions .admin-action-delete:hover,
+.admin-image-actions .admin-action-delete:hover {
+  background: var(--button-danger-hover) !important;
+  color: var(--button-danger-fg) !important;
+  border: 1px solid var(--button-danger-bg) !important;
+}
+
+/* Ban button hover - Orange (warning/caution action) */
+.admin-actions .admin-action-ban:hover {
+  background: #fed7aa !important;
+  color: #c2410c !important;
+  border: 1px solid #c2410c !important;
+}
+
+/* Unban button hover - Green (restore action) */
+.admin-actions .admin-action-unban:hover {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border: 1px solid #065f46 !important;
+}
+
+/* Admin Status Display */
+.admin-status-display {
+  display: flex;
+  align-items: center;
+}
+.admin-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.admin-status-badge.super-admin {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.admin-status-badge.admin {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.admin-status-badge.none {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.admin-status-badge.banned {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.admin-status-badge.active {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.moderation-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(27, 27, 25, 0.08);
+  transition: all 0.2s ease;
+}
+
+.moderation-badge.approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.moderation-badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.moderation-badge.flagged {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.moderation-badge.pending {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.admin-image-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* Ensure buttons with icons and text display correctly - Button component already handles this */
+/* Only fix if there's a specific issue with flex-direction */
+.admin-image-actions [data-slot='button'],
+.admin-image-actions button {
+  /* Button component already has inline-flex items-center gap-2 */
+}
+
+/* Fix any buttons that might have flex-direction: column set elsewhere */
+.admin-image-actions [data-slot='button'],
+.admin-image-actions button,
+.admin-actions [data-slot='button'],
+.admin-actions button {
+  flex-direction: row;
+}
+
+/* Hover styles for moderation action buttons */
+.admin-image-actions .admin-action-approve:hover {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border-color: #000000 !important;
+}
+
+.admin-image-actions .admin-action-reject:hover {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-color: #000000 !important;
+}
+
+.admin-image-actions .admin-action-flag:hover {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border-color: #000000 !important;
+}
+}

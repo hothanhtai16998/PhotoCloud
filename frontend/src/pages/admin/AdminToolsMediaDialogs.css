@@ -1,0 +1,629 @@
+@scope (.admin-tools) {
+
+/* Images Grid */
+.admin-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+.admin-image-card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--bg-card, #FAF8F4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.admin-image-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(184, 134, 91, 0.05) 0%,
+    rgba(118, 75, 162, 0.05) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.admin-image-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(184, 134, 91, 0.2);
+  border-color: rgba(184, 134, 91, 0.3);
+}
+
+.admin-image-card:hover::before {
+  opacity: 1;
+}
+
+.admin-image-card img {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  position: relative;
+  z-index: 0;
+}
+
+.admin-image-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Fullscreen Image Viewer */
+.admin-image-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.admin-image-viewer-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  z-index: 10000;
+  transition: all 0.2s ease;
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+}
+
+.admin-image-viewer-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.admin-image-viewer-image {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  cursor: default;
+  animation: zoomIn 0.3s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.admin-image-info {
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+  background: var(--bg-card, #FAF8F4);
+}
+
+.admin-image-info h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #1B1B19);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.admin-image-info p {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6B6B66);
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.admin-image-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #1B1B19);
+}
+
+.admin-image-info p {
+  margin: 4px 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6B6B66);
+}
+
+.admin-image-info button {
+  margin-top: 12px;
+  width: 100%;
+}
+
+/* Fix any buttons that might have flex-direction: column */
+.admin-image-info [data-slot='button'],
+.admin-image-info button {
+  flex-direction: row;
+}
+
+/* Pagination */
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Pagination buttons - clean styling for outline variant */
+.admin-pagination [data-slot='button'],
+.admin-pagination button {
+  /* Don't add extra padding - Button component already has px-4 py-2 */
+  /* Remove any padding overrides to prevent double padding */
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  /* Clean white background with single border */
+  background: var(--bg-card, #FAF8F4) !important;
+  border: 1px solid #d1d5db !important;
+  color: #374151 !important;
+  box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05) !important;
+  /* Remove any pseudo-elements that might create double borders */
+  outline: none !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Remove any ::before or ::after that might create double borders */
+.admin-pagination [data-slot='button']::before,
+.admin-pagination [data-slot='button']::after,
+.admin-pagination button::before,
+.admin-pagination button::after {
+  display: none !important;
+}
+
+.admin-pagination button:hover:not(:disabled),
+.admin-pagination [data-slot='button']:hover:not(:disabled) {
+  background: #f9fafb !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.admin-pagination button:disabled,
+.admin-pagination [data-slot='button']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6 !important;
+}
+
+.admin-pagination span {
+  font-weight: 600;
+  color: #374151;
+  padding: 8px 16px;
+  background: var(--bg-card, #FAF8F4);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(27, 27, 25, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+/* Modal */
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 80px 20px 20px 20px;
+  overflow-y: auto;
+}
+
+.admin-modal {
+  background: var(--bg-card, #FAF8F4);
+  border-radius: 8px;
+  width: 95%;
+  max-width: min(1400px, 98%);
+  max-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  margin: auto;
+}
+
+.admin-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
+  flex-shrink: 0;
+  background: var(--bg-card, #FAF8F4);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.admin-modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.admin-modal-header button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--button-secondary-fg);
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.admin-modal-header button:hover {
+  background: var(--button-secondary-hover);
+}
+
+.admin-modal-form {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-modal-form-content {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-modal-form-left {
+  flex: 0 0 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+}
+
+.admin-modal-form-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+.admin-form-group {
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.admin-form-group:not(:last-of-type) {
+  flex-shrink: 0;
+}
+
+.admin-form-group:last-of-type {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+/* Two-column layout for edit role modal */
+.admin-modal-form-left .admin-form-group {
+  margin-bottom: 20px;
+}
+
+.admin-modal-form-left .admin-form-group:last-child {
+  margin-bottom: 0;
+}
+
+.admin-modal-form-right .admin-form-group {
+  margin-bottom: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-modal-form-right .admin-form-group > label {
+  flex-shrink: 0;
+}
+
+.admin-modal-form-right .admin-form-help {
+  flex-shrink: 0;
+}
+
+.admin-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.9375rem;
+}
+
+.admin-form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color, #E8E2D6);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  resize: vertical;
+}
+
+.admin-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0 0 0;
+  border-top: 1px solid #e5e5e5;
+  flex-shrink: 0;
+  background: var(--bg-card, #FAF8F4);
+  margin-top: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.admin-actions-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+/* Permission Components */
+.permission-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.permission-badge.has-permission {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.permission-badge.no-permission {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  opacity: 0.7;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.role-badge.super-admin {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.role-badge.admin {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.role-badge.moderator {
+  background: #e0e7ff;
+  color: #3730a3;
+  border: 1px solid #c7d2fe;
+}
+
+.permission-button.no-permission {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.permission-tooltip-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+/* Permission Matrix */
+.permission-matrix {
+  background: var(--bg-card, #FAF8F4);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 4px rgba(27, 27, 25, 0.08);
+}
+
+.permission-matrix-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
+}
+
+.permission-matrix-header h2 {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.permission-matrix-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permission-matrix-user-info p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #374151;
+}
+
+.permission-matrix-user-info strong {
+  color: var(--text-primary, #1B1B19);
+  margin-right: 8px;
+}
+
+.super-admin-note {
+  padding: 8px 12px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  color: #92400e;
+  font-size: 0.875rem;
+}
+
+.permission-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.permission-group {
+  background: var(--hover-bg, #F2EEE7);
+  border: 1px solid var(--border-color, #E8E2D6);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.permission-group-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #1B1B19);
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e5e5;
+}
+
+.permission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.permission-item.has-permission {
+  background: #f0fdf4;
+}
+
+.permission-item.no-permission {
+  background: #fef2f2;
+  opacity: 0.8;
+}
+
+.permission-label {
+  font-size: 0.875rem;
+  color: #374151;
+  flex: 1;
+}
+
+.permission-matrix-legend {
+  display: flex;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.legend-badge {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.legend-badge.has-permission {
+  background: #d1fae5;
+  border-color: #a7f3d0;
+}
+
+.legend-badge.no-permission {
+  background: #fee2e2;
+  border-color: #fecaca;
+}
+}

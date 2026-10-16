@@ -155,7 +155,7 @@
   margin-left: auto;
   background: transparent;
   border: none;
-  color: #767676;
+  color: var(--button-secondary-fg);
   font-size: 0.75rem;
   font-weight: 400;
   text-transform: none;
@@ -165,7 +165,7 @@
 }
 
 .search-bar-container .clear-history-btn:hover {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
 }
 
 /* Tags container (PHOTOCLOUD-style rounded buttons) */
@@ -181,10 +181,10 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--bg-card, #FFFFFF);
-  border: 1px solid var(--border-color, #E8E2D6);
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   font-size: 0.875rem;
   font-weight: 400;
   cursor: pointer;
@@ -193,11 +193,12 @@
 }
 
 .search-bar-container .suggestion-tag:hover {
-  background: #e5e5e5;
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .search-bar-container .suggestion-tag.selected {
-  background: #e5e5e5;
+  background: var(--button-selected-bg);
 }
 
 .search-bar-container .suggestion-tag-icon {
@@ -236,17 +237,17 @@
   cursor: pointer;
   text-align: left;
   transition: background 0.15s ease;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-selected-fg);
   font-size: 0.9375rem;
 }
 
 .search-bar-container .suggestion-item:hover,
 .search-bar-container .suggestion-item.selected {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-selected-bg);
 }
 
 .search-bar-container .suggestion-item.selected {
-  background: #e5e5e5;
+  background: var(--button-selected-bg);
 }
 
 .search-bar-container .suggestion-icon {
@@ -480,14 +481,14 @@
   background: transparent;
   border: none;
   padding: 8px;
-  color: #767676;
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: color 0.2s ease;
   flex-shrink: 0;
 }
 
 .search-bar-container .search-clear:hover {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
 }
 .search-bar-container .search-filters-wrapper {
   display: flex;

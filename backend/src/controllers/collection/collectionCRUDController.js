@@ -15,15 +15,17 @@ export const getUserCollections = async (req, res) => {
         const userId = req.user._id;
 
         // Generate cache key
+        const browse = req.query.scope === 'browse';
         const cacheKey = generateCacheKey('userCollections', { userId: userId.toString() });
         
         // Use cached query result (5 minute TTL)
-        const collections = await cached(cacheKey, async () => {
+        const loadCollections = async () => {
             // Use aggregation to get collections with sample images (2-3 per collection)
             return await Collection.aggregate([
             {
                 $match: {
             $or: [
+                        ...(browse ? [{ isPublic: true }] : []),
                         { createdBy: new mongoose.Types.ObjectId(userId) },
                         { 'collaborators.user': new mongoose.Types.ObjectId(userId) },
             ],
@@ -154,7 +156,9 @@ export const getUserCollections = async (req, res) => {
             },
             { $sort: { createdAt: -1 } },
             ]);
-        }, 5 * 60 * 1000); // Cache for 5 minutes
+        };
+        // Public visibility changes must take effect immediately across accounts.
+        const collections = browse ? await loadCollections() : await cached(cacheKey, loadCollections, 5 * 60 * 1000);
 
         res.json({
             success: true,
@@ -243,6 +247,7 @@ export const getCollectionById = async (req, res) => {
  * Create a new collection
  */
 export const createCollection = async (req, res) => {
+    if (!req.user.isAdmin && !req.user.isSuperAdmin) return res.status(403).json({ success: false, message: 'Chỉ quản trị viên được tạo bộ sưu tập.' });
     try {
         const userId = req.user._id;
         const { name, description, isPublic, tags } = req.body;

@@ -48,7 +48,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--text-secondary, #6B6B66);
+  color: var(--button-secondary-fg);
   padding: 4px;
   border-radius: 4px;
   transition: all 0.2s ease;
@@ -61,8 +61,8 @@
 
 .quick-stats-toggle:hover,
 .quick-stats-close:hover {
-  background: var(--hover-bg, #F2EEE7);
-  color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .quick-stats-content {

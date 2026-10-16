@@ -10,11 +10,13 @@ export const collectionService = {
 	/**
 	 * Get all collections for the authenticated user
 	 */
-	getUserCollections: async (signal?: AbortSignal): Promise<Collection[]> => {
+	getUserCollections: async (signal?: AbortSignal, scope: 'mine' | 'browse' = 'mine'): Promise<Collection[]> => {
 		const response = await api.get<CollectionResponse>('/collections', {
-			signal, // Pass abort signal for request cancellation
+			signal,
+            params: { scope },
+            timeout: 15000,
 		});
-		if (response.data.success && response.data.collections) {
+		if (response.data.success && Array.isArray(response.data.collections)) {
 			return response.data.collections;
 		}
 		throw new Error('Failed to fetch collections');

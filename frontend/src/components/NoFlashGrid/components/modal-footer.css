@@ -135,27 +135,27 @@
   align-items: center;
   gap: 8px;
   padding: 6px 18px;
-  color: var(--text-primary, #1B1B19);
-  border: 1px solid #e8e8e8;
+  color: var(--button-secondary-fg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 10px;
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--button-shadow);
 }
 
 .modal-footer-btn:hover {
-  background: #f0f0f0;
-  border-color: #ddd;
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--button-shadow);
 }
 
 .modal-footer-btn:active {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--button-shadow);
 }
 
 .modal-footer-btn:disabled {
@@ -165,14 +165,15 @@
 }
 
 .modal-footer-btn.favorited {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fecaca;
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
+  border-color: var(--button-selected-border);
 }
 
 .modal-footer-btn.favorited:hover {
-  background: #fecaca;
-  border-color: #fca5a5;
+  background: var(--button-selected-bg);
+  border-color: var(--button-selected-border);
+  color: var(--button-selected-fg);
 }
 
 .favorite-icon-filled {

@@ -12,14 +12,14 @@
   background: transparent;
   border: none !important;
   border-radius: 50%;
-  color: #767676;
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .notification-bell-btn:hover {
-  background: var(--hover-bg, #F2EEE7);
-  color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
   border: none !important;
 }
 
@@ -28,9 +28,9 @@
 }
 
 .notification-bell-wrapper .notification-bell-btn:focus-visible {
-  outline: 3px solid #16665c;
+  outline: 3px solid var(--button-focus);
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 6px #fff;
+  box-shadow: var(--button-shadow);
 }
 
 .notification-bell-badge {
@@ -204,14 +204,14 @@
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: var(--text-secondary, #6B6B66);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .notification-action-btn:hover {
-  background: var(--hover-bg, #F2EEE7);
-  color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .notification-action-btn.refreshing {
@@ -281,11 +281,12 @@
 }
 
 .notification-item.unread {
-  background: var(--bg-secondary, #F5F3EE);
+  background: var(--button-secondary-bg);
 }
 
 .notification-item.unread:hover {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .notification-item-icon {
@@ -346,14 +347,14 @@
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: var(--text-secondary, #6B6B66);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .notification-item-action-btn:hover {
-  background: var(--hover-bg, #F2EEE7);
-  color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .notification-item-action-btn:active {
@@ -368,14 +369,14 @@
 }
 
 .notification-dropdown :is(.notification-action-btn,.notification-item-action-btn):focus-visible {
-  outline: 2px solid var(--text-primary, #1B1B19);
+  outline: 2px solid var(--button-focus);
   outline-offset: 2px;
 }
 
 .notification-item:last-child { border-bottom: 0; }
 
 body.home-cinematic-active .PHOTOCLOUD-header .notification-bell-btn:hover {
-  background: #1b1b19;
+  background: var(--button-secondary-hover);
 }
 
 @media (max-width: 768px) {

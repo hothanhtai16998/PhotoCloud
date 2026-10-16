@@ -5194,3 +5194,15 @@ Bỏ tab Chỉnh ảnh và editor canvas cùng API replace riêng theo yêu cầ
 
 ### 16/10/2026 — Chi tiết ảnh: tải lỗi và phản hồi Lưu
 Bổ sung trạng thái offline/hủy request chi tiết, timeout 15 giây, lỗi payload thiếu ảnh; vùng ảnh lớn có timeout/offline và retry giữ URL. Nút Lưu giữ tim phản ánh optimistic state trong lúc chờ, thêm aria-pressed, bỏ sự kiện đồng bộ bị phát trùng. PHO-01 vẫn mở vì đo fixture chưa tái hiện lag thật. Không tự thay dấu nghiệm thu, responsive để cuối.
+
+
+### 16/10/2026 — Quy tắc bảo trì và refactor Chi tiết ảnh
+Theo yêu cầu, mọi trang được rà từ nay cần đơn giản hóa logic chứ không chỉ tách file; quy tắc lưu tại AGENTS.md. Trang ảnh bỏ cache/state thống kê trùng, dùng một store cho API/socket/download và biểu đồ; tách hook thao tác và thống kê, gộp nhánh dữ liệu từ lưới. Controller còn 665 dòng. Build, lint và kiểm tra hồi quy qua; toàn dự án vẫn còn lỗi TypeScript ngoài phạm vi. Giữ nghiệm thu chức năng và responsive để cuối.
+
+
+### 16/10/2026 — Màu trang Chi tiết ảnh
+Đồng bộ nền ảnh, thanh thao tác và ảnh liên quan với token kem/nâu PhotoCloud. Bỏ màu inline và CSS dark mode ghi đè trùng; gom palette cho modal/trang riêng ở ImagePageTheme.css. Icon kế thừa màu chữ. Build/lint/hồi quy fixture sáng-tối qua; checklist màu PHO-C01–C04 chờ người dùng, giữ nghiệm thu chức năng cũ và responsive để cuối.
+
+
+### 16/10/2026 — Header sau khi cuộn trang ảnh
+Sửa useHeaderSurface: scrollY=0 luôn về heading, tránh hysteresis âm khi boundary=0 giữ canvas vĩnh viễn. Giữ cơ chế hero/admin, thêm kiểm tra hồi quy hook và browser sáng/tối. PHO-H01 chờ người dùng xác nhận.

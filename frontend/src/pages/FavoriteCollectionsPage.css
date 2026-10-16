@@ -102,8 +102,8 @@
 
 .favorite-collections-empty-btn {
   padding: 12px 24px;
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border: none;
   border-radius: 8px;
   font-size: 0.9375rem;
@@ -113,7 +113,8 @@
 }
 
 .favorite-collections-empty-btn:hover {
-  background: #333;
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 .favorite-collections-grid {
@@ -214,10 +215,10 @@
 
 .pagination-btn {
   padding: 10px 20px;
-  background: var(--bg-card, #FFFFFF);
-  border: 2px solid #e5e5e5;
+  background: var(--button-secondary-bg);
+  border: 2px solid var(--button-secondary-border);
   border-radius: 8px;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
@@ -225,8 +226,9 @@
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: var(--hover-bg, #F2EEE7);
-  border-color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .pagination-btn:disabled {

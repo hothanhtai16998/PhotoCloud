@@ -408,9 +408,9 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--bg-card, #FFFFFF);
+  border: 2px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -421,9 +421,10 @@
 }
 
 .carousel-nav-arrow:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: var(--bg-card, #FFFFFF);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
   transform: scale(1.1);
+  color: var(--button-secondary-fg);
 }
 
 /* Bottom Carousel */

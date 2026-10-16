@@ -31,7 +31,7 @@ export function PWAInstallPrompt() {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e as BeforeInstallPromptEvent);
-            
+
             // Show prompt after a delay (don't be too aggressive)
             setTimeout(() => {
                 setShowPrompt(true);
@@ -51,10 +51,10 @@ export function PWAInstallPrompt() {
         try {
             // Show the install prompt
             await deferredPrompt.prompt();
-            
+
             // Wait for user's response
             const { outcome } = await deferredPrompt.userChoice;
-            
+
             if (outcome === 'accepted') {
                 toast.success('App installed successfully!');
                 localStorage.setItem('pwa-installed', 'true');
@@ -62,7 +62,7 @@ export function PWAInstallPrompt() {
             } else {
                 toast.info('Installation cancelled');
             }
-            
+
             // Clear the deferred prompt
             setDeferredPrompt(null);
             setShowPrompt(false);
@@ -119,7 +119,7 @@ export function PWAInstallPrompt() {
                 <Button
                     onClick={handleInstall}
                     size="sm"
-                    style={{ backgroundColor: '#B8865B', color: 'white' }}
+
                 >
                     Install
                 </Button>
@@ -141,4 +141,3 @@ export function PWAInstallPrompt() {
         </div>
     );
 }
-

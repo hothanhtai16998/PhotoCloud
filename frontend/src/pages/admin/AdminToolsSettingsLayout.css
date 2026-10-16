@@ -1,0 +1,686 @@
+@scope (.admin-tools) {
+
+/* Admin Settings - Tabbed Interface */
+.admin-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  position: relative;
+  /* Performance optimizations for smooth scrolling */
+  will-change: scroll-position;
+  transform: translateZ(0); /* Force GPU acceleration */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Skip to Content Link (Accessibility) */
+.admin-skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000000;
+  color: white;
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, top 0.2s ease;
+}
+
+.admin-skip-link:focus {
+  top: 20px;
+  opacity: 1;
+  pointer-events: auto;
+  outline: 3px solid #B8865B;
+  outline-offset: 2px;
+}
+
+/* Breadcrumb Navigation */
+.admin-breadcrumb {
+  margin-bottom: 20px;
+}
+
+.admin-breadcrumb-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.admin-breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.admin-breadcrumb-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--admin-text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.admin-breadcrumb-link:hover {
+  color: var(--admin-text);
+  background: var(--admin-hover);
+}
+
+.admin-breadcrumb-link:focus {
+  outline: 2px solid #B8865B;
+  outline-offset: 2px;
+  color: var(--admin-text);
+}
+
+.admin-breadcrumb-item[aria-current='page'] span {
+  color: var(--admin-text);
+  font-weight: 600;
+  padding: 6px 8px;
+}
+
+.admin-breadcrumb-separator {
+  display: flex;
+  align-items: center;
+  color: var(--admin-text-secondary);
+  opacity: 0.5;
+}
+
+/* Screen Reader Only Text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Improved Visual Hierarchy */
+.admin-settings .admin-header {
+  margin-bottom: 8px;
+}
+
+.admin-settings .admin-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+/* Enhanced Focus Indicators for Keyboard Navigation Only */
+/* Remove ALL focus outlines and rings for mouse clicks */
+.admin-settings input:focus,
+.admin-settings select:focus,
+.admin-settings textarea:focus,
+.admin-settings button:focus,
+.admin-settings a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* Remove focus-visible styles too (no blue borders at all) */
+.admin-settings input:focus-visible,
+.admin-settings select:focus-visible,
+.admin-settings textarea:focus-visible,
+.admin-settings button:focus-visible,
+.admin-settings a:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* Override UI component focus styles */
+.admin-settings input[data-slot='input']:focus,
+.admin-settings input[data-slot='input']:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  ring: none !important;
+  border-color: var(--admin-border) !important;
+}
+
+/* File Type Checkbox Keyboard Navigation */
+.admin-file-type-checkbox:focus-within {
+  outline: none;
+}
+
+.admin-file-type-checkbox input[type='checkbox']:focus {
+  outline: none;
+}
+
+.admin-file-type-checkbox:focus-visible,
+.admin-file-type-checkbox input[type='checkbox']:focus-visible {
+  outline: 3px solid #B8865B;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Tab Keyboard Navigation */
+.admin-settings-tabs-list button:focus-visible {
+  outline: 3px solid var(--button-focus);
+  outline-offset: 2px;
+  z-index: 10;
+  position: relative;
+}
+
+/* Card Focus States - Remove for mouse clicks */
+.admin-settings-card:focus-within {
+  outline: none;
+}
+
+/* Advanced Settings Toggle Keyboard Navigation */
+.admin-advanced-settings-toggle:focus {
+  outline: none;
+}
+
+.admin-advanced-settings-toggle:focus-visible {
+  outline: 3px solid #B8865B;
+  outline-offset: 2px;
+}
+
+/* Confirmation Dialog Keyboard Navigation */
+.admin-confirmation-dialog button:focus-visible {
+  outline: 3px solid var(--button-focus);
+  outline-offset: 2px;
+}
+
+/* Remove ALL focus outlines completely */
+.admin-settings *:focus,
+.admin-settings *:focus-visible,
+.admin-settings *:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Exception: Keep focus for skip link (accessibility) */
+.admin-skip-link:focus,
+.admin-skip-link:focus-visible {
+  outline: 3px solid #B8865B !important;
+  outline-offset: 2px !important;
+}
+
+.admin-form-group {
+  margin-bottom: 24px;
+}
+
+.admin-form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--admin-text);
+  letter-spacing: 0.01em;
+}
+
+.admin-settings-tabs {
+  width: 100%;
+}
+
+.admin-settings-tabs-list {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 4px;
+  position: relative;
+  touch-action: pan-x; /* Enable horizontal swipe */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.admin-settings-tabs-list button {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--button-secondary-fg);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  min-height: 44px; /* Touch target minimum - WCAG 2.1 */
+  min-width: 44px;
+  flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+.admin-settings-tabs-list button:hover {
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
+}
+
+.admin-settings-tabs-list button[aria-selected='true'] {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  box-shadow: var(--button-shadow);
+}
+
+.admin-settings-tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Admin Settings Cards */
+.admin-settings-card {
+  background: var(--admin-card-bg);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px var(--admin-shadow);
+  transition: all 0.3s ease;
+}
+
+.admin-settings-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-settings-card-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin-bottom: 8px;
+}
+
+.admin-settings-card [data-slot='card-description'] {
+  color: var(--admin-text-secondary);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+.admin-settings-card [data-slot='card-content'] {
+  padding: 24px;
+}
+
+/* Form Help Text */
+.admin-form-help-text {
+  font-size: 0.8125rem;
+  color: var(--admin-text-secondary);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Maintenance Mode Toggle */
+.admin-maintenance-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--admin-text);
+  font-size: 0.9375rem;
+}
+
+.admin-maintenance-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #dc2626;
+}
+
+/* Announcement Form */
+.admin-announcement-form {
+  background: #f9fafb;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+}
+
+.admin-announcement-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-announcement-form-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin: 0;
+}
+
+.admin-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  background: var(--admin-card-bg);
+  color: var(--admin-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-select:focus,
+.admin-select:focus-visible {
+  outline: none !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: none !important;
+}
+
+.admin-select:hover {
+  border-color: #B8865B;
+}
+
+.admin-select:focus,
+.admin-select:focus-visible {
+  outline: none !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: none !important;
+}
+
+/* Progressive Disclosure - Advanced Settings */
+.admin-advanced-settings-section {
+  margin: 24px 0;
+  border-top: 1px solid var(--admin-border);
+  padding-top: 20px;
+}
+
+.admin-advanced-settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--admin-hover);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  transition: all 0.2s ease;
+}
+
+.admin-advanced-settings-toggle:hover {
+  background: #e5e7eb;
+  border-color: #B8865B;
+}
+
+.admin-advanced-settings-content {
+  margin-top: 16px;
+  padding: 20px;
+  background: #f9fafb;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px;
+  }
+}
+
+/* Two-column Layout for Settings */
+.admin-settings-two-column {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1200px) {
+  .admin-settings-two-column {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Responsive - Admin Settings */
+/* Mobile Optimization: Better mobile layout with stacked forms */
+@media (max-width: 768px) {
+  .admin-settings {
+    padding: 12px;
+    gap: 20px;
+  }
+
+  .admin-breadcrumb {
+    margin-bottom: 16px;
+  }
+
+  .admin-breadcrumb-list {
+    gap: 6px;
+  }
+
+  .admin-breadcrumb-link {
+    font-size: 0.8125rem;
+    padding: 4px 6px;
+  }
+
+  .admin-header {
+    margin-bottom: 16px;
+  }
+
+  .admin-title {
+    font-size: 1.5rem;
+  }
+
+  .admin-settings-tabs-list {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 4px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .admin-settings-tabs-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-settings-tabs-list button {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    min-height: 44px; /* Touch target */
+    flex: 1 1 auto;
+    min-width: 80px;
+  }
+
+  .admin-settings-tabs-list button svg {
+    display: none;
+  }
+
+  .admin-settings-card {
+    margin-bottom: 16px;
+  }
+
+  .admin-settings-card [data-slot='card-content'] {
+    padding: 16px;
+  }
+
+  .admin-settings-card-title {
+    font-size: 1.125rem;
+  }
+
+  .admin-form-group {
+    margin-bottom: 20px;
+  }
+
+  .admin-form-group label {
+    font-size: 0.9375rem;
+    margin-bottom: 8px;
+  }
+
+  .admin-input,
+  .admin-select,
+  .admin-textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+    min-height: 44px; /* Touch target */
+  }
+
+  .admin-textarea {
+    min-height: 120px;
+  }
+
+  .admin-file-types-selector {
+    gap: 8px;
+  }
+
+  .admin-file-type-checkbox {
+    padding: 12px 16px;
+    min-height: 44px; /* Touch target */
+    min-width: 80px;
+  }
+
+  .admin-file-type-checkbox input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+  }
+
+  .admin-announcement-form {
+    padding: 16px;
+  }
+
+  .admin-settings-two-column {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .admin-add-category-btn,
+  .admin-save-btn {
+    width: 100%;
+    min-height: 44px; /* Touch target */
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+
+  .admin-advanced-settings-toggle {
+    padding: 12px 16px;
+    min-height: 44px; /* Touch target */
+    font-size: 0.9375rem;
+  }
+
+  .admin-maintenance-toggle-label {
+    padding: 12px;
+    min-height: 44px; /* Touch target */
+  }
+
+  .admin-maintenance-checkbox {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+  }
+
+  /* Stack forms vertically on mobile */
+  .admin-settings-card .admin-form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .admin-settings-card .admin-form-group label {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  /* Prevent text size adjustment on iOS */
+  .admin-input,
+  .admin-select,
+  .admin-textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* Better touch scrolling */
+  .admin-settings-tabs-list {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-settings-tabs-list button {
+    scroll-snap-align: start;
+  }
+
+  /* Improve breadcrumb on mobile */
+  .admin-breadcrumb-link span {
+    display: none;
+  }
+
+  .admin-breadcrumb-link svg {
+    margin-right: 0;
+  }
+}
+
+/* Tablet Optimization: Adaptive layouts for tablet vs desktop */
+@media (min-width: 769px) and (max-width: 1199px) {
+  .admin-settings-two-column {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .admin-settings-tabs-list {
+    gap: 8px;
+  }
+
+  .admin-settings-tabs-list button {
+    padding: 10px 16px;
+    min-height: 44px; /* Touch target for tablets */
+  }
+
+  .admin-input,
+  .admin-select,
+  .admin-textarea {
+    min-height: 44px; /* Touch target for tablets */
+  }
+
+  .admin-file-type-checkbox {
+    min-height: 44px; /* Touch target for tablets */
+  }
+
+  .admin-add-category-btn,
+  .admin-save-btn {
+    min-height: 44px; /* Touch target for tablets */
+  }
+}
+
+/* Desktop: Full two-column layout */
+@media (min-width: 1200px) {
+  .admin-settings-two-column {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+}

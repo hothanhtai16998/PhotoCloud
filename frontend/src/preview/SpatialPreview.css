@@ -10,9 +10,9 @@
 .sp-scene-open{display:inline-flex;align-items:center;gap:9px;background:transparent;margin-top:18px;padding:8px 0;font-size:12px;pointer-events:inherit}
 .sp-scene-controls{position:absolute;left:6%;right:6%;bottom:65px;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:20px;pointer-events:none}
 .sp-scene-tabs{display:flex;gap:25px;align-items:center;pointer-events:auto}
-.sp-scene-tabs button{background:#f0efebdd;padding:10px 0;border-bottom:1px solid transparent;font-size:12px;display:flex;align-items:center;gap:8px}
+.sp-scene-tabs button{background:var(--button-secondary-bg);padding:10px 0;border-bottom:1px solid transparent;font-size:12px;display:flex;align-items:center;gap:8px}
 .sp-scene-tabs button>span{font-size:10px;color:#7d837a}
-.sp-scene-tabs button[aria-pressed=true]{border-color:#dd293e;color:#cc1f36}
+.sp-scene-tabs button[aria-pressed=true]{border-color:var(--button-selected-border);color:var(--button-selected-fg)}
 .sp-scene-tools{display:flex;gap:8px;pointer-events:auto;background:#f0efebcc}
 .sp-cinema-bottom{font-size:10px}
 .sp-scene-loading{position:absolute;right:6%;top:24px;font-size:11px;color:#576357;background:#f0efeb;padding:8px 12px}
@@ -22,7 +22,7 @@
 .sp-site main .sp-orbit-heading h2{font-family:'Times New Roman',serif;font-size:64px;font-weight:400;line-height:1.1;margin:0}
 .sp-orbit-tabs{display:flex;gap:22px;align-items:center}
 .sp-orbit-tabs button{background:transparent;font-size:12px;padding:12px 0;border-bottom:1px solid #c6ccc0}
-.sp-orbit-tabs button[aria-pressed=true]{border-color:#dd293e;color:#cc1f36}
+.sp-orbit-tabs button[aria-pressed=true]{border-color:var(--button-selected-border);color:var(--button-selected-fg)}
 .sp-spatial-gallery{height:620px;width:100%;position:relative;touch-action:pan-y}
 .sp-spatial-gallery canvas{display:block;width:100%;height:100%}
 .sp-spatial-gallery>img{display:block;height:100%;width:100%;object-fit:contain}
@@ -33,7 +33,7 @@
 .sp-orbit-arrows{display:flex;gap:8px;align-items:center}
 .sp-orbit-arrows>span{font-size:11px;white-space:nowrap}
 .sp-cinema-static{height:auto}
-.sp-scene-open:focus-visible,.sp-scene-tabs button:focus-visible,.sp-orbit-tabs button:focus-visible{outline:2px solid #dd293e;outline-offset:4px}
+.sp-scene-open:focus-visible,.sp-scene-tabs button:focus-visible,.sp-orbit-tabs button:focus-visible{outline:2px solid var(--button-focus);outline-offset:4px}
 @media(min-width:1600px){.sp-cinema-copy h1,.sp-site main .sp-cinema-copy h1 span{font-size:100px}.sp-cinema-chapter h2{font-size:65px}.sp-spatial-gallery{height:730px}}
 @media(max-width:1050px){.sp-cinema-copy h1,.sp-site main .sp-cinema-copy h1 span{font-size:68px}.sp-cinema-chapter h2{font-size:44px}.sp-cinema-chapter{width:32%}.sp-orbit-heading{grid-template-columns:1fr}.sp-site main .sp-orbit-heading h2{font-size:52px}.sp-orbit-tabs{justify-self:start}.sp-orbit-footer{align-items:start}.sp-orbit-actions{flex-direction:column;align-items:end;gap:14px}.sp-spatial-gallery{height:520px}}
 @media(max-width:700px){

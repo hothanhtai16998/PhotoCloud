@@ -1,0 +1,2117 @@
+[
+  {
+    "f": "frontend\\src\\components\\admin\\ThemeToggle.css",
+    "selector": ".theme-toggle-btn",
+    "values": "background:transparent;color:inherit"
+  },
+  {
+    "f": "frontend\\src\\components\\admin\\ThemeToggle.css",
+    "selector": ".theme-toggle-btn:hover",
+    "values": "background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\components\\admin\\ThemeToggle.css",
+    "selector": ".dark-theme .theme-toggle-btn:hover",
+    "values": "background:rgba(255, 255, 255, 0.1)"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\BookingFAQ.css",
+    "selector": ".home-faq-item button",
+    "values": "background:transparent;color:var(--studio-text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\BookingFAQ.css",
+    "selector": ".home-faq-item button:hover, .home-faq-item.is-open button",
+    "values": "color:var(--studio-accent-copper-dark, #966339)"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\HeroBooking.css",
+    "selector": ".hero-cta--primary",
+    "values": "background:var(--studio-text-primary);color:#fff;border-color:#383832"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\HeroBooking.css",
+    "selector": ".hero-cta--primary:hover",
+    "values": "border-color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\HeroBooking.css",
+    "selector": ".hero-cta--primary svg:first-child",
+    "values": "color:#DFC29F"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\HeroBooking.css",
+    "selector": ".hero-cta--secondary",
+    "values": "background:rgba(255, 255, 255, 0.78);color:var(--studio-text-primary);border-color:#CFC6B9"
+  },
+  {
+    "f": "frontend\\src\\components\\booking\\HeroBooking.css",
+    "selector": ".hero-cta--secondary:hover",
+    "values": "background:var(--bg-card, #FAF8F4);border-color:#B8865B;color:#966339"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-packages button",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-packages button:hover,.booking-modal-packages button.selected",
+    "values": "border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-packages button.selected:after",
+    "values": "background:#222;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-success button",
+    "values": "background:#222;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-success button.secondary",
+    "values": "background:var(--bg-card, #FFFFFF);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-packages button",
+    "values": "border-color:var(--border-strong,#D8D1C5);color:var(--text-primary,#1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-packages button.selected",
+    "values": "border-color:#356653;background:var(--bg-secondary,#F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\components\\BookingModal.css",
+    "selector": ".booking-modal-packages button.selected::after",
+    "values": "background:#356653;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-scroll-btn",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-scroll-btn:hover",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-scroll-btn svg",
+    "values": "color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-navigation-wrapper:has(.category-scroll-btn-left)::before",
+    "values": "background:linear-gradient(to right, rgba(250, 248, 244, 0.95), transparent)"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-navigation-wrapper:has(.category-scroll-btn-right)::after",
+    "values": "background:linear-gradient(to left, rgba(250, 248, 244, 0.95), transparent)"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-navigation-wrapper:has(.category-scroll-btn-left)::before",
+    "values": "background:linear-gradient(to right, rgba(250, 248, 244, 0.95), transparent)"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-navigation-wrapper:has(.category-scroll-btn-right)::after",
+    "values": "background:linear-gradient(to left, rgba(250, 248, 244, 0.95), transparent)"
+  },
+  {
+    "f": "frontend\\src\\components\\CategoryNavigation.css",
+    "selector": ".category-scroll-btn",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionLoadError.css",
+    "selector": ".collection-load-error button",
+    "values": "background:var(--text-primary);color:var(--bg-card)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-create-btn",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-template-btn",
+    "values": "background:linear-gradient(135deg, #1B1B19 0%, #B8865B 100%);color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-template-btn:hover",
+    "values": "background:linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-create-btn::before",
+    "values": "background:rgba(255, 255, 255, 0.2)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-create-btn:hover",
+    "values": "background:#000"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-create-new-btn",
+    "values": "background:transparent;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalBase.css",
+    "selector": ".collection-modal-create-new-btn:hover",
+    "values": "background:var(--hover-bg, #F2EEE7);border-color:#d0d0d0"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalForms.css",
+    "selector": ".collection-modal-tag-add-btn",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalForms.css",
+    "selector": ".collection-modal-tag-add-btn:hover:not(:disabled)",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalForms.css",
+    "selector": ".collection-modal-cancel-btn",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalForms.css",
+    "selector": ".collection-modal-cancel-btn:hover:not(:disabled)",
+    "values": "background:#e8e8e8"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalForms.css",
+    "selector": ".collection-modal-submit-btn",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionModalForms.css",
+    "selector": ".collection-modal-submit-btn:hover:not(:disabled)",
+    "values": "background:#000"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-share-btn",
+    "values": "background:rgba(255, 255, 255, 0.95);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-share-btn:hover",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-share-btn.active",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF);border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-detail-actions .collection-share-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-detail-actions .collection-share-btn:hover",
+    "values": "background:hsl(var(--muted) / 0.3);border-color:hsl(var(--border))"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-detail-actions .collection-share-btn.active",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background));border-color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-card-actions .collection-share-btn",
+    "values": "background:rgba(255, 255, 255, 0.95);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-card-actions .collection-share-btn:hover",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\collection\\CollectionShare.css",
+    "selector": ".collection-card-actions .collection-share-btn.active",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF);border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\ContactButton.css",
+    "selector": "button[data-contact-button=\"true\"].contact-button,\r\nbutton[data-contact-button=\"true\"],\r\n.contact-button-container button.contact-button,\r\nbutton.contact-button",
+    "values": "background:#000;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\ContactButton.css",
+    "selector": ".contact-button::before",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\ContactButton.css",
+    "selector": ".contact-button-text",
+    "values": "color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\DownloadHistory.css",
+    "selector": ".download-history-item-download-btn",
+    "values": "background:var(--hover-bg, #F2EEE7);color:#767676"
+  },
+  {
+    "f": "frontend\\src\\components\\DownloadHistory.css",
+    "selector": ".download-history-item-download-btn:hover",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\DownloadHistory.css",
+    "selector": ".download-history-load-more-btn",
+    "values": "color:var(--text-primary, #1B1B19);background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\DownloadHistory.css",
+    "selector": ".download-history-load-more-btn::before",
+    "values": "background:rgba(27, 27, 25, 0.05)"
+  },
+  {
+    "f": "frontend\\src\\components\\DownloadHistory.css",
+    "selector": ".download-history-load-more-btn:hover:not(:disabled)",
+    "values": "background:var(--hover-bg, #F2EEE7);border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\EditImageModal.css",
+    "selector": ".edit-modal-btn-cancel",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\EditImageModal.css",
+    "selector": ".edit-modal-btn-cancel:hover:not(:disabled)",
+    "values": "background:#e5e5e5"
+  },
+  {
+    "f": "frontend\\src\\components\\EditImageModal.css",
+    "selector": ".edit-modal-btn-submit",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\EditImageModal.css",
+    "selector": ".edit-modal-btn-submit:hover:not(:disabled)",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\components\\FollowButton.css",
+    "selector": ".follow-btn.following",
+    "values": "border-color:var(--border-color)"
+  },
+  {
+    "f": "frontend\\src\\components\\Footer.css",
+    "selector": ".studio-footer-newsletter-form button",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\components\\Footer.css",
+    "selector": ".studio-footer-newsletter-form button:hover",
+    "values": "background:var(--studio-accent-copper)"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-button",
+    "values": "color:var(--text-primary, #1B1B19);background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-button:hover",
+    "values": "border-color:var(--text-primary, #1B1B19);background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-booking-button",
+    "values": "background:#1b1b19;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-booking-button:hover",
+    "values": "color:#fff;border-color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-booking-button svg",
+    "values": "color:#DFC29F"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-upload-button",
+    "values": "background:var(--bg-card, #FFFFFF);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\Header.css",
+    "selector": ".header-upload-button:hover",
+    "values": "border-color:var(--text-primary, #1B1B19);background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\ImmersiveHomeChrome.css",
+    "selector": "body.home-cinematic-active .PHOTOCLOUD-header :is(.text-logo,.header-logo,.header-studio-nav a,.header-actions a:not(.header-booking-button),.mobile-header-icon,.header-library-action,.notification-bell-btn)",
+    "values": "color:#fff"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\BlurUpImage.css",
+    "selector": ".blur-up-image-mobile-action-btn",
+    "values": "background:transparent;color:#374151"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\BlurUpImage.css",
+    "selector": ".blur-up-image-mobile-action-btn:hover",
+    "values": "background:#f3f4f6;border-color:#d1d5db"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\BlurUpImage.css",
+    "selector": ".blur-up-image-action-btn",
+    "values": "background:rgba(255, 255, 255, 0.95);color:#374151"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\BlurUpImage.css",
+    "selector": ".blur-up-image-action-btn:hover",
+    "values": "background:var(--bg-card, #FAF8F4)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-view-profile-button",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-view-profile-button:hover",
+    "values": "background:#e8e8e8"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-download-button",
+    "values": "background:rgba(27, 27, 25, 0.05);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-download-button:hover",
+    "values": "background:rgba(0, 0, 0, 0.1)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-favorite-button",
+    "values": "background:rgba(27, 27, 25, 0.05);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-favorite-button:hover:not(:disabled)",
+    "values": "background:rgba(0, 0, 0, 0.1)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-share-button",
+    "values": "background:rgba(27, 27, 25, 0.05);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-share-button:hover",
+    "values": "background:rgba(0, 0, 0, 0.1)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-close-button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\ImageModal.css",
+    "selector": ".image-modal-nav-button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\modal-footer.css",
+    "selector": ".modal-footer-btn",
+    "values": "color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\modal-footer.css",
+    "selector": ".modal-footer-btn:hover",
+    "values": "background:#f0f0f0;border-color:#ddd"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\modal-footer.css",
+    "selector": ".modal-footer-btn.favorited",
+    "values": "background:#fee2e2;color:#dc2626;border-color:#fecaca"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\modal-footer.css",
+    "selector": ".modal-footer-btn.favorited:hover",
+    "values": "background:#fecaca;border-color:#fca5a5"
+  },
+  {
+    "f": "frontend\\src\\components\\NoFlashGrid\\components\\modal-info.css",
+    "selector": ".modal-footer-btn.active",
+    "values": "background:#e5e5e5"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": ".notification-bell-btn",
+    "values": "background:transparent;color:#767676"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": ".notification-bell-btn:hover",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": ".notification-action-btn",
+    "values": "background:transparent;color:var(--text-secondary, #6B6B66)"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": ".notification-action-btn:hover",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": ".notification-item-action-btn",
+    "values": "background:transparent;color:var(--text-secondary, #6B6B66)"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": ".notification-item-action-btn:hover",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\NotificationBell.css",
+    "selector": "body.home-cinematic-active .PHOTOCLOUD-header .notification-bell-btn:hover",
+    "values": "background:#1b1b19"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn",
+    "values": "background:var(--hover-bg, #F2EEE7);color:#767676"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn.modal-footer-btn",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn.modal-footer-btn:hover",
+    "values": "background:#fee2e2;border-color:#fecaca;color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn:hover",
+    "values": "background:#fee2e2;border-color:#fecaca;color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn-cancel",
+    "values": "background:var(--hover-bg, #F2EEE7);color:#767676"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn-cancel:hover:not(:disabled)",
+    "values": "background:#e5e5e5;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn-submit",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\ReportButton.css",
+    "selector": ".report-btn-submit:hover:not(:disabled)",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchBar.css",
+    "selector": ".search-bar-container .clear-history-btn",
+    "values": "background:transparent;color:#767676"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchBar.css",
+    "selector": ".search-bar-container .clear-history-btn:hover",
+    "values": "color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".filter-reset-btn",
+    "values": "background:var(--hover-bg, #F2EEE7);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".filter-reset-btn:hover:not(:disabled)",
+    "values": "background:#e5e5e5"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".filter-apply-btn",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".filter-apply-btn:hover:not(:disabled)",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".filter-apply-btn:active:not(:disabled)",
+    "values": "background:#1a1a1a"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".search-filters-panel.has-changes .filter-apply-btn",
+    "values": "background:#111"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchFilters.css",
+    "selector": ".search-filters-panel.has-changes .filter-apply-btn:hover",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchResultsNavigation.css",
+    "selector": ".filter-dropdown-btn",
+    "values": "background:transparent;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchResultsNavigation.css",
+    "selector": ".filter-dropdown-btn:hover",
+    "values": "border-color:var(--border-strong, #D8D1C5);background-color:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchResultsNavigation.css",
+    "selector": ".filter-dropdown-btn.active",
+    "values": "border-color:var(--border-strong, #D8D1C5);background-color:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchResultsTags.css",
+    "selector": ".search-results-tags-scroll-btn",
+    "values": "background:rgba(255, 255, 255, 0.95)"
+  },
+  {
+    "f": "frontend\\src\\components\\SearchResultsTags.css",
+    "selector": ".search-results-tags-scroll-btn:hover",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\TestimonialsCarousel.css",
+    "selector": ".testimonials-nav-btn",
+    "values": "background:var(--studio-bg-card);color:var(--studio-text-muted)"
+  },
+  {
+    "f": "frontend\\src\\components\\TestimonialsCarousel.css",
+    "selector": ".testimonials-nav-btn:hover",
+    "values": "border-color:var(--studio-accent-copper);color:var(--studio-accent-copper-dark);background:var(--studio-bg-cream)"
+  },
+  {
+    "f": "frontend\\src\\components\\TimedCardSlider.css",
+    "selector": ".travel-stage button",
+    "values": "color:inherit"
+  },
+  {
+    "f": "frontend\\src\\components\\TimedCardSlider.css",
+    "selector": ".travel-stage .slider-controls button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\TimedCardSlider.css",
+    "selector": ".travel-stage .slider-controls button:hover",
+    "values": "background:#ffffff20"
+  },
+  {
+    "f": "frontend\\src\\components\\upload\\UploadPreview.css",
+    "selector": ".upload-location-button",
+    "values": "background:rgba(0, 0, 0, 0.8);color:white"
+  },
+  {
+    "f": "frontend\\src\\components\\upload\\UploadPreview.css",
+    "selector": ".upload-location-button:hover",
+    "values": "background:rgba(0, 0, 0, 0.9)"
+  },
+  {
+    "f": "frontend\\src\\components\\upload\\UploadPreview.css",
+    "selector": ".upload-location-detect-button",
+    "values": "background:transparent;color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\components\\upload\\UploadPreview.css",
+    "selector": ".upload-location-detect-button:hover:not(:disabled)",
+    "values": "background:rgba(99, 102, 241, 0.1);color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\components\\UploadModal.css",
+    "selector": ".success-button",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\components\\UploadModal.css",
+    "selector": ".success-button:hover",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\components\\UploadModal.css",
+    "selector": ".footer-buttons button:first-child",
+    "values": "border-color:var(--border-color, #E8E2D6)"
+  },
+  {
+    "f": "frontend\\src\\components\\UploadModal.css",
+    "selector": ".footer-buttons button:first-child:hover",
+    "values": "border-color:var(--border-strong, #D8D1C5);background-color:var(--hover-bg, #F2EEE7);background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\components\\VisualArtFormsSlider.css",
+    "selector": ".travel-controls button",
+    "values": "background:transparent;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\components\\VisualArtFormsSlider.css",
+    "selector": ".minimal-pagination button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\components\\VisualArtFormsSlider.css",
+    "selector": ".minimal-pagination button::after",
+    "values": "background:#bcbcbc"
+  },
+  {
+    "f": "frontend\\src\\components\\VisualArtFormsSlider.css",
+    "selector": ".minimal-pagination button[aria-pressed=\"true\"]::after",
+    "values": "background:#171717"
+  },
+  {
+    "f": "frontend\\src\\components\\VisualArtFormsSlider.css",
+    "selector": ".minimal-pagination button:hover:not([aria-pressed=\"true\"])::after",
+    "values": "background:#888"
+  },
+  {
+    "f": "frontend\\src\\components\\VisualArtFormsSlider.css",
+    "selector": ".slider-zoom-image-button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": "button:not([disabled]):hover",
+    "values": "border-color:#111"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".dark-theme button:not([disabled]):hover",
+    "values": "border-color:#fff"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": "button[data-slot=\"button\"][class*=\"bg-primary\"]:not([class*=\"bg-destructive\"]):not(.admin-layout *):not(.admin-modal *)",
+    "values": "background-color:#000000;color:#ffffff"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": "button[data-slot=\"button\"][class*=\"bg-primary\"]:not([class*=\"bg-destructive\"]):not(.admin-layout *):not(.admin-modal *):hover",
+    "values": "border-color:#111"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": "button[data-slot=\"button\"][class*=\"border\"]:not([class*=\"bg-primary\"]):not([class*=\"bg-destructive\"]):not([class*=\"bg-secondary\"]):hover:not(.admin-page *):not(.admin-layout *):not(.admin-modal *)",
+    "values": "border-color:#111;background-color:#f5f5f5;background:#f5f5f5"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": "button[data-slot=\"button\"]:not([class*=\"bg-primary\"]):not([class*=\"bg-destructive\"]):not([class*=\"bg-secondary\"]):not([class*=\"border\"]):not([class*=\"bg-background\"]):hover:not(.admin-page *):not(.admin-layout *):not(.admin-modal *)",
+    "values": "background-color:#f5f5f5;background:#f5f5f5"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".admin-page button[data-slot=\"button\"][class*=\"bg-primary\"]:not([class*=\"bg-destructive\"]):not(.admin-layout *):not(.admin-modal *)",
+    "values": "background-color:hsl(var(--primary));color:hsl(var(--primary-foreground))"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".admin-page button[data-slot=\"button\"][class*=\"bg-primary\"]:not([class*=\"bg-destructive\"]):not(.admin-layout *):not(.admin-modal *):hover",
+    "values": "background-color:hsl(var(--primary) / 0.9)"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".admin-page button[data-slot=\"button\"][class*=\"border\"]:not([class*=\"bg-primary\"]):not([class*=\"bg-destructive\"]):not([class*=\"bg-secondary\"]):hover",
+    "values": "background-color:hsl(var(--accent))"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".studio-cta-primary",
+    "values": "background:var(--studio-text-primary);color:#fff"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".studio-cta-secondary",
+    "values": "background:rgba(255, 255, 255, 0.72);color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".studio-cta-secondary:hover:not(:disabled)",
+    "values": "background:var(--bg-card, #FAF8F4);border-color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".studio-cta-ghost",
+    "values": "background:transparent;color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\index.css",
+    "selector": ".studio-cta-ghost:hover:not(:disabled)",
+    "values": "background:rgba(27, 27, 25, 0.04)"
+  },
+  {
+    "f": "frontend\\src\\pages\\AboutPage.css",
+    "selector": ".about-cta h2",
+    "values": "color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\AboutPage.css",
+    "selector": ".about-cta p",
+    "values": "color:var(--studio-text-muted)"
+  },
+  {
+    "f": "frontend\\src\\pages\\AboutPage.css",
+    "selector": ".booking-primary-button",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\pages\\AboutPage.css",
+    "selector": ".booking-secondary-button",
+    "values": "background:transparent;color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\AboutPage.css",
+    "selector": ".booking-secondary-button:hover",
+    "values": "background:var(--studio-bg-cream);border-color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminImagesPage.css",
+    "selector": ".admin-btn",
+    "values": "background:var(--admin-card-bg);color:var(--admin-text)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminImagesPage.css",
+    "selector": ".admin-btn:hover:not(:disabled)",
+    "values": "background:var(--admin-hover)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminImagesPage.css",
+    "selector": ".admin-btn.primary",
+    "values": "background:var(--admin-accent);border-color:var(--admin-accent);color:var(--admin-bg)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminImagesPage.css",
+    "selector": ".admin-btn.primary:hover:not(:disabled)",
+    "values": "background:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminImagesPage.css",
+    "selector": ".admin-btn.danger",
+    "values": "color:var(--admin-danger)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminImagesPage.css",
+    "selector": ".admin-tools .admin-booking-toolbar button.active,\n.admin-tools .admin-calendar-modes button.active",
+    "values": "color:var(--admin-bg);background:var(--admin-accent);border-color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-mobile-menu-btn",
+    "values": "background:linear-gradient(135deg, #1B1B19 0%, #B8865B 100%);color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-mobile-menu-btn:hover",
+    "values": "background:linear-gradient(135deg, #B8865B 0%, #1B1B19 100%)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-booking-toolbar button, .admin-package-actions button, .admin-package-row button",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-booking-toolbar button.active, .admin-package-actions button:first-child",
+    "values": "background:#222;border-color:var(--text-primary, #1B1B19);color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-calendar-header button",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-calendar-modes button.active",
+    "values": "background:#222;color:var(--bg-card, #FFFFFF);border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-availability-blocked button",
+    "values": "background:none;color:#a33"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-policy>button",
+    "values": "background:#222;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-quick-action-btn",
+    "values": "background:var(--bg-card, #FAF8F4);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-quick-action-btn:hover",
+    "values": "background:linear-gradient(\n    135deg,\n    rgba(184, 134, 91, 0.08) 0%,\n    rgba(118, 75, 162, 0.08) 100%\n  );border-color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-quick-action-btn svg",
+    "values": "color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-add-category-btn",
+    "values": "background:#dbeafe;color:#1e40af"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-add-category-btn:hover:not(:disabled)",
+    "values": "background:#bfdbfe;color:#1e3a8a"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-search button",
+    "values": "background:rgba(255, 255, 255, 0.25);color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-search button:hover",
+    "values": "background:rgba(255, 255, 255, 0.35);border-color:rgba(255, 255, 255, 0.5)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-pagination [data-slot='button'],\n.admin-pagination button",
+    "values": "background:var(--bg-card, #FAF8F4);color:#374151"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-pagination button:hover:not(:disabled),\n.admin-pagination [data-slot='button']:hover:not(:disabled)",
+    "values": "background:#f9fafb;border-color:#9ca3af;color:#111827"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-pagination button:disabled,\n.admin-pagination [data-slot='button']:disabled",
+    "values": "background:#f3f4f6"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-modal-header button",
+    "values": "background:none;color:var(--text-secondary, #6B6B66)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-modal-header button:hover",
+    "values": "background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-mobile-menu-btn.menu-open",
+    "values": "background:linear-gradient(135deg, #B8865B 0%, #1B1B19 100%)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-settings input:focus,\n.admin-settings select:focus,\n.admin-settings textarea:focus,\n.admin-settings button:focus,\n.admin-settings a:focus",
+    "values": "border-color:var(--admin-border)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-settings input:focus-visible,\n.admin-settings select:focus-visible,\n.admin-settings textarea:focus-visible,\n.admin-settings button:focus-visible,\n.admin-settings a:focus-visible",
+    "values": "border-color:var(--admin-border)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-settings-tabs-list button",
+    "values": "color:var(--admin-text-secondary);background:transparent"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-settings-tabs-list button:hover",
+    "values": "background:var(--admin-hover);color:var(--admin-text)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-settings-tabs-list button[aria-selected='true']",
+    "values": "background:#000000;color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-confirmation-button-danger",
+    "values": "background:#dc2626;color:white;border-color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".admin-confirmation-button-danger:hover",
+    "values": "background:#b91c1c;border-color:#b91c1c"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".falcon-link-button",
+    "values": "color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".falcon-link-button:hover",
+    "values": "color:#B8865B"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": "[data-slot='button']:not(:disabled):hover,\nbutton:not(:disabled):not([type='submit']):not([type='reset']):hover,\nbutton[type='button']:not(:disabled):hover",
+    "values": "border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": ".dark-theme [data-slot='button']:not(:disabled):hover,\n.dark-theme button:not(:disabled):not([type='submit']):not([type='reset']):hover,\n.dark-theme button[type='button']:not(:disabled):hover",
+    "values": "border-color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": "[data-slot='button'][class*='outline']:not(:disabled):hover",
+    "values": "border-color:hsl(var(--ring))"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminTools.css",
+    "selector": "[data-slot='button'][class*='ghost']:not(:disabled):hover",
+    "values": "background-color:hsl(var(--accent) / 0.8)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminToolsTheme.css",
+    "selector": ".admin-layout .admin-tools button,\n.admin-layout .admin-tools button[data-slot='button'],\n.admin-modal button[data-slot='button']",
+    "values": "background:var(--admin-card-bg);color:var(--admin-text)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminToolsTheme.css",
+    "selector": ".admin-layout .admin-tools button[data-slot='button'][class*='bg-primary'],\n.admin-modal button[data-slot='button'][class*='bg-primary'],\n.admin-layout .admin-tools .admin-booking-toolbar button.active,\n.admin-layout .admin-tools .admin-calendar-modes button.active,\n.admin-layout .admin-tools .admin-package-actions button:first-child,\n.admin-layout .admin-tools .admin-availability-save,\n.admin-layout .admin-tools .admin-policy > button",
+    "values": "background:var(--admin-accent);border-color:var(--admin-accent);color:var(--admin-bg)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminToolsTheme.css",
+    "selector": ".admin-layout .admin-tools button:hover:not(:disabled),\n.admin-modal button[data-slot='button']:hover:not(:disabled)",
+    "values": "background:var(--admin-hover);border-color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\AdminToolsTheme.css",
+    "selector": ".admin-layout\n  .admin-tools\n  button[data-slot='button'][class*='border']:hover:not(:disabled),\n.admin-modal button[data-slot='button'][class*='border']:hover:not(:disabled)",
+    "values": "background:var(--admin-hover);color:var(--admin-text);border-color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\AdminLayout.css",
+    "selector": ".admin-layout-icon-btn",
+    "values": "color:var(--admin-text-secondary);background:transparent"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\AdminLayout.css",
+    "selector": ".admin-layout-icon-btn:hover",
+    "values": "background:var(--admin-hover);color:var(--admin-text)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingAvailability.css",
+    "selector": ".admin-layout .admin-tools .pc-availability .admin-btn.primary",
+    "values": "background:var(--admin-accent);color:var(--admin-bg);border-color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingCalendar.css",
+    "selector": ".admin-layout .admin-tools .pc-calendar .today .pc-calendar-date,\n.admin-layout .admin-tools .pc-calendar-modes .admin-btn[aria-pressed='true']",
+    "values": "background:var(--admin-accent);color:var(--admin-bg);border-color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingPackages.css",
+    "selector": ".admin-layout .admin-tools .pc-packages .admin-package-actions button:first-child",
+    "values": "background:var(--admin-accent);border-color:var(--admin-accent);color:var(--admin-bg)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingPolicy.css",
+    "selector": ".admin-layout .admin-tools .pc-policy .admin-btn.primary",
+    "values": "background:var(--admin-accent);border-color:var(--admin-accent);color:var(--admin-bg)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingRequests.css",
+    "selector": ".admin-layout .admin-tools .admin-bookings .admin-booking-toolbar button",
+    "values": "background:transparent;color:var(--admin-text-secondary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingRequests.css",
+    "selector": ".admin-layout\n  .admin-tools\n  .admin-bookings\n  .admin-booking-toolbar\n  button.active",
+    "values": "background:transparent;border-color:transparent;color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingRequests.css",
+    "selector": ".admin-layout .admin-tools .booking-requests .admin-pagination button",
+    "values": "background:var(--admin-card-bg);color:var(--admin-text);border-color:var(--admin-border)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingRequests.css",
+    "selector": ".admin-layout .admin-tools .booking-quick-filters button",
+    "values": "background:transparent;color:var(--admin-text-secondary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\bookings\\AdminBookingRequests.css",
+    "selector": ".admin-layout .admin-tools .booking-quick-filters button.selected",
+    "values": "background:var(--admin-card-bg);color:var(--admin-accent)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]",
+    "values": "background:var(--bg-card, #FFFFFF);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".confirm-modal-overlay .confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]:hover,\r\n.confirm-modal-overlay .confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]:hover:not([disabled]),\r\n.confirm-modal-overlay .confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]:hover[class*=\"border-ring\"],\r\n.confirm-modal-overlay .confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]:hover[style*=\"border-color\"]",
+    "values": "background:var(--bg-card, #FFFFFF);border-color:#999;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".dark-theme .confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]",
+    "values": "background:hsl(var(--card));border-color:hsl(var(--border));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".dark-theme .confirm-modal-actions button[data-slot=\"button\"][class*=\"outline\"]:hover",
+    "values": "background:hsl(var(--card));border-color:var(--bg-card, #FFFFFF);color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".confirm-btn-danger",
+    "values": "background-color:#A6453C;color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".confirm-btn-danger:hover",
+    "values": "background-color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".confirm-btn-warning",
+    "values": "background-color:#C9A14A;color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\admin\\components\\modals\\ConfirmModal.css",
+    "selector": ".confirm-btn-warning:hover",
+    "values": "background-color:#d97706"
+  },
+  {
+    "f": "frontend\\src\\pages\\auth\\components\\AuthLayout.css",
+    "selector": ".auth-layout .social-btn",
+    "values": "background:var(--bg-card, #FAF8F4);color:#252925"
+  },
+  {
+    "f": "frontend\\src\\pages\\auth\\components\\AuthLayout.css",
+    "selector": ".auth-layout .social-btn:hover",
+    "values": "border-color:#966339"
+  },
+  {
+    "f": "frontend\\src\\pages\\auth\\components\\AuthLayout.css",
+    "selector": ".auth-layout .continue-btn",
+    "values": "background:#252525;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\pages\\auth\\components\\AuthLayout.css",
+    "selector": ".auth-layout .continue-btn:hover",
+    "values": "background:#45403a"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingDetailPage.css",
+    "selector": ".booking-workspace-button",
+    "values": "background:#222;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingDetailPage.css",
+    "selector": ".booking-reschedule-button",
+    "values": "background:var(--bg-card, #FFFFFF);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingDetailPage.css",
+    "selector": ".booking-reschedule-form>button",
+    "values": "background:#222;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingDetailPage.css",
+    "selector": ".booking-cancel-button",
+    "values": "color:#a33;background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingPage.css",
+    "selector": ".booking-submit-button,.booking-primary-button",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingPage.css",
+    "selector": ".booking-secondary-button",
+    "values": "background:transparent;color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\BookingPage.css",
+    "selector": ".booking-secondary-button:hover",
+    "values": "background:var(--studio-bg-cream);border-color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-export-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-export-btn:hover",
+    "values": "background:hsl(var(--muted) / 0.3);border-color:hsl(var(--border))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-favorite-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--muted-foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-favorite-btn.favorited",
+    "values": "color:#A6453C;background:#fee2e2;border-color:#fecaca"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-favorite-btn:hover:not(:disabled)",
+    "values": "background:hsl(var(--muted) / 0.3);border-color:hsl(var(--border))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-favorite-btn.favorited:hover:not(:disabled)",
+    "values": "background:#fecaca;border-color:#fca5a5;color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-selection-mode-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-selection-mode-btn:hover",
+    "values": "background:hsl(var(--muted) / 0.3);border-color:hsl(var(--border))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-selection-mode-btn.active",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background));border-color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-selection-mode-btn.active:hover",
+    "values": "background:hsl(var(--foreground) / 0.9)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-detail-empty button",
+    "values": "background:var(--text-primary);color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".collection-detail-empty button:hover",
+    "values": "background:var(--text-secondary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".bulk-action-link-btn",
+    "values": "background:none;color:#0066cc"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".bulk-action-link-btn::after",
+    "values": "background:#0066cc"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".bulk-action-link-btn:hover",
+    "values": "color:#0052a3;background:rgba(0, 102, 204, 0.05)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\CollectionDetailPage.css",
+    "selector": ".bulk-action-btn::before",
+    "values": "background:rgba(255, 255, 255, 0.3)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionCollaborators.css",
+    "selector": ".collection-collaborators-invite-btn",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionCollaborators.css",
+    "selector": ".collection-collaborators-invite-btn:hover",
+    "values": "background:hsl(var(--foreground) / 0.9)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionCollaborators.css",
+    "selector": ".collection-collaborators-invite-empty-btn",
+    "values": "background:hsl(var(--muted));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionCollaborators.css",
+    "selector": ".collection-collaborators-invite-empty-btn:hover",
+    "values": "background:hsl(var(--muted) / 0.8);border-color:hsl(var(--border) / 0.8)"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionCollaborators.css",
+    "selector": ".collection-collaborator-remove-btn",
+    "values": "background:transparent;color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionCollaborators.css",
+    "selector": ".collection-collaborator-remove-btn:hover:not(:disabled)",
+    "values": "background:#fee2e2;border-color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionNoFlashGrid.css",
+    "selector": ".collection-image-set-cover-btn",
+    "values": "background:rgba(255, 255, 255, 0.95);color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionNoFlashGrid.css",
+    "selector": ".collection-image-set-cover-btn:hover:not(:disabled)",
+    "values": "background:hsl(var(--card))"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionNoFlashGrid.css",
+    "selector": ".collection-image-set-cover-btn:disabled",
+    "values": "background:rgba(0, 0, 0, 0.6);color:#fff"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionNoFlashGrid.css",
+    "selector": ".collection-image-set-cover-btn.is-cover",
+    "values": "background:rgba(0, 0, 0, 0.7);color:#fff"
+  },
+  {
+    "f": "frontend\\src\\pages\\collection\\components\\CollectionNoFlashGrid.css",
+    "selector": ".collection-image-set-cover-btn.is-cover:hover",
+    "values": "background:rgba(0, 0, 0, 0.8)"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-tag-filter-btn",
+    "values": "background:hsl(var(--card));color:hsl(var(--muted-foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-tag-filter-btn:hover",
+    "values": "border-color:var(--border-color);background:hsl(var(--muted));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-tag-filter-btn.active",
+    "values": "background:hsl(var(--foreground));border-color:hsl(var(--foreground));color:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-filter-btn",
+    "values": "background:hsl(var(--muted));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-filter-btn:hover",
+    "values": "background:hsl(var(--muted))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-filter-btn.active",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background));border-color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-create-btn",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-create-btn:hover",
+    "values": "background:hsl(var(--foreground) / 0.8)"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-empty-btn",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-empty-btn:hover",
+    "values": "background:hsl(var(--foreground) / 0.8)"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-page .collection-card-action-btn",
+    "values": "background:var(--bg-card);color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\CollectionsPage.css",
+    "selector": ".collections-page .collection-card-action-btn:hover",
+    "values": "background:var(--bg-secondary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\EditProfilePage.css",
+    "selector": ".change-image-btn",
+    "values": "background:transparent;color:#767676"
+  },
+  {
+    "f": "frontend\\src\\pages\\EditProfilePage.css",
+    "selector": ".change-image-btn:hover",
+    "values": "color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\EditProfilePage.css",
+    "selector": ".update-btn",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\EditProfilePage.css",
+    "selector": ".update-btn:hover:not(:disabled)",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\pages\\ExplorePage.css",
+    "selector": ".explore-segmented-btn",
+    "values": "background:transparent;color:var(--studio-text-muted)"
+  },
+  {
+    "f": "frontend\\src\\pages\\ExplorePage.css",
+    "selector": ".explore-segmented-btn:hover",
+    "values": "color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\ExplorePage.css",
+    "selector": ".explore-segmented-btn.is-active",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-warm)"
+  },
+  {
+    "f": "frontend\\src\\pages\\ExplorePage.css",
+    "selector": ".explore-reset, .explore-error button, .explore-category-error button",
+    "values": "background:var(--studio-bg-card);color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoriteCollectionsPage.css",
+    "selector": ".favorite-collections-empty-btn",
+    "values": "background:#111;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoriteCollectionsPage.css",
+    "selector": ".favorite-collections-empty-btn:hover",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoriteCollectionsPage.css",
+    "selector": ".pagination-btn",
+    "values": "background:var(--bg-card, #FFFFFF);color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoriteCollectionsPage.css",
+    "selector": ".pagination-btn:hover:not(:disabled)",
+    "values": "background:var(--hover-bg, #F2EEE7);border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".favorites-delete-all-btn",
+    "values": "background:var(--bg-card, #FFFFFF);color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".favorites-delete-all-btn:hover:not(:disabled)",
+    "values": "border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".favorites-delete-all-btn:active:not(:disabled)",
+    "values": "border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".favorites-delete-all-btn:disabled",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".favorites-delete-all-btn svg",
+    "values": "color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".dark-theme .favorites-delete-all-btn",
+    "values": "background:hsl(var(--card));color:#dc2626;border-color:hsl(var(--border))"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".dark-theme .favorites-delete-all-btn:hover:not(:disabled)",
+    "values": "border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".dark-theme .favorites-delete-all-btn:active:not(:disabled)",
+    "values": "border-color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".dark-theme .favorites-delete-all-btn:disabled",
+    "values": "background:hsl(var(--card))"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".dark-theme .favorites-delete-all-btn svg",
+    "values": "color:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".browse-button",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".browse-button:hover",
+    "values": "background:hsl(var(--foreground) / 0.8)"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".pagination-btn",
+    "values": "background:hsl(var(--card));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\FavoritesPage.css",
+    "selector": ".pagination-btn:hover:not(:disabled)",
+    "values": "background:var(--hover-bg, #F2EEE7);border-color:#d1d5db"
+  },
+  {
+    "f": "frontend\\src\\pages\\HomePageLayouts.css",
+    "selector": ".home-section-heading h2,\n.home-bottom-cta h2",
+    "values": "color:#1b1b19"
+  },
+  {
+    "f": "frontend\\src\\pages\\HomePageLayouts.css",
+    "selector": ".home-booking-flow,\n.home-social-proof,\n.home-bottom-cta",
+    "values": "background:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\HomePageLayouts.css",
+    "selector": ".home-bottom-cta",
+    "values": "background:#faf8f4"
+  },
+  {
+    "f": "frontend\\src\\pages\\HomePageLayouts.css",
+    "selector": ".home-bottom-cta-icon",
+    "values": "background:rgba(184, 134, 91, 0.12);color:var(--studio-accent-copper, #B8865B)"
+  },
+  {
+    "f": "frontend\\src\\pages\\HomePageLayouts.css",
+    "selector": ".home-bottom-cta-copy h2",
+    "values": "color:var(--studio-text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\HomePageLayouts.css",
+    "selector": ".home-bottom-cta-copy p",
+    "values": "color:var(--studio-text-muted, #6B6B66)"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ":is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-share-button, .image-modal-download-button, .image-info-trigger)",
+    "values": "background:var(--bg-secondary);color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ":is(.image-page, .image-page-modal) :is(.image-modal-favorite-button, .image-modal-share-button, .image-info-trigger):hover:not(:disabled)",
+    "values": "background:var(--hover-bg);border-color:var(--border-strong)"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ":is(.image-page, .image-page-modal) .image-modal-favorite-button[aria-pressed=\"true\"]",
+    "values": "background:var(--hover-bg);border-color:var(--image-action-strong);color:var(--image-action-strong)"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ":is(.image-page, .image-page-modal) .image-modal-download-button",
+    "values": "background:var(--image-action-strong);border-color:transparent;color:var(--bg-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ":is(.image-page, .image-page-modal) .image-modal-download-button:hover:not(:disabled)",
+    "values": "background:color-mix(in srgb, var(--accent) 35%, var(--text-primary))"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ".image-page-modal .image-modal-nav-button",
+    "values": "color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\image\\ImagePageTheme.css",
+    "selector": ":is(.image-page, .image-page-modal) .image-page-photo-error button",
+    "values": "background:var(--bg-card);color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\ImagePage.css",
+    "selector": ".image-page-error button",
+    "values": "background:hsl(var(--foreground));color:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\ImagePage.css",
+    "selector": ".image-page-error button:hover",
+    "values": "background:hsl(var(--foreground) / 0.9)"
+  },
+  {
+    "f": "frontend\\src\\pages\\ImagePage.css",
+    "selector": ".image-page-back-button",
+    "values": "background:transparent;color:inherit"
+  },
+  {
+    "f": "frontend\\src\\pages\\ImagePage.css",
+    "selector": ":is(.image-page, .image-page-modal) :is(.image-modal-actions > button, .image-modal-collection-menu-wrapper > button, .image-modal-download-button, .image-modal-actions-container > button, .image-author-info-trigger)",
+    "values": "background:var(--bg-card, #FFFFFF);color:var(--text-secondary, #6B6B66)"
+  },
+  {
+    "f": "frontend\\src\\pages\\MyBookingsPage.css",
+    "selector": ".my-bookings-reschedule-btn",
+    "values": "background:transparent;color:var(--studio-accent-copper-dark)"
+  },
+  {
+    "f": "frontend\\src\\pages\\MyBookingsPage.css",
+    "selector": ".my-bookings-reschedule-btn:hover",
+    "values": "color:var(--studio-accent-copper)"
+  },
+  {
+    "f": "frontend\\src\\pages\\NewsletterPage.css",
+    "selector": ".newsletter-page button",
+    "values": "background:#273e36;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\pages\\NotFoundPage.css",
+    "selector": ".notfound-cta",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\pages\\NotFoundPage.css",
+    "selector": ".notfound-cta--secondary",
+    "values": "background:var(--studio-bg-card);color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\NotFoundPage.css",
+    "selector": ".notfound-cta--secondary:hover",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\pages\\NotificationPage.css",
+    "selector": ".notification-icon-button,\r\n.notification-mark-all",
+    "values": "background:var(--studio-bg-card);color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\NotificationPage.css",
+    "selector": ".notification-icon-button",
+    "values": "color:var(--studio-text-muted)"
+  },
+  {
+    "f": "frontend\\src\\pages\\NotificationPage.css",
+    "selector": ".notification-icon-button:hover,\r\n.notification-mark-all:hover:not(:disabled)",
+    "values": "background:var(--studio-bg-cream);border-color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\PackagesPage.css",
+    "selector": ".package-card-cta",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\pages\\PackagesPage.css",
+    "selector": ".package-card-cta--secondary",
+    "values": "background:var(--studio-bg-card);color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\PackagesPage.css",
+    "selector": ".package-card-cta--secondary:hover",
+    "values": "background:var(--studio-text-primary);color:var(--studio-bg-card)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\ActiveSessions.css",
+    "selector": ".sign-out-all-button",
+    "values": "background:#A6453C;color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\ActiveSessions.css",
+    "selector": ".sign-out-all-button:hover:not(:disabled)",
+    "values": "background:#dc2626"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\ActiveSessions.css",
+    "selector": ".sign-out-session-button",
+    "values": "background:transparent;color:#A6453C"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\ActiveSessions.css",
+    "selector": ".sign-out-session-button:hover:not(:disabled)",
+    "values": "background:#A6453C;color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\EditPinsModal.css",
+    "selector": ".edit-pins-item-select-btn",
+    "values": "background:#000;color:white"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\EditPinsModal.css",
+    "selector": ".edit-pins-item-select-btn:hover",
+    "values": "background:#333"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-period-button",
+    "values": "background:transparent;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-period-button:hover",
+    "values": "border-color:#767676;background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-section-button",
+    "values": "background:transparent;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-section-button:hover",
+    "values": "border-color:#767676;background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-sort-button",
+    "values": "background:transparent;color:var(--text-primary, #1B1B19)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-sort-button:hover",
+    "values": "border-color:#767676;background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-goal-edit-btn",
+    "values": "background:transparent;color:#767676"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-goal-edit-btn:hover",
+    "values": "border-color:#767676;color:var(--text-primary, #1B1B19);background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-goal-save-btn,\r\n.insights-goal-cancel-btn",
+    "values": "background:transparent;color:#767676"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-goal-save-btn",
+    "values": "color:#7A8B5C;border-color:#7A8B5C"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-goal-save-btn:hover",
+    "values": "background:#7A8B5C;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\components\\UserAnalyticsDashboard.css",
+    "selector": ".insights-goal-cancel-btn:hover",
+    "values": "border-color:#767676;color:var(--text-primary, #1B1B19);background:var(--hover-bg, #F2EEE7)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".edit-profile-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".edit-pins-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".edit-profile-btn:hover",
+    "values": "background:hsl(var(--muted) / 0.5);border-color:hsl(var(--foreground) / 0.6)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".edit-pins-btn:hover",
+    "values": "background:hsl(var(--muted) / 0.5);border-color:hsl(var(--foreground) / 0.6)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".edit-profile-btn:hover,\n.follow-btn",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".follow-btn:hover:not(:disabled)",
+    "values": "background:hsl(var(--muted) / 0.5);border-color:hsl(var(--foreground) / 0.3)"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".follow-btn:active:not(:disabled)",
+    "values": "background:hsl(var(--muted))"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".profile-collection-action-btn",
+    "values": "background:rgba(255, 255, 255, 0.95);color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\profile\\ProfilePage.css",
+    "selector": ".profile-collection-action-btn:hover",
+    "values": "background:hsl(var(--background))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SearchResultsPage.css",
+    "selector": ".search-results-error button",
+    "values": "background:var(--studio-bg-card);color:var(--studio-text-primary)"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".social-btn",
+    "values": "background:hsl(var(--card))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".social-btn:hover",
+    "values": "border-color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".google-btn",
+    "values": "border-color:#4285f4"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".google-btn:hover",
+    "values": "background:hsl(var(--muted))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".apple-btn",
+    "values": "border-color:#000"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".apple-btn:hover",
+    "values": "background:hsl(var(--muted))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".microsoft-btn",
+    "values": "border-color:#00a4ef"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".microsoft-btn:hover",
+    "values": "background:hsl(var(--muted))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".continue-btn",
+    "values": "background:#0066cc;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignInPage.css",
+    "selector": ".continue-btn:hover:not(:disabled)",
+    "values": "background:#0052a3"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".social-btn",
+    "values": "background:hsl(var(--card))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".social-btn:hover",
+    "values": "background:hsl(var(--muted));border-color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".google-btn",
+    "values": "color:#4285f4"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".facebook-btn",
+    "values": "color:#1877f2"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".microsoft-btn",
+    "values": "color:#00a4ef"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".continue-btn",
+    "values": "background:#0066cc;color:var(--bg-card, #FFFFFF)"
+  },
+  {
+    "f": "frontend\\src\\pages\\SignUpPage.css",
+    "selector": ".continue-btn:hover:not(:disabled)",
+    "values": "background:#0052a3"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-button",
+    "values": "background:#dd293e;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-button:hover",
+    "values": "background:#bd1930"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-button-light",
+    "values": "background:#f6f5f1;color:#222521"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-button-light:hover",
+    "values": "background:#e6e3db"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-story-tabs button",
+    "values": "color:#b5c0b6;border-color:#647367"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-story-tabs button.active",
+    "values": "border-color:#f56b73;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\preview\\CinematicPreview.css",
+    "selector": ".sp-site .sp-story-copy .sp-text-button",
+    "values": "border-color:#708575;color:#f6f5f1"
+  },
+  {
+    "f": "frontend\\src\\preview\\SpatialPreview.css",
+    "selector": ".sp-scene-tabs button",
+    "values": "background:#f0efebdd"
+  },
+  {
+    "f": "frontend\\src\\preview\\SpatialPreview.css",
+    "selector": ".sp-scene-tabs button>span",
+    "values": "color:#7d837a"
+  },
+  {
+    "f": "frontend\\src\\preview\\SpatialPreview.css",
+    "selector": ".sp-scene-tabs button[aria-pressed=true]",
+    "values": "border-color:#dd293e;color:#cc1f36"
+  },
+  {
+    "f": "frontend\\src\\preview\\SpatialPreview.css",
+    "selector": ".sp-orbit-tabs button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\preview\\SpatialPreview.css",
+    "selector": ".sp-orbit-tabs button[aria-pressed=true]",
+    "values": "border-color:#dd293e;color:#cc1f36"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": "button",
+    "values": "color:inherit"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-button",
+    "values": "background:#253e32;color:#fff"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-button:hover",
+    "values": "background:#375640"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-button-light",
+    "values": "background:#f7f8f6;color:#213a2c"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-button-light:hover",
+    "values": "background:#e5eee6"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-text-button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-text-button:hover",
+    "values": "color:#a3324e"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-story-tabs button",
+    "values": "background:transparent;color:#68756c"
+  },
+  {
+    "f": "frontend\\src\\preview\\StudioPreview.css",
+    "selector": ".sp-story-tabs button.active",
+    "values": "border-color:#253e32;color:#253e32"
+  },
+  {
+    "f": "frontend\\src\\preview\\TimedSlider.css",
+    "selector": "button",
+    "values": "color:inherit"
+  },
+  {
+    "f": "frontend\\src\\preview\\TimedSlider.css",
+    "selector": ".slider-controls button",
+    "values": "background:transparent"
+  },
+  {
+    "f": "frontend\\src\\preview\\TimedSlider.css",
+    "selector": ".slider-controls button:hover",
+    "values": "background:#ffffff20"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.hero-highlight,.hero-slot,.hero-collection-card,.hero-cta--secondary,.home-package-custom,.home-bottom-cta,.home-step,.booking-faq-item)",
+    "values": "background:var(--bg-card);border-color:var(--border-color)"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.home-section-heading h2,.home-bottom-cta h2,.home-package-body h3,.home-package-badge,.home-step h3,.hero-cta--secondary)",
+    "values": "color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.studio-cta-primary,.hero-cta--primary,.booking-modal-primary)",
+    "values": "background:#F2EEE7;color:#1B1B19"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.studio-cta-secondary,.home-package-card,.booking-modal,.booking-modal-header,.booking-modal-progress,.booking-modal-footer,.booking-modal-summary,.booking-modal-assurance)",
+    "values": "border-color:var(--border-color)"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.explore-chip.is-active,.explore-segmented-btn.is-active)",
+    "values": "background:var(--text-primary);color:var(--bg-primary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.travel-stage,.travel-stage a,.travel-stage button)",
+    "values": "color:#fff"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme .hero-cta--primary svg:first-child",
+    "values": "color:inherit"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.booking-modal-next,.booking-modal-success button:not(.secondary))",
+    "values": "background:#F2EEE7;color:#1B1B19"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.image-info-trigger,.image-modal-favorite-button,.image-modal-nav-button)",
+    "values": "background:var(--bg-card);color:var(--text-primary);border-color:var(--border-strong)"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.contact-button,.contact-button-text)",
+    "values": "color:#fff"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.studio-cta-secondary,.hero-cta--secondary)",
+    "values": "background:#343027;color:var(--text-primary);border-color:#8A8578"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme :is(.studio-cta-secondary,.hero-cta--secondary):hover:not(:disabled)",
+    "values": "background:#40392E;color:var(--text-primary);border-color:#DFC29F"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme .studio-cta-ghost",
+    "values": "color:var(--text-primary);background:#343027"
+  },
+  {
+    "f": "frontend\\src\\styles\\dark-surfaces.css",
+    "selector": "html.dark-theme .studio-cta-ghost:hover:not(:disabled)",
+    "values": "background:#343027;color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\public-surfaces.css",
+    "selector": "html .auth-layout :is(input,select,.social-btn)",
+    "values": "background:var(--bg-card);color:var(--text-primary);border-color:var(--border-strong)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .category-scroll-btn",
+    "values": "background:transparent;color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .image-grid-action-btn",
+    "values": "background:rgba(0, 0, 0, 0.6);color:var(--text-primary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .image-grid-action-btn:hover",
+    "values": "background:rgba(0, 0, 0, 0.8)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .image-grid-action-btn,\r\n.dark-theme .masonry-action-btn,\r\n.dark-theme .image-action-btn",
+    "values": "background:rgba(26, 26, 26, 0.9);color:var(--text-primary);border-color:var(--border-color)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .image-grid-action-btn:hover,\r\n.dark-theme .masonry-action-btn:hover,\r\n.dark-theme .image-action-btn:hover",
+    "values": "background:rgba(45, 45, 45, 1)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .image-action-btn.bookmarked",
+    "values": "background:rgba(239, 68, 68, 0.95);color:white"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .retry-button,\r\n.dark-theme .empty-action",
+    "values": "background:var(--text-primary);color:var(--bg-primary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .retry-button:hover,\r\n.dark-theme .empty-action:hover",
+    "values": "background:var(--text-secondary)"
+  },
+  {
+    "f": "frontend\\src\\styles\\theme.css",
+    "selector": ".dark-theme .contact-button",
+    "values": "background:var(--bg-primary);color:var(--text-primary);border-color:var(--border-color)"
+  },
+  {
+    "f": "frontend\\src\\styles\\visualPolish.css",
+    "selector": ".glass-button",
+    "values": "background:rgba(255, 255, 255, 0.1);color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\styles\\visualPolish.css",
+    "selector": ".glass-button:hover",
+    "values": "background:rgba(255, 255, 255, 0.2);border-color:rgba(255, 255, 255, 0.3)"
+  },
+  {
+    "f": "frontend\\src\\styles\\visualPolish.css",
+    "selector": ".neumorphic-button",
+    "values": "background:hsl(var(--background));color:hsl(var(--foreground))"
+  },
+  {
+    "f": "frontend\\src\\styles\\visualPolish.css",
+    "selector": ".dark-theme .neumorphic-button",
+    "values": "background:hsl(var(--background))"
+  }
+]

@@ -1,6 +1,6 @@
 .collection-detail-page {
   min-height: 100vh;
-  background: hsl(var(--background));
+  background: transparent;
   padding: 0;
   padding-top: 80px;
   margin-top: 0;
@@ -50,22 +50,12 @@
   }
 }
 
-.collection-detail-error button {
-  margin-top: 16px;
-  padding: 10px 20px;
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
 .collection-detail-header {
   max-width: 1296px;
   margin: 0 auto;
-  padding: 80px 16px 48px;
+  padding: 20px 16px 32px;
   border-bottom: 1px solid hsl(var(--border) / 0.2);
-  background: hsl(var(--background));
+  background: transparent;
 }
 
 .collection-detail-back {
@@ -73,8 +63,9 @@
   border: none;
   color: hsl(var(--muted-foreground));
   cursor: pointer;
-  font-size: 0.9375rem;
-  margin-bottom: 24px;
+  font-size: 0.875rem;
+  text-decoration: none;
+  margin: 0 0 20px;
   padding: 6px 0;
   transition: all 0.2s ease;
   font-weight: 500;
@@ -114,10 +105,10 @@
   align-items: center !important;
   gap: 8px;
   padding: 10px 18px;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  color: hsl(var(--foreground));
+  color: var(--button-secondary-fg);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -133,8 +124,9 @@
 }
 
 .collection-export-btn:hover {
-  background: hsl(var(--muted) / 0.3);
-  border-color: hsl(var(--border));
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .collection-favorite-btn {
@@ -143,10 +135,10 @@
   align-items: center !important;
   gap: 8px;
   padding: 10px 18px;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  color: hsl(var(--muted-foreground));
+  color: var(--button-secondary-fg);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -162,20 +154,21 @@
 }
 
 .collection-favorite-btn.favorited {
-  color: #A6453C;
-  background: #fee2e2;
-  border-color: #fecaca;
+  color: var(--button-selected-fg);
+  background: var(--button-selected-bg);
+  border-color: var(--button-selected-border);
 }
 
 .collection-favorite-btn:hover:not(:disabled) {
-  background: hsl(var(--muted) / 0.3);
-  border-color: hsl(var(--border));
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .collection-favorite-btn.favorited:hover:not(:disabled) {
-  background: #fecaca;
-  border-color: #fca5a5;
-  color: #dc2626;
+  background: var(--button-selected-bg);
+  border-color: var(--button-selected-border);
+  color: var(--button-selected-fg);
 }
 
 .collection-favorite-btn:disabled {
@@ -211,12 +204,12 @@
   align-items: center !important;
   gap: 8px;
   padding: 10px 18px;
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: hsl(var(--foreground));
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -233,18 +226,20 @@
 }
 
 .collection-selection-mode-btn:hover {
-  background: hsl(var(--muted) / 0.3);
-  border-color: hsl(var(--border));
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .collection-selection-mode-btn.active {
-  background: hsl(var(--foreground));
-  color: hsl(var(--background));
-  border-color: hsl(var(--foreground));
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
+  border-color: var(--button-selected-border);
 }
 
 .collection-selection-mode-btn.active:hover {
-  background: hsl(var(--foreground) / 0.9);
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
 }
 
 .collection-detail-description {
@@ -310,8 +305,8 @@
 
 .collection-detail-empty button {
   padding: 12px 24px;
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border: none;
   border-radius: 8px;
   font-size: 0.9375rem;
@@ -321,7 +316,8 @@
 }
 
 .collection-detail-empty button:hover {
-  background: #333;
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 .collection-detail-images {
@@ -535,7 +531,7 @@
 .bulk-action-link-btn {
   background: none;
   border: none;
-  color: #0066cc;
+  color: var(--button-secondary-fg);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
@@ -559,8 +555,8 @@
 }
 
 .bulk-action-link-btn:hover {
-  color: #0052a3;
-  background: rgba(0, 102, 204, 0.05);
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
 }
 
 .bulk-action-link-btn:hover::after {
@@ -583,7 +579,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--button-shadow);
   position: relative;
   overflow: hidden;
 }
@@ -613,22 +609,21 @@
 }
 
 .bulk-action-remove {
-  background: linear-gradient(135deg, #A6453C 0%, #dc2626 100%);
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   border: none;
 }
 
 .bulk-action-remove:hover:not(:disabled) {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  background: var(--button-secondary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(166, 69, 60, 0.4),
-    0 2px 8px rgba(166, 69, 60, 0.3);
+  box-shadow: var(--button-shadow);
+  color: var(--button-secondary-fg);
 }
 
 .bulk-action-remove:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 12px rgba(166, 69, 60, 0.3),
-    0 1px 4px rgba(166, 69, 60, 0.2);
+  box-shadow: var(--button-shadow);
 }
 
 /* Selection Checkbox */
@@ -816,3 +811,6 @@
     padding: 10px 20px;
   }
 }
+
+
+.collection-detail-back:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }

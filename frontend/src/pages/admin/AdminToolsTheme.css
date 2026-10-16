@@ -114,10 +114,10 @@
 .admin-layout .admin-tools button[data-slot='button'],
 .admin-modal button[data-slot='button'] {
   min-height: 44px;
-  border: 1px solid var(--admin-border);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  background: var(--admin-card-bg);
-  color: var(--admin-text);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   box-shadow: none;
   text-shadow: none;
   font-size: 12px;
@@ -145,18 +145,19 @@
 }
 .admin-layout .admin-tools button:hover:not(:disabled),
 .admin-modal button[data-slot='button']:hover:not(:disabled) {
-  background: var(--admin-hover);
-  border-color: var(--admin-accent);
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
   transform: none;
   box-shadow: none;
+  color: var(--button-secondary-fg);
 }
 .admin-layout
   .admin-tools
   button[data-slot='button'][class*='border']:hover:not(:disabled),
 .admin-modal button[data-slot='button'][class*='border']:hover:not(:disabled) {
-  background: var(--admin-hover) !important;
-  color: var(--admin-text) !important;
-  border-color: var(--admin-accent) !important;
+  background: var(--button-secondary-hover) !important;
+  color: var(--button-secondary-fg) !important;
+  border-color: var(--button-secondary-border) !important;
 }
 .admin-layout .admin-tools .admin-booking-toolbar {
   gap: 8px;

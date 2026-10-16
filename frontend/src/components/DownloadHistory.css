@@ -290,20 +290,20 @@
     width: 32px;
     height: 32px;
     border: none;
-    background: var(--hover-bg, #F2EEE7);
+    background: var(--button-secondary-bg);
     border-radius: 6px;
     cursor: pointer;
-    color: #767676;
+    color: var(--button-secondary-fg);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
     position: relative;
 }
 
 .download-history-item-download-btn:hover {
-    background: #111;
-    color: var(--bg-card, #FFFFFF);
+    background: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
     transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--button-shadow);
 }
 
 .download-history-item-download-btn:active {
@@ -326,9 +326,9 @@
     padding: 10px 24px;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-primary, #1B1B19);
-    background: var(--bg-card, #FFFFFF);
-    border: 1.5px solid #d1d1d1;
+    color: var(--button-secondary-fg);
+    background: var(--button-secondary-bg);
+    border: 1.5px solid var(--button-secondary-border);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -350,10 +350,11 @@
 }
 
 .download-history-load-more-btn:hover:not(:disabled) {
-    background: var(--hover-bg, #F2EEE7);
-    border-color: var(--text-primary, #1B1B19);
+    background: var(--button-secondary-hover);
+    border-color: var(--button-secondary-border);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--button-shadow);
+    color: var(--button-secondary-fg);
 }
 
 .download-history-load-more-btn:hover:not(:disabled)::before {
@@ -363,7 +364,7 @@
 
 .download-history-load-more-btn:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--button-shadow);
 }
 
 .download-history-load-more-btn:disabled {

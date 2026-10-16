@@ -66,7 +66,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: hsl(var(--muted-foreground));
+  color: var(--button-secondary-fg);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -76,8 +76,8 @@
 }
 
 .edit-pins-modal-close:hover {
-  background: hsl(var(--muted));
-  color: hsl(var(--foreground));
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .edit-pins-modal-content {
@@ -326,7 +326,7 @@
 .edit-pins-clear-all {
   background: none;
   border: none;
-  color: hsl(var(--muted-foreground));
+  color: var(--button-secondary-fg);
   font-size: 0.9375rem;
   cursor: pointer;
   padding: 8px 0;
@@ -334,7 +334,7 @@
 }
 
 .edit-pins-clear-all:hover:not(:disabled) {
-  color: hsl(var(--foreground));
+  color: var(--button-secondary-fg);
 }
 
 .edit-pins-clear-all:disabled {

@@ -1,0 +1,627 @@
+/* ============================================================
+   HeroBooking — PhotoCloud Studio
+   - "First-glance hero": khách vào trang phải hiểu web làm gì
+   - Kỹ thuật: marquee ribbon, floating orbs, photo card parallax,
+     CTA arrow bounce, eyebrow shimmer, trust pills hover
+   ============================================================ */
+
+.hero-section {
+  position: relative;
+  isolation: isolate;
+  margin-top: 0;
+  margin-bottom: 26px;
+  /* Keep the collection grid above the scroll indicator's footer area. */
+  padding: 0 clamp(20px, 3vw, 32px) 112px;
+  border: 1px solid var(--border-color, var(--studio-border-soft));
+  /* Flush on the left/right edges (full-bleed look) — only the top/bottom
+     of the card have a slight curve, matching the header above and the
+     next section below. */
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 0%, rgba(184, 134, 91, 0.12), transparent 60%),
+    radial-gradient(ellipse 70% 70% at 0% 100%, rgba(217, 164, 65, 0.10), transparent 65%),
+    linear-gradient(135deg, var(--studio-bg-warm) 0%, var(--studio-bg-cream) 56%, #EDE5D6 100%);  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: clamp(16px, 2.4vw, 28px);
+  /* align-items: start so the left column (copy) doesn't get stretched
+     to match the taller right column (visual: 2x2 collection grid).
+     This removes the empty cream-colored gap above the eyebrow. */
+  align-items: start;
+  overflow: hidden;
+  /* Include the ribbon and account for the gap below the fixed header. */
+  box-sizing: border-box;
+  height: calc(100vh - var(--homepage-header-height, 80px) - 8px);
+  height: calc(100dvh - var(--homepage-header-height, 80px) - 8px);
+  min-height: auto;
+  box-shadow:
+      0 1px 0 rgba(27, 27, 25, 0.02),
+    0 8px 24px -4px rgba(27, 27, 25, 0.05),
+    0 24px 64px -16px rgba(27, 27, 25, 0.08);
+  animation: heroFadeUp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* The marquee spans both columns with breathing room below the header. */
+.hero-marquee-wrap {
+  min-width: 0;
+  contain: inline-size;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin: 0 calc(-1 * clamp(20px, 3vw, 32px));
+  padding-top: 8px;
+  border-radius: 0;
+  /* Bottom space below the ribbon is provided by the ribbon's own
+     margin (see HeaderMarquee.css). */
+}
+
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Decorative orbs (chuyển động nhẹ) ---------- */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: -1;
+  will-change: transform;
+}
+
+.hero-orb--copper {
+  width: 360px;
+  height: 360px;
+  top: -120px;
+  right: -80px;
+  background: radial-gradient(circle, var(--studio-accent-copper) 0%, transparent 70%);
+  animation: heroFloatA 14s ease-in-out infinite;
+}
+
+.hero-orb--gold {
+  width: 280px;
+  height: 280px;
+  bottom: -100px;
+  left: -60px;
+  background: radial-gradient(circle, var(--studio-rating-gold-bright) 0%, transparent 70%);
+  animation: heroFloatB 18s ease-in-out infinite;
+}
+
+.hero-orb--cream {
+  width: 220px;
+  height: 220px;
+  top: 40%;
+  right: 35%;
+  background: radial-gradient(circle, rgba(242, 238, 231, 0.9) 0%, transparent 70%);
+  animation: heroFloatC 22s ease-in-out infinite;
+}
+
+@keyframes heroFloatA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-30px, 30px) scale(1.08); }
+}
+@keyframes heroFloatB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(40px, -25px) scale(1.05); }
+}
+@keyframes heroFloatC {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+  50%      { transform: translate(-20px, 20px) scale(1.1); opacity: 0.55; }
+}
+
+/* ---------- Marquee ribbon ----------
+   The brand ribbon that scrolls the marquee words now lives in
+   <HeaderMarquee /> (rendered as the first child of the hero card)
+   so the ribbon follows the card's rounded corners and the page
+   content area never starts with a gap above the hero. The wrapper
+   adds the top padding that the hero card used to provide so the
+   ribbon still has breathing room before the orbs/grid. */
+
+/* ---------- Copy block ---------- */
+.hero-copy {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  z-index: 2;
+  min-height: 0; /* cho phép co lại theo parent trong grid */
+  display: flex;
+  flex-direction: column;
+  /* No vertical centring — content sits at the top of the column so
+     there's no empty cream gap above the eyebrow when the right
+     column (visual: 2x2 collection grid) is taller. */
+  justify-content: flex-start;
+}
+
+/* ---------- Eyebrow (LED + Sparkle) ---------- */
+.hero-eyebrow-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0;
+  margin-bottom: 12px;
+  animation: heroFadeUp 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6B4F20;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  -webkit-text-fill-color: currentColor;
+  animation: none;
+}
+
+@keyframes heroShimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.hero-sparkle-icon {
+  color: var(--studio-accent-copper);
+  -webkit-text-fill-color: initial;
+  animation: none;
+}
+
+@keyframes heroSparkle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50%      { transform: rotate(180deg) scale(1.2); }
+}
+
+/* LED dot (small, copper, pulse) */
+.hero-led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--studio-accent-copper);
+  box-shadow:
+    0 0 0 2px rgba(184, 134, 91, 0.2),
+    0 0 8px rgba(184, 134, 91, 0.8);
+  animation: none;
+  -webkit-text-fill-color: initial;
+}
+
+@keyframes heroLed {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(184, 134, 91, 0.2),
+      0 0 8px rgba(184, 134, 91, 0.8);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(184, 134, 91, 0.05),
+      0 0 12px rgba(184, 134, 91, 1);
+  }
+}
+
+/* "Đang nhận booking" live badge */
+.hero-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(122, 139, 92, 0.12);
+  border: 1px solid rgba(122, 139, 92, 0.3);
+  color: #5a6e44;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  -webkit-text-fill-color: initial;
+}
+
+.hero-live-dot {
+  display: block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #81966A;
+  transform-origin: center;
+  animation: heroBookingBreathe 2.8s ease-in-out infinite;
+}
+
+@keyframes heroBookingBreathe {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.65;
+    box-shadow: 0 0 0 rgba(129, 150, 106, 0);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(129, 150, 106, 0.25);
+  }
+}
+
+@keyframes heroLiveDot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.hero-title {
+  margin: 14px 0 12px;
+  color: var(--studio-text-primary);
+  font-size: 68px;
+  line-height: 1.05;
+  letter-spacing: 0;
+  font-family: var(--studio-font-display, 'Fraunces', Georgia, serif);
+  font-weight: 500;
+}
+
+.hero-title-line {
+  display: block;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: #865E3B;
+  -webkit-text-fill-color: currentColor;
+  position: relative;
+  font-weight: 500;
+}
+
+.hero-title em::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.04em;
+  height: 0.08em;
+  background: linear-gradient(135deg, rgba(184, 134, 91, 0.4) 0%, rgba(217, 164, 65, 0.4) 100%);
+  border-radius: 999px;
+  transform-origin: left;
+  animation: heroUnderline 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both;
+}
+
+@keyframes heroUnderline {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.hero-sub {
+  color: #4D4942;
+  font-size: 20px;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 620px;
+  animation: heroFadeUp 0.8s 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-sub strong {
+  color: var(--studio-text-primary);
+  font-weight: 600;
+}
+
+/* Tagline phụ — dùng tông copper italic, font-display */
+.hero-sub-tagline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 4px 10px 4px 8px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(184, 134, 91, 0.18);
+  border-radius: 999px;
+  color: var(--studio-accent-copper-dark);
+  font-family: var(--studio-font-display);
+  font-style: italic;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  width: fit-content;
+  max-width: 620px;
+  animation: heroFadeUp 0.8s 0.25s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-sub-tagline svg {
+  color: var(--studio-accent-copper);
+  flex-shrink: 0;
+}
+
+/* ---------- Feature highlights (3 bullets) ---------- */
+.hero-highlights {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+}
+
+.hero-highlight {
+  min-width: 0;
+  cursor: default;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px 5px 8px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(184, 134, 91, 0.12);
+  border-radius: 0;
+  color: #2A2A26;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  position: relative;
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: heroHighlightIn 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: calc(0.16s + var(--highlight-index, 0) * 0.08s);
+  overflow: hidden;
+}
+@keyframes heroHighlightIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hero-highlight::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent-color, #B8865B);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-highlight:hover::before {
+  transform: scaleY(1);
+}
+
+.hero-highlight-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--accent-color, var(--studio-accent-copper));
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(184, 134, 91, 0.25);
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-highlight-check {
+  margin-left: auto;
+  color: var(--accent-color, #B8865B);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+  flex-shrink: 0;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  animation: heroFadeUp 0.8s 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* ---------- CTA pulse + arrow bounce ---------- */
+.hero-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 6px;
+  min-height: 52px;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.hero-cta--primary {
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+  border-color: var(--button-primary-bg);
+  box-shadow: var(--button-shadow);
+}
+
+.hero-cta--primary:hover {
+  border-color: var(--button-primary-bg);
+  transform: translateY(-2px);
+  box-shadow: var(--button-shadow);
+  animation: none;
+}
+
+.hero-cta--primary svg:first-child {
+  color: #DFC29F;
+  flex-shrink: 0;
+}
+
+.hero-cta--primary .hero-cta-arrow {
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-cta--primary:hover .hero-cta-arrow {
+  transform: translateX(3px);
+}
+
+.hero-cta:focus-visible {
+  outline: 2px solid var(--button-focus);
+  outline-offset: 4px;
+}
+
+.hero-cta--secondary:hover .hero-cta-arrow {
+  transform: translateX(3px);
+}
+
+.hero-cta--secondary .hero-cta-arrow {
+  transition: transform 0.25s ease;
+}
+
+@keyframes heroPulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 12px rgba(27, 27, 25, 0.15),
+      0 0 0 0 rgba(184, 134, 91, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 4px 12px rgba(27, 27, 25, 0.15),
+      0 0 0 10px rgba(184, 134, 91, 0);
+  }
+}
+
+.hero-cta--secondary {
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  border-color: var(--button-secondary-border);
+  box-shadow: var(--button-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.hero-cta--secondary:hover {
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
+  transform: translateY(-2px);
+  box-shadow: var(--button-shadow);
+}
+
+.hero-cta--secondary .hero-cta-arrow {
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-cta--secondary:hover .hero-cta-arrow {
+  transform: translateX(3px);
+}
+
+.hero-cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cta,
+  .hero-cta .hero-cta-arrow {
+    transition: none;
+  }
+  .hero-cta:hover,
+  .hero-cta:active,
+  .hero-cta:hover .hero-cta-arrow {
+    transform: none;
+  }
+}
+
+/* ---------- Trust pills ---------- */
+/* ---------- Slot counter (urgency) ---------- */
+.hero-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 5px 11px 5px 9px;
+  background: linear-gradient(135deg, rgba(166, 69, 60, 0.08), rgba(166, 69, 60, 0.04));
+  border: 1px solid rgba(166, 69, 60, 0.22);
+  border-radius: 999px;
+  color: #6F2D26;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  width: fit-content;
+  animation: heroFadeUp 0.8s 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-slot:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(166, 69, 60, 0.15);
+}
+
+.hero-slot strong {
+  color: var(--studio-status-danger);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-slot strong.flash {
+  animation: heroSlotFlash 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes heroSlotFlash {
+  0%   { transform: scale(1); color: var(--studio-status-danger); }
+  50%  { transform: scale(1.25); color: #6F2D26; }
+  100% { transform: scale(1); color: var(--studio-status-danger); }
+}
+
+.hero-slot-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--studio-status-danger);
+  box-shadow: 0 0 8px rgba(166, 69, 60, 0.8);
+  animation: heroSlotPulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes heroSlotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(1.4); }
+}
+
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  animation: heroFadeUp 0.8s 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-trust-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid rgba(138, 107, 45, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #5f5a52;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.hero-trust-pill:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(184, 134, 91, 0.45);
+  color: var(--studio-text-primary);
+}
+
+.hero-trust-pill svg {
+  color: var(--accent, var(--studio-accent-copper));
+  fill: currentColor;
+  flex-shrink: 0;
+}

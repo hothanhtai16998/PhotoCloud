@@ -92,26 +92,26 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  background: var(--studio-bg-card);
-  border: 1px solid var(--studio-border-soft);
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 999px;
   font-family: var(--studio-font-body);
   font-size: 13px;
   font-weight: 500;
-  color: var(--studio-text-muted);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: border-color 160ms ease-out, color 160ms ease-out, background-color 160ms ease-out;
 }
 
 .explore-chip:hover {
-  border-color: var(--studio-accent-copper);
-  color: var(--studio-text-primary);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .explore-chip.is-active {
-  background: var(--studio-text-primary);
-  color: var(--studio-bg-warm);
-  border-color: var(--studio-text-primary);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
+  border-color: var(--button-primary-bg);
 }
 
 .explore-chip-count {
@@ -153,18 +153,18 @@
   font-family: var(--studio-font-body);
   font-size: 13px;
   font-weight: 500;
-  color: var(--studio-text-muted);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: color 160ms ease-out, background-color 160ms ease-out;
 }
 
 .explore-segmented-btn:hover {
-  color: var(--studio-text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .explore-segmented-btn.is-active {
-  background: var(--studio-text-primary);
-  color: var(--studio-bg-warm);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
 }
 
 .explore-select {
@@ -185,8 +185,8 @@
 .explore-results { margin: 0 0 20px; color: var(--studio-text-muted); font-size: 14px; }
 .explore-reset, .explore-error button, .explore-category-error button {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 9px 12px; min-height: 38px; border: 1px solid var(--studio-border-soft);
-  border-radius: 8px; background: var(--studio-bg-card); color: var(--studio-text-primary);
+  padding: 9px 12px; min-height: 38px; border: 1px solid var(--button-secondary-border);
+  border-radius: 8px; background: var(--button-secondary-bg); color: var(--button-secondary-fg);
   cursor: pointer; font: inherit; font-size: 13px;
 }
 .explore-reset { margin-left: auto; }

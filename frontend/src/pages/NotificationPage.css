@@ -62,9 +62,9 @@
     gap: 6px;
     padding: 8px 14px;
     border-radius: var(--studio-radius-pill);
-    border: 1px solid var(--studio-border-soft);
-    background: var(--studio-bg-card);
-    color: var(--studio-text-primary);
+    border: 1px solid var(--button-secondary-border);
+    background: var(--button-secondary-bg);
+    color: var(--button-secondary-fg);
     font: inherit;
     font-family: var(--studio-font-body);
     font-size: 13px;
@@ -76,13 +76,14 @@
 
 .notification-icon-button {
     padding: 8px;
-    color: var(--studio-text-muted);
+    color: var(--button-secondary-fg);
 }
 
 .notification-icon-button:hover,
 .notification-mark-all:hover:not(:disabled) {
-    background: var(--studio-bg-cream);
-    border-color: var(--studio-text-primary);
+    background: var(--button-secondary-hover);
+    border-color: var(--button-secondary-border);
+    color: var(--button-secondary-fg);
 }
 
 .notification-mark-all:disabled {
@@ -108,7 +109,7 @@
     padding: 8px 16px;
     border: 0;
     background: transparent;
-    color: var(--studio-text-muted);
+    color: var(--button-secondary-fg);
     font: inherit;
     font-family: var(--studio-font-body);
     font-size: 13px;
@@ -119,9 +120,9 @@
 }
 
 .notification-tab.is-active {
-    background: var(--studio-bg-card);
-    color: var(--studio-text-primary);
-    box-shadow: 0 1px 4px rgba(27, 27, 25, 0.06);
+    background: var(--button-secondary-bg);
+    color: var(--button-secondary-fg);
+    box-shadow: var(--button-shadow);
 }
 
 .notification-tab-count {
@@ -253,20 +254,20 @@
     height: 32px;
     border: 0;
     background: transparent;
-    color: var(--studio-text-muted);
+    color: var(--button-secondary-fg);
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease;
 }
 
 .notification-action:hover:not(:disabled) {
-    background: var(--studio-bg-warm);
-    color: var(--studio-text-primary);
+    background: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
 }
 
 .notification-action--danger:hover:not(:disabled) {
-    color: var(--studio-status-danger);
-    background: rgba(166, 69, 60, 0.08);
+    color: var(--button-danger-fg);
+    background: var(--button-danger-hover);
 }
 
 .notification-action:disabled {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/axios';
-import { applyAppearanceSettings } from '@/utils/applyAppearanceSettings';
+import { applySitePalette, getPaletteRevision } from '@/theme/paletteRuntime';
 
 interface SiteSettings {
     siteName: string;
@@ -36,11 +36,13 @@ export function useSiteSettings() {
     }, []);
 
     const loadSettings = async () => {
+        const paletteRevision = getPaletteRevision();
         try {
             // Public pages must never fall back to privileged admin settings.
             const { data } = await api.get('/settings');
             if (data.settings) {
                 const settingsData = data.settings as {
+                    sitePalette?: unknown;
                     siteName?: string;
                     siteDescription?: string;
                     maxUploadSize?: number;
@@ -72,31 +74,7 @@ export function useSiteSettings() {
                 
                 setSettings(loadedSettings);
                 
-                // Apply appearance settings if they exist
-                const appearanceData = settingsData as any;
-                if (appearanceData.themePrimaryColor || appearanceData.borderRadius || appearanceData.customCSS) {
-                    applyAppearanceSettings({
-                        themePrimaryColor: appearanceData.themePrimaryColor as string | undefined,
-                        themeSecondaryColor: appearanceData.themeSecondaryColor as string | undefined,
-                        themeAccentColor: appearanceData.themeAccentColor as string | undefined,
-                        themeSuccessColor: appearanceData.themeSuccessColor as string | undefined,
-                        themeWarningColor: appearanceData.themeWarningColor as string | undefined,
-                        themeErrorColor: appearanceData.themeErrorColor as string | undefined,
-                        themeInfoColor: appearanceData.themeInfoColor as string | undefined,
-                        borderRadius: appearanceData.borderRadius as string | undefined,
-                        animationsEnabled: appearanceData.animationsEnabled as boolean | undefined,
-                        animationSpeed: appearanceData.animationSpeed as string | undefined,
-                        buttonStyle: appearanceData.buttonStyle as string | undefined,
-                        cardStyle: appearanceData.cardStyle as string | undefined,
-                        darkModeEnabled: appearanceData.darkModeEnabled as boolean | undefined,
-                        darkModeDefault: appearanceData.darkModeDefault as string | undefined,
-                        customCSS: appearanceData.customCSS as string | undefined,
-                        fontFamily: appearanceData.fontFamily as string | undefined,
-                        fontSize: appearanceData.fontSize as string | undefined,
-                        defaultViewMode: appearanceData.defaultViewMode as string | undefined,
-                        homepageLayout: appearanceData.homepageLayout as string | undefined,
-                    });
-                }
+                if (paletteRevision === getPaletteRevision()) applySitePalette(settingsData.sitePalette);
             }
         } catch (error) {
             // If settings can't be loaded (e.g., user not admin), use defaults

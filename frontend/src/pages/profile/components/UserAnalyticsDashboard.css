@@ -30,17 +30,17 @@
   gap: 8px;
   padding: 8px 12px;
   background: transparent;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
   font-size: 0.9375rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .insights-period-button:hover {
-  border-color: #767676;
-  background: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-secondary-border);
+  background: var(--button-secondary-hover);
 }
 
 .insights-period-button svg {
@@ -72,17 +72,17 @@
   border: none;
   text-align: left;
   font-size: 0.9375rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .insights-period-option:hover {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-secondary-hover);
 }
 
 .insights-period-option.active {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-selected-bg);
   font-weight: 500;
 }
 
@@ -166,7 +166,7 @@
 .insights-most-toggle {
   background: transparent;
   border: none;
-  color: #767676;
+  color: var(--button-secondary-fg);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -175,7 +175,7 @@
 }
 
 .insights-most-toggle:hover {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
 }
 
 .insights-platform {
@@ -259,17 +259,17 @@
 .insights-section-button {
   padding: 6px 12px;
   background: transparent;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
   font-size: 0.875rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .insights-section-button:hover {
-  border-color: #767676;
-  background: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-secondary-border);
+  background: var(--button-secondary-hover);
 }
 
 /* Uses Section */
@@ -360,17 +360,17 @@
   gap: 8px;
   padding: 8px 12px;
   background: transparent;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
   font-size: 0.875rem;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .insights-sort-button:hover {
-  border-color: #767676;
-  background: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-secondary-border);
+  background: var(--button-secondary-hover);
 }
 
 .insights-images-list {
@@ -625,20 +625,20 @@
 
 .insights-goal-edit-btn {
   background: transparent;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 4px;
   padding: 4px 8px;
   cursor: pointer;
-  color: #767676;
+  color: var(--button-secondary-fg);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
 }
 
 .insights-goal-edit-btn:hover {
-  border-color: #767676;
-  color: var(--text-primary, #1B1B19);
-  background: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
 }
 
 .insights-goal-edit-controls {
@@ -663,11 +663,11 @@
 .insights-goal-save-btn,
 .insights-goal-cancel-btn {
   background: transparent;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  border: 1px solid var(--button-primary-bg);
   border-radius: 4px;
   padding: 4px 8px;
   cursor: pointer;
-  color: #767676;
+  color: var(--button-primary-fg);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -675,19 +675,19 @@
 }
 
 .insights-goal-save-btn {
-  color: #7A8B5C;
-  border-color: #7A8B5C;
+  color: var(--button-primary-fg);
+  border-color: var(--button-primary-bg);
 }
 
 .insights-goal-save-btn:hover {
-  background: #7A8B5C;
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 .insights-goal-cancel-btn:hover {
-  border-color: #767676;
-  color: var(--text-primary, #1B1B19);
-  background: var(--hover-bg, #F2EEE7);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
 }
 
 .insights-goal-progress-bar {

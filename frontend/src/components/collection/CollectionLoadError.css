@@ -1,0 +1,9 @@
+.collection-load-error { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 40px 20px; text-align: center; color: var(--text-secondary); }
+.collection-load-error p { margin: 0; font-size: 1.125rem; }
+.collection-load-error button { padding: 12px 24px; border: 0; border-radius: 8px; background: var(--button-primary-bg); color: var(--button-primary-fg); cursor: pointer; }
+.collection-load-error button:focus-visible { outline: 2px solid var(--button-focus); outline-offset: 3px; }
+.collection-load-error button:disabled { opacity: .6; cursor: wait; }
+.collection-load-error-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.collection-load-error-actions a { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: .875rem; }
+.collection-load-error-actions button { padding: 10px 16px; font-size: .875rem; }
+.collection-load-error-actions a:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 3px; }

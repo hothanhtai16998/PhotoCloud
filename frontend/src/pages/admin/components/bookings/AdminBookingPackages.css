@@ -150,9 +150,9 @@
   padding: 10px 18px;
 }
 .admin-layout .admin-tools .pc-packages .admin-package-actions button:first-child {
-  background: var(--admin-accent);
-  border-color: var(--admin-accent);
-  color: var(--admin-bg);
+  background: var(--button-primary-bg);
+  border-color: var(--button-primary-bg);
+  color: var(--button-primary-fg);
 }
 @media (max-width: 800px) {
   .pc-packages-header { align-items: flex-start; flex-direction: column; gap: 16px; }

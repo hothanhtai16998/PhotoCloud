@@ -50,7 +50,7 @@
     width: 100%;
     background: transparent;
     border: 0;
-    color: var(--studio-text-muted);
+    color: var(--button-secondary-fg);
     cursor: pointer;
     text-decoration: none;
     border-radius: 12px;
@@ -61,12 +61,12 @@
 
 .mobile-bottom-nav-item:hover,
 .mobile-bottom-nav-item:active {
-    color: var(--studio-text-primary);
-    background: rgba(184, 134, 91, 0.06);
+    color: var(--button-secondary-fg);
+    background: var(--button-secondary-hover);
 }
 
 .mobile-bottom-nav-item.is-active {
-    color: var(--studio-accent-copper);
+    color: var(--button-secondary-fg);
 }
 
 .mobile-bottom-nav-icon {

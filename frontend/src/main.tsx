@@ -1,7 +1,9 @@
+import { restoreCachedPalette } from './theme/paletteRuntime';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { enableMapSet } from 'immer';
 import './index.css';
+import './styles/app-shell.css';
 import './styles/theme.css';
 import App from './App.tsx';
 import { BrowserRouter } from 'react-router';
@@ -12,7 +14,10 @@ import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import './utils/verifyAppearanceSettings';
 import './styles/dark-surfaces.css';
 import './styles/public-surfaces.css';
+import './styles/button-tokens.css';
 import { removeDevServiceWorker } from './utils/removeDevServiceWorker';
+
+restoreCachedPalette();
 
 // Enable Immer MapSet plugin for Map and Set support in Zustand stores
 enableMapSet();

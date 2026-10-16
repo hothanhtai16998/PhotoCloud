@@ -134,7 +134,7 @@
 
 .blur-up-image-mobile-action-btn {
   background: transparent;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
   padding: 10px;
   cursor: pointer;
@@ -142,12 +142,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #374151;
+  color: var(--button-secondary-fg);
 }
 
 .blur-up-image-mobile-action-btn:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
 }
 
 .blur-up-image-mobile-action-btn:active {
@@ -266,7 +266,7 @@
 }
 
 .blur-up-image-action-btn {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--button-secondary-bg);
   border: none;
   border-radius: 6px;
   padding: 8px;
@@ -275,15 +275,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--button-shadow);
   pointer-events: auto;
-  color: #374151;
+  color: var(--button-secondary-fg);
 }
 
 .blur-up-image-action-btn:hover {
-  background: var(--bg-card, #FAF8F4);
+  background: var(--button-secondary-hover);
   /* No transform on hover - prevent movement */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--button-shadow);
+  color: var(--button-secondary-fg);
 }
 
 .blur-up-image-action-btn:active {

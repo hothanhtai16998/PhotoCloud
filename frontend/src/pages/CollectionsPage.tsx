@@ -1,18 +1,16 @@
-import { useEffect, useLayoutEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collectionService } from '@/services/collectionService';
 import type { Collection } from '@/types/collection';
-import type { Image } from '@/types/image';
 import { toast } from 'sonner';
-import { getErrorMessage } from '@/lib/utils';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
-import { useCollectionsListStore } from '@/stores/useCollectionsListStore';
-import { Folder, Plus, Trash2, Edit2, Lock, Search, X, Filter } from 'lucide-react';
-import { BlurUpImage } from '@/components/NoFlashGrid/components/BlurUpImage';
-import { ConfirmModal } from '@/pages/admin/components/modals';
+import { useCollectionsListStore, markCollectionsOffline } from '@/stores/useCollectionsListStore';
+import { Folder, Plus, Search, X, Filter } from 'lucide-react';
 import { t } from '@/i18n';
-import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
+import { filterCollections } from '@/utils/collectionList';
+import { CollectionCard } from '@/components/collection/CollectionCard';
+import { CollectionDeleteDialog } from '@/components/collection/CollectionDeleteDialog';
+import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
 import './CollectionsPage.css';
 
 // Lazy load CollectionModal - only shown when editing
@@ -26,7 +24,7 @@ export default function CollectionsPage() {
 	// Collections list store
 	const {
 		collections,
-		filteredCollections,
+		error,
 		loading,
 		deletingId,
 		searchQuery,
@@ -34,44 +32,22 @@ export default function CollectionsPage() {
 		sortBy,
 		selectedTag,
 		hasLoaded,
-		fetchCollections,
-		deleteCollection,
-		updateCollection,
-		setSearchQuery,
+		fetchCollections,		setSearchQuery,
 		setShowPublicOnly,
 		setSortBy,
 		setSelectedTag,
 		clearFilters,
 		refreshCollections,
-		resetLoading,
 		checkAndRefreshIfStale,
 	} = useCollectionsListStore();
 
 
 
-	const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
-	const [showEditModal, setShowEditModal] = useState(false);
-	const [showCreateModal, setShowCreateModal] = useState(false);
-	const [showDeleteModal, setShowDeleteModal] = useState(false);
-	const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
-
-	// Reset loading synchronously before paint if we have data
-	// This prevents grid flash when navigating with cached data
-	useLayoutEffect(() => {
-		if (collections.length > 0) {
-			resetLoading();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [collections.length]); // Run when collections change
-
-	// Sync loading state to global loading store
-	useEffect(() => {
-		const isPageLoading = loading && collections.length === 0;
-		syncGlobalLoading('collectionsPage', isPageLoading);
-		return () => {
-			syncGlobalLoading('collectionsPage', false);
-		};
-	}, [loading, collections.length]);
+ const canCreate = !!(user?.isAdmin || user?.isSuperAdmin);
+ useEffect(() => { window.addEventListener('offline', markCollectionsOffline); return () => window.removeEventListener('offline', markCollectionsOffline); }, []);
+ const [editor, setEditor] = useState<Collection | 'create' | null>(null);
+ const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
+ const filteredCollections = useMemo(() => filterCollections(collections, { searchQuery, showPublicOnly, sortBy, selectedTag }), [collections, searchQuery, showPublicOnly, sortBy, selectedTag]);
 
 	useEffect(() => {
 		// CRITICAL: Wait for auth initialization before fetching collections
@@ -85,40 +61,11 @@ export default function CollectionsPage() {
 			return;
 		}
 
-		// On mount, if we have data, ensure loading is false
-		if (collections.length > 0) {
-			resetLoading();
-		}
-
-		// Only fetch if we haven't loaded yet or if data is empty
-		if (!hasLoaded || collections.length === 0) {
-			const loadCollections = async () => {
-				try {
-					await fetchCollections();
-				} catch (_error) {
-					// Error already handled in store
-				}
-			};
-
-			loadCollections();
-		} else {
-			// PHOTOCLOUD-style: Silent background refresh if stale
-			checkAndRefreshIfStale();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [accessToken, isInitializing]);
-
-	// PHOTOCLOUD-style: Periodic check for stale data (every 2 minutes)
-	useEffect(() => {
-		if (!hasLoaded || !accessToken) return;
-		
-		const interval = setInterval(() => {
-			checkAndRefreshIfStale();
-		}, 2 * 60 * 1000); // Check every 2 minutes
-		
-		return () => clearInterval(interval);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [hasLoaded, accessToken]);
+  if (!hasLoaded) void fetchCollections();
+  else void checkAndRefreshIfStale();
+  const interval = setInterval(() => { void checkAndRefreshIfStale(); }, 2 * 60 * 1000);
+  return () => clearInterval(interval);
+ }, [accessToken, isInitializing, hasLoaded, navigate, fetchCollections, checkAndRefreshIfStale]);
 
 	// Get all unique tags from collections
 	const allTags = useMemo(() => {
@@ -131,68 +78,24 @@ export default function CollectionsPage() {
 		return Array.from(tagSet).sort();
 	}, [collections]);
 
-	// Filtering and sorting is now handled in the store
-
-	const handleDeleteClick = (collectionId: string) => {
-		setCollectionToDelete(collectionId);
-		setShowDeleteModal(true);
-	};
-
-	const handleDeleteConfirm = async () => {
-		if (collectionToDelete) {
-			await deleteCollection(collectionToDelete);
-			setShowDeleteModal(false);
-			setCollectionToDelete(null);
-		}
-	};
-
-	const handleCollectionClick = (collection: Collection) => {
-		navigate(`/collections/${collection._id}`);
-	};
-
-	const handleEditCollection = (e: React.MouseEvent, collection: Collection) => {
-		e.stopPropagation();
-		setEditingCollection(collection);
-		setShowEditModal(true);
-	};
-
-	const handleCollectionUpdated = () => {
-		// Reload collections after update
-		refreshCollections();
-	};
-
-	const clearSearch = () => {
-		setSearchQuery('');
-	};
-
-
-	// Only show loading if we're actually loading AND have no data
-	// This prevents showing loading placeholder when navigating with existing data
-	// GlobalLoadingOverlay handles the spinner, so we return null to prevent duplicate
-	if (loading && collections.length === 0) {
-		return (
-			<>
-				<div className="collections-page">
-					{/* GlobalLoadingOverlay handles the spinner */}
-				</div>
-			</>
-		);
-	}
+ const handleCollectionUpdated = () => { void refreshCollections(); };
+ const clearSearch = () => setSearchQuery('');
+ if (isInitializing || !accessToken) return null;
 
 		return (
 			<>
 				<div className="collections-page">
 					<div className="collections-header">
-					<h1>{t('collections.myCollections')}</h1>
-					<button
+					<h1>Bộ sưu tập</h1>
+					{canCreate && <button
 						className="collections-create-btn"
 						onClick={() => {
-							setShowCreateModal(true);
+							setEditor('create');
 						}}
 					>
 						<Plus size={18} />
 						{t('collections.createCollection')}
-					</button>
+					</button>}
 				</div>
 
 				{/* Search and Filter Bar */}
@@ -204,6 +107,7 @@ export default function CollectionsPage() {
 								type="text"
 								className="collections-search-input"
 								placeholder={t('collections.searchPlaceholder')}
+								aria-label={t('collections.searchPlaceholder')}
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
 							/>
@@ -211,7 +115,7 @@ export default function CollectionsPage() {
 								<button
 									className="collections-search-clear"
 									onClick={clearSearch}
-									title={t('collections.clearSearch')}
+									aria-label={t('collections.clearSearch')}
 								>
 									<X size={16} />
 								</button>
@@ -220,7 +124,8 @@ export default function CollectionsPage() {
 						{allTags.length > 0 && (
 							<div className="collections-tags-filter">
 								<button
-									className={`collections-tag-filter-btn ${!selectedTag ? 'active' : ''}`}
+									aria-pressed={!selectedTag}
+ className={`collections-tag-filter-btn ${!selectedTag ? 'active' : ''}`}
 									onClick={() => setSelectedTag(null)}
 									title={t('collections.allTags')}
 								>
@@ -229,6 +134,7 @@ export default function CollectionsPage() {
 								{allTags.map(tag => (
 									<button
 										key={tag}
+ aria-pressed={selectedTag === tag}
 										className={`collections-tag-filter-btn ${selectedTag === tag ? 'active' : ''}`}
 										onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
 										title={t('collections.filterBy', { tag })}
@@ -240,7 +146,8 @@ export default function CollectionsPage() {
 						)}
 						<div className="collections-filter-controls">
 							<button
-								className={`collections-filter-btn ${showPublicOnly ? 'active' : ''}`}
+								aria-pressed={showPublicOnly}
+ className={`collections-filter-btn ${showPublicOnly ? 'active' : ''}`}
 								onClick={() => setShowPublicOnly(!showPublicOnly)}
 								title={showPublicOnly ? t('collections.showAll') : t('collections.showPublicOnly')}
 							>
@@ -248,7 +155,8 @@ export default function CollectionsPage() {
 								<span>{showPublicOnly ? t('collections.public') : t('collections.all')}</span>
 							</button>
 							<select
-								className="collections-sort-select"
+								aria-label="Sắp xếp bộ sưu tập"
+ className="collections-sort-select"
 								value={sortBy}
 								onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
 							>
@@ -261,11 +169,13 @@ export default function CollectionsPage() {
 					</div>
 				)}
 
-				{collections.length === 0 ? (
+				{error && <CollectionLoadError message={error} busy={loading} onRetry={() => void fetchCollections()} />}
+                {loading && <p className="collections-results-info" role="status">Đang tải bộ sưu tập…</p>}
+                {collections.length === 0 && (loading || error || !hasLoaded) ? null : collections.length === 0 ? (
 					<div className="collections-empty">
 						<Folder size={64} />
-						<h2>{t('collections.empty')}</h2>
-						<p>{t('collections.emptyHint')}</p>
+						<h2>Chưa có bộ sưu tập</h2>
+						<p>{canCreate ? t('collections.emptyHint') : 'Bộ sưu tập công khai sẽ xuất hiện tại đây khi quản trị viên đăng tải.'}</p>
 						<button
 							className="collections-empty-btn"
 							onClick={() => navigate('/')}
@@ -278,7 +188,7 @@ export default function CollectionsPage() {
 						<Folder size={64} />
 						<h2>{t('collections.noCollectionsFound')}</h2>
 						<p>
-							{searchQuery 
+							{searchQuery
 								? t('collections.noMatchSearch', { query: searchQuery })
 								: t('collections.noMatchFilter')}
 						</p>
@@ -301,159 +211,17 @@ export default function CollectionsPage() {
 							</div>
 						)}
 						<div className="collections-grid">
-							{filteredCollections.map((collection) => {
-							const coverImage =
-								collection.coverImage &&
-								typeof collection.coverImage === 'object'
-									? collection.coverImage
-									: null;
-							
-							// Get sample images (2-3 images for thumbnails)
-							// Filter out coverImage to avoid duplicates
-							const allSampleImages = collection.sampleImages && Array.isArray(collection.sampleImages)
-								? collection.sampleImages.filter((img): img is Image => 
-									typeof img === 'object' && img !== null && '_id' in img
-								)
-								: [];
-							
-							// Exclude coverImage from thumbnails to avoid showing the same image twice
-							const coverImageId = coverImage?._id;
-							const sampleImages = coverImageId
-								? allSampleImages.filter(img => img._id !== coverImageId)
-								: allSampleImages;
-							
-							
-							// Get creator name
-							const creatorName = typeof collection.createdBy === 'object' 
-								? collection.createdBy.displayName || collection.createdBy.username
-								: user?.displayName || user?.username || 'You';
-
-							return (
-								<div
-									key={collection._id}
-									className="collection-card"
-									onClick={() => handleCollectionClick(collection)}
-								>
-									<div className="collection-card-cover">
-										<div className={`collection-card-images ${sampleImages.length < 2 ? 'no-thumbnails' : ''}`}>
-											{/* Main large image on the left */}
-											<div className="collection-card-main-image">
-												{coverImage ? (
-													<BlurUpImage
-														image={coverImage}
-														priority={false}
-														minimal={true}
-													/>
-												) : (
-													<div className="collection-card-placeholder">
-														<Folder size={48} />
-													</div>
-												)}
-											</div>
-											{/* Smaller thumbnails on the right (stacked) - only show if we have 2+ sample images */}
-											{sampleImages.length >= 2 && (
-												<div className="collection-card-thumbnails">
-													{sampleImages.slice(0, 2).map((img, idx) => (
-														<div key={img._id || idx} className="collection-card-thumbnail">
-															<BlurUpImage
-																image={img}
-																priority={false}
-																minimal={true}
-															/>
-														</div>
-													))}
-												</div>
-											)}
-										</div>
-										<div className="collection-card-overlay">
-											<div className="collection-card-actions">
-												<button
-													className="collection-card-action-btn"
-													onClick={(e) => handleEditCollection(e, collection)}
-													title={t('collections.editCollection')}
-												>
-													<Edit2 size={18} />
-												</button>
-												<button
-													className="collection-card-action-btn action-danger"
-													onClick={(e) => {
-														e.stopPropagation();
-														handleDeleteClick(collection._id);
-													}}
-													disabled={deletingId === collection._id}
-													title={t('common.delete')}
-												>
-													<Trash2 size={18} />
-												</button>
-											</div>
-										</div>
-									</div>
-									<div className="collection-card-info">
-										<div className="collection-card-header">
-											<h3 className="collection-card-title">
-												{collection.name}
-												{!collection.isPublic && (
-													<Lock size={14} className="collection-card-lock-icon" />
-												)}
-											</h3>
-										</div>
-										<div className="collection-card-meta">
-											<span className="collection-card-meta-text">
-												{collection.imageCount || 0} {collection.imageCount === 1 ? t('collections.image') : t('collections.images')} · {t('collections.curatedBy', { name: creatorName })}
-											</span>
-										</div>
-									</div>
-								</div>
-							);
-						})}
+							{filteredCollections.map((collection, index) => <CollectionCard key={collection._id} collection={collection} creatorFallback={user?.displayName || user?.username || ''} priority={index < 2} deleting={deletingId === collection._id} canManage={canCreate && (typeof collection.createdBy === 'object' ? collection.createdBy?._id : collection.createdBy) === user?._id} onEdit={() => setEditor(collection)} onDelete={() => setCollectionToDelete(collection._id)} />)}
 						</div>
 					</>
 				)}
 			</div>
 
-			{/* Edit Collection Modal */}
-			{showEditModal && editingCollection && (
-				<Suspense fallback={null}>
-					<CollectionModal
-						isOpen={showEditModal}
-						onClose={() => {
-							setShowEditModal(false);
-							setEditingCollection(null);
-						}}
-						collectionToEdit={editingCollection}
-						onCollectionUpdate={handleCollectionUpdated}
-					/>
-				</Suspense>
-			)}
-			{/* Create Collection Modal */}
-			{showCreateModal && (
-				<Suspense fallback={null}>
-					<CollectionModal
-						isOpen={showCreateModal}
-						onClose={() => {
-							setShowCreateModal(false);
-						}}
-						onCollectionUpdate={handleCollectionUpdated}
-					/>
-				</Suspense>
-			)}
 
-			{/* Delete Collection Modal */}
-			<ConfirmModal
-				isOpen={showDeleteModal}
-				onClose={() => {
-					setShowDeleteModal(false);
-					setCollectionToDelete(null);
-				}}
-				onConfirm={handleDeleteConfirm}
-				title="Xóa bộ sưu tập"
-				message={t('collections.deleteConfirm')}
-				confirmText="Xóa"
-				cancelText="Hủy"
-				variant="danger"
-			/>
-
-		</>
-	);
+   {editor && <Suspense fallback={<p role="status">Đang tải biểu mẫu…</p>}>
+    <CollectionModal key={editor === 'create' ? 'create' : editor._id} isOpen onClose={() => setEditor(null)} collectionToEdit={editor === 'create' ? undefined : editor} onCollectionUpdate={handleCollectionUpdated} />
+   </Suspense>}
+   <CollectionDeleteDialog collectionId={collectionToDelete} onClose={() => setCollectionToDelete(null)} />
+  </>
+ );
 }
-

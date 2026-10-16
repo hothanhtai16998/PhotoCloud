@@ -3,7 +3,7 @@ const root=path.join(__dirname,'../src');
 const compile=s=>ts.transpileModule(s,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return{promise,resolve};};
-const page=read('pages/image/useImagePageController.ts')+read('pages/ImagePage.tsx');
+const page=read('pages/image/useImagePageActions.ts')+read('pages/image/useImagePageController.ts')+read('pages/ImagePage.tsx');
 const slice=(a,b)=>compile(page.slice(page.indexOf(a),page.indexOf(b,page.indexOf(a))));
 (async()=>{
   let copies=0;
@@ -24,7 +24,7 @@ const slice=(a,b)=>compile(page.slice(page.indexOf(a),page.indexOf(b,page.indexO
   clip.document.execCommand=()=>{throw new Error('blocked');};assert.equal(await clip.exports.shareService.copyToClipboard('link'),false);assert.equal(restored,2);assert.equal(removed,2);
   const pending=deferred();let calls=0;const messages=[];
   const context={useCallback:fn=>fn,image:{_id:'photo-a',imageTitle:'A'},sharePendingRef:{current:false},setIsSharing:()=>{},pageActiveRef:{current:true},currentImageIdRef:{current:'photo-a'},generateImageSlug:()=> 'a-id',t:v=>v,window:{location:{origin:'https://example.com'}},sharePhotoLink:()=>{calls++;return pending.promise;},toast:{success:v=>messages.push(v),error:v=>messages.push(v)},setShowDownloadMenu:()=>{},downloadButtonRef:{current:null},document:{activeElement:null}};
-  vm.runInNewContext(slice('  const handleShare =','  const handleViewProfile =')+'\nshare=handleShare;menuKey=handleDownloadMenuKeyDown;',context);
+  vm.runInNewContext(slice('  const handleShare =','  return { handleDownload')+slice('  const handleDownloadMenuKeyDown','  const handleViewProfile =')+'\nshare=handleShare;menuKey=handleDownloadMenuKeyDown;',context);
   const task=context.share();await context.share();assert.equal(calls,1);context.currentImageIdRef.current='photo-b';pending.resolve('copied');await task;assert.equal(messages.length,0);assert.equal(context.sharePendingRef.current,false);
   const buttons=Array.from({length:4},(_,id)=>({id,focus:()=>{context.document.activeElement=buttons[id];}}));let closed=0,triggerFocus=0;
   context.setShowDownloadMenu=()=>closed++;context.downloadButtonRef.current={focus:()=>triggerFocus++};

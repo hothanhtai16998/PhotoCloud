@@ -156,7 +156,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #767676;
+  color: var(--button-secondary-fg);
   padding: 8px;
   display: flex;
   align-items: center;
@@ -168,8 +168,8 @@
 }
 
 .collection-modal-close:hover {
-  color: var(--text-primary, #1B1B19);
-  background: var(--hover-bg, #F2EEE7);
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
   transform: scale(1.05);
 }
 
@@ -242,7 +242,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #999;
+  color: var(--button-secondary-fg);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -252,8 +252,8 @@
 }
 
 .collection-modal-search-clear:hover {
-  color: var(--text-primary, #1B1B19);
-  background: #f0f0f0;
+  color: var(--button-secondary-fg);
+  background: var(--button-secondary-hover);
 }
 
 /* Section */
@@ -695,11 +695,11 @@
 }
 
 .collection-modal-item.selected {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-selected-bg);
 }
 
 .collection-modal-item:hover {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-secondary-hover);
 }
 
 /* Show add icon on hover when NOT in collection */
@@ -732,9 +732,9 @@
   gap: 8px;
   padding: 10px 16px;
   background: transparent;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
@@ -742,8 +742,8 @@
 }
 
 .collection-modal-create-new-btn:hover {
-  background: var(--hover-bg, #F2EEE7);
-  border-color: #d0d0d0;
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
 }
 
 @keyframes checkPop {
@@ -760,3 +760,7 @@
   }
 }
 
+
+/* Dropdown belongs to the action anchor, never the centered dialog wrapper. */
+.collection-modal-wrapper.collection-modal-wrapper-dropdown { position: absolute; top: 100%; right: 0; left: auto; transform: none; display: block; width: min(360px, calc(100vw - 32px)); max-width: none; margin-top: 8px; }
+.collection-modal-wrapper-dropdown .collection-modal-dropdown { position: relative; top: auto; right: auto; margin-top: 0; width: 100%; }

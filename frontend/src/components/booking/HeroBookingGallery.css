@@ -1,0 +1,481 @@
+
+
+/* ---------- Visual: 4 collections 2x2 (label-above) ---------- */
+.hero-visual {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* tăng khoảng cách giữa heading và grid */
+  min-height: 0; /* cho phép co lại theo parent */
+  height: 100%;
+  z-index: 2;
+  animation: heroFadeUp 0.8s 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+  /* Accent strip nhỏ phía trên heading — điểm nhấn */
+.hero-visual::before {
+  content: '';
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--studio-accent-copper), var(--studio-rating-gold-bright));
+  border-radius: 2px;
+  margin-bottom: -4px;
+  animation: heroFadeUp 0.8s 0.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+.hero-visual-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(184, 134, 91, 0.2);
+  border-radius: 999px;
+  color: #5f5a52;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  width: fit-content;
+  animation: heroFadeUp 0.8s 0.3s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.hero-visual-heading svg {
+  color: var(--accent, var(--studio-accent-copper));
+}
+
+.hero-visual-heading-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--studio-accent-copper);
+  box-shadow: 0 0 6px rgba(184, 134, 91, 0.7);
+  animation: none;
+  margin-left: 2px;
+}
+
+/* 2x2 grid — 4 cards đều nhau */
+.hero-grid {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-height: 0;
+}
+
+.hero-grid--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px dashed rgba(184, 134, 91, 0.3);
+  border-radius: 14px;
+}
+
+.hero-grid-empty-text {
+  margin: 0;
+  color: #8a8275;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* 1 collection cell */
+.hero-collection {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  animation: heroHighlightIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation-delay: calc(var(--collection-index, 0) * 0.08s + 0.4s);
+}
+
+/* Label phía trên (ngoài card) — bạn yêu cầu */
+.hero-collection-label {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #5f5a52;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-collection-label-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 5px;
+  background: linear-gradient(135deg, var(--studio-accent-copper), var(--studio-text-faint));
+  color: #fff;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.hero-collection-label-name {
+  color: var(--studio-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-collection-label-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #8a8275;
+  font-size: 10px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+/* Card ảnh */
+.hero-collection-card {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1B1B19, #A78D70);
+  box-shadow:
+    0 1px 2px rgba(27, 27, 25, 0.05),
+    0 4px 12px rgba(27, 27, 25, 0.1);
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.hero-collection-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1),
+              filter 0.4s ease;
+}
+
+.hero-collection-card-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  background: linear-gradient(135deg, #1B1B19, #A78D70);
+}
+
+.hero-collection-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0, 0, 0, 0.45) 100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hero-collection-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(184, 134, 91, 0.3);
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Corner badge "Xem" — visible on hover */
+.hero-collection-corner {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.hero-collection-corner span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.hero-collection:hover .hero-collection-card {
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 2px rgba(27, 27, 25, 0.05),
+    0 10px 24px rgba(27, 27, 25, 0.18);
+}
+
+.hero-collection:hover .hero-collection-card img {
+  transform: scale(1.03);
+  filter: saturate(1.1);
+}
+
+.hero-collection:hover .hero-collection-overlay {
+  opacity: 1;
+}
+
+.hero-collection:hover .hero-collection-card::after {
+  opacity: 1;
+}
+
+.hero-collection:hover .hero-collection-corner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-collection:hover .hero-collection-label-name {
+  color: var(--studio-accent-copper);
+}
+
+/* Skeleton */
+.hero-collection-card--skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(184, 134, 91, 0.08) 0%,
+    rgba(184, 134, 91, 0.16) 50%,
+    rgba(184, 134, 91, 0.08) 100%
+  );
+  background-size: 200% 100%;
+  animation: heroSkeleton 1.6s ease-in-out infinite;
+}
+
+.hero-collection-card--skeleton img,
+.hero-collection-card--skeleton .hero-collection-corner,
+.hero-collection-card--skeleton .hero-collection-overlay {
+  display: none;
+}
+
+@keyframes heroSkeleton {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---------- Scroll indicator ---------- */
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: rgba(27, 27, 25, 0.5);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-scroll-hint .mouse {
+  width: 18px;
+  height: 28px;
+  border: 1.5px solid rgba(27, 27, 25, 0.5);
+  border-radius: 999px;
+  position: relative;
+}
+
+.hero-scroll-hint .mouse::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 6px;
+  border-radius: 1px;
+  background: rgba(27, 27, 25, 0.7);
+  animation: heroScrollDot 1.6s ease-in-out infinite;
+}
+
+@keyframes heroScrollDot {
+  0%   { transform: translate(-50%, 0); opacity: 1; }
+  100% { transform: translate(-50%, 10px); opacity: 0; }
+}
+
+/* ---------- Responsive ---------- */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .hero-title {
+    font-size: 52px;
+  }
+  .hero-sub {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-section {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    padding: 24px 24px 112px;
+    /* Tablet: không ép khít viewport nữa, vẫn cho phép scroll */
+    min-height: auto;
+    height: auto;
+    max-height: none;
+  }
+  .hero-visual {
+    min-height: 320px;
+    height: auto;
+    order: 2;
+  }
+  .hero-collection-card {
+    flex: none;
+    aspect-ratio: 4 / 3;
+  }
+  .hero-title,
+  .hero-sub {
+    overflow-wrap: anywhere;
+  }
+  .hero-cta {
+    max-width: 100%;
+    white-space: normal;
+  }
+  /* .hero-marquee removed — ribbon now lives in <HeaderMarquee /> */
+}
+
+@media (min-width: 901px) and (max-height: 650px) {
+  .hero-section {
+    height: auto;
+    min-height: calc(100dvh - var(--homepage-header-height, 80px) - 8px);
+    grid-template-rows: auto auto;
+    gap: 12px;
+    padding-bottom: 112px;
+  }
+  .hero-title {
+    font-size: 40px;
+    margin: 8px 0;
+  }
+  .hero-sub {
+    font-size: 17px;
+    line-height: 1.4;
+  }
+  .hero-eyebrow-wrap {
+    margin-bottom: 6px;
+  }
+  .hero-highlights,
+  .hero-actions,
+  .hero-slot,
+  .hero-trust {
+    margin-top: 8px;
+  }
+  .hero-cta {
+    padding: 10px 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-title {
+    font-size: 42px;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-cta {
+    width: 100%;
+    justify-content: center;
+  }
+  /* Trên mobile: hero không khít viewport nữa, vẫn cho phép scroll để xem full content */
+  .hero-section {
+    min-height: auto;
+    max-height: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Gallery stack 1 cột trên mobile */
+  .hero-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .hero-collection-label {
+    font-size: 10px;
+  }
+  .hero-collection-label-name {
+    font-size: 11px;
+  }
+  .hero-collection-label-count {
+    display: none;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-section,
+  .hero-sub,
+  .hero-actions,
+  .hero-trust,
+  .hero-visual,
+  .hero-scroll-hint,
+  .hero-title em::after,
+  .hero-eyebrow,
+  .hero-sparkle-icon,
+  .hero-led,
+  .hero-live-dot,
+  .hero-slot-dot,
+  .hero-visual-heading-dot,
+  .hero-cta--primary,
+  .hero-collection,
+  .hero-collection-card--skeleton,
+  .hero-scroll-hint .mouse::after,
+  .hero-orb--copper,
+  .hero-orb--gold,
+  .hero-orb--cream,
+  .hero-highlight {
+    animation: none !important;
+  }
+  .hero-highlight,
+  .hero-collection {
+    opacity: 1;
+    transform: none;
+  }
+  .hero-collection:hover,
+  .hero-highlight:hover,
+  .hero-cta--primary:hover {
+    transform: none;
+  }
+}

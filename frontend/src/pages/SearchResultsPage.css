@@ -38,8 +38,8 @@
 .search-results-error p { margin: 0 0 12px; }
 .search-results-error button {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
-  padding: 10px 14px; border: 1px solid var(--studio-border-soft); border-radius: 8px;
-  background: var(--studio-bg-card); color: var(--studio-text-primary); cursor: pointer; font: inherit;
+  padding: 10px 14px; border: 1px solid var(--button-secondary-border); border-radius: 8px;
+  background: var(--button-secondary-bg); color: var(--button-secondary-fg); cursor: pointer; font: inherit;
 }
 .search-results-page :is(button, input, select):focus-visible {
   outline: 2px solid var(--studio-accent-copper); outline-offset: 3px;

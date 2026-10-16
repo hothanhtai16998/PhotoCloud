@@ -148,7 +148,7 @@
   background: transparent;
   border: 0;
   padding: 0;
-  color: var(--studio-text-muted);
+  color: var(--button-secondary-fg);
   font-family: var(--studio-font-body);
   font-size: 14px;
   font-weight: 500;
@@ -157,7 +157,7 @@
 }
 
 .blog-back:hover {
-  color: var(--studio-text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .blog-detail-header {

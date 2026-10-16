@@ -1,9 +1,9 @@
 /* Image Page - Base styles */
 .image-page-modal .image-page-close {
-  background: var(--bg-card, #FAF8F4);
-  color: #1B1B19;
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--button-shadow);
 }
 
 .image-page {
@@ -72,8 +72,8 @@
 
 .image-page-error button {
   padding: 12px 24px;
-  background: hsl(var(--foreground));
-  color: hsl(var(--background));
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border: none;
   border-radius: 6px;
   font-size: 0.9375rem;
@@ -82,7 +82,8 @@
 }
 
 .image-page-error button:hover {
-  background: hsl(var(--foreground) / 0.9);
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 /* Regular page mode - full width container */
@@ -334,7 +335,7 @@
   will-change: auto;
 }
 :is(.image-page, .image-page-modal) :is(.image-modal-author-area, .image-author-info-trigger, .image-modal-author-image-item):focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid var(--text-primary);
   outline-offset: 2px;
 }
 
@@ -387,11 +388,11 @@
     height: 32px;
     min-height: 32px;
     padding: 0;
-    border: 1px solid #ccc;
+    border: 1px solid var(--button-primary-bg);
     border-radius: 5px;
-    background: var(--bg-card, #FFFFFF);
-    color: var(--text-secondary, #6B6B66);
-    box-shadow: 0 1px 2px #00000008;
+    background: var(--button-primary-bg);
+    color: var(--button-primary-fg);
+    box-shadow: var(--button-shadow);
     gap: 3px;
   }
   :is(.image-page, .image-page-modal) .image-modal-favorite-count { font-size: 10px; }

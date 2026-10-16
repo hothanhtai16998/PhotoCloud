@@ -183,8 +183,8 @@
     gap: 8px;
     align-self: flex-start;
     padding: 12px 22px;
-    background: var(--studio-text-primary);
-    color: var(--studio-bg-card);
+    background: var(--button-primary-bg);
+    color: var(--button-primary-fg);
     border: 0;
     border-radius: var(--studio-radius-pill);
     font: inherit;
@@ -197,7 +197,7 @@
 
 .contact-submit:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(27, 27, 25, 0.18);
+    box-shadow: var(--button-shadow);
 }
 
 .contact-submit:disabled {

@@ -167,8 +167,8 @@
     place-items: center;
     width: 36px;
     flex-shrink: 0;
-    background: var(--studio-text-primary);
-    color: var(--studio-bg-card);
+    background: var(--button-primary-bg);
+    color: var(--button-primary-fg);
     border: 0;
     border-radius: 50%;
     cursor: pointer;
@@ -176,8 +176,9 @@
 }
 
 .studio-footer-newsletter-form button:hover {
-    background: var(--studio-accent-copper);
+    background: var(--button-primary-hover);
     transform: translateY(-1px);
+    color: var(--button-primary-fg);
 }
 
 /* Divider + meta */

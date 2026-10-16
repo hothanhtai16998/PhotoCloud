@@ -66,7 +66,7 @@
   padding: 10px 12px;
   font-size: 0.9375rem;
   font-weight: 400;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   border-radius: 6px;
   transition: background 0.2s ease;
@@ -74,11 +74,12 @@
 }
 
 .sidebar-link:hover {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .sidebar-link.active {
-  background: var(--hover-bg, #F2EEE7);
+  background: var(--button-selected-bg);
   font-weight: 500;
 }
 
@@ -189,7 +190,7 @@
 .change-image-btn {
   background: transparent;
   border: none;
-  color: #767676;
+  color: var(--button-secondary-fg);
   font-size: 0.875rem;
   cursor: pointer;
   padding: 0;
@@ -197,7 +198,7 @@
 }
 
 .change-image-btn:hover {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
 }
 
 .profile-basic-info {
@@ -391,8 +392,8 @@
 
 .update-btn {
   padding: 12px 32px;
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   border: none;
   border-radius: 6px;
   font-size: 0.9375rem;
@@ -402,7 +403,8 @@
 }
 
 .update-btn:hover:not(:disabled) {
-  background: #333;
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 .update-btn:disabled {
@@ -551,22 +553,23 @@
     align-items: center;
     font-size: 0.875rem;
     flex-shrink: 0;
-    background: var(--bg-card, #FFFFFF);
-    border: 1px solid var(--border-color, #E8E2D6);
+    background: var(--button-secondary-bg);
+    border: 1px solid var(--button-secondary-border);
     border-radius: 6px;
     font-weight: 500;
     transition: all 0.2s ease;
   }
 
   .sidebar-link:hover {
-    background: var(--hover-bg, #F2EEE7);
-    border-color: var(--text-primary, #1B1B19);
+    background: var(--button-secondary-hover);
+    border-color: var(--button-secondary-border);
+    color: var(--button-secondary-fg);
   }
 
   .sidebar-link.active {
-    background: #111;
-    color: var(--bg-card, #FFFFFF);
-    border-color: var(--text-primary, #1B1B19);
+    background: var(--button-selected-bg);
+    color: var(--button-selected-fg);
+    border-color: var(--button-selected-border);
   }
 
   .profile-main-content {

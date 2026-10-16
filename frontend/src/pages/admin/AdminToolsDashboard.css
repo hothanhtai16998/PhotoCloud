@@ -1,0 +1,819 @@
+@scope (.admin-tools) {
+
+/* Analytics */
+.admin-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.admin-analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-analytics-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-analytics-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  color: var(--text-secondary, #6B6B66);
+}
+
+.admin-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong, #D8D1C5);
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  background: var(--bg-card, #FAF8F4);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.admin-select:hover {
+  border-color: var(--text-primary, #1B1B19);
+}
+
+.admin-select:focus,
+.admin-select:focus-visible {
+  outline: none !important;
+  border-color: var(--admin-border) !important;
+  box-shadow: none !important;
+}
+
+.admin-section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: var(--text-primary, #1B1B19);
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e5e5e5;
+}
+
+.admin-section-title svg {
+  color: #B8865B;
+}
+
+/* Collections */
+.admin-collections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-collections .admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.admin-collections .admin-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+/* Dashboard Hero */
+.admin-dashboard-hero {
+  background: linear-gradient(135deg, #1B1B19 0%, #B8865B 100%);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(184, 134, 91, 0.3);
+}
+
+.admin-dashboard-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  animation: pulse 8s ease-in-out infinite;
+}
+
+.admin-dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 1;
+}
+
+.admin-dashboard-subtitle {
+  font-size: 1.125rem;
+  opacity: 0.95;
+  margin: 0;
+  font-weight: 400;
+  position: relative;
+  z-index: 1;
+}
+
+.admin-stat-icon span {
+  font-size: 2rem;
+  display: block;
+}
+
+/* Enhanced Analytics Styling */
+.admin-analytics {
+  position: relative;
+}
+
+.admin-analytics-hero {
+  background: linear-gradient(135deg, #1B1B19 0%, #B8865B 100%);
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 32px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(184, 134, 91, 0.3);
+}
+
+.admin-analytics-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.admin-analytics-hero-content {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 24px;
+}
+
+.admin-analytics-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.admin-analytics-subtitle {
+  font-size: 1.125rem;
+  opacity: 0.95;
+  margin: 0;
+  font-weight: 400;
+}
+
+.admin-analytics-controls {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-analytics-control-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.admin-select-modern {
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  background: rgba(255, 255, 255, 0.2);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.admin-select-modern:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.admin-select-modern:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.admin-select-modern option {
+  background: #B8865B;
+  color: white;
+}
+
+.admin-analytics .admin-stat-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.admin-analytics .admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.admin-analytics .admin-stat-card:hover::before {
+  left: 100%;
+}
+
+.admin-analytics .admin-stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  /* Enhanced micro-interaction */
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.dark,
+.dark-theme .admin-analytics .admin-stat-card:hover {
+  background: rgba(45, 45, 45, 0.5);
+}
+
+.admin-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* Glassmorphism effect */
+  background: rgba(255, 255, 255, 0.7);
+  /* Micro-interactions */
+  cursor: pointer;
+}
+
+.dark,
+.dark-theme .admin-stat-card {
+  background: rgba(45, 45, 45, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-stat-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.25);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.admin-stat-card:hover .admin-stat-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.admin-stat-content {
+  flex: 1;
+}
+
+.admin-stat-card-blue {
+  background: linear-gradient(135deg, #1B1B19 0%, #B8865B 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(184, 134, 91, 0.3);
+}
+
+.admin-stat-card-green {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(17, 153, 142, 0.3);
+}
+
+.admin-stat-card-red {
+  background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(235, 51, 73, 0.3);
+}
+
+.admin-stat-card-purple {
+  background: linear-gradient(135deg, #8360c3 0%, #2ebf91 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(131, 96, 195, 0.3);
+}
+
+.admin-stat-card-cyan {
+  background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 201, 255, 0.3);
+}
+
+.admin-stat-card-yellow {
+  background: linear-gradient(135deg, #fad961 0%, #f76b1c 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(250, 217, 97, 0.3);
+}
+
+.admin-stat-card-indigo {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  color: var(--text-primary, #1B1B19);
+  box-shadow: 0 8px 32px rgba(168, 237, 234, 0.3);
+}
+
+/* PhotoCloud warm brand variants — dùng cho booking widget */
+.admin-stat-card-amber {
+  background: linear-gradient(135deg, #C9A14A 0%, #8A6A1B 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(201, 161, 74, 0.3);
+}
+
+.admin-stat-card-copper {
+  background: linear-gradient(135deg, #B8865B 0%, #8A5A2A 100%);
+  color: white;
+  box-shadow: 0 8px 32px rgba(184, 134, 91, 0.3);
+}
+
+/* Confirmation rate bar */
+.admin-confirmation-rate {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--studio-border-soft, #E8E2D6);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.admin-confirmation-rate-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: var(--studio-text-muted, #6B6B66);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-confirmation-rate-header strong {
+  font-family: var(--studio-font-display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--studio-text-primary, #1B1B19);
+}
+
+.admin-confirmation-rate-bar {
+  height: 8px;
+  background: var(--studio-bg-cream, #F2EEE7);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.admin-confirmation-rate-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--studio-status-confirmed, #7A8B5C) 0%, var(--studio-accent-copper, #B8865B) 100%);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.admin-stat-card-indigo .admin-stat-icon {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Category Chart */
+.admin-category-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+}
+
+.falcon-category-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.falcon-category-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.falcon-category-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9375rem;
+  margin-bottom: 4px;
+}
+
+.falcon-category-bar-name {
+  font-weight: 600;
+  color: #212529;
+}
+
+.falcon-category-bar-count {
+  color: #6c757d;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.falcon-category-bar-container {
+  height: 32px;
+  background: #f8f9fa;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.falcon-category-bar-fill {
+  height: 100%;
+  border-radius: 16px;
+  transition: width 0.6s ease-out;
+  position: relative;
+  min-width: 4px;
+}
+
+.admin-category-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-category-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9375rem;
+}
+
+.admin-category-bar-name {
+  font-weight: 600;
+  color: var(--text-primary, #1B1B19);
+}
+
+.admin-category-bar-count {
+  color: var(--text-secondary, #6B6B66);
+  font-weight: 500;
+}
+
+.admin-category-bar-container {
+  height: 40px;
+  background: rgba(255, 255, 255, 0.6);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-category-bar-fill {
+  height: 100%;
+  border-radius: 20px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-category-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Daily Uploads Chart */
+.admin-daily-uploads-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 32px 24px;
+  background: linear-gradient(135deg, #1B1B19 0%, #B8865B 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-height: 320px;
+  overflow-x: auto;
+  box-shadow: 0 10px 40px rgba(184, 134, 91, 0.2);
+  position: relative;
+  overflow-y: visible;
+}
+
+.admin-daily-uploads-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 50%
+    );
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.admin-daily-upload-bar {
+  flex: 1;
+  min-width: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.admin-daily-upload-bar-fill {
+  width: 100%;
+  min-height: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
+  border-radius: 8px 8px 0 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+}
+
+.admin-daily-upload-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 1) 0%,
+    transparent 100%
+  );
+  border-radius: 8px 8px 0 0;
+}
+
+.admin-daily-upload-bar:hover .admin-daily-upload-bar-fill {
+  transform: scaleY(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.8) 100%
+  );
+}
+
+.admin-daily-upload-bar-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+
+.admin-daily-upload-day {
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.admin-daily-upload-count {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Top Uploaders */
+.admin-top-uploaders {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+}
+
+.admin-top-uploader-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  /* backdrop-filter removed for performance — these decorative blurs were
+   costing ~10ms/frame per element and stacking caused the admin page
+   to feel locked when first opened. The opaque fallback below keeps
+   the same visual hierarchy without the GPU paint cost. */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.admin-top-uploader-item:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateX(8px) scale(1.01);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.admin-top-uploader-rank {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-top-uploader-medal {
+  font-size: 1.5rem;
+}
+
+.admin-top-uploader-number {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-secondary, #6B6B66);
+}
+
+.admin-top-uploader-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-top-uploader-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-top-uploader-name strong {
+  color: var(--text-primary, #1B1B19);
+  font-weight: 600;
+}
+
+.admin-top-uploader-display-name {
+  color: var(--text-secondary, #6B6B66);
+  font-size: 0.875rem;
+}
+
+.admin-top-uploader-bar-container {
+  height: 10px;
+  background: rgba(27, 27, 25, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-top-uploader-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1B1B19 0%, #B8865B 100%);
+  border-radius: 10px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(184, 134, 91, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-top-uploader-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.admin-top-uploader-count {
+  font-weight: 600;
+  color: var(--text-primary, #1B1B19);
+  font-size: 1.125rem;
+  min-width: 60px;
+  text-align: right;
+}
+}

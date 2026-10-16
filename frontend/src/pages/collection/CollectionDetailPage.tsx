@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { collectionService } from '@/services/collectionService';
 import { toast } from 'sonner';
-import { useCollectionStore } from '@/stores/useCollectionStore';
+import { useCollectionStore, markCollectionOffline } from '@/stores/useCollectionStore';
 import { useCollectionDetail } from './hooks/useCollectionDetail';
 import { useCollectionImages } from './hooks/useCollectionImages';
 import { CollectionHeader } from './components/CollectionHeader';
@@ -12,13 +10,14 @@ import { CollectionBulkActions } from './components/CollectionBulkActions';
 import { ConfirmModal } from '@/pages/admin/components/modals';
 import { appConfig } from '@/config/appConfig';
 import { useWebSocket } from '@/hooks/useWebSocket';
-import { useUserStore } from '@/stores/useUserStore';
 import type { Collection } from '@/types/collection';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
+import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
 import './CollectionDetailPage.css';
 
 export default function CollectionDetailPage() {
-	const navigate = useNavigate();
+ useEffect(() => { window.addEventListener('offline', markCollectionOffline); return () => window.removeEventListener('offline', markCollectionOffline); }, []);
+ const error = useCollectionStore(state => state.error);
 	const [isMobile, setIsMobile] = useState(() => {
 		if (typeof window === 'undefined') return false;
 		return window.innerWidth <= appConfig.mobileBreakpoint;
@@ -39,7 +38,6 @@ export default function CollectionDetailPage() {
 		loading,
 		user,
 		isOwner,
-		userPermission,
 		canEdit,
 		coverImageId,
 	} = useCollectionDetail();
@@ -58,21 +56,15 @@ export default function CollectionDetailPage() {
 		updateCollectionMetadata,
 	} = useCollectionStore();
 
-	const { user: currentUser } = useUserStore();
-
 	// Collection images hook
 	const {
 		images,
-		imageTypes,
 		draggedImageId,
 		dragOverImageId,
 		isReordering,
 		selectionMode,
 		selectedImageIds,
 		isBulkRemoving,
-		currentImageIds,
-		processedImages,
-		handleImageLoad,
 		handleDragStart,
 		handleDragOver,
 		handleDragLeave,
@@ -150,9 +142,9 @@ export default function CollectionDetailPage() {
 				
 				if (updatedCollectionId === collectionId) {
 					// Refresh the collection to show the new image immediately
-					fetchCollection(collectionId);
+					void fetchCollection(collectionId).catch(() => {});
 				}
-			} catch (error) {
+			} catch {
 				// Silently handle errors
 			}
 		};
@@ -253,15 +245,12 @@ export default function CollectionDetailPage() {
 		);
 	}
 
-	if (!collection) {
+	if (!collection || error) {
 		return (
 			<>
 				<div className="collection-detail-page">
 					<div className="collection-detail-error">
-						<p>Không tìm thấy bộ sưu tập</p>
-						<Button onClick={() => navigate('/collections')} variant="outline">
-							Quay lại danh sách
-						</Button>
+						<CollectionLoadError message={error || 'Không tìm thấy bộ sưu tập'} onRetry={() => { if (collectionId) void fetchCollection(collectionId).catch(() => {}); }} backTo="/collections" />
 					</div>
 				</div>
 			</>

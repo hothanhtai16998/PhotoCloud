@@ -27,7 +27,7 @@ body.search-filters-open {
   border-radius: 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #767676;
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -35,12 +35,12 @@ body.search-filters-open {
 }
 
 .search-filters-toggle:hover {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   background: transparent;
 }
 
 .search-filters-toggle.active {
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-selected-fg);
   background: transparent;
 }
 
@@ -146,7 +146,7 @@ body.search-filters-open {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #767676;
+  color: var(--button-secondary-fg);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -156,8 +156,8 @@ body.search-filters-open {
 }
 
 .search-filters-close:hover {
-  background: var(--hover-bg, #F2EEE7);
-  color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .search-filters-content {
@@ -230,25 +230,26 @@ body.search-filters-open {
 
 .filter-option {
   padding: 8px 16px;
-  background: var(--hover-bg, #F2EEE7);
-  border: 1px solid var(--border-color, #E8E2D6);
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .filter-option:hover {
-  background: #e5e5e5;
-  border-color: #d4d4d4;
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .filter-option.active {
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
-  border-color: var(--text-primary, #1B1B19);
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
+  border-color: var(--button-selected-border);
 }
 
 .filter-color-options {
@@ -371,12 +372,13 @@ body.search-filters-open {
 }
 
 .filter-reset-btn {
-  background: var(--hover-bg, #F2EEE7);
-  color: var(--text-primary, #1B1B19);
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
 }
 
 .filter-reset-btn:hover:not(:disabled) {
-  background: #e5e5e5;
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .filter-reset-btn:disabled {
@@ -385,20 +387,22 @@ body.search-filters-open {
 }
 
 .filter-apply-btn {
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
   font-weight: 600;
   opacity: 0.5; /* Reduced opacity when no changes */
   transition: opacity 0.2s ease, background 0.2s ease;
 }
 
 .filter-apply-btn:hover:not(:disabled) {
-  background: #333;
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 .filter-apply-btn:active:not(:disabled) {
-  background: #1a1a1a;
+  background: var(--button-primary-hover);
   transform: scale(0.98);
+  color: var(--button-primary-fg);
 }
 
 .filter-apply-btn:disabled {
@@ -516,12 +520,12 @@ body.search-filters-open {
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--hover-bg, #F2EEE7);
-  border: 1px solid var(--border-color, #E8E2D6);
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--button-secondary-border);
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
@@ -529,14 +533,15 @@ body.search-filters-open {
 }
 
 .filter-advanced-toggle:hover {
-  background: #e5e5e5;
-  border-color: #d4d4d4;
+  background: var(--button-secondary-hover);
+  border-color: var(--button-secondary-border);
+  color: var(--button-secondary-fg);
 }
 
 .filter-advanced-toggle.active {
-  background: #111;
-  color: var(--bg-card, #FFFFFF);
-  border-color: var(--text-primary, #1B1B19);
+  background: var(--button-selected-bg);
+  color: var(--button-selected-fg);
+  border-color: var(--button-selected-border);
 }
 
 /* Active filter chips (for showing active filters outside panel) */
@@ -581,13 +586,14 @@ body.search-filters-open {
 
 /* Visual indicator for changed (unstaged) filters */
 .search-filters-panel.has-changes .filter-apply-btn {
-  background: #111;
+  background: var(--button-primary-bg);
   opacity: 1; /* Full opacity when there are changes */
   cursor: pointer;
 }
 
 .search-filters-panel.has-changes .filter-apply-btn:hover {
-  background: #333;
+  background: var(--button-primary-hover);
+  color: var(--button-primary-fg);
 }
 
 /* Advanced filters two-column layout */

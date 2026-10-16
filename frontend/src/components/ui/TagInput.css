@@ -45,7 +45,7 @@
   border: none;
   background: none;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--button-secondary-fg);
   border-radius: 50%;
   width: 16px;
   height: 16px;
@@ -53,8 +53,8 @@
 }
 
 .tag-remove:hover {
-  background-color: #e5e7eb;
-  color: #374151;
+  background-color: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
 }
 
 .tag-input-field {

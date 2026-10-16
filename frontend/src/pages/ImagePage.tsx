@@ -1,7 +1,3 @@
-import cameraIcon from '@/assets/camera.svg';
-import dateIcon from '@/assets/date.svg';
-import leftArrowIcon from '@/assets/left-arrow.svg';
-import rightArrowIcon from '@/assets/right-arrow.svg';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
 import { ImageRelatedGrid } from '@/components/ImageRelatedGrid';
 import '@/components/NoFlashGrid/components/ImageModal.css';
@@ -10,11 +6,12 @@ import '@/components/NoFlashGrid/components/modal-footer.css';
 import '@/components/NoFlashGrid/components/modal-info.css';
 import { t } from '@/i18n';
 import '@/stores/useDownloadHistoryStore';
-import { ArrowLeft,ChevronDown,Download,Edit2,ExternalLink,FolderPlus,Heart,Info,LoaderCircle,MapPin,Share2,Tag,X } from 'lucide-react';
+import { ArrowLeft,CalendarDays,Camera,ChevronDown,ChevronLeft,ChevronRight,Download,Edit2,ExternalLink,FolderPlus,Heart,Info,LoaderCircle,MapPin,Share2,Tag,X } from 'lucide-react';
 import { lazy,Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useImagePageController } from './image/useImagePageController';
 import './ImagePage.css';
+import './image/ImagePageTheme.css';
 
 const EditImageModal = lazy(() => import('@/components/EditImageModal'));
 const CollectionModal = lazy(() => import('@/components/collection/CollectionModal'));
@@ -296,7 +293,7 @@ function ImagePage() {
           </button>
 
           {/* Add to Collection button with dropdown */}
-          <div className="image-modal-collection-menu-wrapper" data-collection-menu>
+          {(user?.isAdmin || user?.isSuperAdmin) && <div className="image-modal-collection-menu-wrapper" data-collection-menu>
             <button
               onClick={() => {
                 // If user is not logged in, redirect to sign-in page
@@ -325,7 +322,7 @@ function ImagePage() {
               />
               </Suspense>
             )}
-          </div>
+          </div>}
 
           {/* Download button with dropdown */}
           <div className="image-modal-download-menu-wrapper" data-download-menu>
@@ -346,12 +343,6 @@ function ImagePage() {
               aria-label={t('image.download')}
               title={t('image.download')}
               className="image-modal-download-button"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)';
-              }}
             >
               <Download size={18} className="image-download-mobile-icon" aria-hidden="true" />
               <span className="image-action-label">{t('image.download')}</span>
@@ -404,8 +395,6 @@ function ImagePage() {
               height: displayHeight,
               minHeight: displayHeight,
               maxHeight: displayHeight,
-              // PHOTOCLOUD-style: background color with dominant color
-              backgroundColor: (image as any).dominantColor || '#f3f4f6',
               overflow: 'hidden',
             }}
           >
@@ -510,7 +499,7 @@ function ImagePage() {
                 {image.location && image.cameraModel && <span> • </span>}
                 {image.cameraModel && (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <img src={cameraIcon} alt="Camera" style={{ width: '14px', height: '14px', flexShrink: 0 }} />
+                    <Camera size={14} aria-hidden="true" />
                     {image.cameraModel}
                   </span>
                 )}
@@ -533,7 +522,7 @@ function ImagePage() {
             {/* Date */}
             {formattedDate && (
               <div className="image-modal-image-date">
-                <img src={dateIcon} alt="Date" style={{ width: '14px', height: '14px', flexShrink: 0, marginRight: '6px' }} />
+                <CalendarDays size={14} aria-hidden="true" />
                 {formattedDate}
               </div>
             )}
@@ -562,11 +551,9 @@ function ImagePage() {
 
       {/* Related images section */}
       {relatedImages.length > 0 && (
-        <div className="image-modal-related-section" style={{ padding: '32px 16px', background: '#fff', position: 'relative' }}>
-          {/* REMOVED: Loading indicator - navigation is now immediate (like PHOTOCLOUD) */}
-          {/* Image is already preloaded on hover, so no loading indicator needed */}
-          <div style={{ maxWidth: '1296px', margin: '0 auto', width: '100%' }}>
-            <h2 className="image-modal-related-title" style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px', color: '#111' }}>
+        <div className="image-modal-related-section">
+          <div className="image-modal-related-inner">
+            <h2 className="image-modal-related-title">
               {t('image.relatedImages')}
             </h2>
             <ImageRelatedGrid
@@ -635,12 +622,9 @@ function ImagePage() {
           }}
           disabled={currentImageIndex === 0}
           className="image-modal-nav-button left"
+          aria-label={t('common.previous')}
         >
-          <img
-            src={leftArrowIcon}
-            alt={t('common.previous')}
-            className="image-modal-nav-icon"
-          />
+          <ChevronLeft size={28} aria-hidden="true" />
         </button>
       )}
 
@@ -658,12 +642,9 @@ function ImagePage() {
           }}
           disabled={currentImageIndex === images.length - 1}
           className="image-modal-nav-button right"
+          aria-label={t('common.next')}
         >
-          <img
-            src={rightArrowIcon}
-            alt={t('common.next')}
-            className="image-modal-nav-icon"
-          />
+          <ChevronRight size={28} aria-hidden="true" />
         </button>
       )}
 

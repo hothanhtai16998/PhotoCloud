@@ -68,18 +68,18 @@
   font-family: var(--studio-font-body);
   font-size: 14px;
   font-weight: 500;
-  color: var(--studio-text-muted);
+  color: var(--button-secondary-fg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .my-bookings-filter:hover {
-  color: var(--studio-text-primary);
+  color: var(--button-secondary-fg);
 }
 
 .my-bookings-filter.is-active {
-  background: var(--studio-text-primary);
-  color: var(--studio-bg-warm);
+  background: var(--button-primary-bg);
+  color: var(--button-primary-fg);
 }
 
 .my-bookings-filter-count {
@@ -236,7 +236,7 @@
   background: transparent;
   border: 0;
   padding: 0;
-  color: var(--studio-accent-copper-dark);
+  color: var(--button-secondary-fg);
   font-family: var(--studio-font-body);
   font-size: 13px;
   font-weight: 600;
@@ -245,7 +245,7 @@
 }
 
 .my-bookings-reschedule-btn:hover {
-  color: var(--studio-accent-copper);
+  color: var(--button-secondary-fg);
 }
 
 .my-bookings-reschedule-form {

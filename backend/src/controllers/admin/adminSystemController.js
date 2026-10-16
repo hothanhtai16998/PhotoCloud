@@ -1,3 +1,4 @@
+import { validateSitePalette, publicSitePalette } from '../../utils/sitePalette.js';
 import User from '../../models/User.js';
 import SystemLog from '../../models/SystemLog.js';
 import Settings from '../../models/Settings.js';
@@ -86,6 +87,7 @@ export const getPublicSettings = asyncHandler(async (req, res) => {
 
     // Return only public settings (exclude sensitive data if any)
     const publicSettings = {
+        sitePalette: publicSitePalette(settings.value.sitePalette),
         siteName: settings.value.siteName || 'PhotoApp',
         siteDescription: settings.value.siteDescription || 'Discover beautiful photos',
         maxUploadSize: settings.value.maxUploadSize || 10,
@@ -131,6 +133,11 @@ export const updateSettings = asyncHandler(async (req, res) => {
     // Permission check is handled by requirePermission('manageSettings') middleware
 
     const { settings } = req.body;
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return res.status(400).json({ message: 'Cài đặt không hợp lệ.' });
+    if (Object.hasOwn(settings, 'sitePalette')) {
+        const paletteError = validateSitePalette(settings.sitePalette);
+        if (paletteError) return res.status(400).json({ message: paletteError });
+    }
 
     let systemSettings = await Settings.findOne({ key: 'system' });
 

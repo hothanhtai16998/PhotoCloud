@@ -68,12 +68,12 @@
   align-items: center;
   gap: 6px;
   background: transparent;
-  border: 1px solid var(--border-strong, #D8D1C5);
+  border: 1px solid var(--button-selected-border);
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-primary, #1B1B19);
+  color: var(--button-selected-fg);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -81,12 +81,12 @@
 }
 
 .active-filters-clear:hover {
-  background: #f0f0f0;
-  border-color: #999;
+  background: var(--button-selected-bg);
+  border-color: var(--button-selected-border);
 }
 
 .active-filters-clear:active {
-  background: #e5e5e5;
+  background: var(--button-selected-bg);
 }
 
 /* Mobile responsive */

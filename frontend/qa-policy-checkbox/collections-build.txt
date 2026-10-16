@@ -1,0 +1,149 @@
+
+> frontend@0.0.0 build
+> vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+✓ 3376 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/assets/america-wUmPdQJX.svg                                 5.83 kB │ gzip:   0.67 kB
+dist/assets/empty-4xCKH-VG.avif                                  6.74 kB
+dist/index.html                                                  8.08 kB │ gzip:   2.58 kB
+dist/assets/manrope-vietnamese-wght-normal-usUDDRr7.woff2        8.52 kB
+dist/assets/manrope-greek-wght-normal-DL7QRZyv.woff2             9.44 kB
+dist/assets/manrope-cyrillic-wght-normal-Dvxsihut.woff2         14.50 kB
+dist/assets/manrope-latin-ext-wght-normal-Ch3YOpNY.woff2        15.12 kB
+dist/assets/manrope-latin-wght-normal-DHIcAJRg.woff2            24.84 kB
+dist/assets/79347ed53aa14e8b-DNougetC.woff2                     30.67 kB
+dist/assets/72025d9b68a7dd0b-M4vHmlo8.woff2                     30.69 kB
+dist/assets/959364b06f81af7e-BPzpuXuS.woff2                     30.74 kB
+dist/assets/db7c5771335b7af9-DFpNKOjM.woff2                     31.11 kB
+dist/assets/501f76ca195ed91f-Bj02rdhv.woff2                     32.94 kB
+dist/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2                     33.03 kB
+dist/assets/33f3233b5edd544c-DsEkmiuO.woff2                     33.15 kB
+dist/assets/a699af1dea30b799-ClqSfwQ3.woff2                    108.23 kB
+dist/assets/e45972c7e9f24dc3-CHYJppYf.woff2                    111.45 kB
+dist/assets/87e867b52640b3b3-C2FsVcxq.woff2                    111.91 kB
+dist/assets/6f49e1b28bce7339-C3bW5xsp.woff2                    112.31 kB
+dist/assets/logo-CD6Ledml.png                                  178.52 kB
+dist/assets/Roboto-Variable-1nydPDgi.woff2                     209.93 kB
+dist/assets/Roboto-Italic-VariableFont_wdth_wght-CtZJC3o8.ttf  497.12 kB
+dist/assets/NewsletterPage-DRbh2y8T.css                          0.74 kB │ gzip:   0.38 kB
+dist/assets/DownloadHistoryPage-CQHPVeJ1.css                     1.15 kB │ gzip:   0.43 kB
+dist/assets/AdminModal-1TonkysB.css                              1.19 kB │ gzip:   0.51 kB
+dist/assets/AdminRecords-CZ5h4EBa.css                            1.40 kB │ gzip:   0.70 kB
+dist/assets/NotFoundPage-Cnr9z0qG.css                            1.80 kB │ gzip:   0.61 kB
+dist/assets/AdminDashboard-Cui4zk0F.css                          2.92 kB │ gzip:   0.88 kB
+dist/assets/SearchResultsPage-BESzylya.css                       3.09 kB │ gzip:   1.05 kB
+dist/assets/ForgotPasswordPage-BL7LOk4s.css                      3.41 kB │ gzip:   0.95 kB
+dist/assets/SettingsPage-C17e6z0z.css                            3.72 kB │ gzip:   1.05 kB
+dist/assets/BlogPage-Ve1PW2gQ.css                                4.01 kB │ gzip:   1.14 kB
+dist/assets/FavoriteCollectionsPage-DmQAt0EN.css                 4.10 kB │ gzip:   1.19 kB
+dist/assets/ContactPage-BnwS5sJY.css                             4.45 kB │ gzip:   1.14 kB
+dist/assets/UserDashboardPage-CehI_MwK.css                       4.78 kB │ gzip:   1.20 kB
+dist/assets/ExplorePage-BsN_XZqV.css                             4.96 kB │ gzip:   1.25 kB
+dist/assets/BookingDetailPage-DnMj5e5Y.css                       5.30 kB │ gzip:   1.39 kB
+dist/assets/ConfirmModal-Dqb8FoZ6.css                            5.34 kB │ gzip:   1.23 kB
+dist/assets/MyBookingsPage-DEGWR6uU.css                          5.47 kB │ gzip:   1.33 kB
+dist/assets/NotificationPage-FTx9lciE.css                        5.68 kB │ gzip:   1.40 kB
+dist/assets/FavoritesPage-10BAXm3Q.css                           5.89 kB │ gzip:   1.51 kB
+dist/assets/PackagesPage-BR4ZQA_j.css                            6.31 kB │ gzip:   1.50 kB
+dist/assets/AdminLayout-lhBW3iHY.css                             6.53 kB │ gzip:   1.86 kB
+dist/assets/EditImageModal-BXx5h0YC.css                          6.70 kB │ gzip:   1.87 kB
+dist/assets/DownloadHistory-CfyLmgyn.css                         7.47 kB │ gzip:   1.77 kB
+dist/assets/AboutPage-x8ieRudh.css                               8.14 kB │ gzip:   1.77 kB
+dist/assets/AuthLayout-mQ-KCw0K.css                              8.41 kB │ gzip:   2.60 kB
+dist/assets/BookingPage-DqICZIhA.css                             8.80 kB │ gzip:   2.03 kB
+dist/assets/AdminImagesPage-CKp2ti5C.css                         8.82 kB │ gzip:   2.15 kB
+dist/assets/CollectionsPage-BmxcQ8L1.css                         9.53 kB │ gzip:   2.06 kB
+dist/assets/UserAnalyticsDashboard-DkFRP4Az.css                 11.79 kB │ gzip:   2.23 kB
+dist/assets/EditProfilePage-CESMAO5c.css                        12.74 kB │ gzip:   2.78 kB
+dist/assets/SearchBar-84sV8hPR.css                              18.92 kB │ gzip:   3.53 kB
+dist/assets/UploadModal-DfecPxBS.css                            23.60 kB │ gzip:   4.71 kB
+dist/assets/CollectionDetailPage-JbmOgoRP.css                   23.69 kB │ gzip:   4.27 kB
+dist/assets/ProfilePage-CbuZ1guH.css                            24.01 kB │ gzip:   4.67 kB
+dist/assets/CollectionModal-D6Sgk0uJ.css                        25.00 kB │ gzip:   4.00 kB
+dist/assets/AdminBookings-DzLJlkCx.css                          34.84 kB │ gzip:   5.83 kB
+dist/assets/AdminToolsPage-BiLPYH4O.css                         97.40 kB │ gzip:  16.45 kB
+dist/assets/index-CV2tJ9_Z.css                                 258.44 kB │ gzip:  48.36 kB
+dist/assets/BlogDetailPage-DwiZaHbw.js                           0.14 kB │ gzip:   0.14 kB
+dist/assets/clock-iH0otiZY.js                                    0.17 kB │ gzip:   0.17 kB
+dist/assets/skeleton-SkeEp5Ip.js                                 0.17 kB │ gzip:   0.16 kB
+dist/assets/trending-up-CWULf6Hm.js                              0.18 kB │ gzip:   0.17 kB
+dist/assets/rotate-ccw-D2oD2ep_.js                               0.20 kB │ gzip:   0.18 kB
+dist/assets/lock-DEGy2ap_.js                                     0.21 kB │ gzip:   0.19 kB
+dist/assets/log-out-DUUtHB2S.js                                  0.23 kB │ gzip:   0.19 kB
+dist/assets/ProfileRedirect-J5fJhtxM.js                          0.24 kB │ gzip:   0.20 kB
+dist/assets/globe-Cl2QJjlA.js                                    0.24 kB │ gzip:   0.19 kB
+dist/assets/circle-alert-CQIAZH0D.js                             0.25 kB │ gzip:   0.19 kB
+dist/assets/funnel-TW3JBC9Z.js                                   0.26 kB │ gzip:   0.22 kB
+dist/assets/calendar-CNswVLff.js                                 0.26 kB │ gzip:   0.21 kB
+dist/assets/award-CyyA74fY.js                                    0.28 kB │ gzip:   0.23 kB
+dist/assets/pencil-B_DO9AgU.js                                   0.28 kB │ gzip:   0.23 kB
+dist/assets/phone-BY5zWbDy.js                                    0.32 kB │ gzip:   0.23 kB
+dist/assets/save-D-3SABMI.js                                     0.33 kB │ gzip:   0.23 kB
+dist/assets/AdminUsersPage-CY_e-qPT.js                           0.37 kB │ gzip:   0.26 kB
+dist/assets/AdminImagesPage-BU5HbZQt.js                          0.37 kB │ gzip:   0.26 kB
+dist/assets/AdminCategoriesPage-eVCJKY8K.js                      0.38 kB │ gzip:   0.26 kB
+dist/assets/eye-off-CDhe9iD3.js                                  0.43 kB │ gzip:   0.27 kB
+dist/assets/GoogleCallbackPage-CyCVc7Me.js                       0.47 kB │ gzip:   0.35 kB
+dist/assets/ProfileRouteHandler-D-lz2a9E.js                      0.48 kB │ gzip:   0.33 kB
+dist/assets/DownloadHistoryPage-ZR_z-jfW.js                      0.71 kB │ gzip:   0.34 kB
+dist/assets/input-gxUNF5TF.js                                    0.80 kB │ gzip:   0.44 kB
+dist/assets/collectionFavoriteService-B7Psdgm8.js                0.90 kB │ gzip:   0.50 kB
+dist/assets/UploadTrigger-BoNbcolD.js                            0.96 kB │ gzip:   0.57 kB
+dist/assets/userService-BOs8ksJ2.js                              1.01 kB │ gzip:   0.41 kB
+dist/assets/useDocumentMeta-BEj669iS.js                          1.08 kB │ gzip:   0.49 kB
+dist/assets/NotFoundPage-BazGrRB8.js                             1.12 kB │ gzip:   0.58 kB
+dist/assets/AdminModal-BSq1EU1t.js                               1.25 kB │ gzip:   0.66 kB
+dist/assets/authorInfo-DJ60lCnD.js                               1.50 kB │ gzip:   0.84 kB
+dist/assets/ConfirmModal-B9HB0Qrc.js                             1.65 kB │ gzip:   0.77 kB
+dist/assets/NewsletterPage-DqO85SFq.js                           1.73 kB │ gzip:   0.97 kB
+dist/assets/AdminPrimitives-CjadXwm6.js                          1.94 kB │ gzip:   0.93 kB
+dist/assets/useScrollLock-CCYghn_l.js                            2.04 kB │ gzip:   0.73 kB
+dist/assets/AdminLogs-B2vTvBB8.js                                2.13 kB │ gzip:   1.08 kB
+dist/assets/ForgotPasswordPage-DyUupkyt.js                       2.87 kB │ gzip:   1.18 kB
+dist/assets/collectionService-BxTXikJk.js                        2.90 kB │ gzip:   0.68 kB
+dist/assets/FavoriteCollectionsPage-Dlb8ymTQ.js                  3.05 kB │ gzip:   1.08 kB
+dist/assets/FavoritesPage-2X5PCbhx.js                            3.36 kB │ gzip:   1.45 kB
+dist/assets/SignInPage-Cgv03Uv5.js                               3.52 kB │ gzip:   1.50 kB
+dist/assets/useCollectionStore-D218aSlC.js                       3.53 kB │ gzip:   1.19 kB
+dist/assets/AdminDashboard-CGUnH_jU.js                           3.55 kB │ gzip:   1.43 kB
+dist/assets/AdminModerationPage-B_IzWLz1.js                      3.56 kB │ gzip:   1.70 kB
+dist/assets/AdminCollections-DtOMqCJL.js                         3.89 kB │ gzip:   1.52 kB
+dist/assets/AdminSettingsPage-BfsqXWn6.js                        4.24 kB │ gzip:   1.70 kB
+dist/assets/AuthLayout-BA_ZF9Pf.js                               4.48 kB │ gzip:   1.73 kB
+dist/assets/ContactPage-D39QNVPF.js                              4.55 kB │ gzip:   1.80 kB
+dist/assets/AdminLayout-Cuvq32eX.js                              4.75 kB │ gzip:   1.89 kB
+dist/assets/PackagesPage-DkjB3X5T.js                             4.87 kB │ gzip:   1.67 kB
+dist/assets/DownloadHistory-Bk-vE7CQ.js                          5.05 kB │ gzip:   2.03 kB
+dist/assets/ResetPasswordPage-Daa12Tgd.js                        5.18 kB │ gzip:   1.84 kB
+dist/assets/AdminToolsPage-9vGixMSa.js                           5.32 kB │ gzip:   1.96 kB
+dist/assets/SearchResultsPage-DQzmfMFE.js                        5.63 kB │ gzip:   2.56 kB
+dist/assets/SettingsPage-BvJdQeTL.js                             5.92 kB │ gzip:   1.92 kB
+dist/assets/ExplorePage-DmOfDS-E.js                              6.79 kB │ gzip:   2.88 kB
+dist/assets/MyBookingsPage-BqzULyg_.js                           7.16 kB │ gzip:   2.65 kB
+dist/assets/NotificationPage-Bnp7JVCM.js                         7.25 kB │ gzip:   2.82 kB
+dist/assets/UserDashboardPage-BsJgjykw.js                        7.34 kB │ gzip:   2.34 kB
+dist/assets/BlogPage-CL7lW4Ki.js                                 7.74 kB │ gzip:   3.19 kB
+dist/assets/AboutPage-MuzQXm-O.js                                9.02 kB │ gzip:   3.13 kB
+dist/assets/SignUpPage-C8ouZ_0I.js                               9.51 kB │ gzip:   2.66 kB
+dist/assets/EditImageModal-DCqk8sgv.js                          10.08 kB │ gzip:   2.89 kB
+dist/assets/BookingPage-DFF2LaAA.js                             10.27 kB │ gzip:   3.25 kB
+dist/assets/CollectionsPage-BOEXGxF5.js                         10.62 kB │ gzip:   3.76 kB
+dist/assets/BookingDetailPage-Ddh2Znv_.js                       11.13 kB │ gzip:   3.35 kB
+dist/assets/AdminRecords-Dcjvnpcg.js                            15.32 kB │ gzip:   5.15 kB
+dist/assets/CollectionModal-CMc7q3iQ.js                         15.46 kB │ gzip:   4.21 kB
+dist/assets/EditProfilePage-CRYCBQSQ.js                         15.55 kB │ gzip:   4.80 kB
+dist/assets/AdminRoles-CmQM_w3z.js                              17.03 kB │ gzip:   3.74 kB
+dist/assets/SearchBar-sCSj-LYN.js                               21.83 kB │ gzip:   6.29 kB
+dist/assets/CollectionDetailPage-D0mEPGpz.js                    26.24 kB │ gzip:   8.23 kB
+dist/assets/UploadModal-B8oO9C1y.js                             29.62 kB │ gzip:   9.32 kB
+dist/assets/ProfilePage-DB4kXjCx.js                             34.67 kB │ gzip:  10.35 kB
+dist/assets/AdminBookings-BO48J8CN.js                           44.53 kB │ gzip:  12.43 kB
+dist/assets/browser-image-compression-5Xiw9QKB.js               53.17 kB │ gzip:  21.07 kB
+dist/assets/forms-DJCYHQHa.js                                  119.34 kB │ gzip:  36.76 kB
+dist/assets/UserAnalyticsDashboard-JaEEER6X.js                 408.56 kB │ gzip: 112.37 kB
+dist/assets/index-DlhQBuMl.js                                  983.58 kB │ gzip: 314.00 kB
+✓ built in 8.52s

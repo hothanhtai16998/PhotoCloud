@@ -142,14 +142,14 @@
 
 	button:not([disabled]):hover {
 		/* No transform on hover - prevent movement */
-		border-color: #111 !important;
+		border-color: var(--button-secondary-border) !important;
 	}
-	
+
 	/* Dark mode button hover */
 	.dark-theme button:not([disabled]):hover {
-		border-color: #fff !important;
+		border-color: var(--button-secondary-border) !important;
 	}
-	
+
 	/* Ensure all buttons have a border for hover effect */
 	button:not([disabled]):not([class*="border-none"]):not([class*="border-0"]) {
 		border: 1px solid transparent;
@@ -175,43 +175,10 @@
 		border-radius: 8px !important;
 	}
 
-	/* Save button styling - black background, white text (variant="default") - excluding admin */
-	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *) {
-		background-color: #000000 !important;
-		color: #ffffff !important;
-	}
 
-	button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *):hover {
-		border-color: #111 !important;
-	}
 
-	/* Cancel button styling - border hover (variant="outline") - excluding admin */
-	/* Remove cyan/blue hover color, use light gray instead */
-	button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover:not(.admin-page *):not(.admin-layout *):not(.admin-modal *) {
-		border-color: #111 !important;
-		background-color: #f5f5f5 !important; /* Light gray hover background */
-		background: #f5f5f5 !important; /* Light gray hover background */
-	}
 
-	/* Ghost button styling - light gray hover (excluding admin) */
-	button[data-slot="button"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):not([class*="border"]):not([class*="bg-background"]):hover:not(.admin-page *):not(.admin-layout *):not(.admin-modal *) {
-		background-color: #f5f5f5 !important; /* Light gray hover background */
-		background: #f5f5f5 !important; /* Light gray hover background */
-	}
 
-	/* Override for admin pages - restore original styles */
-	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *) {
-		background-color: hsl(var(--primary)) !important;
-		color: hsl(var(--primary-foreground)) !important;
-	}
-
-	.admin-page button[data-slot="button"][class*="bg-primary"]:not([class*="bg-destructive"]):not(.admin-layout *):not(.admin-modal *):hover {
-		background-color: hsl(var(--primary) / 0.9) !important;
-	}
-
-	.admin-page button[data-slot="button"][class*="border"]:not([class*="bg-primary"]):not([class*="bg-destructive"]):not([class*="bg-secondary"]):hover {
-		background-color: hsl(var(--accent)) !important;
-	}
 
 	:root {
 		/* Z-index scale system */
@@ -578,18 +545,18 @@
 		transform: translateZ(0) !important;
 		isolation: isolate !important;
 	}
-	
+
 	html::-webkit-scrollbar {
 		display: block !important; /* Chrome, Safari, Opera */
 		width: 8px !important;
 		height: 8px !important;
 	}
-	
+
 	html::-webkit-scrollbar-thumb {
 		background-color: rgba(156, 163, 175, 0.5);
 		border-radius: 4px;
 	}
-	
+
 	html::-webkit-scrollbar-track {
 		background-color: transparent;
 	}
@@ -707,7 +674,7 @@
 			transform: translateY(0) scale(1);
 		}
 	}
-	
+
 	@keyframes fadeIn {
 		from {
 			opacity: 0;
@@ -818,11 +785,11 @@
 		gap: 8px;
 		padding: 13px 20px;
 		border-radius: var(--studio-radius-pill);
-		background: var(--studio-text-primary);
-		color: #fff;
+		background: var(--button-primary-bg);
+		color: var(--button-primary-fg);
 		font-weight: 600;
 		font-size: 14px;
-		border: 1px solid var(--studio-text-primary);
+		border: 1px solid var(--button-primary-bg);
 		cursor: pointer;
 		transition:
 			transform var(--studio-transition-smooth),
@@ -831,7 +798,7 @@
 	}
 	.studio-cta-primary:hover:not(:disabled) {
 		transform: translateY(-1px);
-		box-shadow: 0 12px 28px rgba(27, 27, 25, 0.18);
+		box-shadow: var(--button-shadow);
 	}
 	.studio-cta-primary:active:not(:disabled) {
 		transform: scale(0.98);
@@ -848,11 +815,11 @@
 		gap: 8px;
 		padding: 13px 20px;
 		border-radius: var(--studio-radius-pill);
-		background: rgba(255, 255, 255, 0.72);
-		color: var(--studio-text-primary);
+		background: var(--button-secondary-bg);
+		color: var(--button-secondary-fg);
 		font-weight: 600;
 		font-size: 14px;
-		border: 1px solid #d8d1c5;
+		border: 1px solid var(--button-secondary-border);
 		cursor: pointer;
 		transition:
 			transform var(--studio-transition-smooth),
@@ -861,8 +828,9 @@
 	}
 	.studio-cta-secondary:hover:not(:disabled) {
 		transform: translateY(-1px);
-		background: var(--bg-card, #FAF8F4);
-		border-color: var(--studio-text-primary);
+		background: var(--button-secondary-hover);
+		border-color: var(--button-secondary-border);
+		color: var(--button-secondary-fg);
 	}
 	.studio-cta-secondary:active:not(:disabled) {
 		transform: scale(0.98);
@@ -876,7 +844,7 @@
 		padding: 8px 12px;
 		border-radius: var(--studio-radius-pill);
 		background: transparent;
-		color: var(--studio-text-primary);
+		color: var(--button-secondary-fg);
 		font-weight: 500;
 		font-size: 13px;
 		border: 1px solid transparent;
@@ -884,7 +852,8 @@
 		transition: background var(--studio-transition-smooth);
 	}
 	.studio-cta-ghost:hover:not(:disabled) {
-		background: rgba(27, 27, 25, 0.04);
+		background: var(--button-secondary-hover);
+		color: var(--button-secondary-fg);
 	}
 
 	/* Studio card */
@@ -1013,53 +982,4 @@
 		outline: 2px solid var(--studio-accent-copper);
 		outline-offset: 3px;
 	}
-}
-
-/* App body wrapper reserves the shared header height.
-
-   The first direct child of .app-body is always flush with the bottom of the
-   fixed header (no top margin / no top border-radius) so page content never
-   appears to "float" below the header. The original margin and corner
-   radius is preserved on subsequent children and on the bottom of the
-   first child. */
-.app-body {
-	padding-top: var(--header-height, 80px);
-	/* Pages render their own internal top spacing; this wrapper just
-	   guarantees the fixed header never overlaps page content. */
-	box-sizing: border-box;
-	border-radius: 0;
-	background: transparent;
-}
-
-/* Reserve the homepage header height before the ribbon. */
-.app-body:has(> .homepage) {
-	padding-top: var(--homepage-header-height);
-}
-
-/* First child sits flush against the bottom of the fixed header.
-   - Strip the top margin so there is no visible gap.
-   - Strip the top border-radius so the first card's top edge is a clean
-     straight line against the header. */
-.app-body > *:first-child {
-	margin-top: 0;
-	border-top-left-radius: 0;
-	border-top-right-radius: 0;
-}
-
-/* Modal page — when a photo modal is open we want the body wrapper to stay
-   transparent so the background page is still visible behind the modal. */
-body:has(.app-body) .app-body {
-	position: relative;
-	z-index: 1;
-}
-
-/* The app shell reserves the header once; content pages add only local spacing. */
-.app-body > :is(.collections-page, .favorites-page, .favorite-collections-page,
-  .download-history-page, .collection-detail-page, .search-results-page,
-  .profile-page, .edit-profile-page, .upload-page, .image-page, .my-bookings-page) {
-	padding-top: 32px;
-}
-
-.app-body :is(.about-hero, .explore-hero, .blog-hero) {
-	padding-top: 48px;
 }

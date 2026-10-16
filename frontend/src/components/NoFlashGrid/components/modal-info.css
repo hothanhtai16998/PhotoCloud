@@ -3,8 +3,8 @@
 .info-modal { display: flex; flex-direction: column; width: 320px; max-width: calc(100vw - 40px); max-height: min(60dvh, calc(100dvh - 24px)); overflow: hidden; background: var(--bg-card, #FFFFFF); border: 1px solid var(--border-color, #E8E2D6); border-radius: 8px; box-shadow: 0 4px 14px #0000000d; animation: infoPanelFade 150ms ease; }
 .info-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 4px; }
 .info-modal-title { margin: 0; font-size: 14px; font-weight: 500; color: var(--text-primary, #1B1B19); }
-.info-modal-close { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #999; font-size: 20px; line-height: 1; cursor: pointer; }
-.info-modal-close:hover { background: var(--hover-bg, #F2EEE7); color: var(--text-secondary, #6B6B66); }
+.info-modal-close { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--button-secondary-fg); font-size: 20px; line-height: 1; cursor: pointer; }
+.info-modal-close:hover { background: var(--button-secondary-hover); color: var(--button-secondary-fg); }
 .info-modal-content { padding: 0 16px 16px; overflow-y: auto; min-height: 0; }
 .info-published { margin-bottom: 22px; color: var(--text-secondary, #6B6B66); font-size: 12px; }
 .info-chart-container { position: relative; margin-bottom: 8px; }
@@ -17,10 +17,10 @@
 .info-chart-tooltip { position: fixed; z-index: 10002; padding: 8px 12px; background: #111; color: var(--bg-card, #FFFFFF); border-radius: 6px; font-size: 13px; pointer-events: none; width: max-content; max-width: min(240px, calc(100vw - 24px)); overflow-wrap: anywhere; box-shadow: 0 4px 12px #0003; line-height: 1.5; }
 .info-chart-tooltip div:first-child { margin-bottom: 2px; font-weight: 500; }
 .info-tabs { display: flex; gap: 2px; padding: 3px; border-radius: 4px; background: #f3f3f3; }
-.info-tab { flex: 1; padding: 5px 10px; border: 0; border-radius: 3px; background: transparent; color: var(--text-secondary, #6B6B66); font-size: 12px; font-weight: 500; cursor: pointer; transition: background 150ms ease; }
-.info-tab:hover { background: #eaeaea; }
-.info-tab.active { background: var(--bg-card, #FFFFFF); color: var(--text-secondary, #6B6B66); box-shadow: 0 1px 4px #00000014; }
-.modal-footer-btn.active { background: #e5e5e5; }
+.info-tab { flex: 1; padding: 5px 10px; border: 0; border-radius: 3px; background: transparent; color: var(--button-secondary-fg); font-size: 12px; font-weight: 500; cursor: pointer; transition: background 150ms ease; }
+.info-tab:hover { background: var(--button-secondary-hover); }
+.info-tab.active { background: var(--button-selected-bg); color: var(--button-selected-fg); box-shadow: var(--button-shadow); }
+.modal-footer-btn.active { background: var(--button-selected-bg); }
 @keyframes infoPanelFade { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 768px) {
   .info-modal-wrapper { width: min(280px, calc(100vw - 24px)); }

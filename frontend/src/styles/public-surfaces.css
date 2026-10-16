@@ -21,7 +21,7 @@ html.dark-theme body:not(:has(.admin-page)) {
 .app-body :is(.booking-detail-page,.profile-settings-page,.search-results-page) { background:var(--bg-primary); }
 .app-body :is(.image-page,.upload-page,.about-page,.contact-page,.packages-page,.blog-page,.blog-detail-page,.booking-page,.my-bookings-page,.notification-page,.download-history-page,.favorites-page,.favorite-collections-page,.collections-page,.collection-detail-page,.explore-page,.not-found-page) { background:var(--bg-primary);color:var(--text-primary); }
 html .auth-layout { background:var(--bg-primary);color:var(--text-primary); }
-html .auth-layout :is(input,select,.social-btn) { background:var(--bg-card);color:var(--text-primary);border-color:var(--border-strong); }
+html .auth-layout :is(input,select,.social-btn) { background:var(--button-secondary-bg);color:var(--button-secondary-fg);border-color:var(--button-secondary-border); }
 html .auth-layout .auth-panel { background:var(--bg-primary);color:var(--text-primary); }
 html.dark-theme .auth-layout :is(.form-switch,.password-toggle,.auth-divider) { color:var(--text-secondary); }
 html.dark-theme .auth-layout .form-link { color:#DFC29F; }

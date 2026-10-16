@@ -68,14 +68,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary, #6B6B66);
+    color: var(--button-secondary-fg);
     border-radius: 4px;
     transition: all 0.2s;
 }
 
 .moderation-notes-modal-close:hover {
-    background-color: var(--hover-bg, #F2EEE7);
-    color: #1a1a1a;
+    background-color: var(--button-secondary-hover);
+    color: var(--button-secondary-fg);
 }
 
 .moderation-notes-modal-form {

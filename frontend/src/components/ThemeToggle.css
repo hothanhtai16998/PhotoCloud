@@ -1,4 +1,4 @@
 .site-theme-toggle { display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:44px;height:44px;padding:0;border:0;border-radius:6px;background:transparent;color:inherit;cursor:pointer; }
-.site-theme-toggle:hover { background:var(--hover-bg); }
+.site-theme-toggle:hover { background:var(--button-secondary-hover); }
 .site-theme-toggle:focus-visible { outline:2px solid currentColor;outline-offset:2px; }
 .site-theme-toggle-menu { width:100%;justify-content:flex-start;gap:12px;padding:0 16px;font:inherit;text-align:left; }

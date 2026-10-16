@@ -1,4 +1,5 @@
-import { Heart, Download, CheckSquare2, X } from 'lucide-react';
+import { Heart, Download, CheckSquare2, X, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CollectionShare } from '@/components/collection/CollectionShare';
 import ReportButton from '@/components/ReportButton';
@@ -32,6 +33,7 @@ export const CollectionHeader = ({
 }: CollectionHeaderProps) => {
   return (
     <div className="collection-detail-header">
+      <Link className="collection-detail-back" to="/collections"><ArrowLeft size={16} aria-hidden="true" />Quay lại bộ sưu tập</Link>
       <div className="collection-detail-content">
         <div className="collection-detail-main">
           <div className="collection-detail-title-row">

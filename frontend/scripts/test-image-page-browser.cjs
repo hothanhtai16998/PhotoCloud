@@ -66,6 +66,8 @@ const path = require('node:path');
       await page.locator('.grid-item-wrapper .blur-up-image-container').first().click();
       await page.locator('.image-page-modal').waitFor();
       const duration = await page.evaluate(() => window.__openDuration);
+      await page.locator('.image-page-photo.is-ready').waitFor();
+      await page.screenshot({ path: path.resolve(__dirname, `../qa-policy-checkbox/image-modal-${theme}.png`) });
       assert.equal(byIdCalls, 0, 'Grid image opens without waiting for detail API');
       assert.ok(duration !== null);
       await page.keyboard.press('ArrowRight');
@@ -82,7 +84,46 @@ const path = require('node:path');
       assert.equal(await page.evaluate(() => window.__modalSeen), false, 'Reload never inserts a modal even for the first frame');
       assert.equal(await page.locator('.image-page-modal').count(), 0);
       await page.locator('.image-page-photo.is-ready').waitFor();
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForFunction(() => document.querySelector('.PHOTOCLOUD-header').dataset.surface !== 'canvas');
+      const initialHeaderColor = await page.locator('.PHOTOCLOUD-header').evaluate(el => getComputedStyle(el).backgroundColor);
+      for (let cycle = 0; cycle < 2; cycle++) {
+        await page.evaluate(() => window.scrollTo(0, 120));
+        await page.waitForFunction(() => document.querySelector('.PHOTOCLOUD-header').dataset.surface === 'canvas');
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.waitForFunction(() => document.querySelector('.PHOTOCLOUD-header').dataset.surface === 'heading');
+        await page.waitForFunction(color => getComputedStyle(document.querySelector('.PHOTOCLOUD-header')).backgroundColor === color, initialHeaderColor);
+      }
       await page.screenshot({ path: path.resolve(__dirname, `../qa-policy-checkbox/image-page-${theme}.png`) });
+      const palette = await page.evaluate(() => {
+        const scope = document.querySelector('.image-page');
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        const rgb = color => {
+          ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1);
+          return [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
+        };
+        const value = name => getComputedStyle(scope).getPropertyValue(name).trim();
+        const color = (selector, property) => rgb(getComputedStyle(document.querySelector(selector))[property]);
+        const luminance = rgb => rgb.map(n => { n /= 255; return n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4; }).reduce((sum, n, i) => sum + n * [0.2126, 0.7152, 0.0722][i], 0);
+        const fg = luminance(color('.image-modal-download-button', 'color'));
+        const bg = luminance(color('.image-modal-download-button', 'backgroundColor'));
+        return {
+          photo: color('.image-modal-image-container', 'backgroundColor'), expectedPhoto: rgb(value('--bg-card')),
+          related: color('.image-modal-related-section', 'backgroundColor'), expectedRelated: rgb(value('--bg-card')),
+          heading: color('.image-modal-related-title', 'color'), expectedHeading: rgb(value('--text-primary')),
+          downloadContrast: (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05),
+        };
+      });
+      assert.deepEqual(palette.photo, palette.expectedPhoto);
+      assert.deepEqual(palette.related, palette.expectedRelated);
+      assert.deepEqual(palette.heading, palette.expectedHeading);
+      assert.ok(palette.downloadContrast >= 4.5, 'Download label contrast');
+      fs.writeFileSync(path.resolve(__dirname, `../qa-policy-checkbox/image-palette-${theme}.json`), JSON.stringify(palette, null, 2));
+      await page.locator('.image-modal-related-section').scrollIntoViewIfNeeded();
+      await page.locator('.image-modal-related-section .grid-item-wrapper').first().waitFor();
+      await page.locator('.image-modal-related-section').screenshot({ path: path.resolve(__dirname, `../qa-policy-checkbox/image-related-${theme}.png`) });
+
       const saveButton = page.locator('.image-modal-favorite-button[aria-pressed]');
       await saveButton.click();
       await page.waitForFunction(() => {

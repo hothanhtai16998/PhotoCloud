@@ -170,18 +170,18 @@ body.scroll-locked .user-menu-content {
 }
 
 .user-menu-item:hover {
-  background: var(--hover-bg, #F2EEE7) !important;
-  color: var(--text-primary, #1B1B19) !important;
+  background: var(--button-secondary-hover) !important;
+  color: var(--button-secondary-fg) !important;
 }
 
 .user-menu-item-destructive {
-  color: #dc2626 !important;
+  color: var(--button-danger-text) !important;
   margin-top: 4px;
 }
 
 .user-menu-item-destructive:hover {
-  background: #fee2e2 !important;
-  color: #b91c1c !important;
+  background: var(--button-danger-hover) !important;
+  color: var(--button-danger-fg) !important;
 }
 
 .user-menu-separator {

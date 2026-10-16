@@ -1,0 +1,110 @@
+[
+  {
+    "theme": "light",
+    "role": "primary",
+    "state": "bg",
+    "ratio": 6.66
+  },
+  {
+    "theme": "light",
+    "role": "primary",
+    "state": "hover",
+    "ratio": 8.56
+  },
+  {
+    "theme": "light",
+    "role": "secondary",
+    "state": "bg",
+    "ratio": 6.66
+  },
+  {
+    "theme": "light",
+    "role": "secondary",
+    "state": "hover",
+    "ratio": 5.93
+  },
+  {
+    "theme": "light",
+    "role": "selected",
+    "state": "bg",
+    "ratio": 6.99
+  },
+  {
+    "theme": "light",
+    "role": "danger",
+    "state": "bg",
+    "ratio": 5.6
+  },
+  {
+    "theme": "light",
+    "role": "danger",
+    "state": "hover",
+    "ratio": 7.41
+  },
+  {
+    "theme": "light",
+    "role": "success",
+    "state": "bg",
+    "ratio": 7.17
+  },
+  {
+    "theme": "light",
+    "role": "success",
+    "state": "hover",
+    "ratio": 9.74
+  },
+  {
+    "theme": "dark",
+    "role": "primary",
+    "state": "bg",
+    "ratio": 9.14
+  },
+  {
+    "theme": "dark",
+    "role": "primary",
+    "state": "hover",
+    "ratio": 10.99
+  },
+  {
+    "theme": "dark",
+    "role": "secondary",
+    "state": "bg",
+    "ratio": 7.77
+  },
+  {
+    "theme": "dark",
+    "role": "secondary",
+    "state": "hover",
+    "ratio": 6.42
+  },
+  {
+    "theme": "dark",
+    "role": "selected",
+    "state": "bg",
+    "ratio": 7.01
+  },
+  {
+    "theme": "dark",
+    "role": "danger",
+    "state": "bg",
+    "ratio": 7.8
+  },
+  {
+    "theme": "dark",
+    "role": "danger",
+    "state": "hover",
+    "ratio": 9.46
+  },
+  {
+    "theme": "dark",
+    "role": "success",
+    "state": "bg",
+    "ratio": 8.04
+  },
+  {
+    "theme": "dark",
+    "role": "success",
+    "state": "hover",
+    "ratio": 9.66
+  }
+]

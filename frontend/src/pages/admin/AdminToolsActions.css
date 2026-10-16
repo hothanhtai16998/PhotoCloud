@@ -1,0 +1,240 @@
+@scope (.admin-tools) {
+
+/* Security Settings Section Dividers */
+.admin-settings-section-divider {
+  margin: 2rem 0 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+.admin-settings-section-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  margin: 0;
+}
+
+.admin-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--background-secondary, #f9fafb);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.admin-checkbox-group .admin-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.admin-checkbox-group .admin-checkbox-label:hover {
+  background-color: var(--background-hover, #f3f4f6);
+}
+
+@media (max-width: 768px) {
+  .admin-settings-section-divider {
+    margin: 1.5rem 0 1rem;
+  }
+
+  .admin-settings-section-title {
+    font-size: 1rem;
+  }
+
+  .admin-checkbox-group {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+}
+
+/* Button Improvements - Enhanced Styles */
+/* Apply to both Button component and native buttons */
+[data-slot='button'],
+button:not([type='submit']):not([type='reset']),
+button[type='button'] {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-slot='button']:not(:disabled):hover,
+button:not(:disabled):not([type='submit']):not([type='reset']):hover,
+button[type='button']:not(:disabled):hover {
+  /* No transform on hover - prevent movement */
+  border-color: var(--text-primary, #1B1B19) !important;
+}
+
+/* Dark mode button hover */
+.dark-theme [data-slot='button']:not(:disabled):hover,
+.dark-theme button:not(:disabled):not([type='submit']):not([type='reset']):hover,
+.dark-theme button[type='button']:not(:disabled):hover {
+  border-color: var(--bg-card, #FFFFFF) !important;
+}
+
+[data-slot='button']:not(:disabled):active,
+button:not(:disabled):not([type='submit']):not([type='reset']):active,
+button[type='button']:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+[data-slot='button']:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Loading state spinner positioning */
+[data-slot='button']:has(> svg.animate-spin) {
+  position: relative;
+}
+
+[data-slot='button'] > svg.animate-spin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+/* Icon-only button improvements */
+[data-slot='button'][class*='icon'] {
+  aspect-ratio: 1;
+  padding: 0;
+}
+
+/* Button group styles */
+[role='group'] {
+  gap: 0;
+}
+
+[role='group'] [data-slot='button'] {
+  border-radius: 0;
+}
+
+[role='group'] [data-slot='button']:first-child {
+  border-top-left-radius: calc(var(--radius) - 2px);
+  border-bottom-left-radius: calc(var(--radius) - 2px);
+}
+
+[role='group'] [data-slot='button']:last-child {
+  border-top-right-radius: calc(var(--radius) - 2px);
+  border-bottom-right-radius: calc(var(--radius) - 2px);
+}
+
+[role='group'][class*='vertical'] [data-slot='button']:first-child {
+  border-top-left-radius: calc(var(--radius) - 2px);
+  border-top-right-radius: calc(var(--radius) - 2px);
+  border-bottom-left-radius: 0;
+}
+
+[role='group'][class*='vertical'] [data-slot='button']:last-child {
+  border-bottom-left-radius: calc(var(--radius) - 2px);
+  border-bottom-right-radius: calc(var(--radius) - 2px);
+  border-top-right-radius: 0;
+}
+
+/* Enhanced hover effects for different variants */
+[data-slot='button'][class*='default']:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-slot='button'][class*='destructive']:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(166, 69, 60, 0.3);
+}
+
+[data-slot='button'][class*='outline']:not(:disabled):hover {
+  border-color: hsl(var(--ring));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+[data-slot='button'][class*='secondary']:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-slot='button'][class*='ghost']:not(:disabled):hover {
+  background-color: hsl(var(--accent) / 0.8);
+}
+
+/* Focus ring improvements */
+[data-slot='button']:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Loading state - hide text when loading */
+[data-slot='button']:has(svg[class*='lucide-loader']) > span {
+  opacity: 0;
+}
+
+.admin-error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 32px;
+}
+
+.admin-error-boundary-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 420px;
+  padding: 32px 24px;
+  background: var(--admin-card-bg, #FAF8F4);
+  border: 1px solid var(--border-color, #E8E2D6);
+  border-radius: 12px;
+  gap: 12px;
+}
+
+.admin-error-boundary-icon {
+  color: #dc2626;
+}
+
+.admin-error-boundary-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--admin-text, #1B1B19);
+}
+
+.admin-error-boundary-message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--admin-text-secondary, #6B6B66);
+  word-break: break-word;
+}
+
+.admin-error-boundary-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--button-secondary-bg);
+  color: var(--button-secondary-fg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.admin-error-boundary-retry:hover {
+  opacity: 0.88;
+}
+
+.admin-error-boundary-retry:focus-visible {
+  outline: 2px solid var(--button-focus);
+  outline-offset: 2px;
+}
+}

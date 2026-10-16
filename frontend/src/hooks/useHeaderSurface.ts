@@ -16,7 +16,9 @@ export function useHeaderSurface(pathname: string): void {
     let observedBand: HTMLElement | null = null;
     const update = () => {
       frame = 0;
-      const next = window.scrollY >= boundary + (canvas ? -3 : 3);
+      // At the top, always restore the heading surface. With boundary=0 the
+      // hysteresis threshold becomes -3 and would otherwise keep canvas forever.
+      const next = window.scrollY > 0 && window.scrollY >= boundary + (canvas ? -3 : 3);
       if (next !== canvas) {
         canvas = next;
         header.dataset.surface = next ? 'canvas' : 'heading';
