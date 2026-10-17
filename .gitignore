@@ -73,3 +73,8 @@ docs/
 Help/
 .local-backups/
 .md
+
+# QA policy / test artifacts (do not commit)
+qa-policy-checkbox/
+*.tsbuildinfo
+*.tmp

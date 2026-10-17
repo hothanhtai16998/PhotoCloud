@@ -1,9 +1,0 @@
-{
-  "passed": true,
-  "mutations": [
-    "PUT",
-    "DELETE",
-    "DELETE"
-  ],
-  "environment": "Edge headless 1440x1000, API fixtures; no DB; responsive untested"
-}

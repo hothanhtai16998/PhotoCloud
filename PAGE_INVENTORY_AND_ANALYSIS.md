@@ -757,3 +757,45 @@ Phạm vi: `/packages` (danh sách) và `/packages/:slug` (chi tiết). Mục 5.
 ## 22. Sửa cấu trúc inventory — 16/10/2026
 
 Theo yêu cầu người dùng: di chuyển nhật ký sửa sort về 11.5 để checklist EXP-F01–20 liền mạch; đưa 18.5 về sau 18.4; sửa ký tự điều khiển và checkbox Markdown; cập nhật phân công admin/user và nguồn palette hiện tại. Khôi phục PHO-C01–04 và PHO-H01 đã bị xóa khỏi checklist bằng nội dung/dấu x có trong Git. Giữ ý nghĩa toàn bộ 130 dấu đánh giá hiện có trước sửa, gồm 6 dấu x DASH; không tự nghiệm thu thêm responsive hoặc trang khác. Ghi chú test của phiên khác được giữ như lịch sử báo cáo, không coi là lần kiểm mới ở đây.
+
+## 23. Vòng responsive — khởi động 17/10/2026
+
+Theo yêu cầu người dùng 17/10/2026: tiến hành vòng responsive cuối cho toàn bộ 29 trang user. Tài liệu gốc: `responsive.md`. Kế hoạch: `.cursor/plans/kế_hoạch_responsive_toàn_trang_user_7e653fe7.plan.md`. Môi trường kiểm: `frontend/qa-policy-checkbox/responsive-environment.md`. Audit: `frontend/qa-policy-checkbox/responsive-audit.md`.
+
+Baseline commit: `3e5defd add change language`.
+
+### 23.1. Checklist R-01 chung cho mỗi trang (mobile-first)
+
+Mỗi trang user khi vào vòng responsive sẽ bổ sung các mục con R-01…R-06:
+
+- [ ] R-01 Mobile 360–390px: hiển thị đúng, không cuộn ngang, nội dung đọc được.
+- [ ] R-02 Mobile 428px (iPhone Pro Max): layout không vỡ, khoảng cách thoáng.
+- [ ] R-03 Tablet 768–1024px: navigation hoạt động, grid thích ứng.
+- [ ] R-04 Desktop 1280–1440px: tỉ lệ và khoảng cách hợp lý.
+- [ ] R-05 Touch target: tất cả nút ≥ 44×44px, khoảng cách giữa các nút liền kề ≥ 8px; input/select/textarea có `font-size: 16px` để chống iOS zoom.
+- [ ] R-06 prefers-reduced-motion và prefers-color-scheme: hiệu ứng giảm, theme light/dark tự động; bàn phím ảo không che nút submit.
+
+### 23.2. Sửa khởi động 17/10/2026 (bước 3, lượt đầu)
+
+Vòng đầu ưu tiên các lỗi font-size gây zoom iOS ở form đăng nhập/đăng ký và một số form khác (P1).
+
+- **P1 — Input font-size 0.9375rem ở @media (max-width: 480px):** iOS Safari sẽ zoom khi focus input nếu font-size < 16px, làm vỡ bố cục. Sửa `frontend/src/pages/SignInPage.css` dòng 401–410: `.form-group input` và `.continue-btn` đổi từ `font-size: 0.9375rem` (~15px) thành `font-size: 16px`. Cùng nội dung sửa cho `frontend/src/pages/SignUpPage.css` dòng 509–518: `.form-group input`, `.form-textarea` và `.continue-btn` đổi sang `font-size: 16px`. Các touch target 44px và padding giữ nguyên. Touch target ở 480px (social button 44×44, continue 44) đạt chuẩn.
+- **P1 — ForgotPassword/ResetPassword chưa có @media:** file `ForgotPasswordPage.css` (~180 dòng) không có breakpoint; nút submit cao 42px < 44px và `font-size: 15px`. Thêm `@media (max-width: 480px)`: padding trang 16px, card padding 24px 20px, icon 56px, tiêu đề 20px, nút submit cao 44px và `font-size: 16px`. ResetPasswordPage dùng chung CSS trên; cùng đạt.
+- **P1 — ContactPage input/textarea font-size 14px:** `frontend/src/pages/ContactPage.css` dòng 156 dùng `font-size: 14px` cho input và textarea. Đổi sang `font-size: 16px` theo `responsive.md` mục 5.
+- **Bằng chứng:** `npx tsc --noEmit` không diagnostic mới. ESLint không có cảnh báo mới tại 4 file. Chưa thêm test trên thiết bị thật; chờ bước 4.
+
+### 23.3. Việc cần làm tiếp
+
+- Áp dụng R-01…R-06 cho từng trang theo thứ tự ưu tiên: #1 → #4 → #5 → #6 → #9 → #25 → #17 → #18 → #19 → #12–#16 → #20–#24 → #7 → #8 → #10 → #11 → #28 → #29.
+- Kiểm trên ≥ 3 thiết bị thật (iPhone Safari, Android Chrome, iPad Safari) cho mỗi trang đã sửa; lưu screenshot vào `frontend/qa-policy-checkbox/responsive-<route>-<device>-<theme>.png`.
+- Không tự đánh x; người dùng xác nhận mới ghi dấu và gạch ngang mục chức năng đã nghiệm thu.
+
+### 23.4. Bước 4–6: giới hạn kiểm trên thiết bị thật
+
+Phiên chạy 17/10/2026 không có sẵn ≥ 3 thiết bị thật (iPhone, Android, iPad) trong môi trường Cursor/Windows. Theo `responsive.md` mục 10 và 11, kiểm trên thiết bị thật là phần người dùng cần chạy; phiên chỉ chuẩn bị:
+
+- File môi trường: `frontend/qa-policy-checkbox/responsive-environment.md` (commit baseline, danh sách thiết bị, viewport chuẩn).
+- File audit tổng: `frontend/qa-policy-checkbox/responsive-audit.md` (29 trang, tóm tắt P0/P1/P2/P3).
+- Checklist R-01…R-06 (mục 23.1) sẵn sàng để ghi kết quả cho từng trang khi người dùng verify.
+
+Bước 4 (verify) và bước 5 (ghi R-01…R-06 cho từng trang vào checklist) sẽ hoàn thành khi người dùng cung cấp kết quả kiểm trên thiết bị thật. Bước 6 (hồi quy + báo cáo cuối) sẽ chạy sau khi mọi trang đã được xác nhận responsive. Phiên chỉ ghi nhận trạng thái; không tự nghiệm thu thay người dùng.

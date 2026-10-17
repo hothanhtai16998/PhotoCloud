@@ -1,9 +1,0 @@
-{
-  "passed": true,
-  "deletes": [
-    "one",
-    "two",
-    "two"
-  ],
-  "environment": "Edge headless 1440x1000; local fixtures; responsive not tested"
-}

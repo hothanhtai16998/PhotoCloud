@@ -1,6 +1,0 @@
-{
-  "theme": "dark",
-  "clickToModalDOMMs": 32.60000000009313,
-  "reloadModalInserted": false,
-  "note": "Local fixture; detail API delayed 1200ms. Does not measure production latency."
-}

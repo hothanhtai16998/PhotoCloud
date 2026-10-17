@@ -1,5 +1,0 @@
-{
-  "passed": true,
-  "calls": 5,
-  "environment": "Edge headless 1440x1000; isolated API fixture; light/dark; responsive not tested"
-}

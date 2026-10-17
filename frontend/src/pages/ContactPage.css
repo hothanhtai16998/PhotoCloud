@@ -155,7 +155,7 @@
 .contact-fields textarea {
     font: inherit;
     font-family: var(--studio-font-body);
-    font-size: 14px;
+    font-size: 16px; /* Prevent iOS zoom */
     padding: 11px 13px;
     border: 1px solid var(--studio-border-soft);
     border-radius: 10px;
