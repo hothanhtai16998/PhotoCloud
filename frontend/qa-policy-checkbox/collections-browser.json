@@ -1,7 +1,7 @@
 [
   {
     "theme": "light",
-    "readyMs": 501,
+    "readyMs": 559,
     "reads": 9,
     "creates": 2,
     "additions": 2,
@@ -9,7 +9,7 @@
   },
   {
     "theme": "dark",
-    "readyMs": 953,
+    "readyMs": 962,
     "reads": 9,
     "creates": 2,
     "additions": 2,

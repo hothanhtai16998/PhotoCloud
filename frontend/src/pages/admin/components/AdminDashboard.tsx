@@ -1,3 +1,4 @@
+import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -14,8 +15,9 @@ import { useAdminResource } from '../hooks/useAdminResource';
 import { AdminHeading, AdminFeedback, AdminEmpty } from './AdminPrimitives';
 import './AdminDashboard.css';
 import { DashboardRecentImages } from './DashboardRecentImages';
-function formatCount(value: number | undefined): string { return typeof value==='number' && Number.isFinite(value) && value>=0 ? value.toLocaleString('vi-VN') : '—'; }
+function formatCount(value: number | undefined): string { return typeof value==='number' && Number.isFinite(value) && value>=0 ? value.toLocaleString(getAdminIntlLocale()) : '—'; }
 export function AdminDashboard() {
+  useAdminLocale();
   const user = useUserStore((s) => s.user);
   const { hasPermission, isSuperAdmin } = usePermissions();
   const can = (p: Parameters<typeof hasPermission>[0]) =>
@@ -26,11 +28,11 @@ export function AdminDashboard() {
   return (
     <section className="admin-dashboard">
       <AdminHeading
-        title="Tổng quan"
+        title={adminText("Tổng quan")}
         description={
-          'Chào ' +
-          (user?.displayName || user?.username || 'bạn') +
-          ', cùng chăm chút PhotoCloud hôm nay.'
+          adminText("Chào") + " " +
+          (user?.displayName || user?.username || adminText("bạn")) +
+          adminText(", cùng chăm chút PhotoCloud hôm nay.")
         }
       >
         <button
@@ -39,29 +41,28 @@ export function AdminDashboard() {
           onClick={() => void reload()}
         >
           <RefreshCw size={16} />
-          {loading ? 'Đang cập nhật…' : 'Làm mới'}
+          {loading ? adminText("Đang cập nhật…") : adminText("Làm mới")}
         </button>
       </AdminHeading>
       <AdminFeedback error={error} retry={() => void reload()} />
-      <div className="dashboard-data-note" role="status"><span>{error && data ? 'Chưa thể cập nhật. Đang hiển thị dữ liệu lần tải thành công trước.' : updatedAt ? `Cập nhật lúc ${updatedAt.toLocaleTimeString('vi-VN')}` : loading ? 'Đang tải số liệu…' : 'Chưa có dữ liệu thống kê'}</span><span>Tổng toàn hệ thống · Không giới hạn thời gian</span></div>
-      <div className="admin-overview-strip" aria-busy={loading} aria-label="Số liệu tổng quan">
+      <div className="dashboard-data-note" role="status"><span>{error && data ? adminText("Chưa thể cập nhật. Đang hiển thị dữ liệu lần tải thành công trước.") : updatedAt ? adminText("Cập nhật lúc {0}", { 0: updatedAt.toLocaleTimeString(getAdminIntlLocale()) }) : loading ? adminText("Đang tải số liệu…") : adminText("Chưa có dữ liệu thống kê")}</span><span>{adminText("Tổng toàn hệ thống · Không giới hạn thời gian")}</span></div>
+      <div className="admin-overview-strip" aria-busy={loading} aria-label={adminText("Số liệu tổng quan")}>
         {[
-          { label:'Ảnh trong thư viện', value:data?.stats.totalImages },
-          { label:'Thành viên', value:data?.stats.totalUsers },
-          { label:'Danh mục', value:data?.stats.totalCategories },
+          { label:adminText("Ảnh trong thư viện"), value:data?.stats.totalImages },
+          { label:adminText("Thành viên"), value:data?.stats.totalUsers },
+          { label:adminText("Danh mục"), value:data?.stats.totalCategories },
         ].map(metric=><div key={metric.label}><span>{metric.label}</span><strong>{data ? formatCount(metric.value) : loading ? '…' : '—'}</strong></div>)}
       </div>
       <div className="admin-dashboard-workspace">
         <section className="admin-recent-section">
           <div className="admin-section-heading">
             <div>
-              <h2>Ảnh tải lên gần đây</h2>
-              <p>Tối đa 6 ảnh mới nhất, gồm cả ảnh chưa xuất bản.</p>
+              <h2>{adminText("Ảnh tải lên gần đây")}</h2>
+              <p>{adminText("Tối đa 6 ảnh mới nhất, gồm cả ảnh chưa xuất bản.")}</p>
             </div>
             {can('viewImages') && (
               <Link to="/admin/images">
-                Xem thư viện
-                <ArrowUpRight size={16} />
+                 {adminText("Xem thư viện")} <ArrowUpRight size={16} />
               </Link>
             )}
           </div>
@@ -72,23 +73,23 @@ export function AdminDashboard() {
           ) : (
             !error && (
               <AdminEmpty
-                title="Chưa có ảnh mới"
-                description="Các ảnh mới nhất sẽ được hiển thị ở đây."
+                title={adminText("Chưa có ảnh mới")}
+                description={adminText("Các ảnh mới nhất sẽ được hiển thị ở đây.")}
               />
             )
           )}
         </section>
         <aside className="admin-today">
-          <h2>Không gian làm việc</h2>
-          <p>Đi thẳng đến công việc bạn cần xử lý.</p>
-          {!can('moderateContent') && !isSuperAdmin() && !can('viewImages') && <p className="dashboard-no-shortcuts">Tài khoản hiện chỉ có quyền xem tổng quan. Liên hệ quản trị viên nếu cần quyền xử lý công việc.</p>}
-          <nav aria-label="Công việc nhanh">
+          <h2>{adminText("Không gian làm việc")}</h2>
+          <p>{adminText("Đi thẳng đến công việc bạn cần xử lý.")}</p>
+          {!can('moderateContent') && !isSuperAdmin() && !can('viewImages') && <p className="dashboard-no-shortcuts">{adminText("Tài khoản hiện chỉ có quyền xem tổng quan. Liên hệ quản trị viên nếu cần quyền xử lý công việc.")}</p>}
+          <nav aria-label={adminText("Công việc nhanh")}>
             {can('moderateContent') && (
               <Link to="/admin/moderation">
                 <ShieldCheck size={21} />
                 <span>
-                  <strong>Duyệt ảnh mới</strong>
-                  <small>Kiểm tra nội dung trước khi xuất bản</small>
+                  <strong>{adminText("Duyệt ảnh mới")}</strong>
+                  <small>{adminText("Kiểm tra nội dung trước khi xuất bản")}</small>
                 </span>
                 <ArrowUpRight size={17} />
               </Link>
@@ -97,8 +98,8 @@ export function AdminDashboard() {
               <Link to="/admin/bookings">
                 <CalendarDays size={21} />
                 <span>
-                  <strong>Lịch chụp & dịch vụ</strong>
-                  <small>Yêu cầu, lịch hẹn và gói chụp</small>
+                  <strong>{adminText("Lịch chụp & dịch vụ")}</strong>
+                  <small>{adminText("Yêu cầu, lịch hẹn và gói chụp")}</small>
                 </span>
                 <ArrowUpRight size={17} />
               </Link>
@@ -107,8 +108,8 @@ export function AdminDashboard() {
               <Link to="/admin/images">
                 <Images size={21} />
                 <span>
-                  <strong>Quản lý thư viện</strong>
-                  <small>Sắp xếp và cập nhật ảnh</small>
+                  <strong>{adminText("Quản lý thư viện")}</strong>
+                  <small>{adminText("Sắp xếp và cập nhật ảnh")}</small>
                 </span>
                 <ArrowUpRight size={17} />
               </Link>

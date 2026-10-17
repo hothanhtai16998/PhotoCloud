@@ -38,16 +38,18 @@
 }
 
 .collection-grid-overlay.drag-over {
-  border: 3px dashed #111;
-  background: rgba(0, 0, 0, 0.05);
+  border: 3px dashed var(--border-strong);
+  background: color-mix(in srgb, var(--text-primary) 5%, transparent);
   transform: scale(1.05);
   z-index: 26; /* Above normal overlay */
 }
 
 .collection-grid-overlay.selected {
-  border: 5px solid #0066cc;
-  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.3),
-    0 8px 24px rgba(0, 102, 204, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+  border: 5px solid var(--accent);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent),
+    inset 0 0 0 2px color-mix(in srgb, var(--bg-card) 20%, transparent);
   position: relative;
   transform: scale(1.02);
   z-index: 2;
@@ -60,11 +62,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 102, 204, 0.15);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 12px;
   pointer-events: none;
   z-index: 1;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid color-mix(in srgb, var(--bg-card) 30%, transparent);
 }
 
 /* Cover Image Badge */
@@ -72,9 +74,9 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  background: rgba(0, 0, 0, 0.85);
+  background: color-mix(in srgb, var(--text-primary) 85%, transparent);
   backdrop-filter: blur(12px);
-  color: #fff;
+  color: var(--bg-card);
   padding: 8px 16px;
   border-radius: 24px;
   font-size: 0.8125rem;
@@ -82,9 +84,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 27; /* Above overlay, below interactive elements */
+  z-index: 27;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--text-primary) 30%, transparent);
   letter-spacing: 0.01em;
 }
 
@@ -101,16 +103,21 @@
   border: none;
   border-radius: 4px;
   padding: 0;
-  z-index: 30; /* Highest priority for interactive elements */
+  z-index: 30;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: checkboxPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   width: 24px;
   height: 24px;
   pointer-events: all;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .collection-image-checkbox {
+    transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    animation: checkboxPop 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
 }
 
 @keyframes checkboxPop {
@@ -130,20 +137,30 @@
 .collection-image-checkbox svg {
   width: 28px;
   height: 28px;
-  color: #fff;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--bg-card);
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--text-primary) 50%, transparent));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .collection-image-checkbox svg {
+    transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
 }
 
 .collection-image-checkbox:hover svg {
   transform: scale(1.2);
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--text-primary) 60%, transparent));
 }
 
 .collection-image-checkbox.checked svg {
-  color: #0066cc;
-  filter: drop-shadow(0 2px 6px rgba(0, 102, 204, 0.6));
-  animation: checkboxCheck 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: var(--accent);
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--accent) 60%, transparent));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .collection-image-checkbox.checked svg {
+    animation: checkboxCheck 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
 }
 
 @keyframes checkboxCheck {
@@ -163,12 +180,12 @@
   position: absolute;
   top: 16px;
   right: 16px;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--text-primary) 60%, transparent);
   backdrop-filter: blur(8px);
-  color: #fff;
+  color: var(--bg-card);
   padding: 6px;
   border-radius: 6px;
-  z-index: 30; /* Highest priority for interactive elements */
+  z-index: 30;
   opacity: 0;
   transition: opacity 0.2s ease;
   cursor: grab;
@@ -176,7 +193,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: all;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 20%, transparent);
   user-select: none;
 }
 
@@ -189,15 +206,11 @@
 }
 
 /* Ensure grid items are positioned relative for overlays */
-/* Note: NoFlashGrid already sets position: relative on .grid-item-wrapper */
-/* This ensures our overlays work correctly */
 .collection-detail-images .grid-item-wrapper {
   position: relative;
-  /* Preserve NoFlashGrid's transform for GPU acceleration */
   transform: translateZ(0);
 }
 
-/* Collection image item wrapper */
 .collection-image-item {
   position: relative;
   width: 100%;
@@ -205,7 +218,7 @@
 }
 
 .collection-image-drag-handle:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background: color-mix(in srgb, var(--text-primary) 80%, transparent);
 }
 
 .collection-image-drag-handle:active {
@@ -224,24 +237,29 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0);
+  background: color-mix(in srgb, var(--text-primary) 0%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 28; /* Above overlay, below interactive elements */
+  z-index: 28;
   pointer-events: none;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .collection-image-overlay {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
 .grid-item-wrapper:hover .collection-image-overlay {
-  background: rgba(0, 0, 0, 0.5);
+  background: color-mix(in srgb, var(--text-primary) 50%, transparent);
   opacity: 1;
-  pointer-events: none; /* Keep overlay non-interactive, only button is clickable */
+  pointer-events: none;
 }
 
 .grid-item-wrapper:hover .collection-image-overlay .collection-image-set-cover-btn {
-  pointer-events: all; /* Only the button captures clicks */
+  pointer-events: all;
 }
 
 /* Set Cover Button */
@@ -258,11 +276,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--button-shadow);
   pointer-events: all;
-  z-index: 30; /* Highest priority for interactive elements */
-  position: relative; /* Ensure z-index works */
+  z-index: 30;
+  position: relative;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .collection-image-set-cover-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 .collection-image-set-cover-btn:hover:not(:disabled) {

@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
+import type { UploadTranslator } from './upload/UploadTranslationContext';
 
 const UploadModal = lazy(() => import('./UploadModal'));
 
@@ -16,10 +17,16 @@ export function UploadTrigger({
   children,
   className,
   onUploaded,
+  translate,
+  language,
+  languageControl,
 }: {
   children: ReactNode;
   className?: string;
   onUploaded?: () => void;
+  translate?: UploadTranslator;
+  language?: 'vi' | 'en';
+  languageControl?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   // Custom workspace buttons keep their own layout and palette. The shared
@@ -47,6 +54,9 @@ export function UploadTrigger({
           <Suspense fallback={null}>
             <UploadModal
               isOpen
+              translate={translate}
+              language={language}
+              languageControl={languageControl}
               onClose={() => {
                 setOpen(false);
                 trigger.current?.focus();

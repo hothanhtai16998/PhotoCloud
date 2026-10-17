@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import type { ImageData } from './useImageUpload';
-import { t } from '@/i18n';
+import { useUploadTranslation } from '../UploadTranslationContext';
 
 interface UseUploadModalStateProps {
   preUploadAllImages: (
@@ -19,6 +19,7 @@ export const useUploadModalState = ({
   preserveQuality,
   isAdmin = false,
 }: UseUploadModalStateProps) => {
+  const t = useUploadTranslation();
   const { settings } = useSiteSettings();
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -36,7 +37,7 @@ export const useUploadModalState = ({
       if (file.size > maxSizeBytes) {
         return {
           valid: false,
-          error: `File size exceeds maximum allowed size of ${settings.maxUploadSize} MB`,
+          error: t('upload.localSize', { size: settings.maxUploadSize }, 'File size exceeds maximum allowed size of {size} MB'),
         };
       }
 
@@ -48,9 +49,7 @@ export const useUploadModalState = ({
       ) {
         return {
           valid: false,
-          error: `File type not allowed. Allowed types: ${settings.allowedFileTypes.join(
-            ', '
-          )}`,
+          error: t('upload.localType', { types: settings.allowedFileTypes.join(', ') }, 'File type not allowed. Allowed types: {types}'),
         };
       }
 
@@ -64,7 +63,7 @@ export const useUploadModalState = ({
 
       return { valid: true };
     },
-    [settings]
+    [settings, t]
   );
 
   // Initialize imagesData from selectedFiles
@@ -386,13 +385,13 @@ export const useUploadModalState = ({
           });
           if (validFiles.length < files.length) {
             toast.warning(
-              `${validFiles.length} of ${files.length} files were accepted`
+              t('upload.localAccepted', { accepted: validFiles.length, total: files.length }, '{accepted} of {total} files were accepted')
             );
           }
         }
       }
     },
-    [validateFile, isAdmin]
+    [validateFile, isAdmin, t]
   );
 
   const handleFileInput = useCallback(
@@ -458,7 +457,7 @@ export const useUploadModalState = ({
           });
           if (validFiles.length < files.length) {
             toast.warning(
-              `${validFiles.length} of ${files.length} files were accepted`
+              t('upload.localAccepted', { accepted: validFiles.length, total: files.length }, '{accepted} of {total} files were accepted')
             );
           }
         }
@@ -467,7 +466,7 @@ export const useUploadModalState = ({
         e.target.value = '';
       }
     },
-    [validateFile, isAdmin]
+    [validateFile, isAdmin, t]
   );
 
   // Update image data when form fields change - optimized to prevent blocking

@@ -33,6 +33,7 @@ src/pages/AboutPage.tsx(250,21): error TS2322: Type '(detail?: BookingModalDetai
   Types of parameters 'detail' and 'event' are incompatible.
     Type 'MouseEvent<HTMLButtonElement, MouseEvent>' has no properties in common with type 'BookingModalDetail'.
 src/pages/BookingPage.tsx(1,10): error TS1484: 'FormEvent' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/collection/CollectionDetailPage.tsx(51,47): error TS2551: Property 'coverImageId' does not exist on type 'Collection'. Did you mean 'coverImage'?
 src/pages/collection/components/CollectionNoFlashGrid.tsx(141,68): error TS2345: Argument of type 'DragEvent' is not assignable to parameter of type 'DragEvent<Element>'.
   Type 'DragEvent' is missing the following properties from type 'DragEvent<Element>': nativeEvent, isDefaultPrevented, isPropagationStopped, persist
 src/pages/collection/components/CollectionNoFlashGrid.tsx(142,66): error TS2345: Argument of type 'DragEvent' is not assignable to parameter of type 'DragEvent<Element>'.

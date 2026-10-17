@@ -1,3 +1,4 @@
+import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useCallback, useState } from 'react';
 import { Check, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,6 +21,7 @@ export interface PendingContent {
   createdAt: string;
 }
 export function AdminModerationPage() {
+  useAdminLocale();
   const loader = useCallback(
     async () =>
       (await adminService.getPendingContent()).content as PendingContent[],
@@ -42,7 +44,7 @@ export function AdminModerationPage() {
       else await adminService.approveContent(item._id);
       setData((previous) => previous?.filter((i) => i._id !== item._id) || []);
       setRejecting(null);
-      toast.success(reject ? 'Đã từ chối ảnh' : 'Đã duyệt ảnh');
+      toast.success(reject ? adminText("Đã từ chối ảnh") : adminText("Đã duyệt ảnh"));
     } catch (cause) {
       setActionError(adminError(cause));
     } finally {
@@ -52,12 +54,12 @@ export function AdminModerationPage() {
   return (
     <section>
       <AdminHeading
-        title="Duyệt nội dung"
+        title={adminText("Duyệt nội dung")}
         description={
           data
             ? data.length +
-              ' ảnh chờ duyệt. Kiểm tra ảnh và thông tin trước khi xuất bản.'
-            : 'Kiểm tra những ảnh mới được gửi lên PhotoCloud.'
+              adminText("ảnh chờ duyệt. Kiểm tra ảnh và thông tin trước khi xuất bản.")
+            : adminText("Kiểm tra những ảnh mới được gửi lên PhotoCloud.")
         }
       >
         <button
@@ -66,8 +68,7 @@ export function AdminModerationPage() {
           onClick={() => void reload()}
         >
           <RefreshCw size={16} />
-          Làm mới
-        </button>
+           {adminText("Làm mới")} </button>
       </AdminHeading>
       <AdminFeedback error={error} retry={() => void reload()} />
       {actionError && !rejecting && (
@@ -79,8 +80,8 @@ export function AdminModerationPage() {
         <div className="admin-skeleton tall" />
       ) : !error && data?.length === 0 ? (
         <AdminEmpty
-          title="Đã xử lý hết ảnh chờ duyệt"
-          description="Ảnh mới gửi lên sẽ xuất hiện tại đây để bạn kiểm tra."
+          title={adminText("Đã xử lý hết ảnh chờ duyệt")}
+          description={adminText("Ảnh mới gửi lên sẽ xuất hiện tại đây để bạn kiểm tra.")}
         />
       ) : (
         <div className="admin-review-grid">
@@ -90,25 +91,25 @@ export function AdminModerationPage() {
                 href={item.imageUrl}
                 target="_blank"
                 rel="noreferrer"
-                aria-label={'Xem ảnh đầy đủ: ' + item.title}
+                aria-label={adminText("Xem ảnh đầy đủ: ") + item.title}
               >
                 <img
                   src={item.imageUrl}
-                  alt={item.title || 'Ảnh chờ duyệt'}
+                  alt={item.title || adminText("Ảnh chờ duyệt")}
                   loading="lazy"
                 />
               </a>
               <div className="admin-review-info">
-                <span className="admin-badge warning">Chờ duyệt</span>
-                <h2>{item.title || 'Chưa đặt tên'}</h2>
+                <span className="admin-badge warning">{adminText("Chờ duyệt")}</span>
+                <h2>{item.title || adminText("Chưa đặt tên")}</h2>
                 <p>
                   {item.uploadedBy?.displayName ||
                     item.uploadedBy?.username ||
-                    'Chưa rõ tác giả'}{' '}
-                  · {item.category?.name || 'Chưa phân loại'}
+                    adminText("Chưa rõ tác giả")}{' '}
+                  · {item.category?.name || adminText("Chưa phân loại")}
                 </p>
                 <small>
-                  {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                  {new Date(item.createdAt).toLocaleDateString(getAdminIntlLocale())}
                 </small>
                 <div className="admin-review-actions">
                   <button
@@ -117,7 +118,7 @@ export function AdminModerationPage() {
                     onClick={() => void act(item, false)}
                   >
                     <Check size={16} />
-                    {busy === item._id ? 'Đang xử lý…' : 'Duyệt ảnh'}
+                    {busy === item._id ? adminText("Đang xử lý…") : adminText("Duyệt ảnh")}
                   </button>
                   <button
                     className="admin-btn"
@@ -129,8 +130,7 @@ export function AdminModerationPage() {
                     }}
                   >
                     <X size={16} />
-                    Từ chối
-                  </button>
+                     {adminText("Từ chối")} </button>
                 </div>
               </div>
             </article>
@@ -149,9 +149,9 @@ export function AdminModerationPage() {
       {rejecting && (
         <AdminModal
           open
-          title="Từ chối ảnh"
+          title={adminText("Từ chối ảnh")}
           description={
-            'Ảnh “' + rejecting.title + '” sẽ chuyển sang trạng thái từ chối.'
+            adminText("Ảnh “") + rejecting.title + adminText("” sẽ chuyển sang trạng thái từ chối.")
           }
           onClose={() => {
             if (!busy) setRejecting(null);
@@ -163,27 +163,25 @@ export function AdminModerationPage() {
                 disabled={!!busy}
                 onClick={() => setRejecting(null)}
               >
-                Hủy
-              </button>
+                 {adminText("Hủy")} </button>
               <button
                 className="admin-btn danger"
                 disabled={!!busy || !reason.trim()}
                 onClick={() => void act(rejecting, true)}
               >
-                {busy ? 'Đang xử lý…' : 'Xác nhận từ chối'}
+                {busy ? adminText("Đang xử lý…") : adminText("Xác nhận từ chối")}
               </button>
             </>
           }
         >
           <label className="admin-settings-field">
-            Lý do từ chối
-            <textarea
+             {adminText("Lý do từ chối")} <textarea
               className="admin-input"
               rows={4}
               maxLength={1000}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="Giải thích ngắn gọn để tác giả có thể điều chỉnh ảnh."
+              placeholder={adminText("Giải thích ngắn gọn để tác giả có thể điều chỉnh ảnh.")}
             />
           </label>
           {actionError && (

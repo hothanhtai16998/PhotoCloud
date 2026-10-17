@@ -1,3 +1,4 @@
+import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { bookingService } from '@/services/bookingService';
@@ -34,10 +35,11 @@ const timeOf = (booking: Booking) =>
   booking.confirmedDate
     ? [booking.confirmedStartTime, booking.confirmedEndTime]
         .filter(Boolean)
-        .join(' – ') || 'Chưa chốt giờ'
-    : bookingTimeLabels[booking.requestedTimeSlot] || 'Chưa chọn giờ';
+        .join(' – ') || adminText("Chưa chốt giờ")
+    : adminText(bookingTimeLabels[booking.requestedTimeSlot]) || adminText("Chưa chọn giờ");
 
 export function AdminBookingCalendar() {
+  useAdminLocale();
   const [anchor, setAnchor] = useState(today);
   const [mode, setMode] = useState<'day' | 'week' | 'month'>('month');
   const [filter, setFilter] = useState('active');
@@ -118,47 +120,45 @@ export function AdminBookingCalendar() {
       type="button"
       className={'pc-calendar-event ' + bookingTone(item.status)}
       onClick={() => setSelected(item)}
-      aria-label={`${item.contact.name}, ${item.packageSnapshot.name}, ${bookingDate(dateOf(item))}, ${bookingStatusLabels[item.status]}`}
+      aria-label={`${item.contact.name}, ${item.packageSnapshot.name}, ${bookingDate(dateOf(item))}, ${adminText(bookingStatusLabels[item.status])}`}
     >
       <span className="pc-calendar-event-time">
-        {timeOf(item)} · {item.confirmedDate ? 'Đã chốt' : 'Dự kiến'}
+        {timeOf(item)} · {item.confirmedDate ? adminText("Đã chốt") : adminText("Dự kiến")}
       </span>
       <strong>{item.packageSnapshot.name}</strong>
       <span>{item.contact.name}</span>
       <span className={'booking-state ' + bookingTone(item.status)}>
-        {bookingStatusLabels[item.status]}
+        {adminText(bookingStatusLabels[item.status])}
       </span>
     </button>
   );
   return (
-    <section className="pc-calendar" aria-label="Lịch chụp">
+    <section className="pc-calendar" aria-label={adminText("Lịch chụp")}>
       <div className="pc-calendar-heading">
         <div>
-          <h2>Lịch chụp</h2>
+          <h2>{adminText("Lịch chụp")}</h2>
           <p>
-            Ngày đã chốt được ưu tiên. Yêu cầu chưa chốt được ghi rõ là dự kiến.
-          </p>
+             {adminText("Ngày đã chốt được ưu tiên. Yêu cầu chưa chốt được ghi rõ là dự kiến.")} </p>
         </div>
         <button
           className="admin-btn"
           disabled={loading}
           onClick={() => setRevision((v) => v + 1)}
         >
-          <RefreshCw size={16} /> Làm mới
-        </button>
+          <RefreshCw size={16} />  {adminText("Làm mới")} </button>
       </div>
       <div className="pc-calendar-toolbar">
         <div className="pc-calendar-navigation">
           <button
             className="admin-btn"
-            aria-label="Khoảng trước"
+            aria-label={adminText("Khoảng trước")}
             onClick={() => navigate(-1)}
           >
             <ChevronLeft size={18} />
           </button>
           <strong aria-live="polite">
             {mode === 'month'
-              ? date.toLocaleDateString('vi-VN', {
+              ? date.toLocaleDateString(getAdminIntlLocale(), {
                   month: 'long',
                   year: 'numeric',
                   timeZone: 'UTC',
@@ -169,19 +169,18 @@ export function AdminBookingCalendar() {
           </strong>
           <button
             className="admin-btn"
-            aria-label="Khoảng sau"
+            aria-label={adminText("Khoảng sau")}
             onClick={() => navigate(1)}
           >
             <ChevronRight size={18} />
           </button>
           <button className="admin-btn" onClick={() => setAnchor(today())}>
-            Hôm nay
-          </button>
+             {adminText("Hôm nay")} </button>
         </div>
         <div
           className="pc-calendar-modes"
           role="group"
-          aria-label="Chế độ xem lịch"
+          aria-label={adminText("Chế độ xem lịch")}
         >
           {(['day', 'week', 'month'] as const).map((value) => (
             <button
@@ -190,13 +189,12 @@ export function AdminBookingCalendar() {
               key={value}
               onClick={() => setMode(value)}
             >
-              {value === 'day' ? 'Ngày' : value === 'week' ? 'Tuần' : 'Tháng'}
+              {value === 'day' ? adminText("Ngày") : value === 'week' ? adminText("Tuần") : adminText("Tháng")}
             </button>
           ))}
         </div>
         <label className="pc-calendar-picker">
-          Chọn ngày
-          <input
+           {adminText("Chọn ngày")} <input
             type="date"
             className="admin-input"
             value={anchor}
@@ -206,29 +204,27 @@ export function AdminBookingCalendar() {
           />
         </label>
         <label className="pc-calendar-filter">
-          Hiển thị
-          <select
-            aria-label="Hiển thị"
+           {adminText("Hiển thị")} <select
+            aria-label={adminText("Hiển thị")}
             className="admin-input"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
-            <option value="active">Lịch đang hoạt động và hoàn thành</option>
-            <option value="all">Tất cả trạng thái</option>
-            <option value="closed">Đã hủy, từ chối và hết hạn</option>
+            <option value="active">{adminText("Lịch đang hoạt động và hoàn thành")}</option>
+            <option value="all">{adminText("Tất cả trạng thái")}</option>
+            <option value="closed">{adminText("Đã hủy, từ chối và hết hạn")}</option>
           </select>
         </label>
       </div>
       <div className="pc-calendar-legend">
-        <span className="booking-state pending">Chờ xử lý</span>
+        <span className="booking-state pending">{adminText("Chờ xử lý")}</span>
         <span className="booking-state confirmed">
-          Đã xác nhận / Hoàn thành
-        </span>
-        <span className="booking-state closed">Đã hủy / Hết hạn</span>
-        <span>Múi giờ Việt Nam</span>
+           {adminText("Đã xác nhận / Hoàn thành")} </span>
+        <span className="booking-state closed">{adminText("Đã hủy / Hết hạn")}</span>
+        <span>{adminText("Múi giờ Việt Nam")}</span>
       </div>
       {loading ? (
-        <p role="status">Đang tải lịch chụp…</p>
+        <p role="status">{adminText("Đang tải lịch chụp…")}</p>
       ) : error ? (
         <div role="alert">
           <p>{error}</p>
@@ -236,15 +232,14 @@ export function AdminBookingCalendar() {
             className="admin-btn"
             onClick={() => setRevision((v) => v + 1)}
           >
-            Thử lại
-          </button>
+             {adminText("Thử lại")} </button>
         </div>
       ) : (
         <>
           {mode === 'month' ? (
             <div className="pc-calendar-scroll">
               <div className="pc-calendar-grid">
-                {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map((day) => (
+                {Array.from({ length: 7 }, (_, index) => new Intl.DateTimeFormat(getAdminIntlLocale(), { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2024, 0, 7 + index)))).map((day) => (
                   <div className="pc-calendar-weekday" key={day}>
                     {day}
                   </div>
@@ -263,7 +258,7 @@ export function AdminBookingCalendar() {
                     >
                       <button
                         className="pc-calendar-date"
-                        aria-label={'Xem ngày ' + bookingDate(key)}
+                        aria-label={adminText("Xem ngày ") + bookingDate(key)}
                         aria-current={key === today() ? 'date' : undefined}
                         onClick={() => {
                           setAnchor(key);
@@ -281,8 +276,7 @@ export function AdminBookingCalendar() {
                             setMode('day');
                           }}
                         >
-                          +{items.length - 3} lịch khác
-                        </button>
+                          +{items.length - 3}  {adminText("lịch khác")} </button>
                       )}
                     </div>
                   );
@@ -298,25 +292,24 @@ export function AdminBookingCalendar() {
                   <section
                     className="pc-calendar-agenda-row"
                     key={key}
-                    aria-label={'Lịch ngày ' + bookingDate(key)}
+                    aria-label={adminText("Lịch ngày ") + bookingDate(key)}
                   >
                     <div className="pc-calendar-day-label">
                       <strong>
-                        {parse(key).toLocaleDateString('vi-VN', {
+                        {parse(key).toLocaleDateString(getAdminIntlLocale(), {
                           weekday: 'long',
                           timeZone: 'UTC',
                         })}
                       </strong>
                       <span>{bookingDate(key)}</span>
-                      {key === today() && <small>Hôm nay</small>}
+                      {key === today() && <small>{adminText("Hôm nay")}</small>}
                     </div>
                     <div>
                       {items.length ? (
                         items.map(event)
                       ) : (
                         <p className="pc-calendar-free">
-                          Không có lịch chụp trong ngày.
-                        </p>
+                           {adminText("Không có lịch chụp trong ngày.")} </p>
                       )}
                     </div>
                   </section>
@@ -326,19 +319,18 @@ export function AdminBookingCalendar() {
           )}
           {!inRange.length && (
             <div className="pc-calendar-empty" role="status">
-              <strong>Không có lịch phù hợp trong khoảng thời gian này.</strong>
+              <strong>{adminText("Không có lịch phù hợp trong khoảng thời gian này.")}</strong>
               <p>
                 {nearest
-                  ? `Lịch gần nhất theo bộ lọc: ${bookingDate(dateOf(nearest))} · ${nearest.contact.name}.`
-                  : 'Bạn có thể chọn ngày khác hoặc đổi bộ lọc trạng thái.'}
+                  ? adminText("Lịch gần nhất theo bộ lọc: {0} · {1}.", { 0: bookingDate(dateOf(nearest)), 1: nearest.contact.name })
+                  : adminText("Bạn có thể chọn ngày khác hoặc đổi bộ lọc trạng thái.")}
               </p>
               {nearest && (
                 <button
                   className="admin-btn primary"
                   onClick={() => setAnchor(dateOf(nearest))}
                 >
-                  Đến lịch gần nhất
-                </button>
+                   {adminText("Đến lịch gần nhất")} </button>
               )}
             </div>
           )}

@@ -362,3 +362,7 @@
     transition: none !important;
   }
 }
+.admin-language-picker { display: flex; align-items: center; gap: 8px; color: var(--admin-text-secondary); font-size: 12px; }
+.admin-language-picker > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.admin-language-picker select { min-height: 44px; max-width: 130px; padding: 8px 10px; border: 1px solid var(--admin-border); border-radius: 8px; background: var(--admin-card-bg); color: var(--admin-text); font: inherit; font-size: 13px; }
+.admin-language-picker select:focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 3px; }

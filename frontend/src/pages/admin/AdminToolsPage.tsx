@@ -1,8 +1,8 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { useAdminLocale } from '@/pages/admin/adminLocale';
+import { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { useAdminRoles } from './hooks/useAdminRoles';
-import { useAdminUsers } from './hooks/useAdminUsers';
 import { useUserStore } from '@/stores/useUserStore';
 import './AdminTools.css';
 import './AdminImagesPage.css';
@@ -26,36 +26,33 @@ const Roles = lazy(() =>
   }))
 );
 function RolesPage() {
+  useAdminLocale();
   const roles = useAdminRoles();
-  const users = useAdminUsers();
   const currentUser = useUserStore((s) => s.user);
-  useEffect(() => {
-    void roles.loadAdminRoles();
-    void users.loadUsers(1);
-  }, [roles.loadAdminRoles, users.loadUsers]);
   return (
     <Roles
       roles={roles.adminRoles}
-      users={users.users}
+      loading={roles.loading}
+      error={roles.error}
+      busy={roles.busy}
+      onReload={() => void roles.loadAdminRoles()}
       currentUser={currentUser}
       creatingRole={roles.creatingRole}
       editingRole={roles.editingRole}
       onCreateClick={() => roles.setCreatingRole(true)}
       onEdit={roles.setEditingRole}
-      onDelete={(id, name) => {
-        void roles.deleteRole(id, name);
-      }}
+      onDelete={roles.deleteRole}
       onCloseCreate={() => roles.setCreatingRole(false)}
       onCloseEdit={() => roles.setEditingRole(null)}
-      onSaveCreate={async (data) => {
-        await roles.createRole(data);
-      }}
+      onSaveCreate={roles.createRole}
       onSaveEdit={roles.updateRole}
     />
   );
 }
 export function AdminToolsPage() {
+  useAdminLocale();
   const path = useLocation().pathname;
+  const account = useUserStore((s) => s.user?._id);
   const content = path.endsWith('/bookings') ? (
     <Bookings />
   ) : path.endsWith('/collections') ? (
@@ -63,7 +60,7 @@ export function AdminToolsPage() {
   ) : path.endsWith('/logs') ? (
     <Logs />
   ) : (
-    <RolesPage />
+    <RolesPage key={account} />
   );
   return (
     <div className="admin-tools">

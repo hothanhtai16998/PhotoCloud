@@ -2,14 +2,12 @@ import { Heart, Download, CheckSquare2, X, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CollectionShare } from '@/components/collection/CollectionShare';
-import ReportButton from '@/components/ReportButton';
+import { t } from '@/i18n';
 import type { Collection } from '@/types/collection';
-import type { User } from '@/types/user';
 
 interface CollectionHeaderProps {
   collection: Collection | null;
   imagesCount: number;
-  user: User | null;
   isFavorited: boolean;
   togglingFavorite: boolean;
   selectionMode: boolean;
@@ -22,7 +20,6 @@ interface CollectionHeaderProps {
 export const CollectionHeader = ({
   collection,
   imagesCount,
-  user,
   isFavorited,
   togglingFavorite,
   selectionMode,
@@ -33,14 +30,27 @@ export const CollectionHeader = ({
 }: CollectionHeaderProps) => {
   return (
     <div className="collection-detail-header">
-      <Link className="collection-detail-back" to="/collections"><ArrowLeft size={16} aria-hidden="true" />Quay lại bộ sưu tập</Link>
+      <Link className="collection-detail-back" to="/collections">
+        <ArrowLeft size={16} aria-hidden="true" />
+        <span>Quay lại bộ sưu tập</span>
+      </Link>
       <div className="collection-detail-content">
         <div className="collection-detail-main">
           <div className="collection-detail-title-row">
             <h1>{collection?.name || 'Bộ sưu tập'}</h1>
-            <span className="collection-detail-image-count">
-              {imagesCount} {imagesCount === 1 ? 'ảnh' : 'ảnh'}
-            </span>
+            {(imagesCount > 0 || (collection?.views ?? 0) > 0) && (
+              <span className="collection-detail-image-count">
+                {imagesCount > 0 && (
+                  <span>{imagesCount} {imagesCount === 1 ? t('collections.image') : t('collections.images')}</span>
+                )}
+                {imagesCount > 0 && (collection?.views ?? 0) > 0 && (
+                  <span className="collection-detail-stat-dot" aria-hidden="true">•</span>
+                )}
+                {(collection?.views ?? 0) > 0 && (
+                  <span>{collection?.views} lượt xem</span>
+                )}
+              </span>
+            )}
           </div>
           {typeof collection?.createdBy === 'object' &&
             collection.createdBy && (
@@ -66,35 +76,28 @@ export const CollectionHeader = ({
               {collection.description}
             </p>
           )}
-          {collection?.views !== undefined && collection.views > 0 && (
-            <div className="collection-detail-views">
-              {collection.views} lượt xem
-            </div>
-          )}
         </div>
+
         <div className="collection-detail-actions">
+          {/* Primary: yêu thích (mọi user) */}
           <Button
-            variant={isFavorited ? "default" : "outline"}
+            variant={isFavorited ? 'default' : 'outline'}
             className={`collection-favorite-btn ${isFavorited ? 'favorited' : ''}`}
             onClick={handleToggleFavorite}
             loading={togglingFavorite}
             title={isFavorited ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
+            aria-pressed={isFavorited}
           >
-            <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} />
+            <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} aria-hidden="true" />
             <span>{isFavorited ? 'Đã yêu thích' : 'Yêu thích'}</span>
           </Button>
+
+          {/* Chia sẻ: hiện thẳng, không cần qua menu */}
           {collection?.isPublic && (
-            <>
-              <CollectionShare collection={collection} />
-              {user && user._id !== (typeof collection.createdBy === 'object' ? collection.createdBy._id : collection.createdBy) && (
-                <ReportButton
-                  type="collection"
-                  targetId={collection._id}
-                  targetName={collection.name}
-                />
-              )}
-            </>
+            <CollectionShare collection={collection} />
           )}
+
+          {/* Xuất: hiện thẳng, không cần qua menu */}
           {imagesCount > 0 && collection && (
             <Button
               variant="outline"
@@ -102,25 +105,30 @@ export const CollectionHeader = ({
               onClick={handleExportCollection}
               title="Xuất bộ sưu tập (ZIP)"
             >
-              <Download size={18} />
+              <Download size={18} aria-hidden="true" />
               <span>Xuất</span>
             </Button>
           )}
+
+          {/* (Đã bỏ ReportButton khỏi header theo yêu cầu — viewer có thể báo cáo qua trang ảnh chi tiết.) */}
+
+          {/* Chọn nhiều: primary cho owner */}
           {canEdit && imagesCount > 0 && (
             <Button
-              variant={selectionMode ? "default" : "outline"}
+              variant={selectionMode ? 'default' : 'outline'}
               className={`collection-selection-mode-btn ${selectionMode ? 'active' : ''}`}
               onClick={toggleSelectionMode}
               title={selectionMode ? 'Thoát chế độ chọn' : 'Chọn nhiều ảnh'}
+              aria-pressed={selectionMode}
             >
               {selectionMode ? (
                 <>
-                  <X size={18} />
+                  <X size={18} aria-hidden="true" />
                   <span>Thoát</span>
                 </>
               ) : (
                 <>
-                  <CheckSquare2 size={18} />
+                  <CheckSquare2 size={18} aria-hidden="true" />
                   <span>Chọn</span>
                 </>
               )}
@@ -131,4 +139,3 @@ export const CollectionHeader = ({
     </div>
   );
 };
-

@@ -1,9 +1,9 @@
+import { adminText, useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import type { Category } from '@/services/categoryService';
-import { t } from '@/i18n';
 
 interface EditCategoryModalProps {
     category: Category;
@@ -12,6 +12,7 @@ interface EditCategoryModalProps {
 }
 
 export function EditCategoryModal({ category, onClose, onSave }: EditCategoryModalProps) {
+  useAdminLocale();
     const [name, setName] = useState(category.name);
     const [description, setDescription] = useState(category.description || '');
     const [isActive, setIsActive] = useState(category.isActive !== false);
@@ -34,7 +35,7 @@ export function EditCategoryModal({ category, onClose, onSave }: EditCategoryMod
             <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
                     <h2>{t('admin.modalEditCategory')}</h2>
-                    <button onClick={onClose}>×</button>
+                    <button onClick={onClose}>{adminText("×")}</button>
                 </div>
                 <form onSubmit={handleSubmit} className="admin-modal-form">
                     <div className="admin-form-group">

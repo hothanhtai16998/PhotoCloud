@@ -1,225 +1,132 @@
-import { useState, useEffect } from 'react';
-import { adminService } from '@/services/adminService';
+import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { RefreshCw, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getErrorMessage } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Trash2, FolderDot } from 'lucide-react';
-import { t } from '@/i18n';
-import { ConfirmModal } from '@/pages/admin/components/modals';
-import type { Pagination } from '@/types/common';
+import { adminService } from '@/services/adminService';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useUserStore } from '@/stores/useUserStore';
+import { useAdminResource, adminError } from '../../hooks/useAdminResource';
+import { AdminHeading, AdminFeedback, AdminEmpty, AdminPagination } from '../AdminPrimitives';
+import { AdminModal } from '../AdminModal';
+import { adminImageDate } from '../adminRecordFormatting';
+import '../../AdminImagesPage.css';
+import './AdminCollections.css';
 
 interface Collection {
-    _id: string;
-    name: string;
-    description?: string;
-    createdBy: {
-        _id: string;
-        username: string;
-        displayName: string;
-    };
-    images: string[];
-    isPublic: boolean;
-    views: number;
-    createdAt: string;
-    updatedAt: string;
+  _id: string;
+  name?: string;
+  description?: string;
+  createdBy?: { username?: string; displayName?: string } | null;
+  images?: unknown[];
+  imageCount?: number;
+  isPublic: boolean;
+  views?: number;
+  createdAt?: string;
 }
+function isCollection(value: unknown): value is Collection {
+  return typeof value === 'object' && value !== null && '_id' in value && typeof value._id === 'string'
+    && 'isPublic' in value && typeof value.isPublic === 'boolean';
+}
+const nameOf = (row: Collection) => row.name?.trim() || adminText("Bộ sưu tập chưa có tên");
+const countOf = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value.toLocaleString(getAdminIntlLocale()) : '—';
 
 export function AdminCollections() {
-    const [, setLoading] = useState(true);
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [pagination, setPagination] = useState<Pagination>({ page: 1, pages: 1, total: 0, limit: 20 });
-    const [search, setSearch] = useState('');
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [collectionToDelete, setCollectionToDelete] = useState<{ id: string; name: string } | null>(null);
-
-    const loadCollections = async (page: number = 1) => {
-        try {
-            // Don't block UI on initial load - only show loading for subsequent loads
-            if (collections.length > 0) {
-            setLoading(true);
-            }
-            const data = await adminService.getAllCollections({
-                page,
-                limit: 20,
-                search: search.trim() || undefined,
-            });
-            setCollections((data.collections as Collection[]) || []);
-            setPagination(data.pagination);
-        } catch (error: unknown) {
-            toast.error(getErrorMessage(error, 'Lỗi khi tải danh sách bộ sưu tập'));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadCollections(1);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search]);
-
-    const handleDeleteClick = (collectionId: string, name: string) => {
-        setCollectionToDelete({ id: collectionId, name });
-        setShowDeleteModal(true);
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!collectionToDelete) return;
-
-        try {
-            await adminService.deleteCollection(collectionToDelete.id);
-            toast.success(t('admin.deleteCollectionSuccess'));
-            loadCollections(pagination.page);
-            setShowDeleteModal(false);
-            setCollectionToDelete(null);
-        } catch (error: unknown) {
-            toast.error(getErrorMessage(error, 'Lỗi khi xóa bộ sưu tập'));
-        }
-    };
-
-    const handleTogglePublic = async (collection: Collection) => {
-        try {
-            await adminService.updateCollection(collection._id, {
-                isPublic: !collection.isPublic,
-            });
-            toast.success(!collection.isPublic ? t('admin.collectionMadePublic') : t('admin.collectionMadePrivate'));
-            loadCollections(pagination.page);
-        } catch (error: unknown) {
-            toast.error(getErrorMessage(error, 'Lỗi khi cập nhật bộ sưu tập'));
-        }
-    };
-
-    // Show UI immediately - don't block initial load
-    // if (loading && collections.length === 0) {
-    //     return <div className="admin-loading">Đang tải danh sách bộ sưu tập...</div>;
-    // }
-
-    return (
-        <div className="admin-collections">
-            <div className="admin-header">
-                <h1 className="admin-title">
-                    <FolderDot size={24} />
-                    {t('admin.collections')}
-                </h1>
-                <div className="admin-search">
-                    <Search size={18} />
-                    <Input
-                        type="text"
-                        placeholder={t('admin.searchCollections')}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                loadCollections(1);
-                            }
-                        }}
-                    />
-                </div>
-            </div>
-
-            {collections.length === 0 ? (
-                <div className="admin-empty">{t('admin.noCollections')}</div>
-            ) : (
-                <>
-                    <div className="admin-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>{t('admin.collectionName')}</th>
-                                    <th>{t('admin.description')}</th>
-                                    <th>{t('admin.creator')}</th>
-                                    <th>{t('admin.imageCount')}</th>
-                                    <th>{t('admin.views')}</th>
-                                    <th>{t('admin.status')}</th>
-                                    <th>{t('admin.createdDate')}</th>
-                                    <th>{t('admin.actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {collections.map((collection) => (
-                                    <tr key={collection._id}>
-                                        <td>{collection.name}</td>
-                                        <td>{collection.description || '-'}</td>
-                                        <td>
-                                            {collection.createdBy?.displayName || collection.createdBy?.username || '-'}
-                                        </td>
-                                        <td>{collection.images?.length || 0}</td>
-                                        <td>{collection.views || 0}</td>
-                                        <td>
-                                            <span
-                                                className={`admin-status-badge ${collection.isPublic ? 'active' : 'banned'}`}
-                                            >
-                                                {collection.isPublic ? t('admin.public') : t('admin.private')}
-                                            </span>
-                                        </td>
-                                        <td>{new Date(collection.createdAt).toLocaleDateString('vi-VN')}</td>
-                                        <td>
-                                            <div className="admin-actions">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleTogglePublic(collection)}
-                                                    title={collection.isPublic ? t('admin.hideCollection') : t('admin.showCollection')}
-                                                    className="admin-action-edit"
-                                                >
-                                                    {collection.isPublic ? t('admin.hide') : t('admin.show')}
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteClick(collection._id, collection.name)}
-                                                    title="Xóa bộ sưu tập"
-                                                    className="admin-action-delete"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination */}
-                    {pagination.pages > 1 && (
-                        <div className="admin-pagination">
-                            <Button
-                                variant="outline"
-                                onClick={() => loadCollections(pagination.page - 1)}
-                                disabled={pagination.page === 1}
-                            >
-                                Trước
-                            </Button>
-                            <span>
-                                Trang {pagination.page} / {pagination.pages} (Tổng: {pagination.total})
-                            </span>
-                            <Button
-                                variant="outline"
-                                onClick={() => loadCollections(pagination.page + 1)}
-                                disabled={pagination.page === pagination.pages}
-                            >
-                                Sau
-                            </Button>
-                        </div>
-                    )}
-                </>
-            )}
-
-            <ConfirmModal
-                isOpen={showDeleteModal}
-                onClose={() => {
-                    setShowDeleteModal(false);
-                    setCollectionToDelete(null);
-                }}
-                onConfirm={handleDeleteConfirm}
-                title="Xóa bộ sưu tập"
-                message={collectionToDelete ? t('admin.deleteCollectionConfirm', { name: collectionToDelete.name }) : ''}
-                confirmText={t('admin.delete')}
-                cancelText={t('common.cancel')}
-                variant="danger"
-            />
-        </div>
-    );
+  useAdminLocale();
+  const { hasPermission, isSuperAdmin } = usePermissions();
+  const canManage = isSuperAdmin() || hasPermission('manageCollections');
+  const account = useUserStore(s => s.user?._id);
+  const [params, setParams] = useSearchParams();
+  const requested = Number(params.get('page'));
+  const page = Number.isSafeInteger(requested) && requested > 0 ? requested : 1;
+  const query = params.get('q') || '';
+  const context = `${account}:${page}:${query}`;
+  const loader = useCallback(async () => {
+    const result = await adminService.getAllCollections({ page, limit: 20, search: query || undefined });
+    if (!Array.isArray(result.collections) || !result.collections.every(isCollection) || !result.pagination
+      || !Number.isSafeInteger(result.pagination.total) || result.pagination.total < 0
+      || !Number.isSafeInteger(result.pagination.pages) || result.pagination.pages < 0) {
+      throw new Error('Invalid collection response');
+    }
+    return { rows: result.collections, pagination: result.pagination, context: `${account}:${page}:${query}` };
+  }, [account, page, query]);
+  const { data, loading, error, reload } = useAdminResource(loader);
+  const current = data?.context === context ? data : null;
+  const pages = Math.max(1, current?.pagination.pages || 1);
+  const busy = loading || !current || !!error;
+  const [target, setTarget] = useState<Collection | null>(null);
+  const [pending, setPending] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const lock = useRef(false);
+  const generation = useRef(0);
+  useEffect(() => { const session = generation; session.current++; return () => { session.current++; }; }, [account]);
+  const navigate = useCallback((nextPage: number, nextQuery = query, replace = false) => {
+    setParams(previous => {
+      const next = new URLSearchParams(previous);
+      if (nextPage > 1) next.set('page', String(nextPage)); else next.delete('page');
+      if (nextQuery) next.set('q', nextQuery); else next.delete('q');
+      return next;
+    }, { replace });
+  }, [query, setParams]);
+  useEffect(() => {
+    if (current && !loading && !error && page > pages) navigate(pages, query, true);
+  }, [current, loading, error, page, pages, query, navigate]);
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    navigate(1, String(new FormData(event.currentTarget).get('search') || '').trim());
+  }
+  async function mutate(row: Collection, remove: boolean) {
+    if (lock.current || !canManage || busy) return;
+    lock.current = true;
+    const token = generation.current;
+    setPending(row._id);
+    setActionError(null);
+    try {
+      if (remove) await adminService.deleteCollection(row._id);
+      else await adminService.updateCollection(row._id, { isPublic: !row.isPublic });
+      if (token !== generation.current) return;
+      toast.success(remove ? adminText("Đã xóa bộ sưu tập.") : row.isPublic ? adminText("Đã chuyển bộ sưu tập sang riêng tư.") : adminText("Đã công khai bộ sưu tập."));
+      setTarget(null);
+      await reload();
+    } catch (cause) {
+      if (token === generation.current) setActionError(adminError(cause));
+    } finally {
+      lock.current = false;
+      if (token === generation.current) setPending(null);
+    }
+  }
+  const close = () => { if (!lock.current) { setTarget(null); setActionError(null); } };
+  return (
+    <section className="admin-collections-page" aria-busy={loading}>
+      <AdminHeading title={adminText("Bộ sưu tập")} description={adminText("Tra cứu bộ sưu tập, quản lý trạng thái công khai và nội dung cần gỡ.")}>
+        <button className="admin-btn" disabled={loading || !!pending} onClick={() => { setActionError(null); void reload(); }}><RefreshCw size={16} />{loading ? adminText("Đang tải…") : adminText("Làm mới")}</button>
+      </AdminHeading>
+      <form className="admin-page-toolbar" onSubmit={search} key={query} role="search">
+        <label className="admin-page-search"><Search size={18} aria-hidden="true" /><input type="search" name="search" aria-label={adminText("Tìm bộ sưu tập")} placeholder={adminText("Tìm tên hoặc mô tả bộ sưu tập…")} defaultValue={query} /></label>
+        <button className="admin-btn" disabled={!!pending}>{adminText("Tìm kiếm")}</button>
+        {query && <button type="button" className="admin-btn" disabled={!!pending} onClick={() => navigate(1, '')}>{adminText("Xóa lọc")}</button>}
+      </form>
+      <AdminFeedback error={error} retry={() => void reload()} />
+      {!target && actionError && <p className="admin-feedback" role="alert">{actionError}  {adminText("Vui lòng thử lại thao tác.")}</p>}
+      {loading && <p role="status">{adminText("Đang tải bộ sưu tập…")}</p>}
+      {!loading && !error && current && <>
+        <p className="admin-collections-summary" role="status">{countOf(current.pagination.total)}  {adminText("bộ sưu tập")}{query ? adminText("khớp với “{0}”", { 0: query }) : adminText("trong hệ thống")}.{!canManage && adminText("Bạn có quyền xem danh sách.")}</p>
+        {current.rows.length === 0 ? <AdminEmpty title={query ? adminText("Không tìm thấy bộ sưu tập") : adminText("Chưa có bộ sưu tập")} description={query ? adminText("Thử từ khóa khác hoặc xóa lọc để xem tất cả.") : adminText("Bộ sưu tập do người dùng tạo sẽ xuất hiện tại đây.")} /> : <div className="admin-table-wrap">
+          <table className="admin-table"><thead><tr><th scope="col">{adminText("Bộ sưu tập")}</th><th scope="col">{adminText("Người tạo")}</th><th scope="col">{adminText("Số ảnh")}</th><th scope="col">{adminText("Lượt xem")}</th><th scope="col">{adminText("Trạng thái")}</th><th scope="col">{adminText("Ngày tạo")}</th>{canManage && <th scope="col">{adminText("Thao tác")}</th>}</tr></thead>
+            <tbody>{current.rows.map(row => <tr key={row._id}>
+              <td><div className="admin-collection-name"><strong>{nameOf(row)}</strong><span>{row.description?.trim() || adminText("Chưa có mô tả")}</span></div></td>
+              <td>{row.createdBy?.displayName || row.createdBy?.username || adminText("Chưa rõ người tạo")}</td>
+              <td>{countOf(row.imageCount ?? (Array.isArray(row.images) ? row.images.length : undefined))}</td><td>{countOf(row.views)}</td>
+              <td><span className="admin-badge">{row.isPublic ? adminText("Công khai") : adminText("Riêng tư")}</span></td><td>{adminImageDate(row.createdAt || '')}</td>
+              {canManage && <td><div className="admin-row-actions"><button className="admin-btn" disabled={busy || !!pending} aria-label={`${row.isPublic ? adminText("Ẩn") : adminText("Công khai")} ${nameOf(row)}`} onClick={() => void mutate(row, false)}>{pending === row._id ? adminText("Đang xử lý…") : row.isPublic ? adminText("Ẩn") : adminText("Công khai")}</button><button className="admin-table-action danger" disabled={busy || !!pending} aria-label={adminText("Xóa {0}", { 0: nameOf(row) })} onClick={() => { setTarget(row); setActionError(null); }}><Trash2 size={17} /></button></div></td>}
+            </tr>)}</tbody></table>
+        </div>}
+        {current.pagination.total > 0 && <AdminPagination page={page} pages={pages} total={current.pagination.total} loading={busy || !!pending} onChange={navigate} />}
+      </>}
+      <AdminModal open={!!target} title={adminText("Xóa bộ sưu tập")} onClose={close} size="sm" footer={<><button className="admin-btn" disabled={!!pending} onClick={close}>{adminText("Hủy")}</button><button className="admin-btn danger" disabled={!!pending || busy} onClick={() => target && void mutate(target, true)}>{pending ? adminText("Đang xóa…") : adminText("Xóa bộ sưu tập")}</button></>}>
+        <p>{adminText("Bạn muốn xóa “")}{target ? nameOf(target) : ''}{adminText("”? Thao tác này không thể hoàn tác.")}</p>
+        {actionError && <p className="admin-feedback" role="alert">{actionError}  {adminText("Bạn có thể thử xóa lại.")}</p>}
+      </AdminModal>
+    </section>
+  );
 }
-

@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { env } from './libs/env.js';
 import { CONNECT_DB } from './configs/db.js';
+import { initializeDefaultSettings } from './models/Settings.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import authRoute from './routes/authRoute.js';
@@ -369,6 +370,7 @@ if (process.env.NODE_ENV === 'development') {
 const startServer = async () => {
     try {
         await CONNECT_DB();
+        await initializeDefaultSettings();
 
         // Start session cleanup scheduler
         startSessionCleanup();

@@ -1,7 +1,7 @@
+import { useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
-import { t } from '@/i18n';
 import './ConfirmModal.css';
 
 interface ConfirmModalProps {
@@ -25,6 +25,7 @@ export function ConfirmModal({
     cancelText,
     variant = 'danger',
 }: ConfirmModalProps) {
+  useAdminLocale();
     // Handle ESC key
     useEffect(() => {
         if (!isOpen) return;

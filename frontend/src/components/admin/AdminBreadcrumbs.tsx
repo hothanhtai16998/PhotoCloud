@@ -1,6 +1,6 @@
+import { useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { ChevronRight, Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { t } from '@/i18n';
 import './AdminBreadcrumbs.css';
 
 interface BreadcrumbItem {
@@ -13,6 +13,7 @@ interface AdminBreadcrumbsProps {
 }
 
 export function AdminBreadcrumbs({ items }: AdminBreadcrumbsProps) {
+  useAdminLocale();
     return (
         <nav className="admin-breadcrumbs" aria-label="Breadcrumb">
             <ol className="admin-breadcrumbs-list">

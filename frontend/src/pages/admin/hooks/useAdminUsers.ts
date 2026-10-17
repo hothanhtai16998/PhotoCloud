@@ -1,3 +1,4 @@
+import { adminText } from '@/pages/admin/adminLocale';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { adminService, type User } from '@/services/adminService';
@@ -51,7 +52,7 @@ export function useAdminUsers(): UseAdminUsersReturn {
     async (page = 1) => {
       // Check permission before API call
       if (!isSuperAdmin() && !hasPermission('viewUsers')) {
-        toast.error('Bạn không có quyền xem người dùng');
+        toast.error(adminText("Bạn không có quyền xem người dùng"));
         return;
       }
 
@@ -90,7 +91,7 @@ export function useAdminUsers(): UseAdminUsersReturn {
     async (userId: string, _username: string): Promise<boolean> => {
       // Check permission before action
       if (!isSuperAdmin() && !hasPermission('deleteUsers')) {
-        toast.error('Bạn không có quyền xóa người dùng');
+        toast.error(adminText("Bạn không có quyền xóa người dùng"));
         return false;
       }
 
@@ -98,7 +99,7 @@ export function useAdminUsers(): UseAdminUsersReturn {
       // This function is called after confirmation
       try {
         await adminService.deleteUser(userId);
-        toast.success('Xoá người dùng thành công');
+        toast.success(adminText("Xoá người dùng thành công"));
         await loadUsers(pagination.page);
         return true;
       } catch (error: unknown) {
@@ -106,7 +107,7 @@ export function useAdminUsers(): UseAdminUsersReturn {
           response?: { status?: number; data?: { message?: string } };
         };
         toast.error(
-          axiosError.response?.data?.message || 'Lỗi khi xoá người dùng'
+          axiosError.response?.data?.message || adminText("Lỗi khi xoá người dùng")
         );
         return false;
       }
@@ -118,13 +119,13 @@ export function useAdminUsers(): UseAdminUsersReturn {
     async (userId: string, updates: Partial<User>): Promise<boolean> => {
       // Check permission before action
       if (!isSuperAdmin() && !hasPermission('editUsers')) {
-        toast.error('Bạn không có quyền chỉnh sửa người dùng');
+        toast.error(adminText("Bạn không có quyền chỉnh sửa người dùng"));
         return false;
       }
 
       try {
         await adminService.updateUser(userId, updates);
-        toast.success('Cập nhật thông tin người dùng thành công');
+        toast.success(adminText("Cập nhật thông tin người dùng thành công"));
         setEditingUser(null);
         await loadUsers(pagination.page);
         return true;

@@ -4,7 +4,7 @@ import type { ImageData } from './hooks/useImageUpload';
 import type { Category } from '@/services/categoryService';
 import type { Coordinates } from '@/types/common';
 import { useUserStore } from '@/stores/useUserStore';
-import { t } from '@/i18n';
+import { useUploadTranslation } from './UploadTranslationContext';
 import './UploadForm.css';
 
 interface UploadFormProps {
@@ -24,6 +24,7 @@ export const UploadForm = memo(({
   onUpdate,
   onUpdateCoordinates: _onUpdateCoordinates,
 }: UploadFormProps) => {
+  const t = useUploadTranslation();
   const { user } = useUserStore();
   const isAdmin = useMemo(() => user?.isAdmin === true || user?.isSuperAdmin === true, [user]);
 
@@ -84,7 +85,7 @@ export const UploadForm = memo(({
           )}
           {imageData.errors.category && (
             <p className="upload-form-error">
-              {imageData.errors.category}
+              {t('upload.categoryRequired')}
             </p>
           )}
         </div>

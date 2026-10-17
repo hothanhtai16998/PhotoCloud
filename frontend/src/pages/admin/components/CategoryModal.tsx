@@ -1,3 +1,4 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useId, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { AdminModal } from './AdminModal';
@@ -16,10 +17,12 @@ interface Props {
   onSuccess?: () => void;
 }
 export function CategoryModal(props: Props) {
+  useAdminLocale();
   if (!props.open) return null;
   return <CategoryEditor key={props.category?._id || 'create'} {...props} />;
 }
 function CategoryEditor({ onClose, category, onSuccess }: Props) {
+  useAdminLocale();
   const formId = useId();
   const [name, setName] = useState(category?.name || '');
   const [description, setDescription] = useState(category?.description || '');
@@ -30,7 +33,7 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
     event.preventDefault();
     if (saving) return;
     if (name.trim().length < 2) {
-      setError('Tên danh mục cần ít nhất 2 ký tự.');
+      setError(adminText("Tên danh mục cần ít nhất 2 ký tự."));
       return;
     }
     setSaving(true);
@@ -45,7 +48,7 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
       else await categoryService.createCategory(values);
       clearCategoriesCache();
       window.dispatchEvent(new CustomEvent('categoriesUpdated'));
-      toast.success(category ? 'Đã cập nhật danh mục' : 'Đã tạo danh mục');
+      toast.success(category ? adminText("Đã cập nhật danh mục") : adminText("Đã tạo danh mục"));
       onSuccess?.();
       onClose();
     } catch (cause) {
@@ -57,8 +60,8 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
   return (
     <AdminModal
       open
-      title={category ? 'Sửa danh mục' : 'Tạo danh mục'}
-      description="Dùng chủ đề ảnh rõ ràng để người xem dễ khám phá thư viện."
+      title={category ? adminText("Sửa danh mục") : adminText("Tạo danh mục")}
+      description={adminText("Dùng chủ đề ảnh rõ ràng để người xem dễ khám phá thư viện.")}
       size="sm"
       onClose={() => {
         if (!saving) onClose();
@@ -71,15 +74,14 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
             disabled={saving}
             onClick={onClose}
           >
-            Hủy
-          </button>
+             {adminText("Hủy")} </button>
           <button
             type="submit"
             form={formId}
             className="admin-btn primary"
             disabled={saving}
           >
-            {saving ? 'Đang lưu…' : category ? 'Lưu thay đổi' : 'Tạo danh mục'}
+            {saving ? adminText("Đang lưu…") : category ? adminText("Lưu thay đổi") : adminText("Tạo danh mục")}
           </button>
         </>
       }
@@ -87,8 +89,7 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
       <form id={formId} onSubmit={save}>
         <fieldset className="admin-form-fields" disabled={saving}>
           <label className="admin-settings-field">
-            Tên danh mục
-            <input
+             {adminText("Tên danh mục")} <input
               id="cat-name"
               className="admin-input"
               required
@@ -96,22 +97,21 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
               maxLength={100}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ví dụ: Chân dung, Phong cảnh"
+              placeholder={adminText("Ví dụ: Chân dung, Phong cảnh")}
               autoFocus
             />
           </label>
           <label className="admin-settings-field">
-            Mô tả
-            <textarea
+             {adminText("Mô tả")} <textarea
               id="cat-desc"
               className="admin-input"
               rows={4}
               maxLength={500}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Mô tả bằng tiếng Việt, đúng với chủ đề ảnh."
+              placeholder={adminText("Mô tả bằng tiếng Việt, đúng với chủ đề ảnh.")}
             />
-            <small>Mô tả ngắn gọn giúp phân biệt các danh mục.</small>
+            <small>{adminText("Mô tả ngắn gọn giúp phân biệt các danh mục.")}</small>
           </label>
           {category && (
             <label className="admin-check-row">
@@ -120,7 +120,7 @@ function CategoryEditor({ onClose, category, onSuccess }: Props) {
                 checked={active}
                 onChange={(e) => setActive(e.target.checked)}
               />
-              <span>Hiển thị trong thư viện</span>
+              <span>{adminText("Hiển thị trong thư viện")}</span>
             </label>
           )}
         </fieldset>

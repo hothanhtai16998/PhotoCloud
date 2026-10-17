@@ -1,4 +1,4 @@
-import { t } from '@/i18n';
+import { useUploadTranslation } from './UploadTranslationContext';
 
 interface UploadProgressProps {
   uploadingIndex: number;
@@ -7,6 +7,7 @@ interface UploadProgressProps {
 }
 
 export const UploadProgress = ({ uploadingIndex, totalUploads, uploadProgress }: UploadProgressProps) => {
+  const t = useUploadTranslation();
   // Calculate progress for multiple uploads
   // Each image contributes 100/totalUploads to the overall progress
   const progressPerImage = 100 / totalUploads;

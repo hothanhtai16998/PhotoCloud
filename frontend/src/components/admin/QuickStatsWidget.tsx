@@ -1,8 +1,8 @@
+import { useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { useState, useEffect } from 'react';
 import { X, Users, Image as ImageIcon, Folder } from 'lucide-react';
 import type { DashboardStats } from '@/services/adminService';
 import './QuickStatsWidget.css';
-import { t } from '@/i18n';
 
 interface QuickStatsWidgetProps {
     stats: DashboardStats | null;
@@ -10,6 +10,7 @@ interface QuickStatsWidgetProps {
 }
 
 export function QuickStatsWidget({ stats, loading }: QuickStatsWidgetProps) {
+  useAdminLocale();
     const [isMinimized, setIsMinimized] = useState(false);
     const [isVisible, setIsVisible] = useState(true);
 

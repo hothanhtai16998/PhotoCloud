@@ -1,3 +1,4 @@
+import { adminText } from '@/pages/admin/adminLocale';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -48,19 +49,17 @@ export class AdminErrorBoundary extends Component<AdminErrorBoundaryProps, Admin
                 <div className="admin-error-boundary-inner">
                     <AlertTriangle size={32} className="admin-error-boundary-icon" aria-hidden="true" />
                     <h3 className="admin-error-boundary-title">
-                        {`Không thể hiển thị ${scope}`}
+                        {adminText("Không thể hiển thị {0}", { 0: scope })}
                     </h3>
                     <p className="admin-error-boundary-message">
-                        Vui lòng thử lại. Bạn vẫn có thể chuyển sang mục khác trong menu.
-                    </p>
+                         {adminText("Vui lòng thử lại. Bạn vẫn có thể chuyển sang mục khác trong menu.")} </p>
                     <button
                         type="button"
                         className="admin-error-boundary-retry"
                         onClick={this.handleRetry}
                     >
                         <RefreshCw size={16} aria-hidden="true" />
-                        Thử lại
-                    </button>
+                         {adminText("Thử lại")} </button>
                 </div>
             </div>
         );

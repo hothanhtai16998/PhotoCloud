@@ -1,3 +1,4 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Save, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -30,6 +31,7 @@ function toDraft(s: Record<string, unknown>): Draft {
   };
 }
 export function AdminSettingsPage() {
+  useAdminLocale();
   const loader = useCallback(() => adminService.getSettings(), []);
   const { data, loading, error, reload, setData } = useAdminResource(loader);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -49,7 +51,7 @@ export function AdminSettingsPage() {
     const navigate = (event: MouseEvent): void => {
       const link = event.target instanceof Element ? event.target.closest('a[href]') : null;
       if (!link || link.getAttribute('href')?.startsWith('#')) return;
-      if (!window.confirm('Có thay đổi chưa lưu. Rời trang và bỏ các thay đổi?')) { event.preventDefault(); event.stopPropagation(); }
+      if (!window.confirm(adminText("Có thay đổi chưa lưu. Rời trang và bỏ các thay đổi?"))) { event.preventDefault(); event.stopPropagation(); }
     };
     window.addEventListener('beforeunload', beforeUnload);
     document.addEventListener('click', navigate, true);
@@ -59,7 +61,7 @@ export function AdminSettingsPage() {
     e.preventDefault();
     if (!draft || !dirty || saving) return;
     if (!draft.siteName.trim() || !Number.isFinite(draft.maxUploadSize) || draft.maxUploadSize < 1 || draft.maxUploadSize > 100) {
-      setSection('general'); setSaveError('Nhập tên website và dung lượng tải ảnh từ 1 đến 100 MB.'); return;
+      setSection('general'); setSaveError(adminText("Nhập tên website và dung lượng tải ảnh từ 1 đến 100 MB.")); return;
     }
     const allowedFileTypes = draft.allowedFileTypes
       .split(',')
@@ -73,11 +75,11 @@ export function AdminSettingsPage() {
     ) {
       setSection('general');
       setSaveError(
-        'Chọn định dạng ảnh hợp lệ: jpg, jpeg, png, webp, gif hoặc avif.'
+        adminText("Chọn định dạng ảnh hợp lệ: jpg, jpeg, png, webp, gif hoặc avif.")
       );
       return;
     }
-    if (Object.values(draft.sitePalette.light).concat(Object.values(draft.sitePalette.dark)).some(color => !HEX_COLOR.test(color))) { setSection('appearance'); setSaveError('Kiểm tra mã màu: cần dạng #77502E với sáu chữ số HEX.'); return; }
+    if (Object.values(draft.sitePalette.light).concat(Object.values(draft.sitePalette.dark)).some(color => !HEX_COLOR.test(color))) { setSection('appearance'); setSaveError(adminText("Kiểm tra mã màu: cần dạng #77502E với sáu chữ số HEX.")); return; }
     setSaving(true);
     setSaveError(null);
     try {
@@ -88,7 +90,7 @@ export function AdminSettingsPage() {
       });
       setData(result);
       applySitePalette(result.settings.sitePalette ?? draft.sitePalette);
-      toast.success('Đã lưu cài đặt website');
+      toast.success(adminText("Đã lưu cài đặt website"));
     } catch (cause) {
       setSaveError(adminError(cause));
     } finally {
@@ -98,29 +100,28 @@ export function AdminSettingsPage() {
   return (
     <section className="website-settings">
       <AdminHeading
-        title="Cài đặt website"
-        description="Thông tin, quy định tải ảnh và bảng màu của PhotoCloud."
+        title={adminText("Cài đặt website")}
+        description={adminText("Thông tin, quy định tải ảnh và bảng màu của PhotoCloud.")}
       />
       <AdminFeedback error={error} retry={() => void reload()} />
       {!draft ? (
         loading && <div className="admin-skeleton tall" />
       ) : (
         <form onSubmit={save}>
-          <div className="settings-navigation" role="group" aria-label="Phần cài đặt">
-            <button type="button" aria-pressed={section==='general'} onClick={()=>setSection('general')}>Cài đặt chung<small>Thông tin, tải ảnh và bảo trì</small></button>
-            <button type="button" aria-pressed={section==='appearance'} onClick={()=>setSection('appearance')}>Giao diện<small>Bảng màu sáng và tối</small></button>
+          <div className="settings-navigation" role="group" aria-label={adminText("Phần cài đặt")}>
+            <button type="button" aria-pressed={section==='general'} onClick={()=>setSection('general')}>{adminText("Cài đặt chung")}<small>{adminText("Thông tin, tải ảnh và bảo trì")}</small></button>
+            <button type="button" aria-pressed={section==='appearance'} onClick={()=>setSection('appearance')}>{adminText("Giao diện")}<small>{adminText("Bảng màu sáng và tối")}</small></button>
           </div>
           <fieldset disabled={saving} className="admin-settings-form">
             {section==='general' && <div className="settings-general">
             <section className="admin-settings-section">
               <div>
-                <h2>Thông tin website</h2>
-                <p>Tên và mô tả được dùng trên giao diện công khai.</p>
+                <h2>{adminText("Thông tin website")}</h2>
+                <p>{adminText("Tên và mô tả được dùng trên giao diện công khai.")}</p>
               </div>
               <div>
                 <label className="admin-settings-field">
-                  Tên website
-                  <input
+                   {adminText("Tên website")} <input
                     className="admin-input"
                     required
                     maxLength={100}
@@ -131,8 +132,7 @@ export function AdminSettingsPage() {
                   />
                 </label>
                 <label className="admin-settings-field">
-                  Mô tả
-                  <textarea
+                   {adminText("Mô tả")} <textarea
                     className="admin-input"
                     rows={3}
                     maxLength={500}
@@ -146,13 +146,12 @@ export function AdminSettingsPage() {
             </section>
             <section className="admin-settings-section">
               <div>
-                <h2>Tải ảnh</h2>
-                <p>Giới hạn áp dụng cho ảnh tải lên thư viện.</p>
+                <h2>{adminText("Tải ảnh")}</h2>
+                <p>{adminText("Giới hạn áp dụng cho ảnh tải lên thư viện.")}</p>
               </div>
               <div>
                 <label className="admin-settings-field">
-                  Dung lượng tối đa (MB)
-                  <input
+                   {adminText("Dung lượng tối đa (MB)")} <input
                     className="admin-input"
                     type="number"
                     required
@@ -168,8 +167,7 @@ export function AdminSettingsPage() {
                   />
                 </label>
                 <label className="admin-settings-field">
-                  Định dạng cho phép
-                  <input
+                   {adminText("Định dạng cho phép")} <input
                     className="admin-input"
                     required
                     value={draft.allowedFileTypes}
@@ -177,14 +175,14 @@ export function AdminSettingsPage() {
                       setDraft({ ...draft, allowedFileTypes: e.target.value })
                     }
                   />
-                  <small>Phân cách bằng dấu phẩy, ví dụ: jpg, png, webp.</small>
+                  <small>{adminText("Phân cách bằng dấu phẩy, ví dụ: jpg, png, webp.")}</small>
                 </label>
               </div>
             </section>
             <section className="admin-settings-section">
               <div>
-                <h2>Bảo trì</h2>
-                <p>Chỉ bật khi website cần được bảo trì.</p>
+                <h2>{adminText("Bảo trì")}</h2>
+                <p>{adminText("Chỉ bật khi website cần được bảo trì.")}</p>
               </div>
               <label className="admin-check-row">
                 <input
@@ -194,7 +192,7 @@ export function AdminSettingsPage() {
                     setDraft({ ...draft, maintenanceMode: e.target.checked })
                   }
                 />
-                <span>Bật chế độ bảo trì</span>
+                <span>{adminText("Bật chế độ bảo trì")}</span>
               </label>
             </section>
             </div>}
@@ -211,10 +209,10 @@ export function AdminSettingsPage() {
           <div className="admin-save-bar">
             <span role="status">
               {saving
-                ? 'Đang lưu…'
+                ? adminText("Đang lưu…")
                 : dirty
-                  ? 'Có thay đổi chưa lưu'
-                  : 'Đã đồng bộ với bản lưu'}
+                  ? adminText("Có thay đổi chưa lưu")
+                  : adminText("Đã đồng bộ với bản lưu")}
             </span>
             <div>
               <button
@@ -227,11 +225,10 @@ export function AdminSettingsPage() {
                 }}
               >
                 <RotateCcw size={16} />
-                Hoàn tác
-              </button>
+                 {adminText("Hoàn tác")} </button>
               <button className="admin-btn primary" disabled={!dirty || saving}>
                 <Save size={16} />
-                {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
+                {saving ? adminText("Đang lưu…") : adminText("Lưu thay đổi")}
               </button>
             </div>
           </div>

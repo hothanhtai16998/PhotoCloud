@@ -1,0 +1,24 @@
+.pc-logs .pc-log-filter { display: flex; align-items: center; gap: 10px; color: var(--admin-text-secondary); font-size: 13px; }
+.pc-logs .pc-log-filter select { min-height: 44px; border: 1px solid var(--admin-border); border-radius: 8px; padding: 8px 12px; color: var(--admin-text); background: var(--admin-card-bg); font: inherit; }
+.pc-logs .pc-log-summary { font-size: 13px; line-height: 1.7; color: var(--admin-text-secondary); margin: 0 0 20px; }
+.pc-logs .admin-table td { vertical-align: top; }
+.pc-logs .admin-table td:first-child { min-width: 170px; font-variant-numeric: tabular-nums; }
+.pc-logs .pc-log-message { min-width: 260px; max-width: 75ch; overflow-wrap: anywhere; white-space: pre-wrap; color: var(--admin-text); line-height: 1.7; }
+.pc-logs .admin-table td:last-child { max-width: 200px; overflow-wrap: anywhere; }
+.pc-logs :is(button, select):focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 3px; }
+.pc-logs .admin-pagination { background: var(--admin-card-bg); border-color: var(--admin-border); color: var(--admin-text-secondary); }
+.pc-logs .admin-pagination > span { background: transparent; color: var(--admin-text-secondary); border: 0; box-shadow: none; }
+/* Override legacy pagination rules that declare fixed colors with !important. */
+.pc-logs .admin-pagination button {
+  background: var(--button-secondary-bg) !important;
+  color: var(--button-secondary-fg) !important;
+  border-color: var(--button-secondary-border) !important;
+  box-shadow: none !important;
+}
+.pc-logs .admin-pagination button:hover:not(:disabled) {
+  background: var(--button-secondary-hover) !important;
+  color: var(--button-secondary-fg) !important;
+  border-color: var(--button-secondary-border) !important;
+  transform: none;
+}
+.pc-logs .admin-pagination button:focus-visible { outline: 2px solid var(--admin-accent) !important; outline-offset: 3px; }

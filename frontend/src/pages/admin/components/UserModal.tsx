@@ -1,3 +1,4 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { AdminModal } from './AdminModal';
@@ -15,6 +16,7 @@ export function UserModal({
   user: User | null;
   onSuccess?: () => void;
 }) {
+  useAdminLocale();
   const [displayName, setName] = useState('');
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
@@ -39,7 +41,7 @@ export function UserModal({
         email: email.trim(),
         bio: bio.trim(),
       });
-      toast.success('Đã cập nhật người dùng');
+      toast.success(adminText("Đã cập nhật người dùng"));
       onSuccess?.();
       onClose();
     } catch (cause) {
@@ -51,8 +53,8 @@ export function UserModal({
   return (
     <AdminModal
       open={open}
-      title="Sửa thông tin người dùng"
-      description={'Tài khoản @' + (user?.username || '')}
+      title={adminText("Sửa thông tin người dùng")}
+      description={adminText("Tài khoản @") + (user?.username || '')}
       onClose={() => {
         if (!busy) onClose();
       }}
@@ -60,8 +62,7 @@ export function UserModal({
       <form onSubmit={save}>
         <fieldset disabled={busy} className="admin-form-fields">
           <label className="admin-settings-field">
-            Tên hiển thị
-            <input
+             {adminText("Tên hiển thị")} <input
               className="admin-input"
               maxLength={100}
               value={displayName}
@@ -79,8 +80,7 @@ export function UserModal({
             />
           </label>
           <label className="admin-settings-field">
-            Giới thiệu
-            <textarea
+             {adminText("Giới thiệu")} <textarea
               className="admin-input"
               rows={3}
               maxLength={500}
@@ -90,8 +90,7 @@ export function UserModal({
           </label>
         </fieldset>
         <p className="admin-field-hint">
-          Vai trò quản trị được quản lý riêng trong mục Phân quyền.
-        </p>
+           {adminText("Vai trò quản trị được quản lý riêng trong mục Phân quyền.")} </p>
         {error && (
           <p className="admin-form-error" role="alert">
             {error}
@@ -104,10 +103,9 @@ export function UserModal({
             disabled={busy}
             onClick={onClose}
           >
-            Hủy
-          </button>
+             {adminText("Hủy")} </button>
           <button className="admin-btn primary" disabled={busy}>
-            {busy ? 'Đang lưu…' : 'Lưu thay đổi'}
+            {busy ? adminText("Đang lưu…") : adminText("Lưu thay đổi")}
           </button>
         </div>
       </form>

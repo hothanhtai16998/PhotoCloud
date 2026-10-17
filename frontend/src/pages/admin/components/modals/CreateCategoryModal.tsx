@@ -1,8 +1,8 @@
+import { adminText, useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { t } from '@/i18n';
 
 interface CreateCategoryModalProps {
     onClose: () => void;
@@ -10,6 +10,7 @@ interface CreateCategoryModalProps {
 }
 
 export function CreateCategoryModal({ onClose, onSave }: CreateCategoryModalProps) {
+  useAdminLocale();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
 
@@ -27,7 +28,7 @@ export function CreateCategoryModal({ onClose, onSave }: CreateCategoryModalProp
             <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
                     <h2>{t('admin.modalAddCategory')}</h2>
-                    <button onClick={onClose}>×</button>
+                    <button onClick={onClose}>{adminText("×")}</button>
                 </div>
                 <form onSubmit={handleSubmit} className="admin-modal-form">
                     <div className="admin-form-group">

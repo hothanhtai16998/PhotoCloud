@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { categoryService, type Category } from '@/services/categoryService';
@@ -6,7 +6,7 @@ import { imageService } from '@/services/imageService';
 import type { PreUploadResponse, FinalizeImageData, Image } from '@/types/image';
 import type { Coordinates } from '@/types/common';
 import { compressImage } from '@/utils/imageCompression';
-import { t } from '@/i18n';
+import { useUploadTranslation } from '../UploadTranslationContext';
 
 export interface ImageData {
   file: File;
@@ -33,6 +33,7 @@ interface UseImageUploadProps {
 }
 
 export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
+  const t = useUploadTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
@@ -40,7 +41,7 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
   const [uploadingIndex, setUploadingIndex] = useState(0);
   const [totalUploads, setTotalUploads] = useState(0);
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const uploadProgressRef = useRef<number>(0);
+
 
   const loadCategories = useCallback(async () => {
     try {
@@ -68,7 +69,7 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
         return { ...img, errors };
       });
     },
-    []
+    [t]
   );
 
   const validateAllImages = useCallback(
@@ -102,11 +103,11 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
 
         return result;
       } catch (error: unknown) {
-        const errorMessage = getErrorMessage(error, 'Failed to upload image');
+        const errorMessage = getErrorMessage(error, t('upload.uploadFailed'));
         throw new Error(errorMessage);
       }
     },
-    []
+    [t]
   );
 
   // Pre-upload all images when files are selected - small concurrent batch to improve speed
@@ -197,7 +198,7 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
       await Promise.all(running);
       return updatedImagesData;
     },
-    [preUploadSingleImage]
+    [preUploadSingleImage, t]
   );
 
   const handleSubmitAll = useCallback(
@@ -351,7 +352,7 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
           setShowSuccess(true);
           const failedTitles = failedUploads.map((f) => f.title).join(', ');
           toast.warning(
-            `${successfulUploads.length} ảnh đã tải lên thành công. ${failedUploads.length} ảnh thất bại: ${failedTitles}`
+            t('upload.localPartial', { success: successfulUploads.length, failed: failedUploads.length, titles: failedTitles }, '{success} ảnh đã tải lên thành công. {failed} ảnh thất bại: {titles}')
           );
         } else {
           // All failed
@@ -375,7 +376,7 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
         return false;
       }
     },
-    [categories, validateAllImages, onSuccess]
+    [categories, validateAllImages, onSuccess, t]
   );
 
   const resetUploadState = useCallback(() => {
@@ -384,11 +385,11 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
     setUploadingIndex(0);
     setTotalUploads(0);
     setIsFinalizing(false);
-    uploadProgressRef.current = 0;
+
   }, []);
 
   // Calculate overall upload progress
-  const uploadProgress = uploadProgressRef.current;
+  const uploadProgress = 0; // Finalization progress is tracked by uploadingIndex.
 
   return {
     categories,

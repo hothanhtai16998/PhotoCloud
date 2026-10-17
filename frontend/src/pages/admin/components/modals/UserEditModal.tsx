@@ -1,8 +1,8 @@
+import { adminText, useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { User } from '@/services/adminService';
-import { t } from '@/i18n';
 
 interface UserEditModalProps {
     user: User;
@@ -11,6 +11,7 @@ interface UserEditModalProps {
 }
 
 export function UserEditModal({ user, onClose, onSave }: UserEditModalProps) {
+  useAdminLocale();
     const [displayName, setDisplayName] = useState(user.displayName);
     const [email, setEmail] = useState(user.email);
     const [bio, setBio] = useState(user.bio || '');
@@ -25,7 +26,7 @@ export function UserEditModal({ user, onClose, onSave }: UserEditModalProps) {
             <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="admin-modal-header">
                     <h2>{t('admin.editUserInfo')}</h2>
-                    <button onClick={onClose}>×</button>
+                    <button onClick={onClose}>{adminText("×")}</button>
                 </div>
                 <form onSubmit={handleSubmit} className="admin-modal-form">
                     <div className="admin-form-group">

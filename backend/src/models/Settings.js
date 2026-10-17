@@ -28,22 +28,27 @@ const settingsSchema = new mongoose.Schema(
 
 const Settings = mongoose.model('Settings', settingsSchema);
 
-// Initialize default settings if they don't exist
-Settings.findOne({ key: 'system' }).then(async (settings) => {
-    if (!settings) {
-        await Settings.create({
+// Called by server startup only after MongoDB is connected. Importing a model
+// must not enqueue queries or create an unhandled rejection.
+export async function initializeDefaultSettings() {
+    await Settings.updateOne(
+        { key: 'system' },
+        { $setOnInsert: {
             key: 'system',
             value: {
                 siteName: 'PhotoApp',
                 siteDescription: 'Discover beautiful photos',
-                maxUploadSize: 10, // MB
+                maxUploadSize: 10,
                 allowedFileTypes: ['jpg', 'jpeg', 'png', 'webp'],
                 maintenanceMode: false,
             },
             description: 'System-wide settings',
-        });
-    }
-});
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        } },
+        { upsert: true, timestamps: false }
+    );
+}
 
 export default Settings;
 

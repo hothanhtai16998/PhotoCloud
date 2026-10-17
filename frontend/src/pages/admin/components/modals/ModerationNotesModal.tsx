@@ -1,8 +1,8 @@
+import { adminText, useAdminLocale, adminT as t } from '@/pages/admin/adminLocale';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
-import { t } from '@/i18n';
 import './ModerationNotesModal.css';
 
 interface ModerationNotesModalProps {
@@ -22,6 +22,7 @@ export function ModerationNotesModal({
     placeholder,
     isOptional = true,
 }: ModerationNotesModalProps) {
+  useAdminLocale();
     const [notes, setNotes] = useState('');
 
     // Reset notes when modal opens/closes
@@ -85,7 +86,7 @@ export function ModerationNotesModal({
                         <Textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
-                            placeholder={placeholder || t('admin.moderationNotesPlaceholder') || 'Nhập ghi chú kiểm duyệt (tùy chọn)...'}
+                            placeholder={placeholder || t('admin.moderationNotesPlaceholder') || adminText("Nhập ghi chú kiểm duyệt (tùy chọn)...")}
                             rows={4}
                             className="moderation-notes-textarea"
                             autoFocus
@@ -96,7 +97,7 @@ export function ModerationNotesModal({
                             {t('common.cancel')}
                         </Button>
                         <Button type="submit">
-                            {t('common.confirm') || 'Xác nhận'}
+                            {t('common.confirm') || adminText("Xác nhận")}
                         </Button>
                     </div>
                 </form>

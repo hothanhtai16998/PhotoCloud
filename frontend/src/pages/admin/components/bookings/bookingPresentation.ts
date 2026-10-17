@@ -1,21 +1,22 @@
+import { getAdminIntlLocale, adminText } from '@/pages/admin/adminLocale';
 import type { BookingStatus } from '@/types/booking';
 export const bookingStatusLabels: Record<BookingStatus, string> = {
-  pending: 'Chờ xử lý',
-  reviewing: 'Đang xem xét',
-  needs_information: 'Cần bổ sung',
-  confirmed: 'Đã xác nhận',
-  rescheduled: 'Đã đổi lịch',
-  completed: 'Hoàn thành',
-  cancelled_by_client: 'Khách đã hủy',
-  cancelled_by_photographer: 'Studio đã hủy',
-  rejected: 'Đã từ chối',
-  expired: 'Hết hạn',
+  pending: adminText("Chờ xử lý"),
+  reviewing: adminText("Đang xem xét"),
+  needs_information: adminText("Cần bổ sung"),
+  confirmed: adminText("Đã xác nhận"),
+  rescheduled: adminText("Đã đổi lịch"),
+  completed: adminText("Hoàn thành"),
+  cancelled_by_client: adminText("Khách đã hủy"),
+  cancelled_by_photographer: adminText("Studio đã hủy"),
+  rejected: adminText("Đã từ chối"),
+  expired: adminText("Hết hạn"),
 };
 export const bookingTimeLabels: Record<string, string> = {
-  morning: 'Buổi sáng',
-  afternoon: 'Buổi chiều',
-  evening: 'Buổi tối',
-  flexible: 'Linh hoạt',
+  morning: adminText("Buổi sáng"),
+  afternoon: adminText("Buổi chiều"),
+  evening: adminText("Buổi tối"),
+  flexible: adminText("Linh hoạt"),
 };
 export function bookingTone(status: BookingStatus) {
   if (['confirmed', 'rescheduled'].includes(status)) return 'confirmed';
@@ -45,11 +46,11 @@ export function bookingNextStatuses(status: BookingStatus): BookingStatus[] {
   return [];
 }
 export function bookingDate(date?: string) {
-  if (!date) return 'Chưa xác định';
+  if (!date) return adminText("Chưa xác định");
   const parsed = new Date(date);
   return Number.isNaN(parsed.getTime())
-    ? 'Chưa xác định'
-    : parsed.toLocaleDateString('vi-VN', {
+    ? adminText("Chưa xác định")
+    : parsed.toLocaleDateString(getAdminIntlLocale(), {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -57,7 +58,7 @@ export function bookingDate(date?: string) {
       });
 }
 export const bookingMoney = (value: number) =>
-  new Intl.NumberFormat('vi-VN', {
+  new Intl.NumberFormat(getAdminIntlLocale(), {
     style: 'currency',
     currency: 'VND',
     maximumFractionDigits: 0,

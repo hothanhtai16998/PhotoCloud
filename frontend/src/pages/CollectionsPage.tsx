@@ -1,19 +1,23 @@
 import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Collection } from '@/types/collection';
+import { Folder, Plus, Search, X, Filter, Compass } from 'lucide-react';
 import { toast } from 'sonner';
+
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { useCollectionsListStore, markCollectionsOffline } from '@/stores/useCollectionsListStore';
-import { Folder, Plus, Search, X, Filter } from 'lucide-react';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { t } from '@/i18n';
 import { filterCollections } from '@/utils/collectionList';
+import type { Collection } from '@/types/collection';
+
 import { CollectionCard } from '@/components/collection/CollectionCard';
 import { CollectionDeleteDialog } from '@/components/collection/CollectionDeleteDialog';
 import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
+import { CollectionsGridSkeleton } from '@/components/collection/CollectionsGridSkeleton';
+
 import './CollectionsPage.css';
 
-// Lazy load CollectionModal - only shown when editing
 const CollectionModal = lazy(() => import('@/components/collection/CollectionModal'));
 
 export default function CollectionsPage() {
@@ -21,7 +25,6 @@ export default function CollectionsPage() {
 	const { user } = useUserStore();
 	const navigate = useNavigate();
 
-	// Collections list store
 	const {
 		collections,
 		error,
@@ -32,7 +35,8 @@ export default function CollectionsPage() {
 		sortBy,
 		selectedTag,
 		hasLoaded,
-		fetchCollections,		setSearchQuery,
+		fetchCollections,
+		setSearchQuery,
 		setShowPublicOnly,
 		setSortBy,
 		setSelectedTag,
@@ -41,19 +45,31 @@ export default function CollectionsPage() {
 		checkAndRefreshIfStale,
 	} = useCollectionsListStore();
 
+	const canCreate = !!(user?.isAdmin || user?.isSuperAdmin);
 
-
- const canCreate = !!(user?.isAdmin || user?.isSuperAdmin);
- useEffect(() => { window.addEventListener('offline', markCollectionsOffline); return () => window.removeEventListener('offline', markCollectionsOffline); }, []);
- const [editor, setEditor] = useState<Collection | 'create' | null>(null);
- const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
- const filteredCollections = useMemo(() => filterCollections(collections, { searchQuery, showPublicOnly, sortBy, selectedTag }), [collections, searchQuery, showPublicOnly, sortBy, selectedTag]);
+	// Tab title + meta. Sở hữu tại page-level hook — useSiteSettings không được ghi đè.
+	useDocumentMeta({
+		title: t('collections.title'),
+		description: user ? undefined : t('collections.subtitleViewer'),
+		noIndex: !user,
+	});
 
 	useEffect(() => {
-		// CRITICAL: Wait for auth initialization before fetching collections
-		if (isInitializing) {
-			return;
-		}
+		const handleOffline = () => markCollectionsOffline();
+		window.addEventListener('offline', handleOffline);
+		return () => window.removeEventListener('offline', handleOffline);
+	}, []);
+
+	const [editor, setEditor] = useState<Collection | 'create' | null>(null);
+	const [collectionToDelete, setCollectionToDelete] = useState<string | null>(null);
+
+	const filteredCollections = useMemo(
+		() => filterCollections(collections, { searchQuery, showPublicOnly, sortBy, selectedTag }),
+		[collections, searchQuery, showPublicOnly, sortBy, selectedTag],
+	);
+
+	useEffect(() => {
+		if (isInitializing) return;
 
 		if (!accessToken) {
 			toast.info(t('collections.loginRequired'));
@@ -61,13 +77,19 @@ export default function CollectionsPage() {
 			return;
 		}
 
-  if (!hasLoaded) void fetchCollections();
-  else void checkAndRefreshIfStale();
-  const interval = setInterval(() => { void checkAndRefreshIfStale(); }, 2 * 60 * 1000);
-  return () => clearInterval(interval);
- }, [accessToken, isInitializing, hasLoaded, navigate, fetchCollections, checkAndRefreshIfStale]);
+		if (!hasLoaded) {
+			void fetchCollections();
+		} else {
+			void checkAndRefreshIfStale();
+		}
 
-	// Get all unique tags from collections
+		const interval = setInterval(() => {
+			void checkAndRefreshIfStale();
+		}, 2 * 60 * 1000);
+
+		return () => clearInterval(interval);
+	}, [accessToken, isInitializing, hasLoaded, navigate, fetchCollections, checkAndRefreshIfStale]);
+
 	const allTags = useMemo(() => {
 		const tagSet = new Set<string>();
 		collections.forEach(collection => {
@@ -78,150 +100,222 @@ export default function CollectionsPage() {
 		return Array.from(tagSet).sort();
 	}, [collections]);
 
- const handleCollectionUpdated = () => { void refreshCollections(); };
- const clearSearch = () => setSearchQuery('');
- if (isInitializing || !accessToken) return null;
+	const handleCollectionUpdated = () => {
+		void refreshCollections();
+	};
+	const clearSearch = () => setSearchQuery('');
 
-		return (
-			<>
-				<div className="collections-page">
-					<div className="collections-header">
-					<h1>Bộ sưu tập</h1>
-					{canCreate && <button
-						className="collections-create-btn"
-						onClick={() => {
-							setEditor('create');
-						}}
-					>
-						<Plus size={18} />
-						{t('collections.createCollection')}
-					</button>}
-				</div>
+	if (isInitializing || !accessToken) return null;
 
-				{/* Search and Filter Bar */}
-				{collections.length > 0 && (
-					<div className="collections-filters">
-						<div className="collections-search-wrapper">
-							<Search size={20} className="collections-search-icon" />
-							<input
-								type="text"
-								className="collections-search-input"
-								placeholder={t('collections.searchPlaceholder')}
-								aria-label={t('collections.searchPlaceholder')}
-								value={searchQuery}
-								onChange={(e) => setSearchQuery(e.target.value)}
-							/>
-							{searchQuery && (
-								<button
-									className="collections-search-clear"
-									onClick={clearSearch}
-									aria-label={t('collections.clearSearch')}
-								>
-									<X size={16} />
-								</button>
+	const isInitialLoad = !hasLoaded && loading;
+	const isEmptyState = !loading && !error && collections.length === 0;
+	const isNoMatch = !loading && !error && collections.length > 0 && filteredCollections.length === 0;
+	const showGrid = filteredCollections.length > 0;
+
+	const totalLabel = collections.length === 1
+		? t('collections.totalCountOne', { count: collections.length })
+		: t('collections.totalCount', { count: collections.length });
+
+	return (
+		<>
+			<div className="collections-page">
+				<div className="collections-page-shell">
+					<header className="collections-header">
+						<div className="collections-header-titles">
+							{hasLoaded && collections.length > 0 && (
+								<span className="collections-eyebrow">{totalLabel}</span>
+							)}
+							<h1>{t('collections.title')}</h1>
+							{hasLoaded && collections.length > 0 && !canCreate && (
+								<p className="collections-header-subtitle">
+									{t('collections.subtitleViewer')}
+								</p>
 							)}
 						</div>
-						{allTags.length > 0 && (
-							<div className="collections-tags-filter">
-								<button
-									aria-pressed={!selectedTag}
- className={`collections-tag-filter-btn ${!selectedTag ? 'active' : ''}`}
-									onClick={() => setSelectedTag(null)}
-									title={t('collections.allTags')}
-								>
-									{t('collections.all')}
-								</button>
-								{allTags.map(tag => (
-									<button
-										key={tag}
- aria-pressed={selectedTag === tag}
-										className={`collections-tag-filter-btn ${selectedTag === tag ? 'active' : ''}`}
-										onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
-										title={t('collections.filterBy', { tag })}
-									>
-										{tag}
-									</button>
-								))}
-							</div>
-						)}
-						<div className="collections-filter-controls">
+						{canCreate && (
 							<button
-								aria-pressed={showPublicOnly}
- className={`collections-filter-btn ${showPublicOnly ? 'active' : ''}`}
-								onClick={() => setShowPublicOnly(!showPublicOnly)}
-								title={showPublicOnly ? t('collections.showAll') : t('collections.showPublicOnly')}
+								className="collections-create-btn"
+								type="button"
+								onClick={() => setEditor('create')}
 							>
-								<Filter size={16} />
-								<span>{showPublicOnly ? t('collections.public') : t('collections.all')}</span>
+								<Plus size={18} aria-hidden="true" />
+								{t('collections.createCollection')}
 							</button>
-							<select
-								aria-label="Sắp xếp bộ sưu tập"
- className="collections-sort-select"
-								value={sortBy}
-								onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-							>
-								<option value="newest">{t('collections.sortNewest')}</option>
-								<option value="oldest">{t('collections.sortOldest')}</option>
-								<option value="name">{t('collections.sortName')}</option>
-								<option value="images">{t('collections.sortImages')}</option>
-							</select>
-						</div>
-					</div>
-				)}
+						)}
+					</header>
 
-				{error && <CollectionLoadError message={error} busy={loading} onRetry={() => void fetchCollections()} />}
-                {loading && <p className="collections-results-info" role="status">Đang tải bộ sưu tập…</p>}
-                {collections.length === 0 && (loading || error || !hasLoaded) ? null : collections.length === 0 ? (
-					<div className="collections-empty">
-						<Folder size={64} />
-						<h2>Chưa có bộ sưu tập</h2>
-						<p>{canCreate ? t('collections.emptyHint') : 'Bộ sưu tập công khai sẽ xuất hiện tại đây khi quản trị viên đăng tải.'}</p>
-						<button
-							className="collections-empty-btn"
-							onClick={() => navigate('/')}
-						>
-							{t('favorites.explore')}
-						</button>
-					</div>
-				) : filteredCollections.length === 0 ? (
-					<div className="collections-empty">
-						<Folder size={64} />
-						<h2>{t('collections.noCollectionsFound')}</h2>
-						<p>
-							{searchQuery
-								? t('collections.noMatchSearch', { query: searchQuery })
-								: t('collections.noMatchFilter')}
-						</p>
-						{(searchQuery || showPublicOnly || selectedTag) && (
-							<button
-								className="collections-empty-btn"
-							onClick={() => {
-								clearFilters();
-							}}
-							>
-								{t('collections.clearFilters')}
-							</button>
-						)}
-					</div>
-				) : (
-					<>
-						{searchQuery && (
-							<div className="collections-results-info">
-								{t('collections.foundCount', { count: filteredCollections.length })}
+					{collections.length > 0 && (
+						<div className="collections-filters" role="search">
+							<div className="collections-search-wrapper">
+								<Search size={18} className="collections-search-icon" aria-hidden="true" />
+								<input
+									type="search"
+									className="collections-search-input"
+									placeholder={t('collections.searchPlaceholder')}
+									aria-label={t('collections.searchPlaceholder')}
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+								/>
+								{searchQuery && (
+									<button
+										type="button"
+										className="collections-search-clear"
+										onClick={clearSearch}
+										aria-label={t('collections.clearSearch')}
+									>
+										<X size={14} aria-hidden="true" />
+									</button>
+								)}
 							</div>
-						)}
-						<div className="collections-grid">
-							{filteredCollections.map((collection, index) => <CollectionCard key={collection._id} collection={collection} creatorFallback={user?.displayName || user?.username || ''} priority={index < 2} deleting={deletingId === collection._id} canManage={canCreate && (typeof collection.createdBy === 'object' ? collection.createdBy?._id : collection.createdBy) === user?._id} onEdit={() => setEditor(collection)} onDelete={() => setCollectionToDelete(collection._id)} />)}
+
+							{allTags.length > 0 && (
+								<div className="collections-tags-filter">
+									<button
+										type="button"
+										aria-pressed={!selectedTag}
+										className={`collections-tag-filter-btn ${!selectedTag ? 'active' : ''}`}
+										onClick={() => setSelectedTag(null)}
+										title={t('collections.allTags')}
+									>
+										{t('collections.all')}
+									</button>
+									{allTags.map(tag => (
+										<button
+											key={tag}
+											type="button"
+											aria-pressed={selectedTag === tag}
+											className={`collections-tag-filter-btn ${selectedTag === tag ? 'active' : ''}`}
+											onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+											title={t('collections.filterBy', { tag })}
+										>
+											{tag}
+										</button>
+									))}
+								</div>
+							)}
+
+							<div className="collections-filter-controls">
+								<button
+									type="button"
+									aria-pressed={showPublicOnly}
+									className={`collections-filter-btn ${showPublicOnly ? 'active' : ''}`}
+									onClick={() => setShowPublicOnly(!showPublicOnly)}
+									title={showPublicOnly ? t('collections.showAll') : t('collections.showPublicOnly')}
+								>
+									<Filter size={14} aria-hidden="true" />
+									<span>{showPublicOnly ? t('collections.public') : t('collections.all')}</span>
+								</button>
+								<select
+									aria-label={t('collections.sortAriaLabel')}
+									className="collections-sort-select"
+									value={sortBy}
+									onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+								>
+									<option value="newest">{t('collections.sortNewest')}</option>
+									<option value="oldest">{t('collections.sortOldest')}</option>
+									<option value="name">{t('collections.sortName')}</option>
+									<option value="images">{t('collections.sortImages')}</option>
+								</select>
+							</div>
 						</div>
-					</>
-				)}
+					)}
+
+					{error && (
+						<CollectionLoadError message={error} busy={loading} onRetry={() => void fetchCollections()} />
+					)}
+
+					{isInitialLoad && <CollectionsGridSkeleton count={6} />}
+
+					{isEmptyState && (
+						<div className="collections-empty">
+							<div className="collections-empty-illustration" aria-hidden="true">
+								<Folder size={44} />
+							</div>
+							<h2>{t('collections.emptyTitle')}</h2>
+							<p>
+								{canCreate
+									? t('collections.emptyHint')
+									: t('collections.emptyHintPublic')}
+							</p>
+							<div className="collections-empty-actions">
+								<button
+									type="button"
+									className="collections-empty-btn"
+									onClick={() => navigate('/')}
+								>
+									<Compass size={16} aria-hidden="true" style={{ marginRight: 6, verticalAlign: '-2px' }} />
+									{t('favorites.explore')}
+								</button>
+							</div>
+						</div>
+					)}
+
+					{isNoMatch && (
+						<div className="collections-empty">
+							<div className="collections-empty-illustration" aria-hidden="true">
+								<Search size={40} />
+							</div>
+							<h2>{t('collections.noCollectionsFound')}</h2>
+							<p>
+								{searchQuery
+									? t('collections.noMatchSearch', { query: searchQuery })
+									: t('collections.noMatchFilter')}
+							</p>
+							{(searchQuery || showPublicOnly || selectedTag) && (
+								<div className="collections-empty-actions">
+									<button
+										type="button"
+										className="collections-empty-btn"
+										onClick={clearFilters}
+									>
+										{t('collections.clearFilters')}
+									</button>
+								</div>
+							)}
+						</div>
+					)}
+
+					{searchQuery && showGrid && (
+						<p className="collections-results-info" role="status">
+							{t('collections.foundCount', { count: filteredCollections.length })}
+						</p>
+					)}
+
+					{showGrid && (
+						<div className="collections-grid">
+							{filteredCollections.map((collection, index) => (
+								<CollectionCard
+									key={collection._id}
+									collection={collection}
+									creatorFallback={user?.displayName || user?.username || ''}
+									priority={index < 2}
+									deleting={deletingId === collection._id}
+									canManage={canCreate && (typeof collection.createdBy === 'object' ? collection.createdBy?._id : collection.createdBy) === user?._id}
+									onEdit={() => setEditor(collection)}
+									onDelete={() => setCollectionToDelete(collection._id)}
+								/>
+							))}
+						</div>
+					)}
+				</div>
 			</div>
 
+			{editor && (
+				<Suspense fallback={<p role="status" style={{ position: 'absolute', left: -9999 }}>{t('collections.modalLoading')}</p>}>
+					<CollectionModal
+						key={editor === 'create' ? 'create' : editor._id}
+						isOpen
+						onClose={() => setEditor(null)}
+						collectionToEdit={editor === 'create' ? undefined : editor}
+						onCollectionUpdate={handleCollectionUpdated}
+					/>
+				</Suspense>
+			)}
 
-   {editor && <Suspense fallback={<p role="status">Đang tải biểu mẫu…</p>}>
-    <CollectionModal key={editor === 'create' ? 'create' : editor._id} isOpen onClose={() => setEditor(null)} collectionToEdit={editor === 'create' ? undefined : editor} onCollectionUpdate={handleCollectionUpdated} />
-   </Suspense>}
-   <CollectionDeleteDialog collectionId={collectionToDelete} onClose={() => setCollectionToDelete(null)} />
-  </>
- );
+			<CollectionDeleteDialog
+				collectionId={collectionToDelete}
+				onClose={() => setCollectionToDelete(null)}
+			/>
+		</>
+	);
 }

@@ -1,7 +1,9 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import './AdminModal.css';
+import { AdminLanguageSelect } from './AdminLanguageSelect';
 export function AdminModal({
   open,
   title,
@@ -21,6 +23,7 @@ export function AdminModal({
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }) {
+  const locale = useAdminLocale();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descId = useId();
@@ -40,6 +43,7 @@ export function AdminModal({
   if (!open) return null;
   return createPortal(
     <dialog
+      lang={locale}
       ref={ref}
       className={'admin-modal size-' + size + ' ' + className}
       aria-labelledby={titleId}
@@ -66,11 +70,12 @@ export function AdminModal({
           <h2 id={titleId}>{title}</h2>
           {description && <p id={descId}>{description}</p>}
         </div>
+        <AdminLanguageSelect />
         <button
           type="button"
           className="admin-table-action"
           onClick={onClose}
-          aria-label="Đóng hộp thoại"
+          aria-label={adminText("Đóng hộp thoại")}
         >
           <X size={21} />
         </button>

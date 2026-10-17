@@ -1,3 +1,4 @@
+import { adminText, useAdminLocale, adminUploadT } from '@/pages/admin/adminLocale';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UploadTrigger } from '@/components/UploadTrigger';
@@ -37,15 +38,17 @@ import { AdminImageModal } from './AdminImageModal';
 import '../AdminImagesPage.css';
 import { AdminImagePreview } from './AdminImagePreview';
 import { adminImageDate } from './adminRecordFormatting';
+import { AdminLanguageSelect } from './AdminLanguageSelect';
 
 type Kind = 'images' | 'categories' | 'users';
 type Row = AdminImage & User & Category;
 const names = {
-  images: 'Thư viện ảnh',
-  categories: 'Danh mục',
-  users: 'Người dùng',
+  images: adminText("Thư viện ảnh"),
+  categories: adminText("Danh mục"),
+  users: adminText("Người dùng"),
 };
 export function AdminRecords({ kind }: { kind: Kind }) {
+  const locale = useAdminLocale();
   const { hasPermission, isSuperAdmin } = usePermissions();
   const can = (permission: Parameters<typeof hasPermission>[0]) =>
     isSuperAdmin() || hasPermission(permission);
@@ -175,12 +178,12 @@ export function AdminRecords({ kind }: { kind: Kind }) {
     if (!failed.length) {
       setTarget(null);
       setBulk(null);
-      toast.success('Đã xóa ' + ids.length + ' mục');
+      toast.success(adminText("Đã xóa ") + ids.length + adminText(" mục"));
     } else if (failed.length < ids.length)
       toast.info(
-        'Đã xóa ' +
+        adminText("Đã xóa ") +
           (ids.length - failed.length) +
-          ' mục. Các mục lỗi vẫn được chọn.'
+          adminText(" mục. Các mục lỗi vẫn được chọn.")
       );
     void reload();
   };
@@ -208,13 +211,13 @@ export function AdminRecords({ kind }: { kind: Kind }) {
     setSelection(failed);
     if (!failed.length) {
       setBulk(null);
-      toast.success('Đã cập nhật danh mục');
+      toast.success(adminText("Đã cập nhật danh mục"));
     }
     void reload();
   };
   const title = (r: Row) =>
     kind === 'images'
-      ? r.imageTitle?.trim() || 'Ảnh chưa có tiêu đề'
+      ? r.imageTitle?.trim() || adminText("Ảnh chưa có tiêu đề")
       : kind === 'users'
         ? r.displayName || r.username
         : r.name;
@@ -223,13 +226,13 @@ export function AdminRecords({ kind }: { kind: Kind }) {
   return (
     <section className={kind==='images'?'admin-image-library':undefined}>
       <AdminHeading
-        title={names[kind]}
+        title={adminText(names[kind])}
         description={
           kind === 'images'
-            ? 'Sắp xếp và quản lý những khung hình của PhotoCloud.'
+            ? adminText("Sắp xếp và quản lý những khung hình của PhotoCloud.")
             : kind === 'users'
-              ? 'Thông tin tài khoản và trạng thái truy cập.'
-              : 'Phân loại ảnh để thư viện luôn dễ khám phá.'
+              ? adminText("Thông tin tài khoản và trạng thái truy cập.")
+              : adminText("Phân loại ảnh để thư viện luôn dễ khám phá.")
         }
       >
         <button
@@ -238,16 +241,17 @@ export function AdminRecords({ kind }: { kind: Kind }) {
           disabled={loading}
         >
           <RefreshCw size={16} />
-          Làm mới
-        </button>
+           {adminText("Làm mới")} </button>
         {kind === 'images' && (
           <UploadTrigger
+            translate={adminUploadT}
+            language={locale}
+            languageControl={<AdminLanguageSelect />}
             className="admin-btn primary"
             onUploaded={() => void reload()}
           >
             <Plus size={16} />
-            Tải ảnh lên
-          </UploadTrigger>
+             {adminText("Tải ảnh lên")} </UploadTrigger>
         )}
         {kind === 'categories' && can('createCategories') && (
           <button
@@ -258,45 +262,42 @@ export function AdminRecords({ kind }: { kind: Kind }) {
             }}
           >
             <Plus size={16} />
-            Tạo danh mục
-          </button>
+             {adminText("Tạo danh mục")} </button>
         )}
       </AdminHeading>
-      {kind==='images' && <p className="admin-library-note" role="status">{loading ? 'Đang tải danh sách…' : error ? 'Chưa thể cập nhật danh sách. Hãy thử lại.' : `${currentData?.pagination?.total ?? 0} ảnh${query ? ` khớp “${query}”` : ' trong thư viện'}. Chọn tất cả chỉ áp dụng cho trang hiện tại.`}</p>}
+      {kind==='images' && <p className="admin-library-note" role="status">{loading ? adminText("Đang tải danh sách…") : error ? adminText("Chưa thể cập nhật danh sách. Hãy thử lại.") : adminText("{0} ảnh{1}. Chọn tất cả chỉ áp dụng cho trang hiện tại.", { 0: currentData?.pagination?.total ?? 0, 1: query ? ` khớp “${query}”` : adminText(' trong thư viện') })}</p>}
       <AdminFeedback error={error} retry={() => void reload()} />
       <form className="admin-page-toolbar" onSubmit={submitSearch}>
         <label className="admin-page-search">
           <Search size={18} />
           <input
             type="search"
-            aria-label="Tìm kiếm"
+            aria-label={adminText("Tìm kiếm")}
             placeholder={
               kind === 'users'
-                ? 'Tìm tên hoặc email…'
+                ? adminText("Tìm tên hoặc email…")
                 : kind === 'images'
-                  ? 'Tìm tiêu đề hoặc mô tả ảnh…'
-                  : 'Tìm danh mục…'
+                  ? adminText("Tìm tiêu đề hoặc mô tả ảnh…")
+                  : adminText("Tìm danh mục…")
             }
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </label>
         <button className="admin-btn" type="submit">
-          Tìm kiếm
-        </button>
+           {adminText("Tìm kiếm")} </button>
         {query && (
           <button
             className="admin-btn"
             type="button"
             onClick={() => setParams({})}
           >
-            Xóa bộ lọc
-          </button>
+             {adminText("Xóa bộ lọc")} </button>
         )}
       </form>
       {kind === 'images' && selection.length > 0 && (
         <div className="admin-bulk-bar">
-          <strong>{selection.length} ảnh đã chọn</strong>
+          <strong>{selection.length}  {adminText("ảnh đã chọn")}</strong>
           <div>
             {canEdit && can('viewCategories') && (
               <button
@@ -305,8 +306,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                 onClick={() => void openBulkCategory()}
               >
                 <FolderInput size={16} />
-                Đổi danh mục
-              </button>
+                 {adminText("Đổi danh mục")} </button>
             )}
             {canDelete && (
               <button
@@ -315,19 +315,17 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                 onClick={() => setBulk('delete')}
               >
                 <Trash2 size={16} />
-                Xóa đã chọn
-              </button>
+                 {adminText("Xóa đã chọn")} </button>
             )}
             <button className="admin-btn" onClick={() => setSelection([])}>
-              Bỏ chọn
-            </button>
+               {adminText("Bỏ chọn")} </button>
           </div>
         </div>
       )}
       <div
         className="admin-table-wrap"
         tabIndex={0}
-        aria-label={names[kind] + ', có thể cuộn ngang'}
+        aria-label={adminText(names[kind]) + adminText(", có thể cuộn ngang")}
         aria-busy={loading}
       >
         <table className="admin-table">
@@ -337,7 +335,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                 <th>
                   <input
                     type="checkbox"
-                    aria-label="Chọn tất cả ảnh trên trang"
+                    aria-label={adminText("Chọn tất cả ảnh trên trang")}
                     disabled={loading || !!error || rows.length===0}
                     ref={element=>{if(element) element.indeterminate=!selectedAll && selection.length>0;}}
                     checked={selectedAll}
@@ -349,28 +347,28 @@ export function AdminRecords({ kind }: { kind: Kind }) {
               )}
               <th>
                 {kind === 'images'
-                  ? 'Ảnh'
+                  ? adminText("Ảnh")
                   : kind === 'users'
-                    ? 'Tài khoản'
-                    : 'Danh mục'}
+                    ? adminText("Tài khoản")
+                    : adminText("Danh mục")}
               </th>
               <th>
                 {kind === 'images'
-                  ? 'Danh mục'
+                  ? adminText("Danh mục")
                   : kind === 'users'
                     ? 'Email'
-                    : 'Mô tả'}
+                    : adminText("Mô tả")}
               </th>
               <th>
                 {kind === 'images'
-                  ? 'Tác giả'
+                  ? adminText("Người tải lên")
                   : kind === 'users'
-                    ? 'Vai trò'
-                    : 'Số ảnh'}
+                    ? adminText("Vai trò")
+                    : adminText("Số ảnh")}
               </th>
-              <th>{kind === 'categories' ? 'Hiển thị' : 'Trạng thái'}</th>
+              <th>{kind === 'categories' ? adminText("Hiển thị") : adminText("Trạng thái")}</th>
               <th>
-                <span className="sr-only">Thao tác</span>
+                <span className="sr-only">{adminText("Thao tác")}</span>
               </th>
             </tr>
           </thead>
@@ -389,7 +387,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                       <td>
                         <input
                           type="checkbox"
-                          aria-label={'Chọn ' + title(r)}
+                          aria-label={adminText("Chọn ") + title(r)}
                           disabled={loading || !!error}
                           checked={selection.includes(r._id)}
                           onChange={() =>
@@ -414,7 +412,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                           </span>
                         ) : null}
                         <div>
-                          <strong>{title(r) || 'Chưa đặt tên'}</strong>
+                          <strong>{title(r) || adminText("Chưa đặt tên")}</strong>
                           {kind === 'users' && <small>@{r.username}</small>}
                           {kind === 'images' && (
                             <small>
@@ -427,11 +425,11 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                     <td>
                       {kind === 'images'
                         ? typeof r.imageCategory === 'object'
-                          ? r.imageCategory?.name || 'Chưa phân loại'
-                          : r.imageCategory || 'Chưa phân loại'
+                          ? r.imageCategory?.name || adminText("Chưa phân loại")
+                          : r.imageCategory || adminText("Chưa phân loại")
                         : kind === 'users'
                           ? r.email
-                          : r.description || 'Chưa có mô tả'}
+                          : r.description || adminText("Chưa có mô tả")}
                     </td>
                     <td>
                       {kind === 'images'
@@ -440,10 +438,10 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                           '—'
                         : kind === 'users'
                           ? r.isSuperAdmin
-                            ? 'Quản trị cấp cao'
+                            ? adminText("Quản trị cấp cao")
                             : r.isAdmin
-                              ? 'Quản trị viên'
-                              : 'Thành viên'
+                              ? adminText("Quản trị viên")
+                              : adminText("Thành viên")
                           : (r.imageCount ?? '—')}
                     </td>
                     <td>
@@ -462,18 +460,18 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                       >
                         {kind === 'users'
                           ? r.isBanned
-                            ? 'Đã khóa'
-                            : 'Hoạt động'
+                            ? adminText("Đã khóa")
+                            : adminText("Hoạt động")
                           : kind === 'categories'
                             ? r.isActive === false
-                              ? 'Đã ẩn'
-                              : 'Đang hiện'
+                              ? adminText("Đã ẩn")
+                              : adminText("Đang hiện")
                             : {
-                                pending: 'Chờ duyệt',
-                                approved: 'Đã duyệt',
-                                rejected: 'Từ chối',
-                                flagged: 'Gắn cờ',
-                              }[r.moderationStatus || 'pending'] || 'Chưa rõ trạng thái'}
+                                pending: adminText("Chờ duyệt"),
+                                approved: adminText("Đã duyệt"),
+                                rejected: adminText("Từ chối"),
+                                flagged: adminText("Gắn cờ"),
+                              }[r.moderationStatus || 'pending'] || adminText("Chưa rõ trạng thái")}
                       </span>
                     </td>
                     <td>
@@ -482,7 +480,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                           <button
                             className="admin-table-action"
                             disabled={loading || !!error}
-                            aria-label={'Sửa ' + title(r)}
+                            aria-label={adminText("Sửa ") + title(r)}
                             onClick={() => {
                               setEditing(r);
                               setModalOpen(true);
@@ -499,7 +497,7 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                             <button
                               className="admin-table-action danger"
                               disabled={loading || !!error}
-                              aria-label={'Xóa ' + title(r)}
+                              aria-label={adminText("Xóa ") + title(r)}
                               onClick={() => {
                                 setMutationError(null);
                                 setTarget(r);
@@ -516,11 +514,11 @@ export function AdminRecords({ kind }: { kind: Kind }) {
         </table>
         {!loading && !error && rows.length === 0 && (
           <AdminEmpty
-            title={query ? 'Không tìm thấy kết quả' : 'Chưa có dữ liệu'}
+            title={query ? adminText("Không tìm thấy kết quả") : adminText("Chưa có dữ liệu")}
             description={
               query
-                ? 'Thử từ khóa khác hoặc xóa bộ lọc để xem toàn bộ danh sách.'
-                : 'Dữ liệu mới sẽ xuất hiện tại đây khi được tạo.'
+                ? adminText("Thử từ khóa khác hoặc xóa bộ lọc để xem toàn bộ danh sách.")
+                : adminText("Dữ liệu mới sẽ xuất hiện tại đây khi được tạo.")
             }
           />
         )}
@@ -535,22 +533,21 @@ export function AdminRecords({ kind }: { kind: Kind }) {
       {(target || bulk) && (
         <AdminModal
           open
-          title={bulk === 'category' ? 'Đổi danh mục ảnh' : 'Xác nhận xóa'}
+          title={bulk === 'category' ? adminText("Đổi danh mục ảnh") : adminText("Xác nhận xóa")}
           description={
             bulk === 'category'
-              ? 'Áp dụng cho ' + selection.length + ' ảnh đang chọn.'
-              : 'Xóa vĩnh viễn ' +
+              ? adminText("Áp dụng cho ") + selection.length + adminText(" ảnh đang chọn.")
+              : adminText("Xóa vĩnh viễn ") +
                 (target
                   ? '“' + title(target) + '”'
-                  : selection.length + ' ảnh') +
-                '. Thao tác này không thể hoàn tác.'
+                  : selection.length + adminText(" ảnh")) +
+                adminText(". Thao tác này không thể hoàn tác.")
           }
           onClose={close}
           footer={
             <>
               <button className="admin-btn" disabled={busy} onClick={close}>
-                Hủy
-              </button>
+                 {adminText("Hủy")} </button>
               <button
                 className={
                   'admin-btn ' + (bulk === 'category' ? 'primary' : 'danger')
@@ -561,24 +558,23 @@ export function AdminRecords({ kind }: { kind: Kind }) {
                 }
               >
                 {busy
-                  ? 'Đang xử lý…'
+                  ? adminText("Đang xử lý…")
                   : bulk === 'category'
-                    ? 'Cập nhật'
-                    : 'Xóa vĩnh viễn'}
+                    ? adminText("Cập nhật")
+                    : adminText("Xóa vĩnh viễn")}
               </button>
             </>
           }
         >
           {bulk === 'category' && (
             <label className="admin-settings-field">
-              Danh mục mới
-              <select
+               {adminText("Danh mục mới")} <select
                 className="admin-input"
                 disabled={busy || categoriesLoading}
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
-                <option value="">Chọn danh mục</option>
+                <option value="">{adminText("Chọn danh mục")}</option>
                 {categories.map((c) => (
                   <option key={c._id} value={c._id}>
                     {c.name}
@@ -587,8 +583,8 @@ export function AdminRecords({ kind }: { kind: Kind }) {
               </select>
             </label>
           )}
-          {bulk==='category' && categoriesLoading && <p role="status">Đang tải danh mục…</p>}
-          {bulk==='category' && !categoriesLoading && categories.length===0 && <button type="button" className="admin-btn" onClick={()=>void loadBulkCategories()}>Tải lại danh mục</button>}
+          {bulk==='category' && categoriesLoading && <p role="status">{adminText("Đang tải danh mục…")}</p>}
+          {bulk==='category' && !categoriesLoading && categories.length===0 && <button type="button" className="admin-btn" onClick={()=>void loadBulkCategories()}>{adminText("Tải lại danh mục")}</button>}
           {mutationError && (
             <p className="admin-form-error" role="alert">
               {mutationError}

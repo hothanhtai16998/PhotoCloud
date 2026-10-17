@@ -1,3 +1,4 @@
+import { useAdminLocale } from '@/pages/admin/adminLocale';
 import type { ComponentType } from 'react';
 import { Button } from '@/components/ui/button';
 import './AdminEmptyState.css';
@@ -17,6 +18,7 @@ export function AdminEmptyState({
     actionLabel, 
     onAction 
 }: AdminEmptyStateProps) {
+  useAdminLocale();
     return (
         <div className="admin-empty-state empty-state-enhanced">
             {Icon && (

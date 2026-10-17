@@ -1,3 +1,4 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { adminService, type AdminImage } from '@/services/adminService';
@@ -15,6 +16,7 @@ export function AdminImageModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  useAdminLocale();
   const [title, setTitle] = useState(image.imageTitle || '');
   const originalCategory =
     typeof image.imageCategory === 'object'
@@ -49,7 +51,7 @@ export function AdminImageModal({
   const save = async (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    if(!title.trim()) {setError('Nhập tiêu đề ảnh, không chỉ khoảng trắng.');return;}
+    if(!title.trim()) {setError(adminText("Nhập tiêu đề ảnh, không chỉ khoảng trắng."));return;}
     setBusy(true);
     setError(null);
     try {
@@ -59,7 +61,7 @@ export function AdminImageModal({
           ? { imageCategory: category || null }
           : {}),
       });
-      toast.success('Đã cập nhật ảnh');
+      toast.success(adminText("Đã cập nhật ảnh"));
       onSuccess();
       onClose();
     } catch (cause) {
@@ -71,15 +73,14 @@ export function AdminImageModal({
   return (
     <AdminModal
       open
-      title="Chỉnh sửa ảnh"
+      title={adminText("Chỉnh sửa ảnh")}
       onClose={() => {
         if (!busy) onClose();
       }}
     >
       <form onSubmit={save}>
         <label className="admin-settings-field">
-          Tiêu đề ảnh
-          <input
+           {adminText("Tiêu đề ảnh")} <input
             className="admin-input"
             required
             maxLength={200}
@@ -90,15 +91,14 @@ export function AdminImageModal({
         </label>
         {canCategories && (
           <label className="admin-settings-field">
-            Danh mục
-            <select
+             {adminText("Danh mục")} <select
               className="admin-input"
               disabled={busy || categoriesLoading || !!categoryError}
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-              <option value="">Chưa phân loại</option>
-              {originalCategory && !categories.some(item=>item._id===originalCategory) && <option value={originalCategory}>{typeof image.imageCategory==='object' ? image.imageCategory?.name || 'Danh mục hiện tại' : 'Danh mục hiện tại'}</option>}
+              <option value="">{adminText("Chưa phân loại")}</option>
+              {originalCategory && !categories.some(item=>item._id===originalCategory) && <option value={originalCategory}>{typeof image.imageCategory==='object' ? image.imageCategory?.name || adminText("Danh mục hiện tại") : adminText("Danh mục hiện tại")}</option>}
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.name}
@@ -107,8 +107,8 @@ export function AdminImageModal({
             </select>
           </label>
         )}
-        {canCategories && categoriesLoading && <p role="status">Đang tải danh mục…</p>}
-        {categoryError && <div className="admin-form-error" role="alert">{categoryError} <button type="button" className="admin-btn" disabled={busy} onClick={()=>setCategoryAttempt(value=>value+1)}>Tải lại danh mục</button></div>}
+        {canCategories && categoriesLoading && <p role="status">{adminText("Đang tải danh mục…")}</p>}
+        {categoryError && <div className="admin-form-error" role="alert">{categoryError} <button type="button" className="admin-btn" disabled={busy} onClick={()=>setCategoryAttempt(value=>value+1)}>{adminText("Tải lại danh mục")}</button></div>}
         {error && (
           <p id="image-edit-error" className="admin-form-error" role="alert">
             {error}
@@ -121,10 +121,9 @@ export function AdminImageModal({
             disabled={busy}
             onClick={onClose}
           >
-            Hủy
-          </button>
+             {adminText("Hủy")} </button>
           <button className="admin-btn primary" disabled={busy}>
-            {busy ? 'Đang lưu…' : 'Lưu thay đổi'}
+            {busy ? adminText("Đang lưu…") : adminText("Lưu thay đổi")}
           </button>
         </div>
       </form>

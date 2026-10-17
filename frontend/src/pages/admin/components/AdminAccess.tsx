@@ -1,8 +1,10 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import { ADMIN_NAV } from '../adminNavigation';
 export function AdminAccess({ children }: { children: ReactNode }) {
+  useAdminLocale();
   const { pathname } = useLocation();
   const { isSuperAdmin, hasPermission, isAdmin } = usePermissions();
   const item = ADMIN_NAV.find((i) => i.to === pathname);
@@ -16,14 +18,11 @@ export function AdminAccess({ children }: { children: ReactNode }) {
   if (!allowed)
     return (
       <div className="admin-empty">
-        <h1>Bạn chưa có quyền xem mục này</h1>
+        <h1>{adminText("Bạn chưa có quyền xem mục này")}</h1>
         <p>
-          Chọn một mục trong menu hoặc liên hệ quản trị viên để được cấp quyền
-          phù hợp.
-        </p>
+           {adminText("Chọn một mục trong menu hoặc liên hệ quản trị viên để được cấp quyền phù hợp.")} </p>
         <Link to="/" className="admin-btn">
-          Về website
-        </Link>
+           {adminText("Về website")} </Link>
       </div>
     );
   return children;

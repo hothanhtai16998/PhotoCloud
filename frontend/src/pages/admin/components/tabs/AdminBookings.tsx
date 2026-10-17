@@ -1,5 +1,6 @@
+import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useRef, useState } from 'react';
-import { Save, Plus, Pencil, EyeOff, X, Clock3, Images, Users, CalendarCheck } from 'lucide-react';
+import { Save, Plus, Pencil, Eye, EyeOff, X, Clock3, Images, Users, CalendarCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   bookingService,
@@ -12,8 +13,11 @@ import { AdminBookingCalendar } from '../bookings/AdminBookingCalendar';
 import { AdminBookingPolicy } from '../bookings/AdminBookingPolicy';
 import { AdminBookingAvailability } from '../bookings/AdminBookingAvailability';
 import '../bookings/AdminBookingPackages.css';
+import { AdminLanguageSelect } from '../AdminLanguageSelect';
 
-const emptyPackage: Omit<BookingPackage, '_id'> = {
+type AdminPackage = BookingPackage & { active?: boolean; sortOrder?: number };
+
+const emptyPackage: Omit<AdminPackage, '_id'> = {
   slug: '',
   name: '',
   description: '',
@@ -26,20 +30,22 @@ const emptyPackage: Omit<BookingPackage, '_id'> = {
 };
 
 export function AdminBookings() {
+  const locale = useAdminLocale();
   const [view, setView] = useState<
     'requests' | 'calendar' | 'packages' | 'availability' | 'reviews' | 'policy'
   >('requests');
   const [reviews, setReviews] = useState<BookingReview[]>([]);
   const [policyDirty, setPolicyDirty] = useState(false);
   const [availabilityDirty, setAvailabilityDirty] = useState(false);
-  const [packages, setPackages] = useState<BookingPackage[]>([]);
+  const [packages, setPackages] = useState<AdminPackage[]>([]);
 
-  const [editingPackage, setEditingPackage] = useState<BookingPackage | null>(
+  const [editingPackage, setEditingPackage] = useState<AdminPackage | null>(
     null
   );
   const [packageForm, setPackageForm] = useState(emptyPackage);
   const [packageEditorOpen, setPackageEditorOpen] = useState(false);
   const [packageBusy, setPackageBusy] = useState(false);
+  const packageVisibilityLock = useRef(false);
   const [packagesLoading, setPackagesLoading] = useState(false);
   const [packagesError, setPackagesError] = useState('');
   const packageDialog = useRef<HTMLDialogElement>(null);
@@ -54,7 +60,7 @@ export function AdminBookings() {
     if (packageBusy) return;
     const original = editingPackage || emptyPackage;
     if (JSON.stringify(packageForm) !== JSON.stringify(original) &&
-      !window.confirm('Bỏ thay đổi chưa lưu và đóng biểu mẫu?')) return;
+      !window.confirm(adminText("Bỏ thay đổi chưa lưu và đóng biểu mẫu?"))) return;
     setPackageEditorOpen(false);
     setEditingPackage(null);
     setPackageForm(emptyPackage);
@@ -67,7 +73,7 @@ export function AdminBookings() {
       const result = await bookingService.getAdminPackages();
       setPackages(result.packages);
     } catch (error: unknown) {
-      setPackagesError(getErrorMessage(error, 'Không thể tải gói chụp'));
+      setPackagesError(getErrorMessage(error, adminText("Không thể tải gói chụp")));
     } finally {
       setPackagesLoading(false);
     }
@@ -77,7 +83,7 @@ export function AdminBookings() {
       const result = await bookingService.getAdminReviews();
       setReviews(result.reviews);
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể tải đánh giá'));
+      toast.error(getErrorMessage(error, adminText("Không thể tải đánh giá")));
     }
   };
   useEffect(() => {
@@ -96,25 +102,37 @@ export function AdminBookings() {
           packageForm
         );
       else await bookingService.createAdminPackage(packageForm);
-      toast.success('Đã lưu gói chụp');
+      toast.success(adminText("Đã lưu gói chụp"));
       setEditingPackage(null);
       setPackageForm(emptyPackage);
       setPackageEditorOpen(false);
       await loadPackages();
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể lưu gói chụp'));
+      toast.error(getErrorMessage(error, adminText("Không thể lưu gói chụp")));
     } finally {
       setPackageBusy(false);
     }
   };
-  const archivePackage = async (item: BookingPackage) => {
-    if (!item._id || !window.confirm(`Ẩn gói “${item.name}”?`)) return;
+  const archivePackage = async (item: AdminPackage) => {
+    if (!item._id || packageBusy || packageVisibilityLock.current) return;
+    const restoring = item.active === false;
+    if (!window.confirm(adminText("{0} gói “{1}”?", { 0: restoring ? adminText('Hiện lại') : adminText('Ẩn'), 1: item.name }))) return;
+    packageVisibilityLock.current = true;
+    setPackageBusy(true);
     try {
-      await bookingService.archiveAdminPackage(item._id);
-      await loadPackages();
-      toast.success('Đã ẩn gói chụp');
+      if (restoring) {
+        const restored: AdminPackage = { ...item, active: true };
+        await bookingService.updateAdminPackage(item._id, restored);
+      } else await bookingService.archiveAdminPackage(item._id);
+      // The shared GET wrapper can reuse the pre-mutation response for one second.
+      // Reflect the successful write locally instead of reloading that stale list.
+      setPackages(current => current.map(row => row._id === item._id ? { ...row, active: restoring } : row));
+      toast.success(restoring ? adminText("Đã hiện lại gói chụp") : adminText("Đã ẩn gói chụp"));
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể ẩn gói chụp'));
+      toast.error(getErrorMessage(error, restoring ? adminText("Không thể hiện lại gói chụp") : adminText("Không thể ẩn gói chụp")));
+    } finally {
+      packageVisibilityLock.current = false;
+      setPackageBusy(false);
     }
   };
 
@@ -122,22 +140,20 @@ export function AdminBookings() {
     <div className="admin-bookings">
       <header className="admin-page-header">
         <div>
-          <h1 className="admin-page-title">Đặt lịch chụp</h1>
+          <h1 className="admin-page-title">{adminText("Đặt lịch chụp")}</h1>
           <p className="admin-page-subtitle">
-            Từ yêu cầu đầu tiên đến buổi chụp hoàn tất, quản lý mọi việc tại
-            đây.
-          </p>
+             {adminText("Từ yêu cầu đầu tiên đến buổi chụp hoàn tất, quản lý mọi việc tại đây.")} </p>
         </div>
       </header>
-      <nav className="admin-booking-toolbar" aria-label="Quản lý lịch chụp">
+      <nav className="admin-booking-toolbar" aria-label={adminText("Quản lý lịch chụp")}>
         {(
           [
-            ['requests', 'Yêu cầu'],
-            ['calendar', 'Lịch'],
-            ['availability', 'Lịch rảnh'],
-            ['packages', 'Gói chụp'],
-            ['reviews', 'Đánh giá'],
-            ['policy', 'Chính sách'],
+            ['requests', adminText("Yêu cầu")],
+            ['calendar', adminText("Lịch")],
+            ['availability', adminText("Lịch rảnh")],
+            ['packages', adminText("Gói chụp")],
+            ['reviews', adminText("Đánh giá")],
+            ['policy', adminText("Chính sách")],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -148,7 +164,7 @@ export function AdminBookings() {
               if (
                 (policyDirty || availabilityDirty) &&
                 !window.confirm(
-                  'Có thay đổi chưa lưu. Bỏ thay đổi và chuyển tab?'
+                  adminText("Có thay đổi chưa lưu. Bỏ thay đổi và chuyển tab?")
                 )
               )
                 return;
@@ -167,7 +183,7 @@ export function AdminBookings() {
       {view === 'reviews' && (
         <div className="admin-reviews">
           {reviews.length === 0 ? (
-            <p>Chưa có đánh giá nào.</p>
+            <p>{adminText("Chưa có đánh giá nào.")}</p>
           ) : (
             reviews.map((item) => (
               <div className="admin-review-row" key={item._id}>
@@ -176,15 +192,15 @@ export function AdminBookings() {
                     {item.rating}/5 ·{' '}
                     {(typeof item.booking === 'object'
                       ? item.booking?.bookingCode
-                      : item.booking) || 'Lịch chụp'}
+                      : item.booking) || adminText("Lịch chụp")}
                   </strong>
-                  <p>{item.comment || 'Không có bình luận.'}</p>
+                  <p>{item.comment || adminText("Không có bình luận.")}</p>
                   {item.adminReply && (
-                    <small>Phản hồi của bạn: {item.adminReply}</small>
+                    <small>{adminText("Phản hồi của bạn:")} {item.adminReply}</small>
                   )}
                   <div className="admin-review-reply">
                     <input
-                      placeholder="Phản hồi cho khách..."
+                      placeholder={adminText("Phản hồi cho khách...")}
                       onKeyDown={async (e) => {
                         if (e.key === 'Enter') {
                           try {
@@ -195,7 +211,7 @@ export function AdminBookings() {
                             loadReviews();
                           } catch (error: unknown) {
                             toast.error(
-                              getErrorMessage(error, 'Không thể gửi phản hồi')
+                              getErrorMessage(error, adminText("Không thể gửi phản hồi"))
                             );
                           }
                         }
@@ -212,29 +228,30 @@ export function AdminBookings() {
       {view === 'packages' && (
         <div className={`pc-packages ${packageEditorOpen ? 'is-editing' : ''}`}>
           <header className="pc-packages-header">
-            <div><h2>Gói chụp</h2><p>Quản lý giá, thời lượng và quyền lợi của từng gói chụp.</p></div>
+            <div><h2>{adminText("Gói chụp")}</h2><p>{adminText("Quản lý giá, thời lượng và quyền lợi của từng gói chụp.")}</p></div>
             <button type="button" className="admin-btn primary" disabled={packageBusy} onClick={() => {
-              if (packageEditorOpen && !window.confirm('Bỏ nội dung đang nhập để thêm gói mới?')) return;
+              if (packageEditorOpen && !window.confirm(adminText("Bỏ nội dung đang nhập để thêm gói mới?"))) return;
               setEditingPackage(null); setPackageForm(emptyPackage); setPackageEditorOpen(true);
-            }}><Plus size={18} /> Thêm gói chụp</button>
+            }}><Plus size={18} />  {adminText("Thêm gói chụp")}</button>
           </header>
-          {packageEditorOpen && <dialog ref={packageDialog} className="pc-package-dialog" aria-labelledby="package-dialog-title" onCancel={(event) => { event.preventDefault(); closePackageEditor(); }} onClick={(event) => { if (event.target === event.currentTarget) closePackageEditor(); }}>
+          {packageEditorOpen && <dialog lang={locale} ref={packageDialog} className="pc-package-dialog" aria-labelledby="package-dialog-title" onCancel={(event) => { event.preventDefault(); closePackageEditor(); }} onClick={(event) => { if (event.target === event.currentTarget) closePackageEditor(); }}>
           <form className="admin-package-form" onSubmit={(event) => { event.preventDefault(); void savePackage(); }}>
             <header className="pc-package-dialog-header">
-              <div><h2 id="package-dialog-title">{editingPackage ? 'Chỉnh sửa gói chụp' : 'Thêm gói chụp'}</h2><p>Thiết lập thông tin và quyền lợi dành cho khách đặt lịch.</p></div>
-              <button type="button" className="admin-btn" aria-label="Đóng biểu mẫu gói chụp" disabled={packageBusy} onClick={closePackageEditor}><X size={20} /></button>
+              <div><h2 id="package-dialog-title">{editingPackage ? adminText("Chỉnh sửa gói chụp") : adminText("Thêm gói chụp")}</h2><p>{adminText("Thiết lập thông tin và quyền lợi dành cho khách đặt lịch.")}</p></div>
+              <AdminLanguageSelect />
+              <button type="button" className="admin-btn" aria-label={adminText("Đóng biểu mẫu gói chụp")} disabled={packageBusy} onClick={closePackageEditor}><X size={20} /></button>
             </header>
             <fieldset disabled={packageBusy} className="admin-package-fields">
               {(['name', 'slug', 'category', 'description'] as const).map(
                 (key) => (
                   <label key={key}>
                     {key === 'slug'
-                      ? 'Đường dẫn'
+                      ? adminText("Đường dẫn")
                       : key === 'name'
-                        ? 'Tên gói'
+                        ? adminText("Tên gói")
                         : key === 'category'
-                          ? 'Danh mục'
-                          : 'Mô tả'}
+                          ? adminText("Danh mục")
+                          : adminText("Mô tả")}
                     {key === 'description' ? (
                       <textarea
                         required maxLength={1000}
@@ -250,7 +267,7 @@ export function AdminBookings() {
                     ) : (
                       <input
                         required
-                        placeholder={key === 'slug' ? 'vd: chan-dung-ca-nhan' : key === 'name' ? 'vd: Chân dung cá nhân' : undefined}
+                        placeholder={key === 'slug' ? 'vd: chan-dung-ca-nhan' : key === 'name' ? adminText("vd: Chân dung cá nhân") : undefined}
                         value={packageForm[key]}
                         onChange={(e) =>
                           setPackageForm({
@@ -264,8 +281,7 @@ export function AdminBookings() {
                 )
               )}
               <label>
-                Thời lượng (phút)
-                <input
+                 {adminText("Thời lượng (phút)")} <input
                   type="number"
                   required min={15} max={1440}
                   value={packageForm.durationMinutes}
@@ -278,8 +294,7 @@ export function AdminBookings() {
                 />
               </label>
               <label>
-                Giá tham khảo
-                <input
+                 {adminText("Giá tham khảo")} <input
                   type="number"
                   required min={0}
                   value={packageForm.basePrice}
@@ -292,8 +307,7 @@ export function AdminBookings() {
                 />
               </label>
               <label>
-                Số ảnh
-                <input
+                 {adminText("Số ảnh")} <input
                   type="number"
                   required min={0}
                   value={packageForm.includedPhotos}
@@ -306,8 +320,7 @@ export function AdminBookings() {
                 />
               </label>
               <label>
-                Số người
-                <input
+                 {adminText("Số người")} <input
                   type="number"
                   required min={1} max={100}
                   value={packageForm.includedPeople}
@@ -320,8 +333,7 @@ export function AdminBookings() {
                 />
               </label>
               <label>
-                Ngày giao ảnh
-                <input
+                 {adminText("Ngày giao ảnh")} <input
                   type="number"
                   required min={1} max={365}
                   value={packageForm.deliveryDays}
@@ -336,51 +348,50 @@ export function AdminBookings() {
             </fieldset>
             <div className="admin-package-actions">
               <button type="submit" disabled={packageBusy}>
-                <Save size={16} /> {packageBusy ? 'Đang lưu…' : 'Lưu gói chụp'}
+                <Save size={16} /> {packageBusy ? adminText("Đang lưu…") : adminText("Lưu gói chụp")}
               </button>
                 <button
                   type="button" disabled={packageBusy}
                   onClick={closePackageEditor}
                 >
-                  Đóng
-                </button>
+                   {adminText("Đóng")} </button>
             </div>
           </form></dialog>}
           <div className="admin-package-list" aria-busy={packagesLoading}>
-            {packagesLoading ? <p role="status">Đang tải gói chụp…</p> : packagesError ? <div role="alert"><p>{packagesError}</p><button className="admin-btn" onClick={() => void loadPackages()}>Thử lại</button></div> : packages.length === 0 ? <p>Chưa có gói chụp. Thêm gói đầu tiên để khách có thể đặt lịch.</p> : packages.map((item) => (
+            {packagesLoading ? <p role="status">{adminText("Đang tải gói chụp…")}</p> : packagesError ? <div role="alert"><p>{packagesError}</p><button className="admin-btn" onClick={() => void loadPackages()}>{adminText("Thử lại")}</button></div> : packages.length === 0 ? <p>{adminText("Chưa có gói chụp. Thêm gói đầu tiên để khách có thể đặt lịch.")}</p> : packages.map((item) => (
               <div className="admin-package-row" key={item._id || item.slug}>
                 <div>
                   <strong>{item.name}</strong>
+                  <p className="pc-package-description">{item.active === false ? adminText("Đã ẩn — khách không thể chọn gói này. Bạn có thể hiện lại.") : adminText("Đang hiển thị")}</p>
                   {item.description && <p className="pc-package-description">{item.description}</p>}
                   <dl className="pc-package-specs">
-                    <div><Clock3 size={17} aria-hidden="true" /><dt>Thời lượng</dt><dd>{item.durationMinutes} phút</dd></div>
-                    <div><Images size={17} aria-hidden="true" /><dt>Số ảnh</dt><dd>{item.includedPhotos} ảnh</dd></div>
-                    <div><Users size={17} aria-hidden="true" /><dt>Số người</dt><dd>{item.includedPeople} người</dd></div>
-                    <div><CalendarCheck size={17} aria-hidden="true" /><dt>Giao ảnh</dt><dd>{item.deliveryDays} ngày</dd></div>
+                    <div><Clock3 size={17} aria-hidden="true" /><dt>{adminText("Thời lượng")}</dt><dd>{item.durationMinutes}  {adminText("phút")}</dd></div>
+                    <div><Images size={17} aria-hidden="true" /><dt>{adminText("Số ảnh")}</dt><dd>{item.includedPhotos}  {adminText("ảnh")}</dd></div>
+                    <div><Users size={17} aria-hidden="true" /><dt>{adminText("Số người")}</dt><dd>{item.includedPeople}  {adminText("người")}</dd></div>
+                    <div><CalendarCheck size={17} aria-hidden="true" /><dt>{adminText("Giao ảnh")}</dt><dd>{item.deliveryDays}  {adminText("ngày")}</dd></div>
                   </dl>
                 </div>
                 <p className="pc-package-price">
-                    {new Intl.NumberFormat('vi-VN', {
+                    {new Intl.NumberFormat(getAdminIntlLocale(), {
                       style: 'currency',
                       currency: 'VND',
                       maximumFractionDigits: 0,
                     }).format(item.basePrice)}
-                  <span>Giá tham khảo</span>
+                  <span>{adminText("Giá tham khảo")}</span>
                 </p>
                 <div>
                   <button
                     disabled={packageBusy}
-                    aria-label={`Sửa gói ${item.name}`}
+                    aria-label={adminText("Sửa gói {0}", { 0: item.name })}
                     onClick={() => {
-                      if (packageEditorOpen && !window.confirm('Bỏ nội dung đang nhập để sửa gói này?')) return;
+                      if (packageEditorOpen && !window.confirm(adminText("Bỏ nội dung đang nhập để sửa gói này?"))) return;
                       setEditingPackage(item);
                       setPackageForm(item);
                       setPackageEditorOpen(true);
                     }}
                   >
-                    <Pencil size={16} /> Sửa
-                  </button>
-                  <button disabled={packageBusy} aria-label={`Ẩn gói ${item.name}`} onClick={() => archivePackage(item)}><EyeOff size={16} /> Ẩn</button>
+                    <Pencil size={16} />  {adminText("Sửa")} </button>
+                  <button disabled={packageBusy} aria-label={adminText("{0} gói {1}", { 0: item.active === false ? adminText('Hiện lại') : adminText('Ẩn'), 1: item.name })} onClick={() => archivePackage(item)}>{item.active === false ? <Eye size={16} /> : <EyeOff size={16} />} {item.active === false ? adminText("Hiện lại") : adminText("Ẩn")}</button>
                 </div>
               </div>
             ))}

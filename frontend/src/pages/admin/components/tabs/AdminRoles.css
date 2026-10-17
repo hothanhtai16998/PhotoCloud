@@ -1,0 +1,15 @@
+.pc-roles .admin-table td { vertical-align: top; }
+.pc-roles .admin-table td:first-child { min-width: 190px; max-width: 260px; overflow-wrap: anywhere; }
+.pc-roles .admin-table strong { color: var(--admin-text); font-weight: 650; }
+.pc-roles .admin-table small { display: block; font-size: 12px; margin-top: 7px; line-height: 1.6; }
+.pc-roles .pc-role-summary { font-size: 13px; color: var(--admin-text-secondary); margin: 0 0 20px; }
+.pc-roles details { max-width: 430px; min-width: 210px; }
+.pc-roles summary { cursor: pointer; color: var(--admin-accent); padding-block: 8px; }
+.pc-role-permission-summary { display: grid; gap: 14px; margin-top: 12px; max-height: 280px; overflow-y: auto; padding: 4px 12px 4px 0; scrollbar-width: thin; scrollbar-color: var(--admin-accent) var(--admin-bg); }
+.pc-role-permission-summary:focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 3px; }
+.pc-roles .pc-role-data-note { margin: 0 0 20px; max-width: 85ch; font-size: 13px; color: var(--admin-text-secondary); line-height: 1.7; }
+.pc-role-permission-summary span { display: block; line-height: 1.7; margin-top: 4px; overflow-wrap: anywhere; }
+.pc-roles .pc-role-protected { display: block; max-width: 150px; line-height: 1.6; }
+.pc-roles button:focus-visible, .pc-roles summary:focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 3px; }
+.pc-roles .admin-btn.primary { background: var(--button-primary-bg); color: var(--button-primary-fg); border-color: var(--button-primary-bg); }
+.pc-roles .admin-btn.primary:hover:not(:disabled) { background: var(--button-primary-hover); }

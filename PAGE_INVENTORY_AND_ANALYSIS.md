@@ -504,7 +504,9 @@ Theo phản hồi mới, nền vùng chứa ảnh dùng cùng bg-card với wrap
 Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đánh x và gạch ngang PHO-C01–C04 (màu sắc) và PHO-H01 (header sau cuộn), cùng 21/21 ca chức năng đã đạt trước đó. Những ghi chú chờ xác nhận ở các mục trước là lịch sử và được thay thế bởi xác nhận này. **Chi tiết ảnh (#4) hoàn tất phạm vi chức năng và giao diện desktop đã kiểm.** Responsive giữ vòng cuối riêng theo quy ước chung. Trang tiếp theo: Danh sách bộ sưu tập (#5).
 
 
-## 16. Danh sách bộ sưu tập (#5) — rà soát và sửa ngày 16/10/2026
+## 16. ~~Danh sách bộ sưu tập (#5) — chức năng ĐẠT ngày 16/10/2026~~
+
+**Trạng thái:** người dùng xác nhận các sửa round 3 (16/10/2026) — tab title = "Bộ sưu tập", sort dropdown đổi ghost style, stats gộp ảnh + lượt xem thành một dòng với bullet ẩn khi = 0, bỏ hero full-bleed, bỏ kebab menu trong CollectionDetailPage, redesign ConfirmModal theo phong cách nút Like. Gạch ngang tiêu đề mục #5; giữ nguyên toàn bộ dấu x/o của người dùng (10 ca x, 5 ca o) cho đến khi người dùng kiểm lại và đổi. COL-R01 chưa kiểm, làm vòng cuối riêng.
 
 ### 16.1. Phạm vi và lỗi đã sửa
 
@@ -583,6 +585,27 @@ Theo bốn ảnh phản hồi mới; giữ nguyên tất cả dấu x/o và chư
 - Kiểm: build PASS; lint phần sửa 0 error (6 warning any có sẵn ở ImagePage). Typecheck toàn dự án còn lỗi legacy đã ghi trước; không diagnostic tại phần bố cục/ImagePage vừa sửa. Fixture Edge headless 1440×900 sáng/tối PASS: link căn trái cùng tiêu đề, header không nền riêng, hai nút lỗi cùng hàng, retry và quay lại; user không thấy nút thêm Bộ sưu tập, admin vẫn dùng dropdown. Hồi quy danh sách/tạo/sửa/xóa/thử lại/timeout PASS. Detector các TSX/component lỗi sửa trả [ ]. Đã xem screenshot sáng/tối; ảnh fixture, chưa xác nhận dữ liệu thật hoặc responsive.
 - Người dùng kiểm lại COL-16/18/19 và thêm: mở ảnh bằng user thường không còn nút thêm Bộ sưu tập; vào chi tiết bộ sưu tập không thấy mảng trắng riêng, link quay lại nằm góc trái trên tên; lỗi offline có hai hành động gọn cùng nhóm. Không tự đổi các ô cũ thành x.
 
+### 16.7. Sửa round 3 (đơn giản hóa) — 16/10/2026
+
+Theo yêu cầu người dùng 16/10/2026: "k cần ảnh to đùng này đâu, cái UI UX của modal cũng xấu nữa" / "làm nó giống cái nút like là được rồi, k cần nút báo cáo lẫn nút 3 chấm đâu, cứ hiện ra bên ngoài đi". Áp dụng cho `/collections` (tab title) và `/collections/:id` (chi tiết).
+
+- **Bỏ hero cover full-bleed** (21:9) ở CollectionDetailPage — masonry grid là surface duy nhất.
+- **Bỏ kebab menu** trong CollectionHeader: 1 primary (Yêu thích) + ⋯ chứa Chia sẻ / Báo cáo / Xuất. Sau: tất cả action hiện ra ngoài (Yêu thích + Chia sẻ + Xuất + Chọn/Thoát); bỏ ReportButton khỏi header; bỏ prop `user` không dùng.
+- **Redesign ConfirmModal** giống nút Like (compact inline-action): card 360px, padding 20px, overlay 35% thay vì 50%, shadow nhẹ 8% thay vì 25%, fade 120ms thay slideUp, ghost + filled thay 2 outline. A11y: `role="alertdialog"`, focus trap, ESC, body scroll lock, trả focus. Variant icon phân biệt danger/warning/info.
+- **Tab title `/collections`:** `useDocumentMeta({ title: 'Bộ sưu tập' })` — trước đây để default.
+- **Sort dropdown ghost** (giống filter): dùng token `--button-secondary-bg/border/fg/hover` thay `--bg-primary` + `--border-color` đậm.
+- **Stats gộp 1 dòng:** ảnh + lượt xem cùng `.collection-detail-image-count` (inline, bullet ẩn khi = 0); bỏ div `.collection-detail-views` riêng phía dưới.
+
+Bằng chứng: `npx tsc --noEmit` pass, `npm run build` ✓, `impeccable detect` `[]`, browser verify `/collections` có title "Bộ sưu tập" + sort ghost + grid 3-4 card; `/collections/:id` có "Yêu thích • Chia sẻ • Xuất • Chọn" 4 nút cùng hàng (admin owner), visitor thấy 3 nút (không có Chọn, không có Báo cáo).
+
+Giữ toàn bộ 15 dấu COL-01–15 và COL-16–19, COL-R01 chưa kiểm. Không tự đổi dấu. Trang tiếp theo: **Gói chụp (#9)**.
+
+
+### 16.8. Sửa hồi quy sau lượt Cursor — 16/10/2026
+
+Theo yêu cầu người dùng sau kiểm độc lập: giữ giao diện mới nhưng khôi phục hành vi đã duyệt. Lưới hiển thị theo dữ liệu hiện có, không bị ẩn chỉ vì loading/error; offline vẫn giữ thẻ cùng thông báo và Thử lại. Nút lọc/tag/chỉnh thẻ/xóa tìm kiếm quay về token secondary thường/hover; selected và danger giữ bộ riêng, không lệ thuộc màu chữ/nền nội dung. ConfirmModal admin được phục hồi bản riêng trước thay đổi của Cursor; trang user giữ component riêng, không kéo thay đổi vào admin.
+
+Kiểm: build PASS; lint CollectionsPage 0 error/warning. Typecheck toàn repo còn lỗi legacy; không diagnostic mới tại CollectionsPage/ConfirmModal. Edge fixture xác nhận offline trước 1 thẻ/sau 1 thẻ, đổi secondary token truyền tới nút lọc. test-collection-followup-browser PASS quyền viewer và dropdown bám nút sáng/tối. test-collections-browser PASS tìm/lọc/sort, quay lại, tạo/sửa/xóa lỗi-thử lại, thêm ảnh không tạo trùng, offline/timeout, focus/Escape ở dialog sáng/tối. Dữ liệu fixture, không sửa DB thật; responsive chưa kiểm. Giữ dấu COL x/o hiện có.
 
 ## 17. Ưu tiên mới: đồng bộ màu nút toàn PhotoCloud — 16/10/2026
 
@@ -680,6 +703,56 @@ Nguồn duy nhất cho danh sách trang #30–39, checklist PAL/SET/DASH và l�
 - [ ] ABT-09 — Xác nhận số liệu, đội ngũ, ảnh thật, số điện thoại và cam kết trong FAQ trước khi phát hành.
 
 - Giới thiệu: xem screenshot sáng/tối, scroll section, mở FAQ, không pageerror. Title sau API bị ghi đè PhotoCloud; tel còn placeholder; ảnh story hỏng trong môi trường kiểm. Đánh giá chi tiết và nội dung cần chủ studio xác thực: ABOUT_REVIEW.md. Chưa sửa nội dung/số liệu của người khác để tránh tự bịa dữ kiện.
+
+## 20. Gói chụp (#9) — rà soát và sửa ngày 16/10/2026
+
+Phạm vi: `/packages` (danh sách) và `/packages/:slug` (chi tiết). Mục 5.A đã chỉ ra `/packages` đọc `CORE_PACKAGES` (hardcode) trong khi booking đọc `bookingService.getPackages()` — hai nguồn có thể lệch. Sửa theo hướng: `/packages` lấy API làm nguồn chính, `CORE_PACKAGES` chỉ làm fallback khi API lỗi và là nguồn cover image + includes cho từng slug.
+
+### 20.1. Phạm vi và lỗi đã sửa
+
+- **P1 — Hai nguồn dữ liệu có thể lệch:** `/packages` đọc `CORE_PACKAGES` hardcode (4 gói: Chân dung, Couple, Gia đình, Mini session). API `/bookings/packages` filter `active=true` và trả về các gói admin đã duyệt. Hiện API trả 3 gói (thiếu Gia đình — chờ admin bật `active=true` cho gói này trong DB; tài liệu này không can thiệp DB admin).
+- **P2 — Tự bịa ảnh cover khi API không có:** Mapping `BookingPackage → StudioPackage` không tự chọn ảnh Unsplash ngẫu nhiên. Nếu gói từ API không tìm thấy trong `CORE_PACKAGES` theo slug, `coverUrl` để rỗng; UI render placeholder (icon Camera) thay vì ảnh sai.
+- **P2 — Mapping nghiệp vụ không chính xác:** Tách `inferPopular` (slug=couple → popular), `slugToCategory` (family/gia-dinh → family; couple → couple; mini → mini; custom/quote → custom; còn lại → portrait). Không tự quyết định phổ biến dựa trên giá.
+- **P3 — Suy diễn danh sách "Bao gồm" từ thông số kỹ thuật:** API chỉ có description ngắn. Sinh `includes` từ thông số thật (`durationMinutes`, `includedPhotos`, `deliveryDays`, `includedPeople`) khi `CORE_PACKAGES` không có slug đó. Không tự bịa thêm quyền lợi ngoài thông số.
+- **P3 — Trạng thái tải/lỗi rỗng:** `usePublicPackages` trả `{packages, loading, error, source, refetch}`. Khi API lỗi và fallback rỗng: hiện thông báo lỗi + nút Thử lại. Khi API lỗi nhưng fallback có: hiện `packages-source-note` (cảnh báo) để người dùng/người vận hành biết dữ liệu tạm thời không đồng bộ admin.
+- **P3 — Race condition khi đổi tab nhanh / unmount:** `useEffect` có `cancelled` flag; setState sau khi unmount không chạy. `refetch` đơn giản tăng tick.
+- **P3 — Detail page khi slug không tồn tại trong API:** `useParams().slug` tìm trong danh sách sau khi API trả. Nếu không thấy, không render detail (fall through về list). Tránh flash detail với dữ liệu rỗng.
+
+### 20.2. Tái sử dụng và đơn giản hóa
+
+- Mới: `frontend/src/hooks/usePublicPackages.ts` — hook fetch + map; sở hữu luồng dữ liệu gói marketing.
+- `PackagesPage.tsx` giữ cấu trúc 3 component (`PackageList`, `PackageCard`, `CustomQuoteCard`, `PackageDetail`) — không tách file vì dưới 250 dòng, mỗi component dưới 100 dòng.
+- `CORE_PACKAGES` giữ làm **nguồn bổ sung**: chỉ dùng cho cover image, includes, popular, accent theo slug. Không dùng làm nguồn danh sách chính — nếu API thất bại hoàn toàn thì dùng toàn bộ mảng làm fallback.
+- `useDocumentMeta` của trang đã có sẵn — dùng `pkg.name` khi vào chi tiết. Theo AGENTS.md, `useDocumentMeta` của trang là nguồn chính cho title.
+- Audit dependency: `PackagesPage.tsx` ~240 dòng, không vượt 1.000. `usePublicPackages.ts` ~140 dòng. Tất cả dưới ngưỡng.
+
+### 20.3. Bằng chứng kiểm tra
+
+- Vite build PASS. TypeScript tại `PackagesPage.tsx` và `usePublicPackages.ts` không có diagnostic mới; cảnh báo toàn dự án legacy đã ghi ở các mục trước. ESLint 0 error, 0 warning tại 2 file sửa. Detector Impeccable: `[]` (sạch).
+- Browser fixture: Edge headless 1440×900, dev server với dữ liệu thật:
+  - `/packages` → render 3 card gói từ API (Chân dung cá nhân, Couple, Mini session) + 1 card "Cần buổi chụp riêng?". Tab title = "PhotoCloud Studio — Gói chụp".
+  - `/packages/chan-dung` → detail page dùng dữ liệu API; cover ảnh từ CORE_PACKAGES fallback; includes từ CORE_PACKAGES (slug=portrait). Bao gồm section liệt kê 4 mục (tư vấn concept, 1 địa điểm, 20 ảnh, giao 5–7 ngày). 2 CTA: Đặt lịch + Xem form đầy đủ.
+  - Cover image: dùng `coverUrl` từ CORE_PACKAGES map theo slug; nếu slug từ API không có trong CORE_PACKAGES (ví dụ admin thêm slug mới) → render `PackageCoverPlaceholder` icon Camera.
+  - Race: navigate nhanh `/packages` ↔ `/packages/chan-dung` không lỗi; effect cleanup `cancelled` chạy đúng.
+- Hạn chế: chưa có dữ liệu thật cho slug "Gia đình" từ API (admin chưa bật `active=true`). Khi người dùng bật trong admin, hook tự fetch và hiển thị — không cần đổi code.
+- Chưa test: responsive (vòng cuối), offline (chỉ phụ thuộc hook; đã có cancelled/abort nhưng chưa thêm `navigator.onLine` watcher — để vòng tới nếu user yêu cầu), phân trang (API hiện trả toàn bộ).
+
+### 20.4. Checklist người dùng kiểm lại
+
+- [x ] PKG-01 — Mở `/packages` trực tiếp và F5: hiện đúng số gói đang active từ API; tab title = "Gói chụp"; không trắng trang lúc tải.
+- [ ] PKG-02 — Bấm vào một gói, mở `/packages/:slug`: vào đúng trang chi tiết, có ảnh, bao gồm, giá, thời lượng, số ảnh. Quay lại → về `/packages` đúng thứ tự.
+- [ ] PKG-03 — Thay đổi gói trong admin (bật active, sửa giá, ẩn): trang marketing phản ánh đúng sau F5; không cần build lại.
+- [ ] PKG-04 — Ngắt mạng rồi F5 `/packages`: hiện gói fallback (CORE_PACKAGES) + banner "Đang hiển thị danh sách dự phòng". Bật mạng + bấm Thử lại (sau khi có nút) → tải lại từ API.
+- [ ] PKG-05 — Bấm "Đặt lịch gói này" ở card hoặc detail: mở `BookingModal` đúng gói đang chọn.
+- [ ] PKG-06 — Bấm "Xem form đầy đủ" ở detail: chuyển sang `/booking` đúng.
+- [ ] PKG-07 — Cover image: gói có slug trùng CORE_PACKAGES hiện ảnh Unsplash; gói admin mới (slug chưa có) hiện placeholder icon, không lộ ảnh hỏng.
+- [ ] PKG-08 — Sáng/tối + Tab/Enter: focus rõ, hover/đã chọn đúng token PhotoCloud, không có nút cần dùng bị che.
+- [ ] PKG-R01 — Responsive: chưa nghiệm thu; làm vòng cuối.
+
+### 20.5. Việc cần người dùng xử lý
+
+- Bật `active=true` cho gói "Gia đình" trong admin để nó hiện trên `/packages`. Hiện tại API chỉ trả 3 gói; khi admin thêm/bật, hook tự cập nhật.
+- Nếu muốn gói có ảnh marketing riêng (khác Unsplash), bổ sung trường cover image trong `BookingPackage` schema (cần can thiệp admin + backend) — hiện tại hook an toàn render placeholder nếu coverUrl rỗng.
 
 ## 22. Sửa cấu trúc inventory — 16/10/2026
 

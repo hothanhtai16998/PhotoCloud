@@ -1,0 +1,25 @@
+.admin-collections-page .admin-collection-name {
+  display: grid;
+  gap: 6px;
+  min-width: 200px;
+  max-width: 380px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.admin-collections-page .admin-collection-name strong { color: var(--admin-text); font-weight: 650; }
+.admin-collections-page .admin-collection-name span,
+.admin-collections-page .admin-collections-summary { color: var(--admin-text-secondary); font-size: 13px; line-height: 1.7; }
+.admin-collections-page .admin-collections-summary { margin: 0 0 18px; }
+.admin-collections-page button:focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 3px; }
+.admin-collections-page .admin-table-action:disabled { opacity: .5; cursor: not-allowed; }
+.admin-collections-page .admin-pagination {
+  background: var(--admin-card-bg);
+  border-color: var(--admin-border);
+  color: var(--admin-text-secondary);
+}
+.admin-collections-page .admin-pagination > span {
+  background: transparent;
+  color: var(--admin-text-secondary);
+  border: 0;
+  box-shadow: none;
+}

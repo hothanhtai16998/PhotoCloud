@@ -9,9 +9,9 @@ import {
     Sparkles,
 } from 'lucide-react';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
+import { usePublicPackages } from '@/hooks/usePublicPackages';
 import { BRAND } from '@/constants/brand';
 import {
-    CORE_PACKAGES,
     CUSTOM_QUOTE_CARD,
     type StudioPackage,
     type StudioPackageCategory,
@@ -30,12 +30,23 @@ const ACCENT_LABELS: Record<StudioPackageCategory, string> = {
     custom: 'THEO YÊU CẦU',
 };
 
+/** Placeholder hiện khi API trả gói không có coverUrl trong CORE_PACKAGES. */
+function PackageCoverPlaceholder({ name }: { name: string }) {
+    return (
+        <div className="package-card-image package-card-image--gradient" aria-hidden="true">
+            <Camera size={42} />
+            <span className="visually-hidden">{name}</span>
+        </div>
+    );
+}
+
 function PackagesPage() {
     const { slug } = useParams<{ slug?: string }>();
+    const { packages, loading, error, source, refetch } = usePublicPackages();
 
     const activePackage = useMemo<StudioPackage | undefined>(
-        () => (slug ? CORE_PACKAGES.find((p) => p.slug === slug) : undefined),
-        [slug]
+        () => (slug ? packages.find((p) => p.slug === slug) : undefined),
+        [slug, packages]
     );
 
     useDocumentMeta({
@@ -49,10 +60,49 @@ function PackagesPage() {
         return <PackageDetail pkg={activePackage} />;
     }
 
-    return <PackageList />;
+    return <PackageList packages={packages} loading={loading} error={error} source={source} onRetry={refetch} />;
 }
 
-function PackageList() {
+interface PackageListProps {
+    packages: StudioPackage[];
+    loading: boolean;
+    error: string | null;
+    source: 'api' | 'fallback' | 'initial';
+    onRetry: () => void;
+}
+
+function PackageList({ packages, loading, error, source, onRetry }: PackageListProps) {
+    if (loading) {
+        return (
+            <div className="packages-page">
+                <div className="packages-container" role="status" aria-live="polite">
+                    <header className="packages-hero">
+                        <p className="packages-eyebrow">GÓI CHỤP TẠI {BRAND.nameLong.toUpperCase()}</p>
+                        <h1>Chọn gói phù hợp với bạn</h1>
+                        <p className="packages-subtitle">Đang tải danh sách gói từ hệ thống…</p>
+                    </header>
+                </div>
+            </div>
+        );
+    }
+
+    if (error && packages.length === 0) {
+        return (
+            <div className="packages-page">
+                <div className="packages-container">
+                    <header className="packages-hero">
+                        <p className="packages-eyebrow">GÓI CHỤP TẠI {BRAND.nameLong.toUpperCase()}</p>
+                        <h1>Chọn gói phù hợp với bạn</h1>
+                    </header>
+                    <div className="packages-error" role="alert">
+                        <p>Không tải được danh sách gói. Vui lòng thử lại sau.</p>
+                        <button type="button" onClick={onRetry} className="package-card-cta">Thử lại</button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="packages-page">
             <div className="packages-container">
@@ -63,10 +113,15 @@ function PackageList() {
                         Mỗi gói đều bao gồm tư vấn concept, chỉnh màu cao cấp và giao ảnh đúng hẹn.
                         Bạn có thể bắt đầu với gói phổ biến nhất, hoặc gửi yêu cầu riêng cho đội ngũ.
                     </p>
+                    {source === 'fallback' && (
+                        <p className="packages-source-note" role="status">
+                            Đang hiển thị danh sách dự phòng (API chưa sẵn sàng). Thử lại sau.
+                        </p>
+                    )}
                 </header>
 
                 <div className="packages-grid">
-                    {CORE_PACKAGES.map((pkg) => (
+                    {packages.map((pkg) => (
                         <PackageCard key={pkg.id} pkg={pkg} />
                     ))}
                     <CustomQuoteCard />
@@ -81,7 +136,11 @@ function PackageCard({ pkg }: { pkg: StudioPackage }) {
         <article className={`package-card package-card--${pkg.accent} ${pkg.popular ? 'is-popular' : ''}`}>
             {pkg.popular && <span className="package-card-badge">Phổ biến nhất</span>}
             <div className="package-card-image">
-                <img src={pkg.coverUrl} alt={pkg.name} loading="lazy" />
+                {pkg.coverUrl ? (
+                    <img src={pkg.coverUrl} alt={pkg.name} loading="lazy" />
+                ) : (
+                    <PackageCoverPlaceholder name={pkg.name} />
+                )}
             </div>
             <div className="package-card-body">
                 <span className="package-card-tag">{ACCENT_LABELS[pkg.accent]}</span>
@@ -151,7 +210,11 @@ function PackageDetail({ pkg }: { pkg: StudioPackage }) {
                         <p className="package-detail-subtitle">{pkg.description}</p>
                     </div>
                     <div className="package-detail-image">
-                        <img src={pkg.coverUrl} alt={pkg.name} />
+                        {pkg.coverUrl ? (
+                            <img src={pkg.coverUrl} alt={pkg.name} />
+                        ) : (
+                            <PackageCoverPlaceholder name={pkg.name} />
+                        )}
                     </div>
                     <div className="package-detail-content">
                         <section className="package-detail-section">

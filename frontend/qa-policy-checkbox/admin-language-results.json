@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "headings": [
+    {
+      "route": "/admin",
+      "heading": "Dashboard"
+    },
+    {
+      "route": "/admin/images",
+      "heading": "Image library"
+    },
+    {
+      "route": "/admin/categories",
+      "heading": "Category"
+    },
+    {
+      "route": "/admin/collections",
+      "heading": "Collections"
+    },
+    {
+      "route": "/admin/moderation",
+      "heading": "Content moderation"
+    },
+    {
+      "route": "/admin/bookings",
+      "heading": "Book a session"
+    },
+    {
+      "route": "/admin/users",
+      "heading": "Users"
+    },
+    {
+      "route": "/admin/roles",
+      "heading": "Admin Roles"
+    },
+    {
+      "route": "/admin/settings",
+      "heading": "Website settings"
+    }
+  ],
+  "publicLocale": "vi",
+  "adminLocale": "separate; persisted",
+  "mutations": []
+}

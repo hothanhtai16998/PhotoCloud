@@ -1,0 +1,180 @@
+
+> frontend@0.0.0 prebuild
+> node scripts/generate-palette-defaults.cjs
+
+
+> frontend@0.0.0 build
+> vite build
+
+vite v7.3.7 building client environment for production...
+transforming...
+node_modules/zod/v4/core/util.js (400:0): A comment
+
+"// Wrapped in a `@__PURE__` IIFE: esbuild never tree-shakes a top-level initializer that contains a member access on `Number`, so the bare object literal survived into every bundle."
+
+in "node_modules/zod/v4/core/util.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+node_modules/zod/v4/core/regexes.js (74:0): A comment
+
+"/** Anchors a pattern source. The interpolation lives here rather than at the call site because
+ * esbuild will not drop a `@__PURE__` call whose own argument interpolates a variable, but it
+ * will drop `anchor(dateSource)`. Keeping it inline pinned `date` into every bundle. */"
+
+in "node_modules/zod/v4/core/regexes.js" contains an annotation that Rollup cannot interpret due to the position of the comment. The comment will be removed to avoid issues.
+✓ 3389 modules transformed.
+rendering chunks...
+[plugin vite:reporter] 
+(!) C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/stores/useFavoriteStore.ts is dynamically imported by C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/pages/image/useImagePageActions.ts but also statically imported by C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/ImagePageSidebar.tsx, C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/pages/FavoritesPage.tsx, dynamic import will not move module into another chunk.
+
+[plugin vite:reporter] 
+(!) C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/stores/useImageFavoriteCountStore.ts is dynamically imported by C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/NoFlashGrid/components/BlurUpImage.tsx but also statically imported by C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/components/TimedCardSlider.tsx, C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/pages/image/useImagePageActions.ts, C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/pages/image/useImagePageStats.ts, C:/Users/Fenn/Desktop/PhotoCloud/frontend/src/stores/useImageStore.ts, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/assets/america-wUmPdQJX.svg                                 5.83 kB │ gzip:   0.67 kB
+dist/assets/empty-4xCKH-VG.avif                                  6.74 kB
+dist/index.html                                                  8.08 kB │ gzip:   2.58 kB
+dist/assets/manrope-vietnamese-wght-normal-usUDDRr7.woff2        8.52 kB
+dist/assets/manrope-greek-wght-normal-DL7QRZyv.woff2             9.44 kB
+dist/assets/manrope-cyrillic-wght-normal-Dvxsihut.woff2         14.50 kB
+dist/assets/manrope-latin-ext-wght-normal-Ch3YOpNY.woff2        15.12 kB
+dist/assets/manrope-latin-wght-normal-DHIcAJRg.woff2            24.84 kB
+dist/assets/79347ed53aa14e8b-DNougetC.woff2                     30.67 kB
+dist/assets/72025d9b68a7dd0b-M4vHmlo8.woff2                     30.69 kB
+dist/assets/959364b06f81af7e-BPzpuXuS.woff2                     30.74 kB
+dist/assets/db7c5771335b7af9-DFpNKOjM.woff2                     31.11 kB
+dist/assets/501f76ca195ed91f-Bj02rdhv.woff2                     32.94 kB
+dist/assets/d02cbe275f68b2e0-C8z4Ufq0.woff2                     33.03 kB
+dist/assets/33f3233b5edd544c-DsEkmiuO.woff2                     33.15 kB
+dist/assets/a699af1dea30b799-ClqSfwQ3.woff2                    108.23 kB
+dist/assets/e45972c7e9f24dc3-CHYJppYf.woff2                    111.45 kB
+dist/assets/87e867b52640b3b3-C2FsVcxq.woff2                    111.91 kB
+dist/assets/6f49e1b28bce7339-C3bW5xsp.woff2                    112.31 kB
+dist/assets/logo-CD6Ledml.png                                  178.52 kB
+dist/assets/Roboto-Variable-1nydPDgi.woff2                     209.93 kB
+dist/assets/Roboto-Italic-VariableFont_wdth_wght-CtZJC3o8.ttf  497.12 kB
+dist/assets/NewsletterPage-BbleiXqw.css                          0.78 kB │ gzip:   0.38 kB
+dist/assets/CollectionLoadError-CMpiBeIj.css                     1.01 kB │ gzip:   0.39 kB
+dist/assets/DownloadHistoryPage-CQHPVeJ1.css                     1.15 kB │ gzip:   0.43 kB
+dist/assets/AdminModal-1TonkysB.css                              1.19 kB │ gzip:   0.51 kB
+dist/assets/AdminRecords-CZ5h4EBa.css                            1.40 kB │ gzip:   0.70 kB
+dist/assets/NotFoundPage-Cnr9z0qG.css                            1.80 kB │ gzip:   0.61 kB
+dist/assets/SearchResultsPage-D9KDX3fp.css                       3.18 kB │ gzip:   0.99 kB
+dist/assets/ForgotPasswordPage-HwUZ9Rbk.css                      3.40 kB │ gzip:   0.96 kB
+dist/assets/SettingsPage-C7oV5IRm.css                            3.69 kB │ gzip:   1.06 kB
+dist/assets/BlogPage-nZEl8QYT.css                                4.01 kB │ gzip:   1.15 kB
+dist/assets/AdminDashboard-C5sY6oT7.css                          4.17 kB │ gzip:   1.09 kB
+dist/assets/FavoriteCollectionsPage-C_VBkWFQ.css                 4.24 kB │ gzip:   1.22 kB
+dist/assets/ContactPage-BlMMfNDu.css                             4.45 kB │ gzip:   1.14 kB
+dist/assets/UserDashboardPage-CehI_MwK.css                       4.78 kB │ gzip:   1.20 kB
+dist/assets/ExplorePage-Dhjw5o99.css                             4.99 kB │ gzip:   1.29 kB
+dist/assets/BookingDetailPage-BDiVT1My.css                       5.42 kB │ gzip:   1.41 kB
+dist/assets/MyBookingsPage-PCmfQ9fK.css                          5.46 kB │ gzip:   1.35 kB
+dist/assets/ConfirmModal-DJjQbOwH.css                            5.64 kB │ gzip:   1.19 kB
+dist/assets/NotificationPage-CEU5nhjm.css                        5.77 kB │ gzip:   1.43 kB
+dist/assets/FavoritesPage-CCS6Dy3O.css                           6.04 kB │ gzip:   1.47 kB
+dist/assets/AdminLayout-BMH0afT6.css                             6.55 kB │ gzip:   1.87 kB
+dist/assets/PackagesPage-C_79F_ey.css                            6.90 kB │ gzip:   1.65 kB
+dist/assets/EditImageModal-Cz5tmMHX.css                          6.96 kB │ gzip:   1.89 kB
+dist/assets/DownloadHistory-DFftn1ZT.css                         7.58 kB │ gzip:   1.80 kB
+dist/assets/AboutPage-Cifyz08C.css                               7.93 kB │ gzip:   1.76 kB
+dist/assets/AuthLayout-DzdTSuPs.css                              8.59 kB │ gzip:   2.61 kB
+dist/assets/BookingPage-D7fQGI8s.css                             8.83 kB │ gzip:   2.07 kB
+dist/assets/AdminSettingsPage-CRJdala1.css                       9.47 kB │ gzip:   2.02 kB
+dist/assets/AdminImagesPage-BMhQqWYt.css                         9.95 kB │ gzip:   2.36 kB
+dist/assets/UserAnalyticsDashboard-CPtnV4TJ.css                 12.03 kB │ gzip:   2.28 kB
+dist/assets/EditProfilePage-Cl9TrUfD.css                        13.12 kB │ gzip:   2.82 kB
+dist/assets/CollectionsPage-Bp8jyLJi.css                        15.96 kB │ gzip:   2.93 kB
+dist/assets/SearchBar-CHsup2PZ.css                              19.54 kB │ gzip:   3.62 kB
+dist/assets/UploadModal-CV2_EZx1.css                            23.91 kB │ gzip:   4.74 kB
+dist/assets/ProfilePage-CJ7CSCBn.css                            24.14 kB │ gzip:   4.71 kB
+dist/assets/CollectionDetailPage-BXk_hm1m.css                   24.96 kB │ gzip:   4.08 kB
+dist/assets/CollectionModal-ChOoFMq6.css                        25.73 kB │ gzip:   4.11 kB
+dist/assets/AdminBookings-Dg1xVz-8.css                          35.08 kB │ gzip:   5.90 kB
+dist/assets/AdminToolsPage-BPLgoqU5.css                         98.29 kB │ gzip:  16.58 kB
+dist/assets/index-DK8mxlfi.css                                 262.06 kB │ gzip:  48.79 kB
+dist/assets/BlogDetailPage-CtOdX4PD.js                           0.14 kB │ gzip:   0.14 kB
+dist/assets/clock-BxJlLio7.js                                    0.17 kB │ gzip:   0.17 kB
+dist/assets/skeleton-CwsSZ2yW.js                                 0.17 kB │ gzip:   0.16 kB
+dist/assets/trending-up-BEyJSz1r.js                              0.18 kB │ gzip:   0.17 kB
+dist/assets/rotate-ccw-DnWrwgOi.js                               0.20 kB │ gzip:   0.18 kB
+dist/assets/lock-D3LSeLUD.js                                     0.21 kB │ gzip:   0.19 kB
+dist/assets/log-out-BkF3vA3e.js                                  0.23 kB │ gzip:   0.19 kB
+dist/assets/ProfileRedirect-BywKaWOy.js                          0.24 kB │ gzip:   0.19 kB
+dist/assets/globe-DUFOMRu6.js                                    0.24 kB │ gzip:   0.19 kB
+dist/assets/circle-alert-BKHfrO0L.js                             0.25 kB │ gzip:   0.19 kB
+dist/assets/funnel-DzQdukdh.js                                   0.26 kB │ gzip:   0.22 kB
+dist/assets/calendar-Bo5tvYj6.js                                 0.26 kB │ gzip:   0.21 kB
+dist/assets/award-e7rvjyIU.js                                    0.28 kB │ gzip:   0.23 kB
+dist/assets/pencil-DNKuExx2.js                                   0.28 kB │ gzip:   0.23 kB
+dist/assets/phone-6ZYStf20.js                                    0.32 kB │ gzip:   0.23 kB
+dist/assets/save-UiZDBf_K.js                                     0.33 kB │ gzip:   0.23 kB
+dist/assets/AdminUsersPage-CukcDsVf.js                           0.40 kB │ gzip:   0.27 kB
+dist/assets/AdminImagesPage-DGsFKxWC.js                          0.40 kB │ gzip:   0.27 kB
+dist/assets/AdminCategoriesPage-CxCIDuUg.js                      0.41 kB │ gzip:   0.28 kB
+dist/assets/eye-off-CZU64URJ.js                                  0.43 kB │ gzip:   0.27 kB
+dist/assets/CollectionLoadError-BbOi-KMO.js                      0.44 kB │ gzip:   0.31 kB
+dist/assets/GoogleCallbackPage-D064wgQc.js                       0.47 kB │ gzip:   0.35 kB
+dist/assets/image-off-CihHg1yG.js                                0.47 kB │ gzip:   0.30 kB
+dist/assets/ProfileRouteHandler-DJm0J-fj.js                      0.48 kB │ gzip:   0.33 kB
+dist/assets/DownloadHistoryPage-Ds8gSAH9.js                      0.71 kB │ gzip:   0.34 kB
+dist/assets/input-DinCpf0K.js                                    0.80 kB │ gzip:   0.44 kB
+dist/assets/collectionFavoriteService-URE9ED2Y.js                0.90 kB │ gzip:   0.50 kB
+dist/assets/UploadTrigger-W1s0lI-X.js                            0.96 kB │ gzip:   0.57 kB
+dist/assets/userService-D-vgED4U.js                              1.01 kB │ gzip:   0.41 kB
+dist/assets/useDocumentMeta-DlnPSt4a.js                          1.08 kB │ gzip:   0.49 kB
+dist/assets/NotFoundPage-DvChoU40.js                             1.12 kB │ gzip:   0.57 kB
+dist/assets/AdminModal-DZg8j4Ue.js                               1.25 kB │ gzip:   0.66 kB
+dist/assets/authorInfo-BJa03mKh.js                               1.52 kB │ gzip:   0.85 kB
+dist/assets/ConfirmModal-BOhAIRrw.js                             1.65 kB │ gzip:   0.77 kB
+dist/assets/NewsletterPage-DbXV9tfZ.js                           1.73 kB │ gzip:   0.97 kB
+dist/assets/AdminPrimitives-BE6sfU1L.js                          1.94 kB │ gzip:   0.93 kB
+dist/assets/useScrollLock-C0ljx0ZH.js                            2.04 kB │ gzip:   0.73 kB
+dist/assets/AdminLogs-CRzqrJOe.js                                2.13 kB │ gzip:   1.08 kB
+dist/assets/ForgotPasswordPage-Cbk53Xm5.js                       2.87 kB │ gzip:   1.18 kB
+dist/assets/collectionService-DlnTknGS.js                        2.93 kB │ gzip:   0.70 kB
+dist/assets/FavoriteCollectionsPage-C0SEXZED.js                  3.05 kB │ gzip:   1.08 kB
+dist/assets/FavoritesPage-JV5UUnH3.js                            3.36 kB │ gzip:   1.45 kB
+dist/assets/SignInPage-BiHRc9JS.js                               3.52 kB │ gzip:   1.50 kB
+dist/assets/AdminModerationPage-CFVQBf-R.js                      3.56 kB │ gzip:   1.70 kB
+dist/assets/useCollectionStore-GWF55aXW.js                       3.78 kB │ gzip:   1.33 kB
+dist/assets/AdminCollections-BDBi8PUY.js                         3.89 kB │ gzip:   1.52 kB
+dist/assets/AuthLayout-BgkMrgg8.js                               4.48 kB │ gzip:   1.73 kB
+dist/assets/ContactPage-DxjSzAIo.js                              4.55 kB │ gzip:   1.80 kB
+dist/assets/AdminDashboard-Cr0h6jyJ.js                           4.66 kB │ gzip:   1.99 kB
+dist/assets/AdminLayout-CvHppSAE.js                              4.75 kB │ gzip:   1.89 kB
+dist/assets/DownloadHistory-DrJmu6O6.js                          5.05 kB │ gzip:   2.03 kB
+dist/assets/ResetPasswordPage-CqFFzYlr.js                        5.18 kB │ gzip:   1.84 kB
+dist/assets/AdminToolsPage-Ca4LZa39.js                           5.32 kB │ gzip:   1.96 kB
+dist/assets/SearchResultsPage-DS8pWCnx.js                        5.63 kB │ gzip:   2.56 kB
+dist/assets/SettingsPage-DAkSCOHG.js                             5.92 kB │ gzip:   1.92 kB
+dist/assets/ExplorePage-D31kAobS.js                              6.79 kB │ gzip:   2.88 kB
+dist/assets/MyBookingsPage-h97SPMBV.js                           7.16 kB │ gzip:   2.65 kB
+dist/assets/NotificationPage-B_JlTqrp.js                         7.25 kB │ gzip:   2.82 kB
+dist/assets/UserDashboardPage-DE88BWNc.js                        7.34 kB │ gzip:   2.34 kB
+dist/assets/BlogPage-GRzXIjr9.js                                 7.74 kB │ gzip:   3.19 kB
+dist/assets/PackagesPage-C87SYkLb.js                             8.28 kB │ gzip:   2.86 kB
+dist/assets/AboutPage-peBT33VK.js                                8.87 kB │ gzip:   3.25 kB
+dist/assets/SignUpPage-BykTOyXE.js                               9.51 kB │ gzip:   2.66 kB
+dist/assets/EditImageModal-Ccxj4Pcu.js                          10.08 kB │ gzip:   2.89 kB
+dist/assets/BookingPage-Dy1TBRzN.js                             10.27 kB │ gzip:   3.25 kB
+dist/assets/BookingDetailPage-CDkOo6w5.js                       11.13 kB │ gzip:   3.35 kB
+dist/assets/CollectionsPage-zCcWkoCn.js                         13.03 kB │ gzip:   4.43 kB
+dist/assets/CollectionModal-DazpK4JB.js                         15.54 kB │ gzip:   4.24 kB
+dist/assets/EditProfilePage-CS4txO1g.js                         15.55 kB │ gzip:   4.80 kB
+dist/assets/AdminRoles-BsYEd0AK.js                              17.03 kB │ gzip:   3.74 kB
+dist/assets/AdminRecords-CtKe0ZIu.js                            17.77 kB │ gzip:   5.99 kB
+dist/assets/AdminSettingsPage-BSolVHgE.js                       21.58 kB │ gzip:   6.58 kB
+dist/assets/SearchBar-YjdkqG_I.js                               21.83 kB │ gzip:   6.29 kB
+dist/assets/CollectionDetailPage-jS-6t7oD.js                    24.57 kB │ gzip:   7.85 kB
+dist/assets/UploadModal-DH9KN0Sb.js                             29.63 kB │ gzip:   9.33 kB
+dist/assets/ProfilePage-DqLxN2Ow.js                             34.67 kB │ gzip:  10.35 kB
+dist/assets/AdminBookings-Bz2BMN6v.js                           44.53 kB │ gzip:  12.43 kB
+dist/assets/browser-image-compression-5Xiw9QKB.js               53.17 kB │ gzip:  21.07 kB
+dist/assets/forms-Cq_SDETm.js                                  119.34 kB │ gzip:  36.76 kB
+dist/assets/UserAnalyticsDashboard-z3KJazUm.js                 408.56 kB │ gzip: 112.37 kB
+dist/assets/index-rXaZJlac.js                                  987.32 kB │ gzip: 315.60 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.54s

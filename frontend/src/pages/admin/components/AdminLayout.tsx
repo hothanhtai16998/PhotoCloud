@@ -1,3 +1,5 @@
+import { AdminLanguageSelect } from './AdminLanguageSelect';
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Images, LogOut, Sun, Moon, Menu, X, ArrowUpRight } from 'lucide-react';
@@ -16,6 +18,7 @@ import '../AdminImagesPage.css';
 
 import { ADMIN_NAV } from '../adminNavigation';
 export function AdminLayout() {
+  const locale = useAdminLocale();
   const location = useLocation();
   const user = useUserStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
@@ -62,15 +65,15 @@ export function AdminLayout() {
         </span>
         <div>
           <strong>PhotoCloud</strong>
-          <span>Không gian quản trị</span>
+          <span>{adminText("Không gian quản trị")}</span>
         </div>
       </div>
-      <nav className="admin-layout-nav" aria-label="Điều hướng quản trị">
+      <nav className="admin-layout-nav" aria-label={adminText("Điều hướng quản trị")}>
         {['Không gian làm việc', 'Studio', 'Quản lý'].map(
           (group) =>
             items.some((i) => i.group === group) && (
               <div className="admin-nav-group" key={group}>
-                <p>{group}</p>
+                <p>{adminText(group)}</p>
                 {items
                   .filter((i) => i.group === group)
                   .map((item) => (
@@ -83,7 +86,7 @@ export function AdminLayout() {
                       }
                     >
                       <item.icon size={19} />
-                      <span>{item.label}</span>
+                      <span>{adminText(item.label)}</span>
                     </NavLink>
                   ))}
               </div>
@@ -91,22 +94,20 @@ export function AdminLayout() {
         )}
       </nav>
       <Link to="/" className="admin-back-site">
-        Về website
-        <ArrowUpRight size={17} />
+         {adminText("Về website")} <ArrowUpRight size={17} />
       </Link>
     </>
   );
   return (
-    <div className="admin-layout">
+    <div className="admin-layout" lang={locale}>
       <a className="admin-skip-link" href="#admin-main">
-        Đến nội dung chính
-      </a>
+         {adminText("Đến nội dung chính")} </a>
       <aside className="admin-layout-sidebar">{nav}</aside>
       <header className="admin-layout-topbar">
         <button
           ref={toggle}
           className="admin-layout-icon-btn admin-layout-sidebar-toggle"
-          aria-label="Mở menu quản trị"
+          aria-label={adminText("Mở menu quản trị")}
           aria-expanded={open}
           aria-controls="admin-mobile-nav"
           onClick={() => setOpen(true)}
@@ -116,14 +117,15 @@ export function AdminLayout() {
         <div className="admin-breadcrumb">
           <span>PhotoCloud</span>
           <span>/</span>
-          <strong>{active?.label || 'Quản trị'}</strong>
+          <strong>{adminText(active?.label || adminText('Quản trị'))}</strong>
         </div>
         <div className="admin-layout-topbar-actions">
+          <AdminLanguageSelect />
           <button
             className="admin-layout-icon-btn"
             onClick={() => setSiteTheme(dark ? 'light' : 'dark')}
             aria-label={
-              dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'
+              dark ? adminText("Chuyển sang giao diện sáng") : adminText("Chuyển sang giao diện tối")
             }
           >
             {dark ? <Sun size={19} /> : <Moon size={19} />}
@@ -137,17 +139,17 @@ export function AdminLayout() {
             </span>
             <div>
               <strong>
-                {user?.displayName || user?.username || 'Quản trị viên'}
+                {user?.displayName || user?.username || adminText("Quản trị viên")}
               </strong>
               <small>
-                {isSuperAdmin() ? 'Quản trị cấp cao' : 'Quản trị viên'}
+                {isSuperAdmin() ? adminText("Quản trị cấp cao") : adminText("Quản trị viên")}
               </small>
             </div>
           </div>
           <button
             className="admin-layout-icon-btn"
             disabled={signingOut}
-            aria-label="Đăng xuất"
+            aria-label={adminText("Đăng xuất")}
             onClick={async () => {
               setSigningOut(true);
               try {
@@ -173,7 +175,7 @@ export function AdminLayout() {
         <button
           className="admin-layout-icon-btn admin-drawer-close"
           onClick={() => setOpen(false)}
-          aria-label="Đóng menu"
+          aria-label={adminText("Đóng menu")}
         >
           <X size={22} />
         </button>
@@ -181,7 +183,7 @@ export function AdminLayout() {
       </dialog>
       <main id="admin-main" className="admin-layout-main" tabIndex={-1}>
         <div className="admin-content" key={location.pathname}>
-          <AdminErrorBoundary scope="trang quản trị">
+          <AdminErrorBoundary scope={adminText("trang quản trị")}>
             <Outlet />
           </AdminErrorBoundary>
         </div>

@@ -7,9 +7,10 @@ import { useCollectionImages } from './hooks/useCollectionImages';
 import { CollectionHeader } from './components/CollectionHeader';
 import { CollectionNoFlashGrid } from './components/CollectionNoFlashGrid';
 import { CollectionBulkActions } from './components/CollectionBulkActions';
-import { ConfirmModal } from '@/pages/admin/components/modals';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { appConfig } from '@/config/appConfig';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import type { Collection } from '@/types/collection';
 import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
@@ -41,6 +42,15 @@ export default function CollectionDetailPage() {
 		canEdit,
 		coverImageId,
 	} = useCollectionDetail();
+
+	// Set page title and meta. The store is the source of truth for header chrome;
+	// we only update document.title + meta when collection data is available.
+	useDocumentMeta({
+		title: collection?.name || 'Bộ sưu tập',
+		description: collection?.description?.slice(0, 160),
+		ogImage: coverImageId && typeof collection?.coverImageId === 'string' ? undefined : undefined,
+		noIndex: !collection?.isPublic,
+	});
 
 	// Collection store for actions
 	const {
@@ -263,7 +273,6 @@ export default function CollectionDetailPage() {
 				<CollectionHeader
 					collection={collection}
 					imagesCount={images.length}
-					user={user}
 					isFavorited={isFavorited}
 					togglingFavorite={togglingFavorite}
 					selectionMode={selectionMode}

@@ -1,0 +1,21 @@
+.admin-modal.pc-role-editor { width: min(1080px, calc(100vw - 32px)); display: flex; flex-direction: column; overflow: hidden; }
+.pc-role-editor .admin-modal-body { overflow: auto; min-height: 0; }
+.pc-role-editor .admin-modal-header, .pc-role-editor .admin-modal-footer { flex-shrink: 0; }
+.pc-role-form { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(340px, 1.5fr); gap: 32px; }
+.pc-role-settings { display: grid; align-content: start; gap: 28px; }
+.pc-role-editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pc-role-editor legend, .pc-role-editor h3 { font-size: 16px; font-weight: 650; color: var(--admin-text); margin: 0 0 18px; }
+.pc-role-editor label:not(.pc-role-check) { display: block; font-size: 13px; font-weight: 600; margin: 18px 0 8px; }
+.pc-role-editor input:not([type='checkbox']), .pc-role-editor select, .pc-role-editor textarea { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--admin-border); border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 14px; color: var(--admin-text); background: var(--admin-bg); }
+.pc-role-editor .pc-role-help { font-size: 12px; color: var(--admin-text-secondary); line-height: 1.7; margin: 8px 0 16px; }
+.pc-role-editor .pc-role-check { display: flex; align-items: start; gap: 12px; padding: 11px 0; font-size: 14px; line-height: 1.5; cursor: pointer; }
+.pc-role-editor .pc-role-check input { width: 18px; height: 18px; flex-shrink: 0; margin: 2px 0 0; accent-color: var(--admin-accent); }
+.pc-role-editor .pc-role-check small { display: block; margin-top: 3px; font-size: 12px; color: var(--admin-text-secondary); }
+.pc-role-editor .pc-role-permissions fieldset { border-top: 1px solid var(--admin-border); padding-top: 14px; margin-top: 22px; }
+.pc-role-editor .pc-role-permissions legend { padding-right: 12px; margin-bottom: 0; font-size: 14px; }
+.pc-role-account-search { display: flex; gap: 8px; }
+.pc-role-save-error { grid-column: 1 / -1; color: var(--button-danger-text); }
+.pc-role-editor :is(button, input, textarea, select):focus-visible { outline: 2px solid var(--admin-accent); outline-offset: 3px; }
+.pc-role-editor { color-scheme: light; }
+.dark-theme .pc-role-editor { color-scheme: dark; }
+@media (max-width: 760px) { .pc-role-form { grid-template-columns: minmax(0, 1fr); } }

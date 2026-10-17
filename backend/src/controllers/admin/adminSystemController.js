@@ -8,7 +8,7 @@ import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import { logger } from '../../utils/logger.js';
 import { getCacheStats as getPermissionCacheStats } from '../../utils/permissionCache.js';
 
-const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
+const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // System Logs
 export const getSystemLogs = asyncHandler(async (req, res) => {

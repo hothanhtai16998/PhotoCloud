@@ -1,3 +1,4 @@
+import { adminText } from '@/pages/admin/adminLocale';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function adminError(error: unknown): string {
@@ -5,9 +6,9 @@ export function adminError(error: unknown): string {
     error as { response?: { status?: number; data?: { message?: string } } }
   )?.response;
   if (response?.status === 403)
-    return 'Bạn chưa có quyền thực hiện thao tác này.';
+    return adminText("Bạn chưa có quyền thực hiện thao tác này.");
   return (
-    response?.data?.message || 'Không thể kết nối dữ liệu. Vui lòng thử lại.'
+    response?.data?.message || adminText("Không thể kết nối dữ liệu. Vui lòng thử lại.")
   );
 }
 

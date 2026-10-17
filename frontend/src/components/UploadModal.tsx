@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -10,7 +10,8 @@ import { useUploadModalState } from './upload/hooks/useUploadModalState';
 import { UploadProgress } from './upload/UploadProgress';
 import { UploadPreview } from './upload/UploadPreview';
 import { UploadForm } from './upload/UploadForm';
-import { t } from '@/i18n';
+import { UploadLocaleProvider } from './upload/UploadLocale';
+import { useUploadTranslation, useUploadLanguage, type UploadTranslator } from './upload/UploadTranslationContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { imageService } from '@/services/imageService';
 import { useScrollLock } from '@/hooks/useScrollLock';
@@ -19,9 +20,18 @@ import './UploadModal.css';
 interface UploadModalProps {
     isOpen: boolean;
     onClose: () => void;
+    translate?: UploadTranslator;
+    language?: 'vi' | 'en';
+    languageControl?: ReactNode;
 }
 
-function UploadModal({ isOpen, onClose }: UploadModalProps) {
+function UploadModal({ translate, language, ...props }: UploadModalProps) {
+    return <UploadLocaleProvider translate={translate} language={language}><UploadModalContent {...props} /></UploadLocaleProvider>;
+}
+
+function UploadModalContent({ isOpen, onClose, languageControl }: UploadModalProps) {
+    const t = useUploadTranslation();
+    const language = useUploadLanguage();
     const { accessToken } = useAuthStore();
     const { user } = useUserStore();
     const isAdmin = user?.isAdmin === true || user?.isSuperAdmin === true;
@@ -272,7 +282,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
     // Success Screen
     if (showSuccess) {
         return (
-            <div className="upload-modal-overlay" onClick={handleCloseAfterSuccess}>
+            <div className="upload-modal-overlay" lang={language} onClick={handleCloseAfterSuccess}>
                 <div className="upload-success-screen" onClick={(e) => e.stopPropagation()}>
                     <div className="confetti-container" id="confetti-container"></div>
                     <div className="success-content">
@@ -297,7 +307,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
     // Upload Screen (when no images selected)
     if (selectedFiles.length === 0) {
         return (
-            <div className="upload-modal-overlay" onClick={handleCancel}>
+            <div className="upload-modal-overlay" lang={language} onClick={handleCancel}>
                 <div
                     className={`upload-modal ${dragActive ? 'drag-active' : ''}`}
                     onClick={(e) => e.stopPropagation()}
@@ -316,7 +326,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
                 >
                     {/* Header */}
                     <div className="upload-modal-header">
-                        <h2 className="upload-modal-title">{t('upload.title')}</h2>
+                        <h2 className="upload-modal-title">{t('upload.title')}</h2>{languageControl}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             {/* Quality Toggle - only show when images are selected */}
                             {selectedFiles.length > 0 && (
@@ -442,7 +452,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
 
     // Form View (when image is selected)
     return (
-        <div className="upload-modal-overlay" onClick={handleCancel}>
+        <div className="upload-modal-overlay" lang={language} onClick={handleCancel}>
             <div
                 className={`upload-modal ${dragActive ? 'drag-active' : ''}`}
                 onClick={(e) => e.stopPropagation()}
@@ -461,7 +471,7 @@ function UploadModal({ isOpen, onClose }: UploadModalProps) {
             >
                 {/* Header */}
                 <div className="upload-modal-header">
-                    <h2 className="upload-modal-title">{t('upload.title')}</h2>
+                    <h2 className="upload-modal-title">{t('upload.title')}</h2>{languageControl}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         {/* Quality Toggle - only show when images are selected */}
                         {selectedFiles.length > 0 && (

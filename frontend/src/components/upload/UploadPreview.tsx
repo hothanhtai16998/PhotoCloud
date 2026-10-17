@@ -3,7 +3,7 @@ import { X, MapPin } from 'lucide-react';
 import type { ImageData } from './hooks/useImageUpload';
 import { reverseGeocode, delay } from '@/utils/geocoding';
 import { timingConfig } from '@/config/timingConfig';
-import { t } from '@/i18n';
+import { useUploadTranslation } from './UploadTranslationContext';
 import './UploadPreview.css';
 
 interface UploadPreviewProps {
@@ -15,6 +15,7 @@ interface UploadPreviewProps {
 }
 
 export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdate, onOrientationChange }: UploadPreviewProps) => {
+  const t = useUploadTranslation();
   const isUploading = imageData.isUploading === true;
   const uploadError = imageData.uploadError;
   const hasPreUploadData = !!imageData.preUploadData;
@@ -246,7 +247,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
             animation: 'fadeIn 0.3s ease'
           }}>
-            ✓ Đã tải lên
+            ✓ {t('upload.localUploaded', undefined, 'Đã tải lên')}
           </div>
         )}
         {/* Error Indicator */}
@@ -264,7 +265,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
             zIndex: 100,
             pointerEvents: 'none'
           }}>
-            ✗ Lỗi
+            ✗ {t('upload.localError', undefined, 'Lỗi')}
           </div>
         )}
         <button

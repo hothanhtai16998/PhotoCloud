@@ -1,3 +1,4 @@
+import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import type { ReactNode } from 'react';
 import {
   AlertCircle,
@@ -15,6 +16,7 @@ export function AdminHeading({
   description: string;
   children?: ReactNode;
 }) {
+  useAdminLocale();
   return (
     <header className="admin-page-header">
       <div>
@@ -33,15 +35,15 @@ export function AdminFeedback({
   error: string | null;
   retry: () => void;
 }) {
+  useAdminLocale();
   if (!error) return null;
   return (
     <div className="admin-feedback" role="alert">
       <AlertCircle size={19} />
-      <span>{error}</span>
+      <span>{adminText(error)}</span>
       <button className="admin-btn" onClick={retry}>
         <RefreshCw size={15} />
-        Thử lại
-      </button>
+         {adminText("Thử lại")} </button>
     </div>
   );
 }
@@ -59,10 +61,11 @@ export function AdminPagination({
   loading: boolean;
   onChange: (page: number) => void;
 }) {
+  useAdminLocale();
   return (
-    <nav className="admin-pagination" aria-label="Phân trang">
+    <nav className="admin-pagination" aria-label={adminText("Phân trang")}>
       <span>
-        {total.toLocaleString('vi-VN')} kết quả · Trang {page} /{' '}
+        {total.toLocaleString(getAdminIntlLocale())}  {adminText("kết quả · Trang")} {page} /{' '}
         {Math.max(1, pages)}
       </span>
       <div>
@@ -72,14 +75,13 @@ export function AdminPagination({
           onClick={() => onChange(page - 1)}
         >
           <ChevronLeft size={16} />
-          Trước
-        </button>
+           {adminText("Trước")} </button>
         <button
           className="admin-btn"
           disabled={loading || page >= pages}
           onClick={() => onChange(page + 1)}
         >
-          Sau
+          {adminText("Sau")}
           <ChevronRight size={16} />
         </button>
       </div>
@@ -94,6 +96,7 @@ export function AdminEmpty({
   title: string;
   description: string;
 }) {
+  useAdminLocale();
   return (
     <div className="admin-empty">
       <h2>{title}</h2>

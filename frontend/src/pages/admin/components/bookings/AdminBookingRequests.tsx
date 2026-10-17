@@ -1,3 +1,4 @@
+import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useCallback, useId, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -37,6 +38,7 @@ import './AdminBookingRequests.css';
 import './BookingDetailModal.css';
 
 export function AdminBookingRequests() {
+  useAdminLocale();
   const [params, setParams] = useSearchParams();
   const status = params.get('status') || '';
   const query = params.get('q') || '';
@@ -73,12 +75,12 @@ export function AdminBookingRequests() {
   return (
     <section
       className="booking-requests"
-      aria-label="Danh sách yêu cầu đặt lịch"
+      aria-label={adminText("Danh sách yêu cầu đặt lịch")}
     >
       <div className="booking-requests-heading">
         <div>
-          <h2>Yêu cầu đặt lịch</h2>
-          <p>Kiểm tra thông tin khách hàng và xác nhận buổi chụp.</p>
+          <h2>{adminText("Yêu cầu đặt lịch")}</h2>
+          <p>{adminText("Kiểm tra thông tin khách hàng và xác nhận buổi chụp.")}</p>
         </div>
         <button
           className="admin-btn"
@@ -86,19 +88,18 @@ export function AdminBookingRequests() {
           disabled={loading}
         >
           <RefreshCw size={16} />
-          Làm mới
-        </button>
+           {adminText("Làm mới")} </button>
       </div>
       <div className="booking-request-filters">
         <div
           className="booking-quick-filters"
           role="group"
-          aria-label="Lọc nhanh trạng thái"
+          aria-label={adminText("Lọc nhanh trạng thái")}
         >
           {[
-            ['', 'Tất cả'],
-            ['pending', 'Chờ xử lý'],
-            ['confirmed', 'Đã xác nhận'],
+            ['', adminText("Tất cả")],
+            ['pending', adminText("Chờ xử lý")],
+            ['confirmed', adminText("Đã xác nhận")],
           ].map(([value, label]) => (
             <button
               key={value}
@@ -111,13 +112,13 @@ export function AdminBookingRequests() {
           ))}
         </div>
         <label className="booking-status-filter">
-          <span className="sr-only">Trạng thái yêu cầu</span>
+          <span className="sr-only">{adminText("Trạng thái yêu cầu")}</span>
           <select
-            aria-label="Trạng thái yêu cầu"
+            aria-label={adminText("Trạng thái yêu cầu")}
             value={status}
             onChange={(e) => changeFilter(e.target.value)}
           >
-            <option value="">Tất cả trạng thái</option>
+            <option value="">{adminText("Tất cả trạng thái")}</option>
             {Object.entries(labels).map(([key, value]) => (
               <option value={key} key={key}>
                 {value}
@@ -129,21 +130,20 @@ export function AdminBookingRequests() {
           <label>
             <Search size={17} />
             <input
-              aria-label="Tìm yêu cầu đặt lịch"
+              aria-label={adminText("Tìm yêu cầu đặt lịch")}
               type="search"
-              placeholder="Tìm mã lịch, tên hoặc số điện thoại…"
+              placeholder={adminText("Tìm mã lịch, tên hoặc số điện thoại…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </label>
           <button className="admin-btn" type="submit">
-            Tìm
-          </button>
+             {adminText("Tìm")} </button>
         </form>
       </div>
       {query && (
         <div className="booking-search-result">
-          Kết quả cho “{query}”
+           {adminText("Kết quả cho “")}{query}”
           <button
             className="admin-btn"
             onClick={() => {
@@ -154,8 +154,7 @@ export function AdminBookingRequests() {
               setParams(next);
             }}
           >
-            Xóa tìm kiếm
-          </button>
+             {adminText("Xóa tìm kiếm")} </button>
         </div>
       )}
       <AdminFeedback error={error} retry={() => void reload()} />
@@ -167,12 +166,12 @@ export function AdminBookingRequests() {
             <table>
               <thead>
                 <tr>
-                  <th>Khách hàng & yêu cầu</th>
-                  <th>Buổi chụp</th>
-                  <th>Thời gian</th>
-                  <th>Trạng thái</th>
+                  <th>{adminText("Khách hàng & yêu cầu")}</th>
+                  <th>{adminText("Buổi chụp")}</th>
+                  <th>{adminText("Thời gian")}</th>
+                  <th>{adminText("Trạng thái")}</th>
                   <th>
-                    <span className="sr-only">Chi tiết</span>
+                    <span className="sr-only">{adminText("Chi tiết")}</span>
                   </th>
                 </tr>
               </thead>
@@ -188,7 +187,7 @@ export function AdminBookingRequests() {
                         {booking.contact.phone}
                       </a>
                       <small>
-                        {booking.bookingCode} · Tạo ngày{' '}
+                        {booking.bookingCode}  {adminText("· Tạo ngày")}{' '}
                         {bookingDate(booking.createdAt)}
                       </small>
                     </td>
@@ -199,7 +198,7 @@ export function AdminBookingRequests() {
                       </span>
                       <small className="booking-location">
                         <MapPin size={13} />
-                        {booking.location.address || 'Chưa có địa điểm'}
+                        {booking.location.address || adminText("Chưa có địa điểm")}
                       </small>
                     </td>
                     <td>
@@ -214,13 +213,13 @@ export function AdminBookingRequests() {
                             (booking.confirmedEndTime
                               ? ' – ' + booking.confirmedEndTime
                               : '')
-                          : bookingTimeLabels[booking.requestedTimeSlot] ||
-                            'Chưa chọn giờ'}
+                          : adminText(bookingTimeLabels[booking.requestedTimeSlot]) ||
+                            adminText("Chưa chọn giờ")}
                       </span>
                       <small>
                         {booking.confirmedDate
-                          ? 'Lịch đã chốt'
-                          : 'Ngày khách mong muốn'}
+                          ? adminText("Lịch đã chốt")
+                          : adminText("Ngày khách mong muốn")}
                       </small>
                     </td>
                     <td>
@@ -230,17 +229,16 @@ export function AdminBookingRequests() {
                         }
                       >
                         <i aria-hidden="true" />
-                        {labels[booking.status]}
+                        {adminText(labels[booking.status])}
                       </span>
                     </td>
                     <td>
                       <button
                         className="admin-btn booking-detail-btn"
                         onClick={() => setSelected(booking)}
-                        aria-label={'Xem chi tiết ' + booking.bookingCode}
+                        aria-label={adminText("Xem chi tiết ") + booking.bookingCode}
                       >
-                        Chi tiết
-                        <ArrowUpRight size={16} />
+                         {adminText("Chi tiết")} <ArrowUpRight size={16} />
                       </button>
                     </td>
                   </tr>
@@ -258,7 +256,7 @@ export function AdminBookingRequests() {
                   <span
                     className={'booking-state ' + bookingTone(booking.status)}
                   >
-                    {labels[booking.status]}
+                    {adminText(labels[booking.status])}
                   </span>
                 </header>
                 <h3>{booking.contact.name}</h3>
@@ -273,7 +271,7 @@ export function AdminBookingRequests() {
                   )}{' '}
                   ·{' '}
                   {booking.confirmedStartTime ||
-                    bookingTimeLabels[booking.requestedTimeSlot]}
+                    adminText(bookingTimeLabels[booking.requestedTimeSlot])}
                 </div>
                 <div className="booking-mobile-line">
                   <Phone size={16} />
@@ -282,13 +280,12 @@ export function AdminBookingRequests() {
                   </a>
                 </div>
                 <footer>
-                  <span>{booking.location.address || 'Chưa có địa điểm'}</span>
+                  <span>{booking.location.address || adminText("Chưa có địa điểm")}</span>
                   <button
                     className="admin-btn"
                     onClick={() => setSelected(booking)}
                   >
-                    Chi tiết
-                    <ArrowUpRight size={16} />
+                     {adminText("Chi tiết")} <ArrowUpRight size={16} />
                   </button>
                 </footer>
               </article>
@@ -298,13 +295,13 @@ export function AdminBookingRequests() {
             <AdminEmpty
               title={
                 status || query
-                  ? 'Không có yêu cầu phù hợp'
-                  : 'Chưa có yêu cầu đặt lịch'
+                  ? adminText("Không có yêu cầu phù hợp")
+                  : adminText("Chưa có yêu cầu đặt lịch")
               }
               description={
                 status || query
-                  ? 'Thử đổi trạng thái hoặc từ khóa để tìm lại yêu cầu.'
-                  : 'Các yêu cầu khách gửi từ website sẽ xuất hiện tại đây.'
+                  ? adminText("Thử đổi trạng thái hoặc từ khóa để tìm lại yêu cầu.")
+                  : adminText("Các yêu cầu khách gửi từ website sẽ xuất hiện tại đây.")
               }
             />
           )}
@@ -352,39 +349,39 @@ const bookingActionCopy: Partial<
   Record<BookingStatus, { title: string; description: string; button: string }>
 > = {
   reviewing: {
-    title: 'Xem xét yêu cầu',
-    description: 'Đang trao đổi và kiểm tra thông tin của khách.',
-    button: 'Bắt đầu xem xét',
+    title: adminText("Xem xét yêu cầu"),
+    description: adminText("Đang trao đổi và kiểm tra thông tin của khách."),
+    button: adminText("Bắt đầu xem xét"),
   },
   needs_information: {
-    title: 'Yêu cầu bổ sung',
-    description: 'Đề nghị khách cung cấp thông tin còn thiếu.',
-    button: 'Yêu cầu bổ sung',
+    title: adminText("Yêu cầu bổ sung"),
+    description: adminText("Đề nghị khách cung cấp thông tin còn thiếu."),
+    button: adminText("Yêu cầu bổ sung"),
   },
   confirmed: {
-    title: 'Xác nhận lịch chụp',
-    description: 'Chốt ngày và khung giờ cho buổi chụp.',
-    button: 'Xác nhận lịch chụp',
+    title: adminText("Xác nhận lịch chụp"),
+    description: adminText("Chốt ngày và khung giờ cho buổi chụp."),
+    button: adminText("Xác nhận lịch chụp"),
   },
   rescheduled: {
-    title: 'Đổi lịch chụp',
-    description: 'Điều chỉnh ngày hoặc giờ đã hẹn với khách.',
-    button: 'Xác nhận đổi lịch',
+    title: adminText("Đổi lịch chụp"),
+    description: adminText("Điều chỉnh ngày hoặc giờ đã hẹn với khách."),
+    button: adminText("Xác nhận đổi lịch"),
   },
   completed: {
-    title: 'Hoàn thành buổi chụp',
-    description: 'Đánh dấu buổi chụp đã diễn ra và hoàn tất.',
-    button: 'Xác nhận hoàn thành',
+    title: adminText("Hoàn thành buổi chụp"),
+    description: adminText("Đánh dấu buổi chụp đã diễn ra và hoàn tất."),
+    button: adminText("Xác nhận hoàn thành"),
   },
   cancelled_by_photographer: {
-    title: 'Hủy lịch chụp',
-    description: 'Dừng lịch đã xác nhận và thông báo lý do.',
-    button: 'Xác nhận hủy lịch',
+    title: adminText("Hủy lịch chụp"),
+    description: adminText("Dừng lịch đã xác nhận và thông báo lý do."),
+    button: adminText("Xác nhận hủy lịch"),
   },
   rejected: {
-    title: 'Từ chối yêu cầu',
-    description: 'Không tiếp nhận yêu cầu này; cần có lý do.',
-    button: 'Xác nhận từ chối',
+    title: adminText("Từ chối yêu cầu"),
+    description: adminText("Không tiếp nhận yêu cầu này; cần có lý do."),
+    button: adminText("Xác nhận từ chối"),
   },
 };
 export function BookingDetail({
@@ -396,6 +393,7 @@ export function BookingDetail({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  useAdminLocale();
   const formId = useId();
   const [detailTab, setDetailTab] = useState<'info' | 'history'>('info');
   const options = bookingNextStatuses(booking.status);
@@ -425,11 +423,11 @@ export function BookingDetail({
     event.preventDefault();
     if (!status || busy) return;
     if (needsReason && !note.trim()) {
-      setError('Vui lòng nhập lý do để khách hiểu thay đổi này.');
+      setError(adminText("Vui lòng nhập lý do để khách hiểu thay đổi này."));
       return;
     }
     if (needsSchedule && start && end && end <= start) {
-      setError('Giờ kết thúc phải sau giờ bắt đầu.');
+      setError(adminText("Giờ kết thúc phải sau giờ bắt đầu."));
       return;
     }
     setBusy(true);
@@ -446,7 +444,7 @@ export function BookingDetail({
             }
           : {}),
       });
-      toast.success('Đã cập nhật lịch chụp');
+      toast.success(adminText("Đã cập nhật lịch chụp"));
       onSaved();
       onClose();
     } catch (cause) {
@@ -459,7 +457,7 @@ export function BookingDetail({
     <AdminModal
       open
       title={booking.bookingCode}
-      description="Thông tin yêu cầu đặt lịch chụp"
+      description={adminText("Thông tin yêu cầu đặt lịch chụp")}
       size="lg"
       className="booking-detail-modal"
       onClose={() => {
@@ -469,12 +467,12 @@ export function BookingDetail({
         <>
           <span className="booking-footer-hint" role="status">
             {detailTab === 'history'
-              ? 'Lịch sử thay đổi của yêu cầu'
+              ? adminText("Lịch sử thay đổi của yêu cầu")
               : status
                 ? bookingActionCopy[status]?.title
                 : options.length
-                  ? 'Chọn một hành động để tiếp tục'
-                  : 'Chỉ xem thông tin'}
+                  ? adminText("Chọn một hành động để tiếp tục")
+                  : adminText("Chỉ xem thông tin")}
           </span>
           <div className="booking-footer-buttons">
             <button
@@ -483,8 +481,7 @@ export function BookingDetail({
               disabled={busy}
               onClick={onClose}
             >
-              Đóng
-            </button>
+               {adminText("Đóng")} </button>
             {!!options.length && detailTab === 'info' && (
               <button
                 type="submit"
@@ -493,10 +490,10 @@ export function BookingDetail({
                 disabled={!status || busy}
               >
                 {busy
-                  ? 'Đang cập nhật…'
+                  ? adminText("Đang cập nhật…")
                   : status
-                    ? bookingActionCopy[status]?.button || 'Lưu cập nhật'
-                    : 'Lưu cập nhật'}
+                    ? bookingActionCopy[status]?.button || adminText("Lưu cập nhật")
+                    : adminText("Lưu cập nhật")}
               </button>
             )}
           </div>
@@ -506,7 +503,7 @@ export function BookingDetail({
       <div
         className="booking-detail-tabs"
         role="tablist"
-        aria-label="Chi tiết lịch chụp"
+        aria-label={adminText("Chi tiết lịch chụp")}
       >
         {(['info', 'history'] as const).map((tab, index) => (
           <button
@@ -537,8 +534,8 @@ export function BookingDetail({
             }}
           >
             {tab === 'info'
-              ? 'Thông tin yêu cầu'
-              : `Lịch sử trạng thái (${booking.statusHistory?.length || 0})`}
+              ? adminText("Thông tin yêu cầu")
+              : adminText("Lịch sử trạng thái ({0})", { 0: booking.statusHistory?.length || 0 })}
           </button>
         ))}
       </div>
@@ -553,44 +550,39 @@ export function BookingDetail({
         <div className="booking-detail-summary">
           <h3>{booking.contact.name}</h3>
           <span className={'booking-state ' + bookingTone(booking.status)}>
-            {labels[booking.status]}
+            {adminText(labels[booking.status])}
           </span>
         </div>
         {booking.rescheduleRequest?.requestedAt && (
           <div className="booking-reschedule-pending" role="status">
             <strong>
               {booking.rescheduleRequest.reason === 'weather'
-                ? 'Yêu cầu đổi lịch vì thời tiết'
-                : 'Yêu cầu đổi lịch cá nhân'}{' '}
-              · Chờ studio duyệt
-            </strong>
+                ? adminText("Yêu cầu đổi lịch vì thời tiết")
+                : adminText("Yêu cầu đổi lịch cá nhân")}{' '}
+               {adminText("· Chờ studio duyệt")} </strong>
             <p>
-              Ngày đề nghị:{' '}
+               {adminText("Ngày đề nghị:")}{' '}
               {bookingDate(booking.rescheduleRequest.requestedDate)} ·{' '}
-              {bookingTimeLabels[
+              {adminText(bookingTimeLabels[
                 booking.rescheduleRequest.requestedTimeSlot || ''
-              ] || 'Chưa chọn giờ'}
+              ]) || adminText("Chưa chọn giờ")}
             </p>
             {booking.rescheduleRequest.note && (
               <p>{booking.rescheduleRequest.note}</p>
             )}
             <small>
-              Chọn “Đổi lịch chụp” bên dưới để xác nhận. Ngày đề nghị được điền
-              sẵn; hãy chốt giờ mới trước khi lưu.
-            </small>
+               {adminText("Chọn “Đổi lịch chụp” bên dưới để xác nhận. Ngày đề nghị được điền sẵn; hãy chốt giờ mới trước khi lưu.")} </small>
             <button
               type="button"
               className="admin-btn"
               disabled={busy}
               onClick={() => setDeclining((v) => !v)}
             >
-              Không chấp thuận yêu cầu đổi lịch
-            </button>
+               {adminText("Không chấp thuận yêu cầu đổi lịch")} </button>
             {declining && (
               <div className="admin-settings-field">
                 <label htmlFor={formId + '-decline'}>
-                  Lý do không chấp thuận
-                </label>
+                   {adminText("Lý do không chấp thuận")} </label>
                 <textarea
                   id={formId + '-decline'}
                   className="admin-input"
@@ -609,10 +601,10 @@ export function BookingDetail({
                       await bookingService.updateAdmin(booking._id, {
                         status: booking.status,
                         note:
-                          'Không chấp thuận đổi lịch: ' + declineReason.trim(),
+                          adminText("Không chấp thuận đổi lịch: ") + declineReason.trim(),
                         dismissReschedule: true,
                       });
-                      toast.success('Đã phản hồi yêu cầu đổi lịch');
+                      toast.success(adminText("Đã phản hồi yêu cầu đổi lịch"));
                       onSaved();
                       onClose();
                     } catch (cause) {
@@ -622,8 +614,7 @@ export function BookingDetail({
                     }
                   }}
                 >
-                  Gửi phản hồi, giữ lịch hiện tại
-                </button>
+                   {adminText("Gửi phản hồi, giữ lịch hiện tại")} </button>
                 {error && <p role="alert">{error}</p>}
               </div>
             )}
@@ -631,7 +622,7 @@ export function BookingDetail({
         )}
         <dl className="booking-detail-grid">
           <div>
-            <dt>Liên hệ</dt>
+            <dt>{adminText("Liên hệ")}</dt>
             <dd>
               <a href={'tel:' + booking.contact.phone}>
                 {booking.contact.phone}
@@ -644,46 +635,44 @@ export function BookingDetail({
             </dd>
           </div>
           <div>
-            <dt>Gói chụp</dt>
+            <dt>{adminText("Gói chụp")}</dt>
             <dd>
               {booking.packageSnapshot.name}
               <small>
-                {bookingMoney(booking.packageSnapshot.basePrice)} · Giá tham
-                khảo
-              </small>
+                {bookingMoney(booking.packageSnapshot.basePrice)}  {adminText("· Giá tham khảo")} </small>
             </dd>
           </div>
           <div>
-            <dt>Thời gian mong muốn</dt>
+            <dt>{adminText("Thời gian mong muốn")}</dt>
             <dd>
               {bookingDate(booking.requestedDate)}
-              <small>{bookingTimeLabels[booking.requestedTimeSlot]}</small>
+              <small>{adminText(bookingTimeLabels[booking.requestedTimeSlot])}</small>
             </dd>
           </div>
           <div>
-            <dt>Địa điểm</dt>
-            <dd>{booking.location.address || 'Chưa có địa điểm'}</dd>
+            <dt>{adminText("Địa điểm")}</dt>
+            <dd>{booking.location.address || adminText("Chưa có địa điểm")}</dd>
           </div>
           {booking.concept && (
             <div>
-              <dt>Ý tưởng buổi chụp</dt>
+              <dt>{adminText("Ý tưởng buổi chụp")}</dt>
               <dd>{booking.concept}</dd>
             </div>
           )}
           {booking.notes && (
             <div>
-              <dt>Ghi chú của khách</dt>
+              <dt>{adminText("Ghi chú của khách")}</dt>
               <dd>{booking.notes}</dd>
             </div>
           )}
         </dl>
         {options.length ? (
           <form id={formId} className="booking-update-form" onSubmit={save}>
-            <h3>Xử lý yêu cầu</h3>
-            <p>Khách sẽ nhận thông báo khi trạng thái được cập nhật.</p>
+            <h3>{adminText("Xử lý yêu cầu")}</h3>
+            <p>{adminText("Khách sẽ nhận thông báo khi trạng thái được cập nhật.")}</p>
             <fieldset className="admin-form-fields" disabled={busy}>
               <fieldset className="booking-action-options">
-                <legend>Bạn muốn thực hiện việc gì?</legend>
+                <legend>{adminText("Bạn muốn thực hiện việc gì?")}</legend>
                 <div className="booking-action-grid">
                   {options.map((value) => (
                     <label
@@ -742,9 +731,9 @@ export function BookingDetail({
                       )}
                       <span className="booking-action-copy">
                         <strong>
-                          {bookingActionCopy[value]?.title || labels[value]}
+                          {adminText(bookingActionCopy[value]?.title || labels[value])}
                         </strong>
-                        <small>{bookingActionCopy[value]?.description}</small>
+                        <small>{adminText(bookingActionCopy[value]?.description || "")}</small>
                       </span>
                       {status === value ? (
                         <CheckCircle2
@@ -766,8 +755,7 @@ export function BookingDetail({
               {needsSchedule && (
                 <div className="booking-schedule-fields">
                   <label className="admin-settings-field">
-                    Ngày chụp
-                    <input
+                     {adminText("Ngày chụp")} <input
                       type="date"
                       className="admin-input"
                       required
@@ -776,8 +764,7 @@ export function BookingDetail({
                     />
                   </label>
                   <label className="admin-settings-field">
-                    Bắt đầu
-                    <input
+                     {adminText("Bắt đầu")} <input
                       type="time"
                       className="admin-input"
                       value={start}
@@ -785,8 +772,7 @@ export function BookingDetail({
                     />
                   </label>
                   <label className="admin-settings-field">
-                    Kết thúc
-                    <input
+                     {adminText("Kết thúc")} <input
                       type="time"
                       className="admin-input"
                       value={end}
@@ -798,8 +784,8 @@ export function BookingDetail({
               {status && (
                 <label className="admin-settings-field">
                   {needsReason
-                    ? 'Lý do thay đổi (bắt buộc)'
-                    : 'Ghi chú cho lần cập nhật'}
+                    ? adminText("Lý do thay đổi (bắt buộc)")
+                    : adminText("Ghi chú cho lần cập nhật")}
                   <textarea
                     className="admin-input"
                     rows={3}
@@ -809,8 +795,8 @@ export function BookingDetail({
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={
                       needsReason
-                        ? 'Giải thích lý do để khách hiểu thay đổi này…'
-                        : 'Nhập nội dung cần trao đổi với khách (không bắt buộc)…'
+                        ? adminText("Giải thích lý do để khách hiểu thay đổi này…")
+                        : adminText("Nhập nội dung cần trao đổi với khách (không bắt buộc)…")
                     }
                   />
                 </label>
@@ -824,7 +810,7 @@ export function BookingDetail({
           </form>
         ) : (
           <div className="booking-closed-note">
-            <p>Yêu cầu đã kết thúc. Thông tin được giữ lại để tra cứu.</p>
+            <p>{adminText("Yêu cầu đã kết thúc. Thông tin được giữ lại để tra cứu.")}</p>
           </div>
         )}
       </section>
@@ -836,7 +822,7 @@ export function BookingDetail({
         hidden={detailTab !== 'history'}
         tabIndex={0}
       >
-        <h3>Lịch sử trạng thái</h3>
+        <h3>{adminText("Lịch sử trạng thái")}</h3>
         {booking.statusHistory?.length ? (
           <ol className="booking-history-timeline">
             {booking.statusHistory.map((item, i) => {
@@ -850,7 +836,7 @@ export function BookingDetail({
                   <span className="booking-history-icon" aria-hidden="true">
                     <StatusIcon size={18} />
                   </span>
-                  <strong>{labels[item.to]}</strong>
+                  <strong>{adminText(labels[item.to])}</strong>
                   <time dateTime={item.createdAt}>
                     {bookingDate(item.createdAt)}
                   </time>
@@ -860,7 +846,7 @@ export function BookingDetail({
             })}
           </ol>
         ) : (
-          <p>Chưa có lịch sử thay đổi trạng thái.</p>
+          <p>{adminText("Chưa có lịch sử thay đổi trạng thái.")}</p>
         )}
       </section>
     </AdminModal>
