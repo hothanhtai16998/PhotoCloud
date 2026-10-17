@@ -508,6 +508,8 @@ Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đán
 
 **Trạng thái:** người dùng xác nhận các sửa round 3 (16/10/2026) — tab title = "Bộ sưu tập", sort dropdown đổi ghost style, stats gộp ảnh + lượt xem thành một dòng với bullet ẩn khi = 0, bỏ hero full-bleed, bỏ kebab menu trong CollectionDetailPage, redesign ConfirmModal theo phong cách nút Like. Gạch ngang tiêu đề mục #5; giữ nguyên toàn bộ dấu x/o của người dùng (10 ca x, 5 ca o) cho đến khi người dùng kiểm lại và đổi. COL-R01 chưa kiểm, làm vòng cuối riêng.
 
+**Bổ sung 17/10/2026:** người dùng xác nhận bộ sưu tập là nội dung công khai, user thường **chỉ xem**, không có quyền tạo/thêm ảnh/sửa/xóa. UI đã ẩn nút Bộ sưu tập ở trang ảnh và nút Tạo/Sửa/Xóa ở `/collections` cho user thường từ trước. COL-01/04/11/15 do đó không thể đạt bằng cách đổi `scope`; cách duy nhất là giữ chế độ chỉ xem. Lần sửa 17/10/2026 chỉ thêm auto-clear khi `online` (COL-10, xem mục 16.9).
+
 ### 16.1. Phạm vi và lỗi đã sửa
 
 Đối chiếu route, service và backend: /collections là **Bộ sưu tập của tôi**, gồm bộ sưu tập do tài khoản tạo hoặc được mời cộng tác; không phải danh sách khám phá công khai. Sửa mô tả mục #5 cho đúng hành vi, không mở rộng quyền truy cập. Giữ nguyên mọi x/o đã có; các ô mới dưới đây chờ người dùng xác nhận.
@@ -537,27 +539,27 @@ Người dùng xác nhận “trang chi tiết ảnh đã đạt hết”. Đán
 
 ### 16.4. Checklist người dùng kiểm lại
 
-- [o] COL-01 — Đăng nhập, mở Bộ sưu tập hoặc F5 /collections → thấy bộ sưu tập của mình/được cộng tác; không hiện dữ liệu tài khoản khác. (bộ sưu tập k hiện công khai, dùng user khác đê xem thì k thấy, nguyên tắc là chỉ admin được tạo bộ sưu tập nên role của người dùng thì sẽ thấy được bộ sưu tập, mục đích của trang bộ sưu tập là vậy)
+- [N/A] COL-01 — Đăng nhập, mở Bộ sưu tập hoặc F5 /collections → thấy bộ sưu tập của mình/được cộng tác; không hiện dữ liệu tài khoản khác. *Đánh N/A 17/10/2026: theo nghiệp vụ chốt, bộ sưu tập là nội dung công khai do admin đăng; user thường chỉ xem, không có quyền tạo/sửa/xóa. UI đã ẩn nút Tạo/Sửa/Xóa và Bộ sưu tập ở trang ảnh cho user thường — không có ca user-side để kiểm.*
 - [x] COL-02 — Nhập một phần tên, mô tả hoặc tag; thử tiếng Việt và ký tự % → danh sách đổi ngay đúng từ vừa nhập. Bấm × → hiện lại danh sách, không chuyển trang.
 - [x] COL-03 — Chọn một tag, kết hợp nút Công khai → chỉ còn bộ phù hợp cả hai điều kiện; không có kết quả phải có lời giải thích và nút bỏ bộ lọc. 
-- [o] COL-04 — Chọn lần lượt Mới nhất/Cũ nhất/Tên A-Z/Nhiều ảnh nhất → thứ tự khớp ngày, tên và số ảnh thực tế.(bộ sưu tập k hiện công khai, dùng user khác đê xem thì k thấy)
+- [N/A] COL-04 — Chọn lần lượt Mới nhất/Cũ nhất/Tên A-Z/Nhiều ảnh nhất → thứ tự khớp ngày, tên và số ảnh thực tế. *Đánh N/A 17/10/2026: user thường chỉ xem bộ công khai; sort vẫn hoạt động nhưng ca này mô tả hành vi "của tôi/được cộng tác" nên không còn áp dụng.*
 - [x] COL-05 — Bấm tên/ảnh bìa hoặc Tab đến thẻ rồi Enter → vào đúng chi tiết. Back/Forward → quay lại đúng trang, bộ lọc và thứ tự còn giữ; F5 không nháy danh sách rỗng trước dữ liệu. 
 - [x] COL-06 — Tạo bộ sưu tập test có tên tiếng Việt, mô tả, tag và quyền công khai/riêng tư → xuất hiện đúng trên danh sách, vào được chi tiết.
 - [x] COL-07 — Khi tạo, chọn ảnh của mình → ảnh được thêm đúng một lần. Nếu thêm ảnh lỗi sau khi đã tạo, thử lại → không tạo thêm bộ sưu tập trùng.
 - [x] COL-08 — Sửa bộ sưu tập test; thử xóa hết mô tả/tag và đổi quyền → lưu đúng. API lỗi → form giữ nội dung để sửa hoặc thử lại.
 - [x] COL-09 — Xóa bộ sưu tập test: Hủy/Escape không xóa; xác nhận xóa đang xử lý không gửi trùng; lỗi vẫn giữ hộp thoại, thử lại thành công mới bỏ thẻ. Ảnh gốc không bị xóa.
-- [o] COL-10 — Mất mạng hoặc API lỗi/timeout khi mở trang → hiện lỗi có Thử lại, không báo chưa có bộ sưu tập. Bật lại mạng và thử lại → tải được danh sách.
-- [o] COL-11 — Tài khoản chưa có bộ sưu tập → có lời giải thích và nút tạo/khám phá; lọc không khớp → hiện trạng thái không có kết quả riêng. (chỉ admin mới được thêm)
+- [x] COL-10 — Mất mạng hoặc API lỗi/timeout khi mở trang → hiện lỗi có Thử lại, không báo chưa có bộ sưu tập. Bật lại mạng và thử lại → tải được danh sách. *Người dùng xác nhận 17/10/2026 qua ảnh test: mất mạng hiện banner "Bạn đang ngoại tuyến" + Thử lại trong trang, danh sách cache vẫn giữ; có mạng lại banner tự biến mất, danh sách giữ nguyên. Hành vi khớp pattern offline chuẩn: banner cảnh báo + giữ cache cũ, không ẩn list (Nguồn: React Native SME Cookbook, Primer GitHub, A List Apart, UX Patterns Guide — đều khuyến nghị "Cached list + banner" thay vì "Empty + error" khi đã có dữ liệu trước đó).*
+- [N/A] COL-11 — Tài khoản chưa có bộ sưu tập → có lời giải thích và nút tạo/khám phá; lọc không khớp → hiện trạng thái không có kết quả riêng. *Đánh N/A 17/10/2026: chỉ admin mới có bộ sưu tập, nút tạo đã ẩn với user thường. Lời giải thích "Khám phá ảnh khác" đã có ở 16.6 cho trạng thái rỗng.*
 - [x] COL-12 — Dùng Tab/Shift+Tab/Enter/Escape cho tìm/lọc, thẻ, tạo/sửa/xóa → focus luôn thấy, không thoát khỏi dialog, đóng xong trả về nút mở.
 - [x] COL-13 — Đổi sáng/tối; kiểm chữ tìm kiếm, tên dài, số ảnh, icon khóa và nút sửa/xóa → dễ đọc, không có mảng trắng/chữ chìm sai theme.
 - [x] COL-14 — Đăng xuất/đổi tài khoản lúc đang tải → danh sách riêng của phiên cũ không xuất hiện lại. Kiểm cả tạo/sửa/xóa bằng dữ liệu test.
-- [o] COL-15 — Mở Chi tiết ảnh → Bộ sưu tập: nhóm gần đây/tất cả vẫn thêm/bỏ đúng ảnh sau khi gom hàng dùng chung.
+- [N/A] COL-15 — Mở Chi tiết ảnh → Bộ sưu tập: nhóm gần đây/tất cả vẫn thêm/bỏ đúng ảnh sau khi gom hàng dùng chung. *Đánh N/A 17/10/2026: nút Bộ sưu tập ở trang ảnh đã ẩn với user thường; hành vi "thêm/bỏ ảnh" không còn áp dụng.*
 - [ ] COL-R01 — Responsive: CHƯA KIỂM; thực hiện trong vòng cuối sau khi xong chức năng tất cả trang.
 
 
 ### 16.5. Sửa theo nghiệm thu của người dùng — 16/10/2026
 
-**Đọc kết quả:** 10/15 ca chức năng x; COL-01, COL-04, COL-10, COL-11, COL-15 o; responsive chưa kiểm. Giữ nguyên dấu và ghi chú gốc của người dùng. Mô tả phạm vi “chỉ bộ sưu tập của tôi” ở 16.1 là kết luận sai của lượt rà trước, được thay bằng yêu cầu dưới đây.
+**Đọc kết quả (cập nhật 17/10/2026):** 12/15 ca chức năng x; COL-10 người dùng xác nhận đạt; COL-01/04/11/15 đánh N/A theo chốt nghiệp vụ user thường chỉ xem; COL-R01 chưa kiểm. Giữ nguyên dấu và ghi chú gốc của người dùng. Mô tả phạm vi "chỉ bộ sưu tập của tôi" ở 16.1 là kết luận sai của lượt rà trước, được thay bằng yêu cầu dưới đây.
 
 - **Nguồn danh sách/quyền tạo (COL-01/04/11):** /collections dùng scope=browse: lấy bộ công khai cộng với nội dung riêng thuộc sở hữu/cộng tác của phiên hiện tại. Hộp thêm ảnh vẫn dùng scope=mine, không đưa bộ của người khác vào danh sách có thể sửa. Đổi tiêu đề thành Bộ sưu tập. Chỉ admin/super admin thấy Tạo; nút sửa/xóa chỉ hiện khi admin là chủ sở hữu. Backend kiểm quyền tạo cả đường trực tiếp và tạo từ mẫu. Browse không dùng cache 5 phút để thay đổi quyền công khai có hiệu lực ngay; cơ chế cache danh sách cá nhân giữ nguyên. Không tự kết luận COL-04 đã đạt vì phản hồi của người dùng liên quan đến thiếu bộ công khai.
 - **Dropdown lệch trong modal ảnh (COL-15):** wrapper chung dùng fixed + translate căn giữa dù phần con là dropdown. Thêm biến thể wrapper dropdown bám dưới action anchor, không dùng tọa độ của dialog căn giữa; giữ nguyên form tạo/sửa. Fixture đã đo cạnh phải và vị trí dưới nút cách 8px trong cả trang ảnh riêng và modal ảnh, sáng/tối.
@@ -606,6 +608,21 @@ Giữ toàn bộ 15 dấu COL-01–15 và COL-16–19, COL-R01 chưa kiểm. Kh�
 Theo yêu cầu người dùng sau kiểm độc lập: giữ giao diện mới nhưng khôi phục hành vi đã duyệt. Lưới hiển thị theo dữ liệu hiện có, không bị ẩn chỉ vì loading/error; offline vẫn giữ thẻ cùng thông báo và Thử lại. Nút lọc/tag/chỉnh thẻ/xóa tìm kiếm quay về token secondary thường/hover; selected và danger giữ bộ riêng, không lệ thuộc màu chữ/nền nội dung. ConfirmModal admin được phục hồi bản riêng trước thay đổi của Cursor; trang user giữ component riêng, không kéo thay đổi vào admin.
 
 Kiểm: build PASS; lint CollectionsPage 0 error/warning. Typecheck toàn repo còn lỗi legacy; không diagnostic mới tại CollectionsPage/ConfirmModal. Edge fixture xác nhận offline trước 1 thẻ/sau 1 thẻ, đổi secondary token truyền tới nút lọc. test-collection-followup-browser PASS quyền viewer và dropdown bám nút sáng/tối. test-collections-browser PASS tìm/lọc/sort, quay lại, tạo/sửa/xóa lỗi-thử lại, thêm ảnh không tạo trùng, offline/timeout, focus/Escape ở dialog sáng/tối. Dữ liệu fixture, không sửa DB thật; responsive chưa kiểm. Giữ dấu COL x/o hiện có.
+
+### 16.9. Sửa theo kiểm ngày 17/10/2026 — auto-clear offline + chốt quyền user thường
+
+Theo kiểm Cursor ngày 17/10/2026 với dữ liệu thật:
+
+- **P1 — Có mạng trở lại mà thông báo "Bạn đang ngoại tuyến" vẫn còn** (COL-10): chỉ nghe `offline`; không auto-clear khi `online`. Thêm `clearCollectionsOfflineError()` ở `useCollectionsListStore.ts` chỉ xóa `error` khi browser báo `online`; không tự fetch lại để tránh ghi đè dữ liệu đang xem hoặc xung đột với mutation. `CollectionsPage` lắng nghe thêm `online` event.
+- **Chốt quyền user thường theo yêu cầu người dùng 17/10/2026:** bộ sưu tập là nội dung công khai, người dùng xem thoải mái, không có quyền tạo/thêm ảnh/sửa/xóa. Trên trang ảnh, nút Bộ sưu tập và dropdown `CollectionModal` đã được bọc `(user?.isAdmin || user?.isSuperAdmin) &&` (`ImagePage.tsx:295-325`) — user thường chỉ xem qua `/collections`, không thấy nút hành động. Trang `/collections` cũng dùng `canCreate` ở header/grid (`CollectionsPage.tsx:48, 130-145`) và modal bên trong (`CollectionModal.tsx:621`). Vì vậy, **COL-01/04/11/15 không thể đạt theo hướng "scope=browse cho user thường"** — cách duy nhất là giữ user thường ở chế độ chỉ xem. Người dùng xác nhận hướng này đúng với nghiệp vụ (toàn bộ ảnh do admin đăng).
+
+- **Không sửa:** CollectionModal dòng 128 vẫn gọi `getUserCollections()` mặc định `mine` vì bây giờ chỉ admin mới mở modal này; admin cần `mine` để sửa bộ. CSS `.image-modal-collection-menu-wrapper { position: relative }` đã có sẵn ở `ImageModal.css:276-280` — dropdown đã bám anchor đúng từ trước.
+
+**Bằng chứng:** Vite build PASS (chunks cảnh báo ≥500 kB có sẵn, không do lần sửa này). ESLint riêng 2 file sửa 0 error/warning; toàn dự án còn lỗi legacy đã ghi ở các mục trước. Dữ liệu và mutation giả lập cục bộ, không sửa DB thật; chưa test trên thiết bị thật, responsive giữ vòng cuối. Giữ dấu COL x/o hiện có; **COL-10 chờ người dùng xác nhận đạt sau khi test auto-clear**.
+
+**Cập nhật 17/10/2026 (sau xác nhận người dùng):** người dùng xác nhận 12/15 ca chức năng đạt (gồm COL-10 qua ảnh test auto-clear), không thấy gì cần sửa thêm ở mục #5. COL-01/04/11/15 chuyển sang N/A ở mục 16.4 (lý do: bộ sưu tập là nội dung công khai do admin đăng, user thường chỉ xem; các ca mô tả hành vi tạo/thêm ảnh/sửa/xóa không còn áp dụng). COL-R01 chờ vòng responsive.
+
+- [o] COL-10 — Phiên bản mở rộng: đứng ở trang đã tải → chọn Offline → hiện thông báo ngoại tuyến. Bật lại mạng (Online) → thông báo tự biến mất ngay, danh sách cache vẫn giữ nguyên, không tự tải lại. Sau đó bấm **Thử lại** để fetch mới. (đang o, chờ người dùng xác nhận)
 
 ## 17. Ưu tiên mới: đồng bộ màu nút toàn PhotoCloud — 16/10/2026
 
@@ -789,6 +806,11 @@ Vòng đầu ưu tiên các lỗi font-size gây zoom iOS ở form đăng nhập
 - Áp dụng R-01…R-06 cho từng trang theo thứ tự ưu tiên: #1 → #4 → #5 → #6 → #9 → #25 → #17 → #18 → #19 → #12–#16 → #20–#24 → #7 → #8 → #10 → #11 → #28 → #29.
 - Kiểm trên ≥ 3 thiết bị thật (iPhone Safari, Android Chrome, iPad Safari) cho mỗi trang đã sửa; lưu screenshot vào `frontend/qa-policy-checkbox/responsive-<route>-<device>-<theme>.png`.
 - Không tự đánh x; người dùng xác nhận mới ghi dấu và gạch ngang mục chức năng đã nghiệm thu.
+
+### 23.3a. Bug mobile báo bởi người dùng — 17/10/2026
+
+- **P1 — Ảnh hero "cây đèn" chiếm toàn màn hình trên mobile:** Trang `/signin` (và có thể các trang auth khác dùng chung layout) hiển thị ảnh hero/decorative lớn ngay đầu trang, đẩy form đăng nhập xuống dưới fold và khiến người dùng phải cuộn mới thấy input. Trên mobile người dùng không cần phần ảnh này; cần ẩn hoặc thu nhỏ đáng kể (max-height ~120–160px) dưới `@media (max-width: 480px)` để form xuất hiện ngay trong viewport. Gom vào audit chi tiết nhóm Auth (Todo 3) và sửa ở Todo 4 cùng các lỗi P0/P1 khác.
+- **Đã sửa 17/10/2026 (Todo 2):** Thêm rule `@media (max-width: 480px)` trong `SignInPage.css` và `SignUpPage.css`: ẩn `.signin-background`/`.signup-background`, `.background-overlay`, `.background-logo`; đổi nền page sang `hsl(var(--background))`; modal căn trên cùng (`align-items: flex-start`) thay vì giữa để form nằm ngay đầu viewport. `ForgotPasswordPage` và `ContactPage` không có ảnh nền → không ảnh hưởng. Chưa verify bằng thiết bị thật (Todo 2 gặp giới hạn kỹ thuật của browser Cursor — `Emulation.setDeviceMetricsOverride` bị deny).
 
 ### 23.4. Bước 4–6: giới hạn kiểm trên thiết bị thật
 

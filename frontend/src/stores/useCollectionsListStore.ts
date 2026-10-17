@@ -65,6 +65,15 @@ if (typeof window !== 'undefined') {
 }
 
 export function markCollectionsOffline(): void {
- revision++; controller?.abort(); controller = null;
- useCollectionsListStore.setState({ loading: false, error: 'Bạn đang ngoại tuyến. Kết nối mạng rồi bấm Thử lại.' });
+	revision++; controller?.abort(); controller = null;
+	useCollectionsListStore.setState({ loading: false, error: 'Bạn đang ngoại tuyến. Kết nối mạng rồi bấm Thử lại.' });
+}
+
+// Called when the browser comes back online. Clears the offline error so the
+// banner disappears, but does NOT auto-fetch: keep the cached list visible and
+// let the user press Thử lại to avoid a stale write racing with a mutation.
+export function clearCollectionsOfflineError(): void {
+	const { error } = useCollectionsListStore.getState();
+	if (!error) return;
+	useCollectionsListStore.setState({ error: null });
 }

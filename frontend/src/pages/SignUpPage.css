@@ -529,4 +529,23 @@
   .signup-footer {
     padding: 16px;
   }
+
+  /* Hide decorative hero/background on small screens so the form is reachable without scroll */
+  .signup-background,
+  .background-overlay,
+  .background-logo {
+    display: none;
+  }
+
+  .signup-page {
+    background: hsl(var(--background));
+  }
+
+  .signup-modal {
+    align-items: flex-start;
+  }
+
+  .signup-modal-content {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
 }

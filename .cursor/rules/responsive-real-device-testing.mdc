@@ -1,0 +1,57 @@
+---
+description: Bắt buộc test responsive trên ≥ 3 thiết bị thật trước khi gạch ngang responsive một trang user
+globs: frontend/src/pages/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# Responsive — Bắt buộc test thiết bị thật
+
+Áp dụng khi sửa bất kỳ file nào trong `frontend/src/pages/**` (trang user, modal, hook liên quan).
+
+## Quy tắc cứng
+
+Trước khi gạch ngang `R-01…R-06` trong `PAGE_INVENTORY_AND_ANALYSIS.md` hoặc tự đánh dấu `[x]` cho bất kỳ mục responsive nào, **phải có đủ 3 dòng bằng chứng thiết bị thật** dưới đây. Không có → không được gạch ngang.
+
+### 3 thiết bị bắt buộc
+
+| # | Thiết bị | Trình duyệt mục tiêu | Viewport chuẩn |
+|---|---|---|---|
+| 1 | iPhone thật (Safari iOS) | Safari 17+ | 390×844 |
+| 2 | Android thật (Chrome) | Chrome 119+ | 412×915 |
+| 3 | iPad thật (Safari) **hoặc** desktop thật | Safari 17+ / Chrome 119+ | 1024×768 **hoặc** 1440×900 |
+
+> Nếu môi trường Cursor/Windows không có sẵn thiết bị, **dừng lại hỏi người dùng** thay vì dùng Emulation giả lập. Theo `responsive.md` mục 10 và 11, fixture/Emulation không thay thế thiết bị thật.
+
+## Bằng chứng bắt buộc ghi vào checklist
+
+Mỗi lần ghi `[x]` cho R-01…R-06, ghi kèm 3 dòng sau trong `frontend/qa-policy-checkbox/responsive-<route>-<device>-<theme>.png` hoặc checklist tương ứng:
+
+```
+- Thiết bị: <iPhone 14 · Safari iOS 17.1>
+- Viewport: <390×844>
+- Ngày test: <YYYY-MM-DD>
+- Người test: <tên hoặc "người dùng">
+- Pass/Fail + ghi chú: <…>
+```
+
+## Cấm
+
+- ❌ Đánh `[x]` responsive chỉ dựa trên DevTools `Emulation.setDeviceMetricsOverride` hoặc Playwright fixture.
+- ❌ Ghi "đã test responsive" mà không kèm tên thiết bị + ngày + người test.
+- ❌ Tự ý chuyển `o` thành `x` dù đã sửa code — phải chờ người dùng xác nhận trên thiết bị thật.
+- ❌ Bỏ qua thiết bị thứ 3 vì "không có iPad" — có thể thay bằng desktop thật nhưng phải ghi rõ.
+
+## Khi gặp giới hạn môi trường
+
+Phiên Cursor trên Windows không có sẵn iPhone/Android/iPad thật:
+
+1. **Báo người dùng** trước khi sửa, nêu rõ mình chỉ có thể chuẩn bị code + checklist.
+2. Chuẩn bị sẵn `frontend/qa-policy-checkbox/responsive-environment.md` (danh sách thiết bị, baseline commit, môi trường).
+3. Chuẩn bị sẵn `frontend/qa-policy-checkbox/responsive-audit.md` (29 trang × R-01…R-06, để trống cho người dùng điền).
+4. **Không tự gạch ngang** mục nào cho đến khi người dùng cung cấp kết quả kiểm trên thiết bị thật.
+
+## Tài liệu liên quan
+
+- `responsive.md` — tiêu chuẩn responsive tổng (breakpoint, touch target, form, modal, a11y).
+- `PAGE_INVENTORY_AND_ANALYSIS.md` mục 23 — kế hoạch responsive vòng cuối.
+- `AGENTS.md` mục 6 — nguyên tắc responsive và quy ước "làm vòng cuối".

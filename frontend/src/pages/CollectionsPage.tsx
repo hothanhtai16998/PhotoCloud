@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
-import { useCollectionsListStore, markCollectionsOffline } from '@/stores/useCollectionsListStore';
+import { useCollectionsListStore, markCollectionsOffline, clearCollectionsOfflineError } from '@/stores/useCollectionsListStore';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { t } from '@/i18n';
 import { filterCollections } from '@/utils/collectionList';
@@ -56,8 +56,13 @@ export default function CollectionsPage() {
 
 	useEffect(() => {
 		const handleOffline = () => markCollectionsOffline();
+		const handleOnline = () => clearCollectionsOfflineError();
 		window.addEventListener('offline', handleOffline);
-		return () => window.removeEventListener('offline', handleOffline);
+		window.addEventListener('online', handleOnline);
+		return () => {
+			window.removeEventListener('offline', handleOffline);
+			window.removeEventListener('online', handleOnline);
+		};
 	}, []);
 
 	const [editor, setEditor] = useState<Collection | 'create' | null>(null);
