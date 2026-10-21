@@ -91,90 +91,26 @@
   min-width: 0;
 }
 
+/* Icon-only action buttons: dùng shared Button (ui/button.tsx).
+   Kích thước vuông cố định, rộng hơn cao để icon có chỗ và trông cân đối. */
 .collection-detail-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
   flex-wrap: wrap;
 }
 
-.collection-export-btn {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-  padding: 10px 18px;
-  background: var(--button-secondary-bg);
-  border: 1px solid var(--button-secondary-border);
+.collection-detail-actions .collection-action-btn {
+  width: 52px;
+  height: 40px;
+  min-width: 52px;
+  padding: 0;
   border-radius: 8px;
-  color: var(--button-secondary-fg);
-  font-size: 0.875rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  line-height: 1.5;
 }
 
-.collection-export-btn > * {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-}
 
-.collection-export-btn:hover {
-  background: var(--button-secondary-hover);
-  border-color: var(--button-secondary-border);
-  color: var(--button-secondary-fg);
-}
-
-.collection-favorite-btn {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-  padding: 10px 18px;
-  background: var(--button-secondary-bg);
-  border: 1px solid var(--button-secondary-border);
-  border-radius: 8px;
-  color: var(--button-secondary-fg);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  line-height: 1.5;
-}
-
-.collection-favorite-btn > * {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-}
-
-.collection-favorite-btn.favorited {
-  color: var(--button-selected-fg);
-  background: var(--button-selected-bg);
-  border-color: var(--button-selected-border);
-}
-
-.collection-favorite-btn:hover:not(:disabled) {
-  background: var(--button-secondary-hover);
-  border-color: var(--button-secondary-border);
-  color: var(--button-secondary-fg);
-}
-
-.collection-favorite-btn.favorited:hover:not(:disabled) {
-  background: var(--button-selected-bg);
-  border-color: var(--button-selected-border);
-  color: var(--button-selected-fg);
-}
-
-.collection-favorite-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 .collection-detail-title-row {
   display: flex;
@@ -207,49 +143,7 @@
   opacity: 0.6;
 }
 
-.collection-selection-mode-btn {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-  padding: 10px 18px;
-  background: var(--button-secondary-bg);
-  border: 1px solid var(--button-secondary-border);
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--button-secondary-fg);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  line-height: 1.5;
-}
-
-.collection-selection-mode-btn > * {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 8px;
-}
-
-.collection-selection-mode-btn:hover {
-  background: var(--button-secondary-hover);
-  border-color: var(--button-secondary-border);
-  color: var(--button-secondary-fg);
-}
-
-.collection-selection-mode-btn.active {
-  background: var(--button-selected-bg);
-  color: var(--button-selected-fg);
-  border-color: var(--button-selected-border);
-}
-
-.collection-selection-mode-btn.active:hover {
-  background: var(--button-selected-bg);
-  color: var(--button-selected-fg);
-}
+/* (collection-selection-mode-btn styles removed — dùng shared Button default/outline) */
 
 .collection-detail-description {
   margin: 0 0 16px 0;
@@ -709,16 +603,6 @@
     width: 100%;
     justify-content: flex-start;
     gap: 8px;
-  }
-
-  .collection-export-btn,
-  .collection-favorite-btn,
-  .collection-selection-mode-btn {
-    flex: 1;
-    min-width: 0;
-    justify-content: center;
-    padding: 10px 16px;
-    font-size: 0.875rem;
   }
 
   .collection-bulk-action-bar {

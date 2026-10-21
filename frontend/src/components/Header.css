@@ -113,8 +113,13 @@
     gap: 12px;
   }
 
-  .PHOTOCLOUD-header .header-actions > div {
-    gap: 12px !important;
+  .PHOTOCLOUD-header .header-actions-group {
+    gap: 8px;
+  }
+
+  .PHOTOCLOUD-header .header-admin-group {
+    gap: 2px !important;
+    padding-left: 8px;
   }
 }
 

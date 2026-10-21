@@ -424,12 +424,17 @@
   letter-spacing: -0.01em;
 }
 
+/* Chữ tiếng Việt có khoảng trắng và dấu thanh hẹp, nên `38ch` khiến trình duyệt
+   ngắt giữa từ kép (ví dụ "quản trị" bị tách). Nới chiều rộng và cân đều các
+   dòng để điểm ngắt rơi vào ranh giới từ. */
 .collections-empty p {
   margin: 0 0 12px;
   color: var(--text-secondary);
   font-size: 0.9375rem;
   line-height: 1.55;
-  max-width: 38ch;
+  max-width: 46ch;
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 .collections-empty-actions {
@@ -441,6 +446,10 @@
 }
 
 .collections-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 11px 22px;
   background: var(--button-primary-bg);
   color: var(--button-primary-fg);
@@ -450,6 +459,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.collections-empty-btn svg {
+  flex-shrink: 0;
 }
 
 .collections-empty-btn:hover {

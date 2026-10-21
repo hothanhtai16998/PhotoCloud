@@ -49,9 +49,9 @@ export default function CollectionsResults({ collections: browseCollections, onE
 				<button
 					type="button"
 					className="collections-empty-btn"
-					onClick={() => navigate('/')}
+					onClick={() => navigate('/explore')}
 				>
-					<Compass size={16} aria-hidden="true" style={{ marginRight: 6, verticalAlign: '-2px' }} />
+					<Compass size={16} aria-hidden="true" />
 					{t('favorites.explore')}
 				</button>
 			</div>

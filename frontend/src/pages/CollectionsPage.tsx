@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -20,7 +20,15 @@ const CollectionsResults = lazy(() => import('@/components/collection/Collection
 const CollectionModal = lazy(() => import('@/components/collection/CollectionModal'));
 
 export default function CollectionsPage() {
-    useLayoutEffect(() => { document.getElementById('public-collections-startup')?.remove(); }, []);
+  // Startup shell (static toolbar) chỉ là nơi giữ layout trước khi React mount.
+  // Xoá nó bằng useEffect (sau paint) để nội dung React đã kịp commit trước khi
+  // biến mất — tránh khoảng thời gian #root rỗng khiến trang bị cắt/cụt.
+  useEffect(() => {
+    const shell = document.getElementById('public-collections-startup');
+    if (!shell) return;
+    const frame = requestAnimationFrame(() => shell.remove());
+    return () => cancelAnimationFrame(frame);
+  }, []);
 	const { accessToken, isInitializing } = useAuthStore();
 	const { user } = useUserStore();
 

@@ -1,85 +1,8 @@
-.collection-share-btn {
-	width: 44px;
-	height: 44px;
-	border-radius: 12px;
-	background: var(--button-secondary-bg);
-	border: 2px solid var(--button-secondary-border);
-	cursor: pointer;
-	display: flex !important;
-	flex-direction: row !important;
-	align-items: center !important;
-	justify-content: center;
-	gap: 8px;
-	color: var(--button-secondary-fg);
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	backdrop-filter: blur(12px);
-	box-shadow: var(--button-shadow);
-}
+/* collection-share-btn: dùng chỉ bởi CollectionShare.tsx cho dạng standalone
+   (ví dụ trên collection card). Không còn dùng chồng lên Button trên trang
+   detail — đã tháo className ở CollectionShare.tsx, trang chi tiết giờ để
+   Button component tự quyết variant theo Button system thống nhất. */
 
-.collection-share-btn > * {
-	display: inline-flex;
-	align-items: center;
-}
-
-.collection-share-btn:hover {
-	background: var(--button-secondary-hover);
-	transform: translateY(-4px) scale(1.05);
-	box-shadow: var(--button-shadow);
-	color: var(--button-secondary-fg);
-}
-
-.collection-share-btn.active {
-	background: var(--button-selected-bg);
-	color: var(--button-selected-fg);
-	border-color: var(--button-selected-border);
-}
-
-/* For collection detail page - different styling */
-.collection-detail-actions .collection-share-btn {
-	width: auto !important;
-	height: 36px !important;
-	padding: 10px 18px !important;
-	border-radius: 8px !important;
-	background: var(--button-secondary-bg) !important;
-	border: 1px solid var(--button-secondary-border) !important;
-	box-shadow: none !important;
-	display: flex !important;
-	flex-direction: row !important;
-	align-items: center !important;
-	justify-content: center !important;
-	gap: 8px;
-	font-size: 0.875rem !important;
-	font-weight: 500 !important;
-	color: var(--button-secondary-fg) !important;
-	transition: all 0.15s ease !important;
-	backdrop-filter: none !important;
-	transform: none !important;
-	line-height: 1.5 !important;
-	box-sizing: border-box !important;
-}
-
-.collection-detail-actions .collection-share-btn > * {
-	display: flex !important;
-	flex-direction: row !important;
-	align-items: center !important;
-	gap: 8px;
-}
-
-.collection-detail-actions .collection-share-btn:hover {
-	background: var(--button-secondary-hover) !important;
-	border-color: var(--button-secondary-border) !important;
-	transform: none !important;
-	box-shadow: none !important;
-	color: var(--button-secondary-fg);
-}
-
-.collection-detail-actions .collection-share-btn.active {
-	background: var(--button-selected-bg);
-	color: var(--button-selected-fg);
-	border-color: var(--button-selected-border);
-}
-
-/* For collection card actions - different styling */
 .collection-card-actions .collection-share-btn {
 	width: auto;
 	height: auto;

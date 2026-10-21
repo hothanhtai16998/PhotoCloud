@@ -270,13 +270,65 @@ body.scroll-locked .user-menu-content {
   gap: 0 !important;
 }
 
-.user-menu-item-desktop svg {
+/* Chỉ ẩn icon của "Cài đặt" và "Đăng xuất" — chúng chỉ là text, không có icon.
+   "Quản trị" và các tiện ích dùng class riêng nên icon tự hiện. */
+.user-menu-item-desktop:not(.user-menu-item-has-icon) svg {
   display: none !important;
 }
 
 .user-menu-separator-desktop {
   display: none;
 }
+
+/* Tiện ích chuyển từ header vào menu: từng mục hiển thị thành một dòng đầy đủ
+   (icon + nhãn) giống các menu item khác. */
+.user-menu-content .site-theme-toggle-menu {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  margin: 2px 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-menu-content .site-theme-toggle-menu:hover {
+  background: var(--button-secondary-hover);
+  color: var(--button-secondary-fg);
+}
+
+.user-menu-content .header-library-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  margin: 2px 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-menu-content .header-library-action:hover {
+  background: var(--button-secondary-hover);
+}
+
+.user-menu-content .header-library-action:focus-visible,
+.user-menu-content .site-theme-toggle-menu:focus-visible {
+  outline: 2px solid var(--button-focus);
+  outline-offset: 2px;
+}
+
 @media (min-width: 769px) {
   .user-menu-desktop-header {
     display: flex;

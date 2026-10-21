@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { Share2, Mail, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { IconTooltip } from '@/components/ui/IconTooltip';
 import type { Collection } from '@/types/collection';
 import { collectionService } from '@/services/collectionService';
 import './CollectionShare.css';
@@ -189,16 +190,19 @@ export const CollectionShare = memo(({ collection }: CollectionShareProps) => {
 
 	return (
 		<>
+			<IconTooltip label="Chia sẻ bộ sưu tập">
 			<Button
 				ref={shareButtonRef}
 				variant="outline"
-				className={`collection-share-btn ${showShareMenu ? 'active' : ''}`}
+				iconOnly
+				className="collection-action-btn"
 				onClick={handleShare}
-				title="Chia sẻ bộ sưu tập"
+				aria-label="Chia sẻ bộ sưu tập"
+				aria-expanded={showShareMenu}
 			>
-				<Share2 size={18} />
-				<span>Chia sẻ</span>
+				<Share2 size={20} className="size-5" aria-hidden="true" />
 			</Button>
+		</IconTooltip>
 			{/* Share Menu */}
 			{showShareMenu && (
 				<div

@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect, useLayoutEffect, useSyncExternalStore, lazy, Suspense, type MouseEvent } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
-import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen, Upload } from "lucide-react"
+import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
 import { getSessionItem, setSessionItem, removeSessionItem } from "@/utils/safeStorage"
@@ -325,14 +325,9 @@ export const Header = memo(function Header() {
           {/* Right Actions - Desktop */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
           {!isMobile && <div className="header-actions desktop-only">
-            {stableHasAuth && <><ThemeToggle /><ImagePageSidebar variant="header" /></>}
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
-              <div style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}>
+              <div className="header-actions-group">
                 <Button
                   onClick={() => openBookingModal()}
                   className="header-booking-button"
@@ -341,23 +336,15 @@ export const Header = memo(function Header() {
                   <CalendarDays size={16} />
                   <span>Đặt lịch chụp</span>
                 </Button>
+                {(canOpenAdmin || isAdmin) && <div className="header-admin-group">
                 {canOpenAdmin && <Link to="/admin" className="header-library-action" aria-label="Quản trị" title="Quản trị"><Shield size={20} /></Link>}
-                {isAdmin && <button type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setUploadModalOpen(true);
-                  }}
-                  className="header-library-action header-upload-button"
-                  title={t('header.addImage')} aria-label={t('header.addImage')}
-                >
-                  <Upload size={20} />
-                </button>}
+                </div>}
                 <NotificationBell />
                 <UserMenu
                   user={user}
                   onSignOut={handleSignOut}
                   align="end"
+                  showHeaderUtilities
                   onUpload={isAdmin ? () => setUploadModalOpen(true) : undefined}
                   trigger={
                     <Avatar

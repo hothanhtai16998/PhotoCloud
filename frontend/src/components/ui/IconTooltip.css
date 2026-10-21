@@ -1,0 +1,42 @@
+.icon-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.icon-tooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--button-primary-bg, #111);
+  color: var(--button-primary-fg, #fff);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.icon-tooltip-bottom .icon-tooltip {
+  top: calc(100% + 8px);
+}
+
+.icon-tooltip-top .icon-tooltip {
+  bottom: calc(100% + 8px);
+}
+
+.icon-tooltip-wrap.is-open .icon-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-tooltip {
+    transition: none;
+  }
+}

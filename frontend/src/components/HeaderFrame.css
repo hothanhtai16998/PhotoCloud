@@ -25,7 +25,7 @@
   max-width: none;
   height: 100%;
   margin: 0;
-  padding: 0 32px;
+  padding: 0 48px;
   gap: 16px;
   box-sizing: border-box;
 }
@@ -87,14 +87,29 @@
 :root [data-header-frame] .header-studio-nav a:focus-visible::after { transform: scaleX(1); }
 :root [data-header-frame] .header-actions { justify-self: end; margin-left: 0; }
 :root [data-header-frame] .header-actions > div { flex-shrink: 0; }
+/* Một nhịp gap duy nhất cho cụm bên phải: CTA chính | tiện ích | tài khoản. */
+:root [data-header-frame] .header-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+:root [data-header-frame] .header-admin-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border-color, #E8E2D6);
+}
 :root [data-header-frame] .header-booking-button svg { color: inherit; }
 .public-header-startup { display: none; z-index: 1501; }
 html[data-startup-surface^='collections'] .public-header-startup { display: block; }
 @media (min-width:769px) and (max-width:1699px) {
   :root [data-header-frame] .header-studio-nav { gap: 10px; }
   :root [data-header-frame] .header-studio-nav a { font-size: 13px; }
-  :root [data-header-frame] .header-actions,
-  :root [data-header-frame] .header-actions > div { gap: 4px !important; }
+  /* Chỉ nén khoảng cách bên trong nhóm icon; nhịp tách nhóm vẫn giữ để cụm
+     bên phải không dính liền khi màn hình hẹp. */
+  :root [data-header-frame] .header-admin-group { gap: 2px !important; padding-left: 8px; }
+  :root [data-header-frame] .header-actions-group { gap: 8px; }
   :root [data-header-frame] .header-booking-button { width: 44px; min-width: 44px; padding-inline: 0 !important; }
   :root [data-header-frame] .header-booking-button > span > span { display: none; }
 }
@@ -106,7 +121,7 @@ html[data-startup-surface^='collections'] .public-header-startup { display: bloc
   :root [data-header-frame] .mobile-header-actions { justify-self: end; }
 }
 @media (min-width:769px) and (max-width:1279px) {
-  :root [data-header-frame] .header-container { grid-template-columns: 120px minmax(0,1fr) 390px; gap: 8px; }
+  :root [data-header-frame] .header-container { grid-template-columns: 120px minmax(0,1fr) 390px; gap: 8px; padding-inline: 20px; }
   :root [data-header-frame] .header-studio-nav { min-width: 0; max-width: 100%; overflow-x: auto; justify-content: safe center; }
 }
 @media (max-width:480px) { :root [data-header-frame] .text-logo { font-size: 20px; } }

@@ -1,6 +1,7 @@
-import { Heart, Download, CheckSquare2, X, ArrowLeft } from 'lucide-react';
+import { Heart, X, ArrowLeft, SquareCheckBig, ArrowUpFromLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { IconTooltip } from '@/components/ui/IconTooltip';
 import { CollectionShare } from '@/components/collection/CollectionShare';
 import { t } from '@/i18n';
 import type { Collection } from '@/types/collection';
@@ -81,61 +82,56 @@ export const CollectionHeader = ({
         </div>
 
         <div className="collection-detail-actions">
-          {/* Primary: yêu thích (mọi user) */}
-          <Button
-            variant={isFavorited ? 'default' : 'outline'}
-            className={`collection-favorite-btn ${isFavorited ? 'favorited' : ''}`}
-            onClick={handleToggleFavorite}
-            loading={togglingFavorite}
-            title={isFavorited ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
-            aria-pressed={isFavorited}
-          >
-            <Heart size={18} fill={isFavorited ? 'currentColor' : 'none'} aria-hidden="true" />
-            <span>{isFavorited ? 'Đã yêu thích' : 'Yêu thích'}</span>
-          </Button>
+          <IconTooltip label={isFavorited ? 'Bỏ yêu thích' : 'Yêu thích'}>
+            <Button
+              variant={isFavorited ? 'default' : 'outline'}
+              iconOnly
+              className="collection-action-btn"
+              onClick={handleToggleFavorite}
+              loading={togglingFavorite}
+              aria-label={isFavorited ? 'Bỏ yêu thích' : 'Yêu thích'}
+              aria-pressed={isFavorited}
+            >
+              <Heart size={20} className="size-5" fill={isFavorited ? 'currentColor' : 'none'} aria-hidden="true" />
+            </Button>
+          </IconTooltip>
 
-          {/* Chia sẻ: hiện thẳng, không cần qua menu */}
           {collection?.isPublic && (
             <CollectionShare collection={collection} />
           )}
 
-          {/* Xuất: hiện thẳng, không cần qua menu */}
           {imagesCount > 0 && collection && (
-            <Button
-              variant="outline"
-              className="collection-export-btn"
-              onClick={handleExportCollection}
-              loading={isExporting}
-              title="Xuất bộ sưu tập (ZIP)"
-            >
-              <Download size={18} aria-hidden="true" />
-              <span>Xuất</span>
-            </Button>
+            <IconTooltip label="Xuất bộ sưu tập">
+              <Button
+                variant="outline"
+                iconOnly
+                className="collection-action-btn"
+                onClick={handleExportCollection}
+                loading={isExporting}
+                aria-label="Xuất bộ sưu tập"
+              >
+                <ArrowUpFromLine size={20} className="size-5" aria-hidden="true" />
+              </Button>
+            </IconTooltip>
           )}
 
-          {/* (Đã bỏ ReportButton khỏi header theo yêu cầu — viewer có thể báo cáo qua trang ảnh chi tiết.) */}
-
-          {/* Chọn nhiều: primary cho owner */}
           {canEdit && imagesCount > 0 && (
-            <Button
-              variant={selectionMode ? 'default' : 'outline'}
-              className={`collection-selection-mode-btn ${selectionMode ? 'active' : ''}`}
-              onClick={toggleSelectionMode}
-              title={selectionMode ? 'Thoát chế độ chọn' : 'Chọn nhiều ảnh'}
-              aria-pressed={selectionMode}
-            >
-              {selectionMode ? (
-                <>
-                  <X size={18} aria-hidden="true" />
-                  <span>Thoát</span>
-                </>
-              ) : (
-                <>
-                  <CheckSquare2 size={18} aria-hidden="true" />
-                  <span>Chọn</span>
-                </>
-              )}
-            </Button>
+            <IconTooltip label={selectionMode ? 'Thoát chế độ chọn' : 'Chọn nhiều ảnh'}>
+              <Button
+                variant={selectionMode ? 'default' : 'outline'}
+                iconOnly
+                className="collection-action-btn"
+                onClick={toggleSelectionMode}
+                aria-label={selectionMode ? 'Thoát chế độ chọn' : 'Chọn nhiều ảnh'}
+                aria-pressed={selectionMode}
+              >
+                {selectionMode ? (
+                  <X size={20} className="size-5" aria-hidden="true" />
+                ) : (
+                  <SquareCheckBig size={20} className="size-5" aria-hidden="true" />
+                )}
+              </Button>
+            </IconTooltip>
           )}
         </div>
       </div>

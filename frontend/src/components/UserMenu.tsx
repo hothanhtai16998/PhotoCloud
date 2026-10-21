@@ -4,6 +4,8 @@ import { Upload, Shield } from 'lucide-react'
 import { t } from '@/i18n'
 import type { User } from '@/types/user'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { ThemeToggle } from './ThemeToggle'
+import { HeaderLibraryMenuItems } from './HeaderLibraryMenuItems'
 import './UserMenu.css'
 
 interface UserMenuProps {
@@ -12,9 +14,11 @@ interface UserMenuProps {
   trigger: React.ReactNode
   align?: 'start' | 'end'
   onUpload?: () => void
+  /** Đưa nhóm tiện ích (theme, yêu thích, lịch sử tải) vào menu thay vì đặt rải ở header. */
+  showHeaderUtilities?: boolean
 }
 
-export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: UserMenuProps) {
+export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload, showHeaderUtilities = false }: UserMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [menuAnimating, setMenuAnimating] = useState(false)
@@ -178,9 +182,8 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
           }}
         >
           <div className="user-menu-items">
-            {canOpenAdmin && <Link to="/admin" className="user-menu-item" onClick={handleMenuItemClick}><Shield size={18} /> Quản trị</Link>}
             {!isMobile && <>
-            {/* Desktop Menu - User Info Section */}
+            {/* Desktop: tài khoản trên cùng, mỗi mục quản lý một hàng, đăng xuất dưới cùng. */}
             <Link
               to={currentUser?.username ? `/@${currentUser.username}` : '/profile'}
               className="user-menu-desktop-header"
@@ -212,7 +215,9 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
 
             <div className="user-menu-separator user-menu-separator-desktop" />
 
-            {/* Desktop Menu - Account Settings */}
+            {canOpenAdmin && (
+              <Link to="/admin" className="user-menu-item user-menu-item-desktop user-menu-item-has-icon" onClick={handleMenuItemClick}><Shield size={18} /> Quản trị</Link>
+            )}
             <Link
               to="/profile/edit"
               className="user-menu-item user-menu-item-desktop"
@@ -220,10 +225,13 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload }: 
             >
               {t('header.accountSettings')}
             </Link>
+            {showHeaderUtilities && <>
+              <ThemeToggle menu />
+              <HeaderLibraryMenuItems onNavigate={handleMenuItemClick} />
+            </>}
 
             <div className="user-menu-separator user-menu-separator-desktop" />
 
-            {/* Desktop Menu - Logout */}
             <button
               className="user-menu-item user-menu-item-desktop user-menu-item-destructive"
               onClick={() => {
