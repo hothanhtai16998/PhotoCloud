@@ -3,7 +3,7 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
 (async () => {
  const server = require('./admin-preview.cjs'); await new Promise(r => server.listen(0, '127.0.0.1', r));
  const origin = `http://127.0.0.1:${server.address().port}`, browser = await chromium.launch({ channel: 'msedge', headless: true }), reports = [];
- const seed = () => [{ _id: 'a', name: 'Ánh sáng %', createdBy: 'fixture-admin', images: [], isPublic: false, tags: ['studio'], imageCount: 2, createdAt: '2026-10-01' }, { _id: 'b', name: 'Bình minh', createdBy: 'fixture-admin', images: [], isPublic: true, tags: ['trời'], imageCount: 5, createdAt: '2026-10-02' }, { _id: 'c', name: 'Tên dài '.repeat(30), createdBy: 'fixture-admin', images: [], isPublic: true, createdAt: '2026-10-03' }];
+ const seed = () => [{ _id: 'a', name: 'Ánh sáng %', createdBy: 'fixture-admin', images: [], isPublic: false, tags: ['studio'], imageCount: 2, createdAt: '2026-10-01' }, { _id: 'b', name: 'Bình minh', createdBy: 'fixture-admin', images: [], isPublic: true, tags: ['trời'], imageCount: 5, createdAt: '2026-10-02' }, { _id: 'c', name: 'Tên dài '.repeat(30), createdBy: 'fixture-admin', images: [], isPublic: true, imageCount: 3, createdAt: '2026-10-03' }];
  try { for (const theme of ['light', 'dark']) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, serviceWorkers: 'block' });
   await context.addInitScript(theme => { try { localStorage.setItem('theme', theme); } catch { /* Browser error documents have no storage. */ } }, theme);
@@ -15,7 +15,7 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
     if (method === 'GET') { if (hangList) return; reads++; await new Promise(r => setTimeout(r, 250)); return route.fulfill({ status: failList ? 503 : 200, json: { success: !failList, collections: rows } }); }
     if (method === 'POST') { creates++; if (failCreate) return route.fulfill({ status: 503, json: { message: 'Thử lại' } }); const item = { ...seed()[0], ...route.request().postDataJSON(), _id: 'new', imageCount: 0 }; rows.unshift(item); return route.fulfill({ json: { success: true, collection: item } }); }
    }
-   if (/\/collections\/[^/]+\/images$/.test(u.pathname)) { additions++; if (failImage) return route.fulfill({ status: 503, json: { message: 'Ảnh chưa thêm được' } }); return route.fulfill({ json: { success: true, collection: rows[0] } }); }
+   if (/\/collections\/[^/]+\/images$/.test(u.pathname)) { additions++; if (failImage) return route.fulfill({ status: 503, json: { message: 'Ảnh chưa thêm được' } }); rows[0].imageCount = 1; return route.fulfill({ json: { success: true, collection: rows[0] } }); }
    if (/\/collections\/[^/]+$/.test(u.pathname)) {
     if (method === 'DELETE') { deletes++; await new Promise(r => setTimeout(r, 300)); if (failDelete) return route.fulfill({ status: 503, json: { message: 'Thử lại' } }); rows = rows.filter(r => r._id !== id); return route.fulfill({ json: { success: true } }); }
     if (method === 'PATCH') { if (failEdit) return route.fulfill({ status: 503, json: { message: 'Không thể lưu' } }); rows = rows.map(r => r._id === id ? { ...r, ...route.request().postDataJSON() } : r); return route.fulfill({ json: { success: true, collection: rows.find(r => r._id === id) } }); }
@@ -40,7 +40,7 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
   const actions = page.locator('.collection-load-error-actions'); assert.equal(await actions.getByRole('link', { name: 'Quay lại danh sách' }).count(), 1);
   const retryBox = await actions.getByRole('button').boundingBox(), returnBox = await actions.getByRole('link').boundingBox(); assert.ok(Math.abs(retryBox.y - returnBox.y) < 4);
   await page.screenshot({path:path.resolve(__dirname, '../qa-policy-checkbox/collection-error-refined-' + theme + '.png')});
-  await context.setOffline(false); await actions.getByRole('button').click(); await page.locator('.collection-detail-header').waitFor();
+  await context.setOffline(false); await actions.waitFor({ state: 'hidden' }); await page.locator('.collection-detail-title-row').waitFor();
   await page.getByRole('link', { name: 'Quay lại bộ sưu tập' }).click(); await page.locator('.collections-search-input').waitFor(); assert.equal(reads, 1);
   await page.screenshot({ path: path.resolve(__dirname, `../qa-policy-checkbox/collections-${theme}.png`) });
   await page.locator('.action-danger').first().click(); const dialog = page.getByRole('dialog'); await dialog.waitFor(); await dialog.getByRole('button', { name: 'Xóa', exact: true }).click(); await dialog.getByRole('alert').waitFor(); assert.equal(deletes, 1);
@@ -61,7 +61,12 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
   await page.locator('.collections-create-btn').click(); await page.getByRole('dialog').waitFor();
   await page.locator('.collection-modal-close').focus(); await page.keyboard.press('Shift+Tab'); assert.ok(await page.evaluate(() => !!document.activeElement.closest('[role="dialog"]')));
   await page.keyboard.press('Escape'); await page.getByRole('dialog').waitFor({ state: 'hidden' }); assert.equal(await page.locator('.collections-create-btn').evaluate(el => el === document.activeElement), true);
-  await context.setOffline(true); await page.evaluate(() => window.dispatchEvent(new Event('offline'))); await page.getByRole('alert').filter({ hasText: 'ngoại tuyến' }).waitFor(); assert.equal(await page.locator('[data-sonner-toast]').count(), 0); await context.setOffline(false); await page.getByRole('button', { name: 'Thử lại', exact: true }).click();
+  await context.setOffline(true); await page.evaluate(() => window.dispatchEvent(new Event('offline'))); await page.getByRole('alert').filter({ hasText: 'ngoại tuyến' }).waitFor(); assert.equal(await page.locator('[data-sonner-toast]').count(), 0);
+  const cachedCards = await page.locator('.collection-card').count();
+  await context.setOffline(false);
+  // Online refreshes once while keeping cached rows and current filters.
+  await page.getByRole('alert').filter({ hasText: 'ngoại tuyến' }).waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('.collection-card').count(), cachedCards);
   rows = []; await page.reload(); await page.locator('.collections-empty').waitFor(); assert.deepEqual(errors, []);
   reports.push({ theme, readyMs, reads, creates, additions, deletes }); await context.close();
  }} finally { await browser.close(); server.close(); }

@@ -1,0 +1,112 @@
+/* Shared by the HTML startup header and React header. The middle track stays
+   centered regardless of authentication, placeholders, or account permissions. */
+:root [data-header-frame] {
+  position: fixed;
+  inset: 0 0 auto;
+  width: 100vw;
+  height: 80px;
+  box-sizing: border-box;
+  background: var(--header-surface, var(--bg-header, #F0EAE0));
+  border-bottom: 1px solid var(--border-color, #E8E2D6);
+  color: var(--text-primary, #1B1B19);
+  font-family: Arial, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+}
+:root [data-header-frame] .header-top { height: 100%; min-height: 0; padding: 0; }
+:root [data-header-frame] .header-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  justify-content: normal;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0;
+  padding: 0 32px;
+  gap: 16px;
+  box-sizing: border-box;
+}
+:root [data-header-frame] .header-logo-container { justify-self: start; }
+:root [data-header-frame] .header-logo { display: flex; align-items: center; text-decoration: none; }
+:root [data-header-frame] .text-logo {
+  font-family: Arial, sans-serif;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+  font-style: normal;
+  font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  white-space: nowrap;
+  text-transform: lowercase;
+  color: var(--text-primary, #1B1B19);
+}
+:root [data-header-frame] .header-studio-nav {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  white-space: nowrap;
+}
+:root [data-header-frame] .header-studio-nav a {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  padding: 10px 4px;
+  min-height: 44px;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: normal;
+  color: var(--text-secondary, #6B6B66);
+  text-decoration: none;
+}
+:root [data-header-frame] .header-studio-nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  height: 2px;
+  background: var(--accent, #B8865B);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+:root [data-header-frame] .header-studio-nav a[aria-current='page'] { color: var(--accent, #B8865B); }
+:root [data-header-frame] .header-studio-nav a[aria-current='page']::after { transform: scaleX(1); }
+:root [data-header-frame] .header-studio-nav a:hover { color: var(--accent, #B8865B); }
+:root [data-header-frame] .header-studio-nav a:hover::after,
+:root [data-header-frame] .header-studio-nav a:focus-visible::after { transform: scaleX(1); }
+:root [data-header-frame] .header-actions { justify-self: end; margin-left: 0; }
+:root [data-header-frame] .header-actions > div { flex-shrink: 0; }
+:root [data-header-frame] .header-booking-button svg { color: inherit; }
+.public-header-startup { display: none; z-index: 1501; }
+html[data-startup-surface^='collections'] .public-header-startup { display: block; }
+@media (min-width:769px) and (max-width:1699px) {
+  :root [data-header-frame] .header-studio-nav { gap: 10px; }
+  :root [data-header-frame] .header-studio-nav a { font-size: 13px; }
+  :root [data-header-frame] .header-actions,
+  :root [data-header-frame] .header-actions > div { gap: 4px !important; }
+  :root [data-header-frame] .header-booking-button { width: 44px; min-width: 44px; padding-inline: 0 !important; }
+  :root [data-header-frame] .header-booking-button > span > span { display: none; }
+}
+@media (max-width:768px) {
+  :root [data-header-frame] { height: 52px; }
+  :root [data-header-frame] .header-container { grid-template-columns: minmax(0,1fr) auto; padding-inline: 12px; gap: 4px; }
+  :root [data-header-frame] .header-studio-nav { display: none; }
+  :root [data-header-frame] .text-logo { font-size: 24px; }
+  :root [data-header-frame] .mobile-header-actions { justify-self: end; }
+}
+@media (min-width:769px) and (max-width:1279px) {
+  :root [data-header-frame] .header-container { grid-template-columns: 120px minmax(0,1fr) 390px; gap: 8px; }
+  :root [data-header-frame] .header-studio-nav { min-width: 0; max-width: 100%; overflow-x: auto; justify-content: safe center; }
+}
+@media (max-width:480px) { :root [data-header-frame] .text-logo { font-size: 20px; } }

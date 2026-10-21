@@ -1,3 +1,4 @@
+import { HEADER_BRAND } from './publicHeader';
 import HeaderLogo from '@/assets/logo.png';
 // import FaviconLogo from "@/assets/FaviconLogo.png" // Simpler/smaller version
 
@@ -8,10 +9,7 @@ export const LOGO_CONFIG = {
   type: 'text' as 'image' | 'text',
   
   // Text logo configuration (when type is 'text')
-  textLogo: {
-    text: 'photocloud', // Lowercase text for logo
-    fontWeight: 400 as 100 | 300 | 400 | 700 | 900, // Font weight: 100 (Thin), 300 (Light), 400 (Regular), 700 (Bold), 900 (Black)
-  },
+  textLogo: HEADER_BRAND,
   
   // Image logo configuration (when type is 'image')
   mainLogo: HeaderLogo,

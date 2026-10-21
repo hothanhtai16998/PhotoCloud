@@ -1,5 +1,7 @@
 # Collection detail — Round 3 (Simplify) 16/10/2026
 
+> **Đính chính 18/10/2026:** Nhật ký lịch sử, không thay trạng thái nghiệm thu tại PAGE_INVENTORY_AND_ANALYSIS.md. `npx tsc --noEmit` ở cấu hình gốc `files: []` không kiểm source; kết quả pass cũ chưa chứng minh typecheck đạt. Khi kiểm code cần `npx tsc -b` và baseline. Detector `[]` không thay kiểm chức năng, focus hoặc theme; các mô tả accessibility bên dưới là mô tả implementation của lượt cũ, không chứng minh mọi ca đã được test. Sửa ConfirmModal dùng chung có admin phụ thuộc phải theo quyền trong AGENTS.md.
+
 ## Yêu cầu user
 > "k cần ảnh to đùng này đâu, cái UI UX của modal cũng xấu nữa" / "làm nó giống cái nút like là được rồi, k cần nút báo cáo lẫn nút 3 chấm đâu, cứ hiện ra bên ngoài đi"
 

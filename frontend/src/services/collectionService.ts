@@ -25,8 +25,8 @@ export const collectionService = {
 	/**
 	 * Get a single collection by ID
 	 */
-	getCollectionById: async (collectionId: string): Promise<Collection> => {
-		const response = await api.get<CollectionResponse>(`/collections/${collectionId}`);
+	getCollectionById: async (collectionId: string, signal?: AbortSignal): Promise<Collection> => {
+		const response = await api.get<CollectionResponse>(`/collections/${collectionId}`, { signal, timeout: 15000 });
 		if (response.data.success && response.data.collection) {
 			return response.data.collection;
 		}

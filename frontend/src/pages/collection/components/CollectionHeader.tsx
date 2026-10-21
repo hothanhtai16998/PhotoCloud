@@ -12,6 +12,7 @@ interface CollectionHeaderProps {
   togglingFavorite: boolean;
   selectionMode: boolean;
   canEdit: boolean;
+  isExporting: boolean;
   handleToggleFavorite: () => void;
   handleExportCollection: () => void;
   toggleSelectionMode: () => void;
@@ -24,6 +25,7 @@ export const CollectionHeader = ({
   togglingFavorite,
   selectionMode,
   canEdit,
+  isExporting,
   handleToggleFavorite,
   handleExportCollection,
   toggleSelectionMode,
@@ -103,6 +105,7 @@ export const CollectionHeader = ({
               variant="outline"
               className="collection-export-btn"
               onClick={handleExportCollection}
+              loading={isExporting}
               title="Xuất bộ sưu tập (ZIP)"
             >
               <Download size={18} aria-hidden="true" />

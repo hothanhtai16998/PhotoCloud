@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/stores/useUserStore';
 import { useCollectionStore } from '@/stores/useCollectionStore';
@@ -13,13 +13,18 @@ export const useCollectionDetail = () => {
     fetchCollection,
     clearCollection,
   } = useCollectionStore();
+  const scope = `${collectionId ?? ''}:${user?._id ?? 'guest'}`;
+  const [activeScope, setActiveScope] = useState<string | null>(null);
+  const currentCollection = activeScope === scope && collection?._id === collectionId ? collection : null;
 
-  // Load collection on mount
+  // Data and pending requests belong to this route and account, not the next visit.
   useEffect(() => {
     if (!collectionId) {
       navigate('/collections');
       return;
     }
+    clearCollection();
+    let active = true;
 
     const loadCollection = async () => {
       try {
@@ -27,20 +32,18 @@ export const useCollectionDetail = () => {
       } catch {
         // Error already handled in store
         // Keep this URL and let the page show its error with retry.
+      } finally {
+        if (active) setActiveScope(scope);
       }
     };
 
     loadCollection();
-
-    // Cleanup on unmount
-    return () => {
-      clearCollection();
-    };
-  }, [collectionId, navigate, fetchCollection, clearCollection]);
+    return () => { active = false; clearCollection(); };
+  }, [collectionId, scope, navigate, fetchCollection, clearCollection]);
 
   // Check if user owns the collection
   const isOwner = useMemo(() => {
-    if (!collection || !user) return false;
+    if (!collection || !user || !(user.isAdmin || user.isSuperAdmin)) return false;
     const createdBy = typeof collection.createdBy === 'object'
       ? collection.createdBy._id
       : collection.createdBy;
@@ -61,8 +64,8 @@ export const useCollectionDetail = () => {
 
   // Check if user can edit (owner, admin, or edit permission)
   const canEdit = useMemo(() => {
-    return isOwner || userPermission === 'admin' || userPermission === 'edit';
-  }, [isOwner, userPermission]);
+    return Boolean(user && (user.isAdmin || user.isSuperAdmin) && (isOwner || userPermission === 'admin' || userPermission === 'edit'));
+  }, [user, isOwner, userPermission]);
 
   // Get current cover image ID
   const coverImageId = useMemo(() => {
@@ -74,8 +77,8 @@ export const useCollectionDetail = () => {
 
   return {
     collectionId,
-    collection,
-    loading,
+    collection: currentCollection,
+    loading: loading || activeScope !== scope,
     user,
     isOwner,
     userPermission,

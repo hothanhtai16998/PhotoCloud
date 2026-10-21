@@ -1,6 +1,6 @@
 ---
 name: ra-trang-user
-description: Rà soát và sửa một trang user PhotoCloud theo quy trình 7 bước chuẩn. Dùng khi user yêu cầu rà/sửa một trang user cụ thể, khi chat mới nhận nhiệm vụ "rà trang X theo chuẩn PhotoCloud", hoặc khi bắt đầu trang tiếp theo trong PAGE_INVENTORY_AND_ANALYSIS.md theo thứ tự ưu tiên. Skill này mô tả workflow end-to-end (đọc inventory → đọc code → audit Impeccable → sửa → build/lint → test fixture → ghi checklist), dành riêng cho 29 trang user do Cursor phụ trách — không dùng cho admin.
+description: Rà soát, sửa và kiểm tra hồi quy một trang user PhotoCloud theo AGENTS.md và inventory khi được giao rà và sửa hoặc tiếp tục trang đang làm. Không tự bắt đầu trang chỉ vì mở chat; yêu cầu chỉ đánh giá không cho phép sửa code. Không dùng cho admin.
 ---
 
 # Rà trang user PhotoCloud
@@ -11,8 +11,8 @@ Quy trình chuẩn khi được yêu cầu rà/sửa một trang user. Mỗi l�
 
 ## Khi nào dùng skill này
 
-- User viết: "rà trang X theo chuẩn PhotoCloud", "sửa trang X", "đơn giản hóa trang X", "kiểm tra trang X".
-- Bắt đầu phiên mới và inventory chỉ định trang tiếp theo (ví dụ: "Trang tiếp theo: Bộ sưu tập (#5)").
+- User giao rà+sửa hoặc đơn giản hóa trang X. Yêu cầu chỉ kiểm tra/đánh giá không mặc nhiên cho phép sửa.
+- User yêu cầu làm trang tiếp theo: chọn theo inventory hiện tại, không dùng ví dụ cố định làm trạng thái.
 - User yêu cầu dừng giữa chừng và quay lại rà tiếp một trang.
 
 **Không dùng khi:** Chỉ đánh giá không sửa (dùng `$impeccable audit` thẳng), tối ưu hiệu năng (dùng `$impeccable optimize`), xử lý tình huống lỗi (dùng `$impeccable harden`).
@@ -24,7 +24,7 @@ Quy trình chuẩn khi được yêu cầu rà/sửa một trang user. Mỗi l�
 **Mục tiêu:** Biết chính xác trang nào, đã đạt gì, còn thiếu gì, ca nào đang `o`.
 
 1. Đọc `AGENTS.md` (toàn bộ) trước.
-2. Đọc `PAGE_INVENTORY_AND_ANALYSIS.md` mục tương ứng với trang:
+2. Đọc `PAGE_INVENTORY_AND_ANALYSIS.md`, tìm theo ID trang/tên/route. Bảng dưới chỉ là chỉ dẫn lịch sử, cần đối chiếu heading hiện tại, không dùng làm trạng thái nghiệm thu:
    - #1 Trang chủ → mục 1
    - #2 Khám phá → mục 11
    - #3 Tìm kiếm → mục 14
@@ -41,13 +41,13 @@ Quy trình chuẩn khi được yêu cầu rà/sửa một trang user. Mỗi l�
    - #28 Newsletter → mục 10
    - #29 404 → mục 5.C
 3. Ghi nhận các mục sau:
-   - **Đã nghiệm thu** (dấu `x` / `~~gạch ngang~~`) — **không tự ý sửa lại trừ khi user yêu cầu**.
+   - **Đã nghiệm thu** (dấu `x` / `~~gạch ngang~~`, kể cả khoảng trắng/chữ hoa) — giữ hành vi đã duyệt khi refactor trong phạm vi được giao.
    - **Còn `o`** (chưa đạt) — đây là phạm vi ưu tiên.
    - **Ca mới (EXP-F, COL-, PKG-, ABT-, v.v.)** chưa được user tick.
    - **Bug đã thấy trong mã** (mục 5.A–5.F) nếu áp dụng.
-4. Xác định rõ: trang này user muốn **rà+sửa**, **chỉ audit**, hay **đơn giản hóa**? Mặc định là rà+sửa.
+4. Xác định rõ yêu cầu là rà+sửa, chỉ audit hay đơn giản hóa. Không biến yêu cầu chỉ đánh giá thành sửa code. Kiểm `git status` và diff liên quan để bảo vệ công việc chưa commit.
 
-**Báo cáo đầu phiên:** Liệt kê 1 dòng các ca `o` còn mở và lỗi đã biết. Không sửa gì trước khi user xác nhận phạm vi.
+**Báo cáo đầu phiên:** Liệt kê ngắn các ca `o` và lỗi đã biết rồi tiếp tục khi yêu cầu đã rõ. Chỉ hỏi khi thiếu quyết định thực chất hoặc cần sửa phần chung có admin phụ thuộc theo AGENTS.md.
 
 ### Bước 2 — Đọc code hiện tại
 
@@ -63,25 +63,25 @@ Quy trình chuẩn khi được yêu cầu rà/sửa một trang user. Mỗi l�
    - **CSS liên quan:** file `.css` cùng tên, token dùng, media query.
 5. **Không chạy build ở bước này.** Chỉ đọc hiểu.
 
-**Lưu ý phạm vi:** Theo AGENTS.md, **tuyệt đối không đọc/sửa**:
+**Lưu ý phạm vi:** Theo AGENTS.md, không đọc các khu vực sau để sửa hoặc refactor:
 - `frontend/src/pages/admin/**`
 - `frontend/src/components/admin/**`
 - `frontend/src/pages/admin/components/**`
 - `backend/src/controllers/admin/**`
 - `frontend/src/hooks/useSiteSettings.ts` (admin dùng để cấu hình site)
 
-Nếu cần hook tương tự cho user → tạo mới trong thư mục user, không fork/sửa hook dùng chung.
+Được tra cứu import trong admin để xác định phụ thuộc chung theo ngoại lệ của AGENTS.md; không mở rộng thành audit admin. File chung có admin dùng phải hỏi trước khi sửa. Hook riêng cho user có thể tạo mới hoặc fork theo AGENTS.md, không sửa hook bị bảo vệ.
 
 ### Bước 3 — Audit Impeccable
 
 **Mục tiêu:** Tìm vấn đề có bằng chứng trong mã, xếp mức P0–P3.
 
-1. Chạy:
+1. Đọc `.agents/skills/impeccable/SKILL.md`, làm setup theo skill. `$impeccable audit` là yêu cầu cho agent đọc code và kiểm runtime, không phải lệnh CLI. Khi hoàn tất sửa UI, quét bổ trợ một lần trên target thực tế:
    ```bash
-   .agents/skills/impeccable/scripts/impeccable audit frontend/src/pages/<TenTrang>.tsx
+   .agents/skills/impeccable/scripts/impeccable detect --json frontend/src/pages/<TenTrang>.tsx
    ```
-   Trên Windows shell không có `sh`, dùng `.agents/skills/impeccable/scripts/impeccable.cmd audit <path>`.
-2. Đọc thêm `.agents/skills/impeccable/reference/audit.md` và `.agents/skills/impeccable/reference/craft-floor.md` để hiểu tiêu chí.
+   Trên Windows dùng `.agents/skills/impeccable/scripts/impeccable.cmd detect --json <path>`. Detector `[]` không chứng minh chức năng, accessibility, theme hoặc hiệu năng đều đạt. Launcher lỗi thì báo rõ và dùng fallback của skill.
+2. Đọc `.agents/skills/impeccable/reference/audit.md` để audit; đọc `reference/craft-floor.md` ngay trước khi sửa UI. Chỉ audit thì không sửa.
 3. Phân loại kết quả:
    - **P0** chặn nhiệm vụ/mất dữ liệu → sửa ngay.
    - **P1** lớn, cần xong trước phát hành → sửa trong vòng này.
@@ -90,7 +90,7 @@ Nếu cần hook tương tự cho user → tạo mới trong thư mục user, kh
 4. Mỗi vấn đề phải có: **vị trí** (file:line), **bước tái hiện** (nếu là lỗi), **ảnh hưởng** (ai bị ảnh hưởng, khi nào), **bằng chứng** (snippet code, console, hoặc đường dẫn fixture).
 5. **Không suy đoán thành lỗi đã xác nhận.** Nếu chỉ là rủi ro tiềm ẩn, ghi "cần xác minh".
 
-**Báo cáo bước 3:** Danh sách P0–P3 có bằng chứng. Hỏi user trước khi sang bước 4 nếu có P0 hoặc phạm vi sửa lớn.
+**Báo cáo bước 3:** Danh sách P0–P3 có bằng chứng. Sửa lỗi trong phạm vi đã giao; mức P0 tự nó không yêu cầu xin phép lại. Chỉ hỏi khi thay đổi nghiệp vụ/phạm vi hoặc phụ thuộc chung cần quyết định. Không coi vấn đề thẩm mỹ là P0.
 
 ### Bước 4 — Sửa
 
@@ -117,13 +117,14 @@ Chạy theo thứ tự:
 
 ```bash
 cd frontend
-npx tsc --noEmit             # typecheck — xem có diagnostic mới tại file vừa sửa không
+npx tsc -b                   # kiểm các project references, gồm source ứng dụng
 npm run lint                 # ESLint — 0 error mục tiêu
 npm run build                # Vite build PASS
 ```
 
 **Ghi nhận:**
-- TypeScript toàn dự án **luôn còn lỗi legacy** (theo AGENTS.md mục "Giới hạn" và nhiều mục trong inventory). **Chỉ quan tâm diagnostic mới phát sinh từ file vừa sửa.**
+- Ghi baseline trước sửa khi cần phân biệt lỗi có sẵn. Không mặc định luôn có lỗi legacy; so sánh diagnostic trước/sau, gồm lỗi mới ở caller ngoài file sửa. Báo riêng lỗi có sẵn/ngoài phạm vi, không sửa admin để làm sạch toàn repo.
+- `tsconfig.json` gốc có `files: []` và project references: `tsc --noEmit` đơn lẻ có thể exit 0 mà không kiểm source. Không dùng làm bằng chứng typecheck. Chạy ba lệnh độc lập, lưu exit code; một lệnh lỗi không bỏ mất kết quả lint/build.
 - ESLint: ghi riêng error và warning. Warning có sẵn từ trước → không tính là mới.
 - Build: PASS là điều kiện cần, không phải đủ.
 
@@ -140,9 +141,9 @@ npm run build                # Vite build PASS
    - `test-collections-browser.cjs`
    - `test-collection-followup-browser.cjs`
    - `test-search-offline.cjs`
-   - Hoặc tạo mới nếu trang chưa có.
-2. Chạy fixture với Edge headless 1440×900, **cả sáng và tối**.
-3. Các ca tối thiểu cần cover:
+   - Đọc script trước khi chạy; tái sử dụng fixture phù hợp. Chỉ tạo mới khi hành vi quan trọng chưa được cover, không thêm test chỉ để khớp implementation.
+2. Kiểm dependency/browser/runtime và server/port script cần. Một số fixture dùng đường dẫn Playwright tuyệt đối trên máy Fenn; không coi là khả dụng trên mọi máy. Chạy desktop sáng/tối (ưu tiên Edge headless 1440×900 khi có), ghi môi trường thực tế; bị chặn thì báo chưa chạy, không ghi PASS.
+3. Chọn ca hồi quy theo hành vi bị ảnh hưởng; không bắt trang không có form/pagination chạy ca không áp dụng. Kiểm thêm quyền, đổi tài khoản/request cũ nếu liên quan:
    - Tải trang đầu + F5 (cache rỗng).
    - Tương tác chính (bấm, mở modal, search).
    - Cuộn tải thêm nếu có pagination.
@@ -156,7 +157,7 @@ npm run build                # Vite build PASS
    - Emulation viewport không thay thế thiết bị thật (xem rule `.cursor/rules/responsive-real-device-testing.mdc`).
    - Không sửa dữ liệu thật để chứng minh thao tác hoạt động.
 
-**Báo cáo bước 6:** PASS/FAIL cho từng ca, có log. FAIL → quay lại bước 4 sửa, không bỏ qua.
+**Báo cáo bước 6:** PASS/FAIL/chưa kiểm cho từng ca, có log và phân biệt artifact local bị ignore với artifact trong Git. Theo vòng xác minh hữu hạn của Impeccable: một lượt kiểm gộp, sửa một batch, xác nhận tối đa một lượt nữa. Lỗi chặn còn lại phải báo rõ, không gọi là đã đạt hoặc lặp đánh bóng vô hạn.
 
 ### Bước 7 — Ghi kết quả vào checklist
 
@@ -198,10 +199,13 @@ $EDITOR PAGE_INVENTORY_AND_ANALYSIS.md
 rg -l "export default function" frontend/src/pages/<TenTrang>*.tsx
 
 # Bước 3: Audit Impeccable
-.agents/skills/impeccable/scripts/impeccable audit frontend/src/pages/<TenTrang>.tsx
+.agents/skills/impeccable/scripts/impeccable detect --json frontend/src/pages/<TenTrang>.tsx
 
 # Bước 5: Build, lint, typecheck
-cd frontend && npx tsc --noEmit && npm run lint && npm run build
+cd frontend
+npx tsc -b
+npm run lint
+npm run build
 
 # Bước 6: Fixture (ví dụ)
 node frontend/scripts/test-<trang>-page.cjs
@@ -213,11 +217,11 @@ node frontend/scripts/test-<trang>-page.cjs
 |---|---|
 | Phát hiện bug admin khi đang rà user | Ghi nhận, **không sửa**, đề xuất phiên admin |
 | Cần sửa hook dùng chung (vd `useSiteSettings`) | Dừng, hỏi user vì admin có thể phụ thuộc |
-| Trang chưa có fixture | Tạo fixture mới trong `frontend/scripts/`, dùng API giả lập |
-| Trang > 1.000 dòng | Tách theo trách nhiệm trước khi sửa, không cắt cơ học |
+| Trang chưa có fixture | Tìm fixture có thể tái sử dụng; chỉ thêm khi cần kiểm hành vi quan trọng, dùng API giả lập |
+| Trang > 1.000 dòng | Đơn giản hóa trước, tách theo trách nhiệm, không cắt cơ học |
 | Có P0 chặn release | Ưu tiên P0, hoãn P1–P3 |
 | Có lỗi legacy TypeScript ngoài file sửa | Ghi "diagnostic ngoài phạm vi", không cố sửa |
-| Cần test thiết bị thật (responsive) | Theo rule `.cursor/rules/responsive-real-device-testing.mdc`, dừng và yêu cầu user test |
+| Thiếu thiết bị thật (responsive) | Tiếp tục phần code/giả lập được giao, ghi giới hạn; chờ kết quả thật trước nghiệm thu theo rule |
 | User chưa rõ phạm vi | Hỏi lại 1 câu: rà+sửa, chỉ audit, hay đơn giản hóa? |
 
 ## Tài liệu liên quan
@@ -229,5 +233,5 @@ node frontend/scripts/test-<trang>-page.cjs
 - `.agents/skills/impeccable/reference/craft-floor.md` — sàn chất lượng UI.
 - `.agents/skills/impeccable/reference/harden.md` — tình huống lỗi (dùng khi user yêu cầu "harden").
 - `.agents/skills/impeccable/reference/optimize.md` — tối ưu hiệu năng (dùng khi user yêu cầu "optimize").
-- `responsive.md` — tiêu chuẩn responsive, dùng ở vòng cuối.
+- [responsive.md](../../../responsive.md) — tiêu chuẩn responsive tại repository root, dùng ở vòng cuối.
 - `.cursor/rules/responsive-real-device-testing.mdc` — rule test thiết bị thật.

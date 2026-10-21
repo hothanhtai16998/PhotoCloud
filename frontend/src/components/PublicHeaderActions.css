@@ -1,0 +1,29 @@
+/* Public controls use the same markup and paint rules before/after React. */
+:root [data-header-frame] .public-guest-actions { display:flex; align-items:center; gap:20px; font-family:Arial,sans-serif; line-height:normal; }
+:root [data-header-frame] .public-guest-actions button { font-feature-settings:inherit; font-variation-settings:inherit; letter-spacing:inherit; }
+:root [data-header-frame] .public-sign-in-slot { min-width:72px; display:inline-flex; justify-content:center; }
+:root [data-header-frame] .public-guest-actions[data-auth-pending='true'] .public-sign-in-slot { visibility:hidden; }
+:root [data-header-frame] .public-sign-in { font-family:Arial,sans-serif; font-size:15px; font-weight:400; line-height:normal; color:var(--button-secondary-fg); text-decoration:none; padding:0; }
+:root [data-header-frame] .public-theme-toggle { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:44px; height:44px; padding:0; border:0; border-radius:6px; color:var(--text-primary); background:transparent; }
+:root [data-header-frame] .public-theme-toggle svg { flex-shrink:0; }
+:root [data-header-frame] .public-theme-sun { display:none; }
+html.dark-theme [data-header-frame] .public-theme-sun { display:block; }
+html.dark-theme [data-header-frame] .public-theme-moon { display:none; }
+:root [data-header-frame] .public-booking-button {
+ display:inline-flex!important; align-items:center!important; justify-content:center!important;
+ height:42px!important; width:auto; padding:9px 16px!important; gap:8px!important;
+ font:600 14px/normal Arial,sans-serif!important; white-space:nowrap;
+ border:1px solid var(--button-primary-bg)!important; border-radius:6px!important;
+ background:var(--button-primary-bg)!important; color:var(--button-primary-fg)!important;
+ box-shadow:none!important; cursor:pointer; transition:none!important;
+}
+:root [data-header-frame] .public-booking-button > span { display:inline-flex; align-items:center; gap:8px; }
+:root [data-header-frame] .public-booking-button svg { display:block; flex-shrink:0; color:inherit; }
+:root [data-header-frame] .public-guest-actions button:focus-visible,
+:root [data-header-frame] .public-sign-in:focus-visible { outline:2px solid var(--button-focus); outline-offset:3px; }
+@media(min-width:769px) and (max-width:1699px) {
+ :root [data-header-frame] .public-guest-actions { gap:4px; }
+ :root [data-header-frame] .public-booking-button { width:44px; min-width:44px; padding-inline:0!important; }
+ :root [data-header-frame] .public-booking-button > span > span { display:none; }
+}
+@media(max-width:768px) { .public-header-startup .header-actions { display:none; } }

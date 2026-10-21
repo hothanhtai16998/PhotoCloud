@@ -1,841 +1,116 @@
 # Responsive Web Standards — PhotoCloud
 
-> Tiêu chuẩn responsive cho toàn bộ dự án. Áp dụng ở vòng cuối, sau khi chức năng đạt.
+Tiêu chuẩn cho vòng responsive cuối sau vòng chức năng theo `AGENTS.md`. Khi sửa chức năng vẫn tránh tràn, cắt nội dung và thao tác chỉ dùng chuột. Tài liệu này là hướng dẫn, không phải kết quả nghiệm thu.
 
----
+## 1. Phạm vi và nguồn trạng thái
 
-## 1. Định nghĩa cốt lõi
+- Người dùng phải hoàn thành được tác vụ chính: xem ảnh, điều hướng, đăng nhập, gửi form và phục hồi khi lỗi.
+- User ghi trạng thái tại `PAGE_INVENTORY_AND_ANALYSIS.md`; admin tại `ADMIN_PAGE_INVENTORY_AND_ANALYSIS.md`. Không sao chép dấu nghiệm thu sang tài liệu này.
+- Giữ thiết kế/chức năng đã duyệt, dùng token/component hiện có. Sửa phần chung có admin phụ thuộc phải theo quyền trong `AGENTS.md`.
+- Thiếu thiết bị thật: tiếp tục phần code/kiểm giả lập được giao, ghi giới hạn và chuẩn bị checklist. Không tự đánh `x` hoặc gạch responsive.
 
-**Trang responsive tốt = người dùng hoàn thành được việc trên mọi thiết bị.**
+## 2. Breakpoint và bố cục
 
-### Làm thế nào?
-1. Đặt câu hỏi: "Người dùng có thể hoàn thành tác vụ chính không?" (đăng nhập, xem ảnh, gửi form)
-2. Test thực tế trên thiết bị thật trước khi kết luận
-3. Không chỉ nhìn screenshot — phải thao tác thật
+- Dùng breakpoint phù hợp nội dung và hệ thống hiện có, ưu tiên mobile-first khi viết mới. Không đổi mọi breakpoint chỉ để thống nhất số.
+- Kiểm mốc đại diện 320/375/390/640/768/1024/1280/1440 CSS px và ngay trước/sau breakpoint thực tế. Đây là kích thước giả lập, không phải tên thiết bị thật.
+- CSS custom properties không dùng trực tiếp trong điều kiện `@media`; dùng giá trị hiện có hoặc biến build-time nếu dự án hỗ trợ.
+- Cho flex/grid co lại bằng `min-width: 0`, track `minmax(0, 1fr)` và kích thước linh hoạt. Width/max-width bằng px có thể hợp lý khi vừa viewport; không cấm mọi giá trị px hoặc `position: absolute`.
+- Sửa nguyên nhân tràn. Không đặt `overflow-x: hidden` toàn trang để che lỗi vì có thể cắt focus, menu và nội dung. Bảng/vùng kéo có thể cuộn ngang cục bộ với cách thao tác rõ.
+- Kiểm nội dung dài, tiếng Việt, URL không ngắt, dữ liệu rỗng/nhiều phần tử, zoom 200% và tăng cỡ chữ. Không cắt thông tin cần để hoàn thành tác vụ.
 
-### Cần làm gì?
-- [ ] Xác định tác vụ chính của trang
-- [ ] Đảm bảo mọi nút bấm được trên touch
-- [ ] Đảm bảo form submit được trên mobile
-- [ ] Đảm bảo nội dung đọc được không cần zoom
-
----
-
-## 2. Breakpoints chuẩn
-
-### Làm thế nào?
-
-**Cách 1: Mobile-first (khuyên dùng)**
-```css
-/* Mặc định = mobile */
-.card { width: 100%; }
-
-/* Tablet trở lên */
-@media (min-width: 768px) {
-  .card { width: 50%; }
-}
-
-/* Desktop trở lên */
-@media (min-width: 1024px) {
-  .card { width: 33.33%; }
-}
-```
-
-**Cách 2: Desktop-first**
-```css
-/* Mặc định = desktop */
-.card { width: 33.33%; }
-
-/* Tablet trở xuống */
-@media (max-width: 1023px) {
-  .card { width: 50%; }
-}
-
-/* Mobile */
-@media (max-width: 767px) {
-  .card { width: 100%; }
-}
-```
-
-### Cần làm gì?
-- [ ] Đặt CSS custom properties cho breakpoint
-- [ ] Viết breakpoint theo một hướng nhất quán (mobile-first)
-- [ ] Test tại các điểm: 375px, 640px, 768px, 1024px, 1280px, 1440px
-- [ ] Không hardcode pixel value trong component
+Ví dụ minh họa, chỉ áp dụng trong component cần sửa:
 
 ```css
-:root {
-  --bp-mobile: 640px;
-  --bp-tablet: 768px;
-  --bp-desktop: 1024px;
-  --bp-wide: 1280px;
-}
-```
-
----
-
-## 3. Layout & Bố cục
-
-### Làm thế nào?
-
-**Container linh hoạt:**
-```css
-.container {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding-left: 16px;
-  padding-right: 16px;
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding-left: 48px;
-    padding-right: 48px;
-  }
-}
-```
-
-**Grid thích ứng:**
-```css
-.grid {
+.responsive-grid {
   display: grid;
-  grid-template-columns: 1fr; /* Mobile: 1 cột */
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem;
 }
+.responsive-grid > * { min-width: 0; }
+.long-content { overflow-wrap: anywhere; }
+```
 
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 cột */
-    gap: 16px;
+## 3. Touch và keyboard
+
+- Mục tiêu vùng bấm thoải mái khoảng 44×44 CSS px cho điều khiển cảm ứng; tăng vùng tương tác bằng padding/label khi icon nhỏ. Kiểm khoảng cách để không bấm nhầm, không ép toàn bộ button bằng selector CSS toàn cục.
+- Icon button có tên truy cập. Dùng button cho hành động, link cho điều hướng; Enter/Space/Tab/Shift+Tab và Escape hoạt động theo loại điều khiển.
+- Không giấu hành động chỉ sau hover. Thiết bị touch phải tìm thấy và dùng được; keyboard có focus nhìn thấy.
+- Slider/drag: kiểm kéo, cuộn trang, hủy gesture, mất pointer capture và đổi hướng. Chọn `touch-action` theo gesture, không vô hiệu hóa cuộn/zoom toàn trang.
+- Viewport nhỏ chỉ chứng minh bố cục. Ghi riêng có tổng hợp touch hoặc thao tác trên thiết bị thật hay không.
+
+## 4. Typography và form
+
+- Dùng thang chữ hiện có và đơn vị tương đối khi phù hợp. Nội dung đọc được ở zoom/cỡ chữ lớn; không áp một cỡ chữ mới toàn site để sửa một trang.
+- Input trên iOS nên có chữ tối thiểu 16 CSS px để giảm zoom tự động khi focus; kiểm Safari thật. Không cấm pinch zoom hoặc đặt `user-scalable=no`.
+- Label hiển thị, autocomplete/type phù hợp, lỗi gắn trường bằng `aria-describedby`, `aria-invalid` khi thực sự lỗi. Giữ dữ liệu nhập khi API thất bại.
+- Kiểm bàn phím ảo, focus/scroll tới trường lỗi, submit và footer cố định. `aria-disabled` đơn lẻ không chặn sự kiện; dùng `disabled` khi cần khóa native control.
+- Không truyền trạng thái chỉ bằng màu. Kiểm tương phản/focus/disabled trong cả sáng/tối.
+
+## 5. Ảnh và media
+
+- Ảnh vừa container, giữ tỷ lệ; dùng `width`/`height` hoặc tỷ lệ phù hợp để dành chỗ. `object-fit` không cắt nội dung quan trọng ngoài ý muốn.
+- Dùng nguồn/kích thước phù hợp, `srcset`/`sizes` nếu pipeline hỗ trợ. Không lazy-load ảnh chính đầu trang; lazy-load ảnh dưới màn hình.
+- Đánh giá dung lượng theo chất lượng ảnh và điều kiện mạng, không coi một ngưỡng KB là bằng chứng tối ưu cho mọi ảnh.
+- Khi cần đo hiệu năng, phân biệt DOM, ảnh hiện/LCP, API và phản hồi thao tác. Ghi cache, mạng, dữ liệu và môi trường; fixture không chứng minh production.
+
+## 6. Menu và navigation
+
+- Tái sử dụng primitive hiện có đã quản lý focus. Menu đóng không còn phần tử trong tab order; `aria-hidden` hoặc transform ra ngoài màn hình tự nó không khóa focus.
+- Trigger có tên, `aria-expanded` và quan hệ nội dung khi phù hợp. Disclosure điều hướng thường không cần ARIA menu; chỉ dùng role menu khi triển khai đầy đủ tương tác tương ứng.
+- Navigation dạng modal: chuyển/giữ focus, Escape/nút đóng, trả focus, quản lý nền và body scroll. Disclosure thường không cần focus trap.
+- Lấy route từ router hiện tại, không thay bằng URL ví dụ. Kiểm Back/Forward, F5 và đóng navigation sau chọn link.
+
+## 7. Modal và vùng cố định
+
+- Ưu tiên primitive hiện có thay vì chép modal tự viết. Dialog có tên truy cập, focus ban đầu hợp lý, Tab/Shift+Tab, Escape và trả focus về trigger còn tồn tại.
+- Khóa/khôi phục scroll đúng vòng đời, kể cả unmount/dialog lồng nhau. Không gán body overflow về rỗng nếu có chủ sở hữu khác.
+- Nội dung cuộn tới cuối, nút chính/đóng tiếp cận được, không bị bàn phím/safe area che. Cân nhắc `dvh` với fallback theo browser mục tiêu.
+- Đóng qua backdrop theo hành vi đã duyệt; không làm mất draft hoặc đóng khi busy ngoài dự kiến.
+- Header cố định không che nội dung/focus/anchor. Offset nội dung và scroll offset là hai nhu cầu khác nhau; kiểm cả hai và dùng token chiều cao hiện có.
+
+## 8. Chuyển động và theme
+
+- `prefers-reduced-motion`: giảm từng hiệu ứng, giữ phản hồi tải/thành công/lỗi. Không dùng selector `*` với thời gian `0.01ms` để tắt toàn bộ animation/transition vì có thể phá vòng đời và phản hồi.
+- Ví dụ hiệu ứng trang trí cụ thể, thay tên bằng class thật trong phạm vi:
+
+  ```css
+  @media (prefers-reduced-motion: reduce) {
+    .decorative-reveal { animation: none; opacity: 1; transform: none; }
+    .image-hover-zoom { transition: none; transform: none; }
   }
-}
+  ```
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr); /* 4 cột */
-    gap: 24px;
-  }
-}
-```
+- Theo cơ chế chọn/lưu theme của ứng dụng; không thêm `prefers-color-scheme` ghi đè lựa chọn người dùng. Kiểm sáng/tối, chuyển theme và tải lại.
 
-**Chống cuộn ngang:**
-```css
-/* Luôn đặt ở root elements */
-html, body {
-  overflow-x: hidden;
-}
+## 9. Vòng kiểm hữu hạn
 
-/* Container không gây tràn */
-.container {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
-```
+1. Chọn route/trạng thái/tác vụ từ inventory; ghi baseline/build, dữ liệu test, browser, viewport và theme.
+2. Kiểm gộp desktop/mobile/tablet cần thiết: bố cục, nội dung dài, zoom, keyboard, touch, dialog, bàn phím ảo, loading/empty/error/retry.
+3. Sửa một batch, xác nhận tối đa một lượt nữa theo Impeccable. Lỗi chặn còn lại ghi rõ, không tuyên bố đạt hoặc lặp đánh bóng vô hạn.
+4. Tách kết quả tự động/giả lập với thiết bị thật. Screenshot đơn lẻ không chứng minh cuộn/kéo/focus hoạt động.
 
-### Cần làm gì?
-- [ ] Thay `width: 1200px` bằng `max-width: 1200px`
-- [ ] Thay `position: absolute` với pixel cố định bằng relative/flex
-- [ ] Thay `left: 200px` bằng `left: 50%; transform: translateX(-50%)`
-- [ ] Kiểm tra từng trang với DevTools ở 375px - không có scroll ngang
-- [ ] Test overflow với nội dung dài bất thường
+## 10. Thiết bị thật và nghiệm thu
 
----
+Theo `.cursor/rules/responsive-real-device-testing.mdc`, trước nghiệm thu responsive trang user cần đủ ba nhóm:
 
-## 4. Touch Targets (Vùng bấm)
+| Nhóm | Thiết bị thật và trình duyệt |
+|---|---|
+| 1 | iPhone — Safari iOS |
+| 2 | Android — Chrome |
+| 3 | iPad — Safari, hoặc desktop thật — ghi trình duyệt |
 
-### Làm thế nào?
+Ghi model/OS/browser/version và viewport CSS px **đo thực tế**, không gán mọi thiết bị một viewport chuẩn. Desktop kiểm thêm kích thước cửa sổ liên quan. 390×844, 412×915, 1024×768 và 1440×900 chỉ là mốc tham khảo.
 
-**CSS cho tất cả nút:**
-```css
-button,
-.btn,
-.btn-primary,
-.btn-secondary,
-.icon-btn {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 10px 16px;
-  cursor: pointer;
-}
+Thiếu thiết bị: ghi nhóm chưa kiểm, chuẩn bị code/checklist và đề nghị người dùng cung cấp kết quả thật khi nghiệm thu. Không chặn sửa lỗi hoặc kiểm giả lập đã được giao. Agent không tự đánh `x`; người dùng xác nhận theo `AGENTS.md`.
 
-/* Icon-only button cần wrapper đủ lớn */
-.icon-btn-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-}
-```
+## 11. Bằng chứng và bàn giao
 
-**HTML đúng:**
-```html
-<!-- Đúng: icon trong wrapper 44x44 -->
-<button class="icon-btn-wrapper" aria-label="Đóng">
-  <XIcon size={20} />
-</button>
+Với mỗi route/lượt kiểm, ghi:
 
-<!-- Sai: icon không có wrapper -->
-<button style="padding: 4px;">
-  <XIcon size={20} />
-</button>
-```
+- Ngày giờ Việt Nam, người test, commit/build và thay đổi chưa commit liên quan nếu có.
+- URL/route, dữ liệu fixture hoặc test staging; không ghi secret hoặc dùng dữ liệu thật để thử xóa/sửa.
+- Thiết bị, OS, browser/version, viewport, hướng màn hình, theme, zoom, reduced motion.
+- Thao tác, kết quả mong đợi/thực tế, PASS/FAIL/chưa kiểm và log/screenshot. Ghi metadata vào Markdown/log, không phải file PNG.
+- Phần chưa kiểm: touch giả lập, bàn phím ảo, Safari, thiết bị thật hoặc production. Không suy diễn kết quả thay thế.
 
-### Cần làm gì?
-- [ ] Dùng DevTools đo tất cả nút — phải ≥ 44x44px
-- [ ] Icon-only buttons bắt buộc có `aria-label`
-- [ ] Khoảng cách giữa các nút liền kề ≥ 8px
-- [ ] Test: tap một nút, không nhầm sang nút khác
-- [ ] Checkbox/radio nhỏ → wrap trong label đủ lớn
-
-```html
-<!-- Checkbox touch-friendly -->
-<label style="display: flex; align-items: center; min-height: 44px; cursor: pointer;">
-  <input type="checkbox" style="width: 20px; height: 20px;" />
-  <span>Đồng ý với điều khoản</span>
-</label>
-```
-
----
-
-## 5. Typography
-
-### Làm thế nào?
-
-**Font scale linh hoạt:**
-```css
-:root {
-  --font-size-base: 16px;
-  --line-height-base: 1.5;
-  
-  /* Heading scale */
-  --font-size-h1: 1.75rem;  /* 28px mobile */
-  --font-size-h2: 1.375rem; /* 22px mobile */
-  --font-size-h3: 1.125rem;  /* 18px mobile */
-}
-
-@media (min-width: 1024px) {
-  :root {
-    --font-size-h1: 2.5rem;   /* 45px desktop */
-    --font-size-h2: 2rem;     /* 36px desktop */
-    --font-size-h3: 1.5rem;   /* 27px desktop */
-  }
-}
-
-body {
-  font-size: var(--font-size-base);
-  line-height: var(--line-height-base);
-}
-
-h1 { font-size: var(--font-size-h1); }
-h2 { font-size: var(--font-size-h2); }
-h3 { font-size: var(--font-size-h3); }
-```
-
-**Chống iOS zoom:**
-```css
-/* Quan trọng: ngăn iOS zoom khi focus input */
-input, select, textarea {
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-```
-
-### Cần làm gì?
-- [ ] Set `font-size: 16px` làm base
-- [ ] Heading nhỏ hơn trên mobile, scale up trên desktop
-- [ ] Line-height đủ để đọc: 1.5–1.6 mobile, 1.6–1.75 desktop
-- [ ] Không dùng `font-size: 14px` cho body
-- [ ] Test trên iOS — focus vào input không được zoom
-
----
-
-## 6. Images & Media
-
-### Làm thế nào?
-
-**Ảnh responsive:**
-```html
-<!-- Thumbnail grid -->
-<img 
-  src="image-400.jpg"
-  srcset="
-    image-400.jpg 400w,
-    image-800.jpg 800w,
-    image-1200.jpg 1200w
-  "
-  sizes="(max-width: 639px) 100vw,
-         (max-width: 1023px) 50vw,
-         25vw"
-  alt="Mô tả ảnh"
-  loading="lazy"
-  decoding="async"
-  width="400"
-  height="300"
-/>
-```
-
-**Picture với format:**
-```html
-<picture>
-  <source 
-    type="image/webp"
-    srcset="image-400.webp 400w, image-800.webp 800w"
-    sizes="..."
-  />
-  <img 
-    src="image-400.jpg"
-    srcset="..."
-    sizes="..."
-    alt="..."
-    loading="lazy"
-  />
-</picture>
-```
-
-**Video responsive:**
-```css
-.video-container {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-}
-
-.video-container iframe,
-.video-container video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-```
-
-### Cần làm gì?
-- [ ] Ảnh trên đầu trang: không `loading="lazy"`
-- [ ] Ảnh dưới màn hình: `loading="lazy"`
-- [ ] Luôn đặt `width` và `height` để tránh layout shift
-- [ ] Dùng WebP khi hỗ trợ trình duyệt
-- [ ] Compress ảnh: target < 100KB cho thumbnail, < 500KB cho ảnh lớn
-- [ ] Check LCP (Largest Contentful Paint) — ảnh hero phải load nhanh
-
----
-
-## 7. Navigation
-
-### Làm thế nào?
-
-**Hamburger menu mobile:**
-```tsx
-// MobileMenu.tsx
-const MobileMenu = ({ isOpen, onClose }: Props) => {
-  return (
-    <>
-      {/* Backdrop */}
-      {isOpen && (
-        <div 
-          className="menu-backdrop"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
-      
-      {/* Menu panel */}
-      <nav 
-        className={`mobile-nav ${isOpen ? 'open' : ''}`}
-        aria-label="Menu chính"
-        aria-hidden={!isOpen}
-      >
-        <ul>
-          <li><a href="/" onClick={onClose}>Trang chủ</a></li>
-          <li><a href="/gallery" onClick={onClose}>Bộ sưu tập</a></li>
-          <li><a href="/about" onClick={onClose}>Giới thiệu</a></li>
-        </ul>
-      </nav>
-    </>
-  );
-};
-```
-
-**CSS:**
-```css
-.mobile-nav {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 280px;
-  height: 100vh;
-  background: white;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-  z-index: 1000;
-  padding: 80px 24px 24px;
-}
-
-.mobile-nav.open {
-  transform: translateX(0);
-}
-
-.menu-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 999;
-}
-```
-
-**Focus trap:**
-```tsx
-useEffect(() => {
-  if (!isOpen) return;
-  
-  const focusableElements = menuRef.current?.querySelectorAll(
-    'a, button, input, [tabindex]:not([tabindex="-1"])'
-  );
-  
-  const firstEl = focusableElements?.[0];
-  const lastEl = focusableElements?.[focusableElements.length - 1];
-  
-  const handleTab = (e: KeyboardEvent) => {
-    if (e.key !== 'Tab') return;
-    if (e.shiftKey && document.activeElement === firstEl) {
-      e.preventDefault();
-      lastEl?.focus();
-    } else if (!e.shiftKey && document.activeElement === lastEl) {
-      e.preventDefault();
-      firstEl?.focus();
-    }
-  };
-  
-  document.addEventListener('keydown', handleTab);
-  firstEl?.focus();
-  
-  return () => document.removeEventListener('keydown', handleTab);
-}, [isOpen]);
-```
-
-### Cần làm gì?
-- [ ] Hamburger icon: 44x44px, `aria-label="Mở menu"`
-- [ ] Menu đóng khi tap backdrop
-- [ ] Menu đóng khi click link bên trong
-- [ ] Focus trap khi menu mở
-- [ ] Nút đóng (X) có `aria-label="Đóng menu"`
-- [ ] Keyboard: Tab di chuyển trong menu, Escape đóng
-- [ ] Body scroll lock khi menu mở
-
----
-
-## 8. Forms & Inputs
-
-### Làm thế nào?
-
-**CSS cơ bản:**
-```css
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.form-input {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  font-size: 16px; /* Quan trọng cho iOS */
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
-}
-
-.form-input:focus {
-  outline: 2px solid #007bff;
-  outline-offset: 2px;
-}
-
-.form-input.error {
-  border-color: #dc3545;
-}
-
-.form-error {
-  display: block;
-  margin-top: 4px;
-  color: #dc3545;
-  font-size: 12px;
-}
-```
-
-**HTML:**
-```html
-<div class="form-group">
-  <label for="email" class="form-label">Email</label>
-  <input 
-    type="email" 
-    id="email" 
-    name="email"
-    class="form-input"
-    placeholder="you@example.com"
-    aria-describedby="email-error"
-    required
-  />
-  <span id="email-error" class="form-error" role="alert">
-    Vui lòng nhập email hợp lệ
-  </span>
-</div>
-```
-
-### Cần làm gì?
-- [ ] Label luôn hiển thị (không dùng placeholder thay label)
-- [ ] Input ≥ 44px height
-- [ ] Font-size ≥ 16px (chống iOS zoom)
-- [ ] Error message gắn với field qua `aria-describedby`
-- [ ] Focus ring rõ ràng
-- [ ] Submit button không bị che bởi bàn phím ảo
-- [ ] Disable state có `aria-disabled` hoặc `disabled`
-
----
-
-## 9. Modal / Dialog
-
-### Làm thế nào?
-
-**React Modal:**
-```tsx
-const Modal = ({ isOpen, onClose, title, children }: Props) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      previousFocusRef.current = document.activeElement as HTMLElement;
-      modalRef.current?.focus();
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-      previousFocusRef.current?.focus();
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
-    
-    // Focus trap
-    if (e.key === 'Tab') {
-      const focusable = modalRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable?.length) return;
-      
-      const first = focusable[0] as HTMLElement;
-      const last = focusable[focusable.length - 1] as HTMLElement;
-      
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        ref={modalRef}
-        className="modal-content"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        onClick={e => e.stopPropagation()}
-        onKeyDown={handleKeyDown}
-        tabIndex={-1}
-      >
-        <header className="modal-header">
-          <h2 id="modal-title">{title}</h2>
-          <button 
-            onClick={onClose}
-            aria-label="Đóng"
-            className="modal-close"
-          >
-            <XIcon />
-          </button>
-        </header>
-        <div className="modal-body">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
-```
-
-**CSS:**
-```css
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  outline: none;
-}
-
-/* Mobile: full-screen */
-@media (max-width: 639px) {
-  .modal-overlay {
-    padding: 0;
-    align-items: flex-end;
-  }
-  
-  .modal-content {
-    max-width: 100%;
-    max-height: 95vh;
-    border-radius: 12px 12px 0 0;
-  }
-}
-```
-
-### Cần làm gì?
-- [ ] Focus vào modal khi mở
-- [ ] Trả focus về trigger khi đóng
-- [ ] Escape đóng modal
-- [ ] Click backdrop đóng modal
-- [ ] Focus trap trong modal
-- [ ] `aria-modal="true"`, `role="dialog"`
-- [ ] Body scroll lock khi modal mở
-- [ ] Mobile: consider full-screen hoặc bottom sheet
-
----
-
-## 10. Kiểm tra thực tế
-
-### Làm thế nào?
-
-**DevTools Chrome:**
-1. Mở DevTools (`F12`)
-2. Toggle device toolbar (`Cmd+Shift+M` / `Ctrl+Shift+M`)
-3. Chọn device: iPhone 12, iPad, Responsive
-4. Test các breakpoint: 375, 640, 768, 1024, 1280, 1440px
-
-**Keyboard-only navigation:**
-1. Tab qua tất cả interactive elements
-2. Enter/Space activate buttons
-3. Escape đóng modal/menu
-4. Arrow keys trong dropdown/menu
-
-**prefers-reduced-motion:**
-```css
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-```
-
-**prefers-color-scheme:**
-```css
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #121212;
-    --text-primary: #ffffff;
-  }
-}
-```
-
-### Checklist kiểm tra
-
-#### Desktop (≥ 1024px)
-- [ ] 1280px — layout đẹp
-- [ ] 1440px — layout đẹp
-- [ ] 1920px — không tràn
-
-#### Tablet (768px – 1023px)
-- [ ] 768px (iPad) — scroll mượt
-- [ ] 800px — navigation hoạt động
-
-#### Mobile (≤ 767px)
-- [ ] 375px (iPhone SE) — mọi thứ vừa
-- [ ] 390px (iPhone 12/13) — mọi thứ vừa
-- [ ] 428px (iPhone 14 Pro Max) — mọi thứ vừa
-- [ ] 360px (Android nhỏ) — test worst-case
-
-#### Orientation
-- [ ] Landscape trên mobile
-- [ ] Landscape trên tablet
-
-#### Keyboard
-- [ ] Tab navigation hoàn chỉnh
-- [ ] Focus visible trên mọi element
-- [ ] Enter/Space activate
-- [ ] Escape close
-
-#### Touch
-- [ ] Tap accuracy — không tap nhầm
-- [ ] Swipe/scroll mượt
-- [ ] Bàn phím ảo không che nút
-
----
-
-## 11. Lỗi thường gặp & cách tránh
-
-### Width cứng
-```css
-/* Sai */
-.sidebar { width: 300px; }
-
-/* Đúng */
-.sidebar { 
-  width: 100%; 
-  max-width: 300px; 
-}
-```
-
-### Font < 16px
-```css
-/* Sai */
-body { font-size: 14px; }
-input { font-size: 14px; } /* iOS zoom! */
-
-/* Đúng */
-body { font-size: 16px; }
-input { font-size: 16px; }
-```
-
-### Touch target quá nhỏ
-```css
-/* Sai */
-.close-btn { padding: 2px; width: 16px; height: 16px; }
-
-/* Đúng */
-.close-btn { 
-  padding: 10px; 
-  min-width: 44px; 
-  min-height: 44px; 
-}
-```
-
-### Dropdown hover-only
-```tsx
-// Sai: không hoạt động trên touch
-<select onMouseEnter={open}>
-
-// Đúng: hover + click
-<div 
-  onMouseEnter={open}
-  onClick={toggle} // Touch-friendly
-  onKeyDown={(e) => e.key === 'Enter' && toggle()}
-  role="button"
-  tabIndex={0}
->
-```
-
-### Ảnh không lazy
-```html
-<!-- Sai: 100 ảnh load cùng lúc -->
-<img src="thumb.jpg" />
-
-<!-- Đúng: lazy-load ảnh dưới màn hình -->
-<img src="thumb.jpg" loading="lazy" />
-
-<!-- Hero image: eager (mặc định) -->
-<img src="hero.jpg" />  <!-- Không có loading="lazy" -->
-```
-
-### Fixed header che nội dung
-```css
-/* Sai */
-body { padding-top: 60px; } /* Hardcode */
-
-/* Đúng */
-html { scroll-padding-top: 80px; }
-.modal-content { scroll-padding-top: 80px; }
-```
-
-### Focus ring bị ẩn
-```css
-/* Sai */
-*:focus { outline: none; }
-
-/* Đúng */
-*:focus-visible { 
-  outline: 2px solid #007bff; 
-  outline-offset: 2px; 
-}
-
-/* Vẫn hỗ trợ keyboard focus */
-*:focus { 
-  outline: 2px solid #007bff; 
-  outline-offset: 2px; 
-}
-```
-
----
-
-## Checklist trước khi mark responsive đạt
-
-### Trước khi test
-- [ ] Hoàn thành chức năng (không đánh responsive trong vòng chức năng)
-- [ ] Code không có width/height cứng (px) ở layout chính
-- [ ] Tất cả nút ≥ 44x44px
-- [ ] Font-size body ≥ 16px
-
-### Test thiết bị
-- [ ] Desktop: 1280px, 1440px
-- [ ] Tablet: 768px (iPad)
-- [ ] Mobile: 375px (iPhone SE), 390px (iPhone 12/13), 428px (iPhone 14 Pro Max)
-- [ ] **Ít nhất 1 thiết bị thật** (không chỉ DevTools)
-
-### Test chức năng
-- [ ] Navigation mở/đóng trên mobile
-- [ ] Form submit trên mobile
-- [ ] Modal mở/đóng trên mobile
-- [ ] Keyboard navigation hoạt động
-- [ ] Không cuộn ngang
-- [ ] Bàn phím ảo không che nút submit
-
-### Ghi nhận kết quả
-- [ ] Ghi rõ trình duyệt (Chrome 119, Safari iOS 17, etc.)
-- [ ] Ghi rõ viewport (375x812 iPhone 14)
-- [ ] Ghi rõ thiết bị thật hay giả lập
-- [ ] Ghi rõ điều kiện test (light/dark mode, prefers-reduced-motion)
-
----
-
-*Nguồn: AGENTS.md — Tiêu chuẩn Responsive vòng cuối, WCAG 2.1 SC 2.5.5, Apple HIG, Google Material Design*
+Giữ ID và dấu nghiệm thu trong inventory tương ứng. Tài liệu QA phụ chỉ giữ bằng chứng, không là nguồn trạng thái nghiệm thu thứ hai.

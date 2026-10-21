@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { collectionService } from '@/services/collectionService';
 import { toast } from 'sonner';
 import { useCollectionStore, markCollectionOffline } from '@/stores/useCollectionStore';
@@ -12,12 +12,13 @@ import { appConfig } from '@/config/appConfig';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import type { Collection } from '@/types/collection';
-import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
+import { Link } from 'react-router-dom';
+import { useCollectionConnection } from '@/hooks/useCollectionConnection';
 import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
 import './CollectionDetailPage.css';
 
 export default function CollectionDetailPage() {
- useEffect(() => { window.addEventListener('offline', markCollectionOffline); return () => window.removeEventListener('offline', markCollectionOffline); }, []);
  const error = useCollectionStore(state => state.error);
 	const [isMobile, setIsMobile] = useState(() => {
 		if (typeof window === 'undefined') return false;
@@ -48,7 +49,6 @@ export default function CollectionDetailPage() {
 	useDocumentMeta({
 		title: collection?.name || 'Bộ sưu tập',
 		description: collection?.description?.slice(0, 160),
-		ogImage: coverImageId && typeof collection?.coverImageId === 'string' ? undefined : undefined,
 		noIndex: !collection?.isPublic,
 	});
 
@@ -91,8 +91,12 @@ export default function CollectionDetailPage() {
 		collectionId,
 		isOwner,
 		isMobile,
+		canEdit,
 		fetchCollection,
 	});
+
+	const reconnect = useCallback(async () => { if (collectionId) await fetchCollection(collectionId); }, [collectionId, fetchCollection]);
+	useCollectionConnection(markCollectionOffline, reconnect, isBulkRemoving || isReordering || Boolean(updatingCover) || togglingFavorite);
 
 	// WebSocket for real-time collaboration
 	const { isConnected, joinCollectionRoom, leaveCollectionRoom } = useWebSocket({
@@ -173,41 +177,54 @@ export default function CollectionDetailPage() {
 
 		if (!collectionId || !isOwner) return;
 
-		await setCoverImage(collectionId, imageId);
-		// Reload collection to sync with backend
-		await fetchCollection(collectionId);
-	}, [collectionId, isOwner, setCoverImage, fetchCollection]);
+		try { await setCoverImage(collectionId, imageId); } catch { /* Store reports the failure; keep the current page. */ }
+	}, [collectionId, isOwner, setCoverImage]);
 
 	// Handle toggle favorite
 	const handleToggleFavorite = useCallback(async () => {
 		if (!collectionId) return;
-		await toggleFavorite(collectionId);
-	}, [collectionId, toggleFavorite]);
+		if (!user) { toast.info('Vui lòng đăng nhập để yêu thích bộ sưu tập.'); return; }
+		try { await toggleFavorite(collectionId); } catch { /* Store reports the failure. */ }
+	}, [collectionId, user, toggleFavorite]);
 
 
-	const [showBulkRemoveModal, setShowBulkRemoveModal] = useState(false);
+	const pageScope = `${collectionId}:${user?._id ?? 'guest'}`;
+	const [showBulkRemoveModal, setShowBulkRemoveModal] = useState<string | null>(null);
 
 	const handleBulkRemoveClick = useCallback(() => {
 		if (selectedImageIds.size === 0) return;
-		setShowBulkRemoveModal(true);
-	}, [selectedImageIds.size]);
+		setShowBulkRemoveModal(pageScope);
+	}, [selectedImageIds.size, pageScope]);
 
-	const handleBulkRemoveConfirm = useCallback(async () => {
-		await handleBulkRemove();
-		setShowBulkRemoveModal(false);
-	}, [handleBulkRemove]);
+	const closeBulkRemove = useCallback(() => { setShowBulkRemoveModal(null); }, []);
+	const exportPending = useRef(false);
+	const exportGeneration = useRef(0);
+	const [exportingScope, setExportingScope] = useState<string | null>(null);
+	useEffect(() => {
+		const generation = ++exportGeneration.current;
+		exportPending.current = false;
+		return () => { exportGeneration.current = generation + 1; toast.dismiss('export-collection'); };
+	}, [collectionId, user?._id]);
 
 	// Handle export collection
 	const handleExportCollection = useCallback(async () => {
+		if (!user) { toast.info('Vui lòng đăng nhập để xuất bộ sưu tập.'); return; }
+		if (exportPending.current) return;
 		if (!collectionId || !collection || images.length === 0) {
 			toast.error('Bộ sưu tập không có ảnh để xuất');
 			return;
 		}
 
+		const generation = exportGeneration.current;
+		const session = getAuthSessionVersion();
+		const isCurrent = (): boolean => generation === exportGeneration.current && session === getAuthSessionVersion();
+		exportPending.current = true;
+		setExportingScope(pageScope);
 		try {
 			toast.loading('Đang tạo file ZIP...', { id: 'export-collection' });
 
 			const blob = await collectionService.exportCollection(collectionId);
+			if (!isCurrent()) return;
 			const blobUrl = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = blobUrl;
@@ -229,33 +246,32 @@ export default function CollectionDetailPage() {
 
 			toast.success(`Đã xuất ${images.length} ảnh thành công`, { id: 'export-collection' });
 		} catch (error: unknown) {
+			if (!isCurrent()) return;
 			const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
 			toast.error(
 				message || 'Xuất bộ sưu tập thất bại. Vui lòng thử lại.',
 				{ id: 'export-collection' }
 			);
+		} finally {
+			if (isCurrent()) { exportPending.current = false; setExportingScope(null); }
 		}
-	}, [collectionId, collection, images.length]);
+	}, [collectionId, collection, images.length, pageScope, user]);
 
-	// Sync loading state to global loading store
-	useEffect(() => {
-		syncGlobalLoading('collectionDetailPage', loading);
-		return () => {
-			syncGlobalLoading('collectionDetailPage', false);
-		};
-	}, [loading]);
-
-	if (loading) {
+	if (loading && !collection) {
 		return (
 			<>
 				<div className="collection-detail-page">
-					{/* GlobalLoadingOverlay handles the spinner */}
+					<div className="collection-detail-header">
+						<Link className="collection-detail-back" to="/collections">Quay lại bộ sưu tập</Link>
+						<h1>Bộ sưu tập</h1>
+					</div>
+					<div className="collection-detail-loading" role="status"><p>Đang tải bộ sưu tập…</p></div>
 				</div>
 			</>
 		);
 	}
 
-	if (!collection || error) {
+	if (!collection) {
 		return (
 			<>
 				<div className="collection-detail-page">
@@ -270,6 +286,8 @@ export default function CollectionDetailPage() {
 	return (
 		<>
 			<div className="collection-detail-page">
+				{error && <CollectionLoadError message={error} busy={loading} onRetry={() => void reconnect().catch(() => {})} backTo="/collections" />}
+				{loading && <p role="status">Đang cập nhật bộ sưu tập…</p>}
 				<CollectionHeader
 					collection={collection}
 					imagesCount={images.length}
@@ -277,6 +295,7 @@ export default function CollectionDetailPage() {
 					togglingFavorite={togglingFavorite}
 					selectionMode={selectionMode}
 					canEdit={canEdit}
+					isExporting={exportingScope === pageScope}
 					handleToggleFavorite={handleToggleFavorite}
 					handleExportCollection={handleExportCollection}
 					toggleSelectionMode={toggleSelectionMode}
@@ -321,9 +340,10 @@ export default function CollectionDetailPage() {
 
 			{/* Bulk Remove Modal */}
 			<ConfirmModal
-				isOpen={showBulkRemoveModal}
-				onClose={() => setShowBulkRemoveModal(false)}
-				onConfirm={handleBulkRemoveConfirm}
+				key={`${collectionId}:${user?._id ?? 'guest'}`}
+				isOpen={showBulkRemoveModal === pageScope && selectionMode && selectedImageIds.size > 0}
+					onClose={closeBulkRemove}
+					onConfirm={handleBulkRemove}
 				title="Xóa ảnh khỏi bộ sưu tập"
 				message={`Bạn có chắc chắn muốn xóa ${selectedImageIds.size} ảnh khỏi bộ sưu tập này?`}
 				confirmText="Xóa"

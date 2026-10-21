@@ -15,7 +15,8 @@ interface Props {
 }
 
 export function CollectionCard({ collection, creatorFallback, priority = false, deleting, canManage = false, onEdit, onDelete }: Props) {
-	const cover = collection.coverImage && typeof collection.coverImage === 'object' ? collection.coverImage : null;
+	const cover = collection.coverImage && typeof collection.coverImage === 'object'
+		? collection.coverImage : collection.sampleImages?.find(image => image && typeof image === 'object') ?? null;
 	const samples = (collection.sampleImages ?? []).filter(image => image && typeof image === 'object' && image._id !== cover?._id).slice(0, 2);
 	const creator = typeof collection.createdBy === 'object' && collection.createdBy ? collection.createdBy.displayName || collection.createdBy.username : creatorFallback;
 	const count = Number.isFinite(collection.imageCount) ? Math.max(0, collection.imageCount ?? 0) : 0;
@@ -28,7 +29,7 @@ export function CollectionCard({ collection, creatorFallback, priority = false, 
 					<div className={`collection-card-images ${samples.length < 2 ? 'no-thumbnails' : ''}`}>
 						<div className="collection-card-main-image">
 							{cover ? (
-								<BlurUpImage image={cover} priority={priority} minimal />
+								<BlurUpImage image={cover} priority={priority} previewSize="small" minimal />
 							) : (
 								<div className="collection-card-placeholder" aria-hidden="true">
 									<Folder size={48} />
@@ -39,7 +40,7 @@ export function CollectionCard({ collection, creatorFallback, priority = false, 
 							<div className="collection-card-thumbnails">
 								{samples.map(image => (
 									<div key={image._id} className="collection-card-thumbnail">
-										<BlurUpImage image={image} priority={false} minimal />
+										<BlurUpImage image={image} priority={priority} previewSize="thumbnail" minimal />
 									</div>
 								))}
 							</div>

@@ -1,4 +1,4 @@
-import { memo, useState, useRef, useEffect, useLayoutEffect, lazy, Suspense, type MouseEvent } from "react"
+import { memo, useState, useRef, useEffect, useLayoutEffect, useSyncExternalStore, lazy, Suspense, type MouseEvent } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen, Upload } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
@@ -18,6 +18,11 @@ import { openBookingModal } from '@/utils/bookingModalEvent'
 import { LANGUAGE_SWITCHER_ENABLED } from "@/config/features"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import './Header.css'
+import './HeaderFrame.css'
+import './PublicHeaderActions.css'
+import { PublicHeaderActions } from './PublicHeaderActions'
+import { getSiteTheme, setSiteTheme, subscribeSiteTheme } from '@/utils/siteTheme'
+import { HEADER_LINKS } from '@/config/publicHeader'
 import ImagePageSidebar from './ImagePageSidebar'
 import './UserMenu.css'
 import { useHeaderSurface } from '@/hooks/useHeaderSurface'
@@ -29,6 +34,9 @@ const UploadModal = lazy(() => import('./UploadModal').then(module => ({ default
 // Instead, we use optimistic rendering based on isInitializing and accessToken state
 
 export const Header = memo(function Header() {
+  useLayoutEffect(() => {
+    document.getElementById('public-header-startup')?.remove();
+  }, []);
   const accessToken = useAuthStore(state => state.accessToken)
   const signOut = useAuthStore(state => state.signOut)
   const isInitializing = useAuthStore(state => state.isInitializing)
@@ -86,6 +94,9 @@ export const Header = memo(function Header() {
     }
   }, [accessToken, isInitializing]);
   
+  const [guestOnMount] = useState(() => getSessionItem('headerAuthHint') === 'guest');
+  const theme = useSyncExternalStore(subscribeSiteTheme, getSiteTheme, () => 'light');
+  useEffect(() => { if (!isInitializing) setSessionItem('headerAuthHint', accessToken ? 'account' : 'guest'); }, [accessToken, isInitializing]);
   const stableHasAuth = Boolean(accessToken) || (isInitializing && hadAuthOnMount);
   
   // PHOTOCLOUD-style: Optimistically show icons during initialization
@@ -124,7 +135,7 @@ export const Header = memo(function Header() {
 
   // Close mobile menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: PointerEvent) => {
       if (
         mobileMenuOpen &&
         mobileMenuRef.current &&
@@ -185,7 +196,7 @@ export const Header = memo(function Header() {
   }
 
   return (
-    <header className={`PHOTOCLOUD-header${location.pathname === '/' ? ' homepage-header' : ''}${isScrolled ? ' is-scrolled' : ''}`}>
+    <header data-header-frame className={`PHOTOCLOUD-header${location.pathname === '/' ? ' homepage-header' : ''}${isScrolled ? ' is-scrolled' : ''}`}>
       <div className="header-top">
         <div className="header-container">
           {/* Logo */}
@@ -306,18 +317,15 @@ export const Header = memo(function Header() {
 
           {/* Search Bar */}
           <nav className="header-studio-nav" aria-label="Điều hướng studio">
-            <Link to="/explore" aria-current={location.pathname === '/explore' ? 'page' : undefined}>Khám phá</Link>
-            <Link to="/packages" aria-current={location.pathname.startsWith('/packages') ? 'page' : undefined}>Gói chụp</Link>
-            <Link to="/collections" aria-current={location.pathname.startsWith('/collections') ? 'page' : undefined}>Bộ sưu tập</Link>
-            <Link to="/blog" aria-current={location.pathname.startsWith('/blog') ? 'page' : undefined}>Câu chuyện</Link>
-            <Link to="/about" aria-current={location.pathname === '/about' ? 'page' : undefined}>Về studio</Link>
+            {HEADER_LINKS.map(link => (
+              <Link key={link.href} to={link.href} aria-current={(link.exact ? location.pathname === link.href : location.pathname === link.href || location.pathname.startsWith(link.href + '/')) ? 'page' : undefined}>{link.label}</Link>
+            ))}
           </nav>
 
           {/* Right Actions - Desktop */}
           {/* CRITICAL: Always reserve space to prevent layout shift on refresh */}
           {!isMobile && <div className="header-actions desktop-only">
-            <ThemeToggle />
-            <ImagePageSidebar variant="header" />
+            {stableHasAuth && <><ThemeToggle /><ImagePageSidebar variant="header" /></>}
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
               <div style={{ 
@@ -363,33 +371,12 @@ export const Header = memo(function Header() {
               </div>
             )}
             
-            {/* Placeholder - only visible during initialization when no cookie/token */}
-            {showPlaceholder && (
-              <div style={{ 
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px'
-              }}>
-                <div style={{ width: '100px', height: '32px', flexShrink: 0 }} />
-                <div style={{ width: '60px', height: '60px', flexShrink: 0 }} />
-                <div style={{ width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0 }} />
-              </div>
-            )}
-            
-            {/* Sign In Links - only visible when not authenticated and not initializing */}
-            {!showPlaceholder && !stableHasAuth && (
-              <div style={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: '20px'
-              }}>
-                <Link to="/signin" className="header-link">{t('auth.signIn')}</Link>
-                <Button onClick={() => openBookingModal()} className="header-booking-button"><CalendarDays size={16} /><span>Đặt lịch chụp</span></Button>
-              </div>
-            )}
+            {!stableHasAuth && <PublicHeaderActions
+              signInLabel={t('auth.signIn')} dark={theme === 'dark'} pending={isInitializing && !guestOnMount}
+              signInLink={<Link to="/signin" className="header-link public-sign-in">{t('auth.signIn')}</Link>}
+              onToggleTheme={() => setSiteTheme(theme === 'dark' ? 'light' : 'dark')}
+              onBooking={() => openBookingModal()}
+            />}
           </div>}
         </div>
       </div>

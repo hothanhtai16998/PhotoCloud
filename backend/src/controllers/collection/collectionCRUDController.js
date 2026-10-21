@@ -12,11 +12,12 @@ import { cached, generateCacheKey, deleteCache } from '../../utils/queryCache.js
  */
 export const getUserCollections = async (req, res) => {
     try {
-        const userId = req.user._id;
+        const userId = req.user?._id;
 
         // Generate cache key
         const browse = req.query.scope === 'browse';
-        const cacheKey = generateCacheKey('userCollections', { userId: userId.toString() });
+        if (!userId && !browse) return res.status(401).json({ success: false, message: 'Đăng nhập để xem bộ sưu tập cá nhân.' });
+        const cacheKey = userId ? generateCacheKey('userCollections', { userId: userId.toString() }) : null;
         
         // Use cached query result (5 minute TTL)
         const loadCollections = async () => {
@@ -26,21 +27,47 @@ export const getUserCollections = async (req, res) => {
                 $match: {
             $or: [
                         ...(browse ? [{ isPublic: true }] : []),
-                        { createdBy: new mongoose.Types.ObjectId(userId) },
-                        { 'collaborators.user': new mongoose.Types.ObjectId(userId) },
+                        ...(userId ? [
+                            { createdBy: new mongoose.Types.ObjectId(userId) },
+                            { 'collaborators.user': new mongoose.Types.ObjectId(userId) },
+                        ] : []),
             ],
                 },
             },
             {
+                $lookup: {
+                    from: 'images', localField: 'images', foreignField: '_id',
+                    pipeline: [{ $project: { _id: 1 } }], as: 'existingImages',
+                },
+            },
+            {
                 $addFields: {
-                    // Get first 3 image IDs for sample images
-                    sampleImageIds: { $slice: [{ $ifNull: ['$images', []] }, 0, 3] },
+                    validImageIds: {
+                        $filter: {
+                            input: { $ifNull: ['$images', []] }, as: 'imageId',
+                            cond: { $in: ['$$imageId', '$existingImages._id'] },
+                        },
+                    },
+                },
+            },
+            // The browse surface only publishes collections with surviving images.
+            // Personal pickers still need empty collections so images can be added.
+            ...(browse ? [{ $match: { 'validImageIds.0': { $exists: true } } }] : []),
+            {
+                $addFields: {
+                    sampleImageIds: { $slice: ['$validImageIds', 0, 3] },
+                    coverReference: {
+                        $cond: [
+                            { $in: ['$coverImage', '$validImageIds'] }, '$coverImage',
+                            { $arrayElemAt: ['$validImageIds', 0] },
+                        ],
+                    },
                 },
             },
             {
                 $lookup: {
                     from: 'images',
-                    localField: 'coverImage',
+                    localField: 'coverReference',
                     foreignField: '_id',
                     as: 'coverImageData',
                     pipeline: [
@@ -127,7 +154,7 @@ export const getUserCollections = async (req, res) => {
                     updatedAt: 1,
                     coverImage: { $arrayElemAt: ['$coverImageData', 0] },
                     sampleImages: '$sampleImagesData', // First 3 images as samples
-                    imageCount: { $size: { $ifNull: ['$images', []] } },
+                    imageCount: { $size: '$validImageIds' },
                     createdBy: { $arrayElemAt: ['$createdByData', 0] },
                     collaborators: {
                         $map: {
@@ -162,7 +189,7 @@ export const getUserCollections = async (req, res) => {
 
         res.json({
             success: true,
-            collections: collections,
+            collections: userId ? collections : collections.map(({ collaborators: _collaborators, ...collection }) => collection),
         });
     } catch (error) {
         logger.error('Error fetching user collections:', error);
@@ -179,7 +206,7 @@ export const getUserCollections = async (req, res) => {
 export const getCollectionById = async (req, res) => {
     try {
         const { collectionId } = req.params;
-        const userId = req.user._id;
+        const userId = req.user?._id;
 
         if (!isValidObjectId(collectionId)) {
             return res.status(400).json({ success: false, message: 'Invalid collection ID' });
@@ -187,11 +214,11 @@ export const getCollectionById = async (req, res) => {
 
         const collection = await Collection.findOne({
             _id: collectionId,
-            $or: [
+            ...(userId ? { $or: [
                 { createdBy: userId }, // User's own collection
                 { isPublic: true }, // Or public collection
                 { 'collaborators.user': userId }, // Or user is a collaborator
-            ],
+            ] } : { isPublic: true }),
         })
             .populate('createdBy', 'username displayName avatarUrl')
             .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
@@ -220,20 +247,22 @@ export const getCollectionById = async (req, res) => {
             });
         }
 
-        // Increment views if viewing someone else's public collection
-        if (collection.createdBy._id.toString() !== userId.toString() && collection.isPublic) {
-            await Collection.findByIdAndUpdate(collectionId, {
-                $inc: { views: 1 },
-            });
-        }
-
         res.json({
             success: true,
             collection: {
                 ...collection,
+                ...(!userId ? { collaborators: [] } : {}),
                 imageCount: collection.images ? collection.images.length : 0,
             },
         });
+        // A statistics write must not delay content or turn a successful read into 500.
+        if (collection.createdBy?._id?.toString() !== userId?.toString() && collection.isPublic) {
+            try {
+                await Collection.findByIdAndUpdate(collectionId, { $inc: { views: 1 } });
+            } catch (error) {
+                logger.error('Failed to record collection view:', error);
+            }
+        }
     } catch (error) {
         logger.error('Error fetching collection:', error);
         res.status(500).json({

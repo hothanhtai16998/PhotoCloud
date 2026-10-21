@@ -2,6 +2,7 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
+    <meta name="theme-color" content="#FAF8F4" />
     <script id="site-theme-init">
       (() => {
         let dark = false;
@@ -9,8 +10,39 @@
         document.documentElement.classList.toggle('dark', dark);
         document.documentElement.classList.toggle('dark-theme', dark);
         document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+        // Public first paint must use the same surface as the eventual app.
+        // Keep the admin startup path and palette runtime unchanged.
+        if (/^\/admin(?:\/|$)/.test(location.pathname)) return;
+        document.documentElement.dataset.publicStartup = '1';
+        try {
+          document.documentElement.dataset.publicLocale = localStorage.getItem('app_locale') === 'en' ? 'en' : 'vi';
+          document.documentElement.dataset.publicAuth = sessionStorage.getItem('headerAuthHint') === 'guest' ? 'guest' : 'pending';
+        } catch {}
+        const defaults = /* public-palette-defaults */ {};
+        let cached;
+        try { cached = JSON.parse(localStorage.getItem('photocloud.sitePalette.v1')); } catch {}
+        const style = document.createElement('style');
+        style.id = 'site-palette';
+        style.textContent = ['light', 'dark'].map(theme => {
+          const colors = Object.entries(defaults[theme]).map(([key, fallback]) => {
+            const color = cached?.[theme]?.[key];
+            return `${key}:${typeof color === 'string' && /^#[a-f\d]{6}$/i.test(color) ? color : fallback}`;
+          }).join(';');
+          const selector = theme === 'dark' ? 'html[data-site-palette].dark-theme' : 'html[data-site-palette]:not(.dark-theme)';
+          return `${selector}{${colors}}${selector} body{${colors}}`;
+        }).join('\n');
+        document.head.append(style);
+        document.documentElement.dataset.sitePalette = '1';
+        const themeColor = cached?.[dark ? 'dark' : 'light']?.['--bg-primary'];
+        document.querySelector('meta[name="theme-color"]').content =
+          typeof themeColor === 'string' && /^#[a-f\d]{6}$/i.test(themeColor)
+            ? themeColor : defaults[dark ? 'dark' : 'light']['--bg-primary'];
+        if (/^\/collections(?:\/|$)/.test(location.pathname)) {
+          document.documentElement.dataset.startupSurface = location.pathname.replace(/\/$/, '') === '/collections' ? 'collections-list' : 'collections-detail';
+        }
       })();
     </script>
+    <!-- public-header-critical -->
     <script id="reload-scroll-reset">
       (() => {
         if (performance.getEntriesByType('navigation')[0]?.type !== 'reload') return;
@@ -37,7 +69,6 @@
       name="keywords"
       content="photocloud, studio chụp ảnh, chụp ảnh chân dung, chụp ảnh couple, chụp ảnh gia đình, mini session, đặt lịch chụp ảnh, photography studio vietnam"
     />
-    <meta name="theme-color" content="#FAF8F4" />
     <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -70,6 +101,9 @@
       /* CRITICAL: Hide scrollbar IMMEDIATELY on page load to prevent flash */
       /* Must be in <head> and load BEFORE any other CSS */
       /* This prevents scrollbar from appearing during page refresh */
+      html[data-public-startup] {
+        background-color: var(--bg-primary, #FAF8F4);
+      }
       html {
         overflow-y: auto !important;
         overflow-x: hidden !important;
@@ -155,10 +189,17 @@
         #root:empty::before, #root:empty::after { animation: none; opacity: 1; }
         #root:empty::after { transform: translate(-50%, -50%); }
       }
+      /* Keep the collection canvas/header surface steady until React mounts.
+         No fake user controls or cached account markup in the startup shell. */
+      html[data-startup-surface^="collections"] #root:empty::before { content: none; }
+      html[data-startup-surface^="collections"] #root:empty::after { content: none; }
+
            </style>
          </head>
          <body>
+           <!-- public-header-startup -->
            <div id="root"></div>
+           <!-- public-header-activate -->
           <script type="module" src="/src/main.tsx"></script>
           <!-- Request cancellation is handled by axios.ts, no inline script needed -->
          </body>

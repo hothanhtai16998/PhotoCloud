@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, AlertCircle, Info } from 'lucide-react';
 import { t } from '@/i18n';
@@ -7,7 +7,7 @@ import './ConfirmModal.css';
 interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   title: string;
   message: string;
   confirmText?: string;
@@ -33,6 +33,12 @@ export function ConfirmModal({
   variant = 'danger',
 }: ConfirmModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const submitting = useRef(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const close = useCallback(() => {
+    if (!submitting.current) { setError(null); onClose(); }
+  }, [onClose]);
 
   // ESC + focus trap
   useEffect(() => {
@@ -45,16 +51,20 @@ export function ConfirmModal({
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        close();
       }
       if (e.key === 'Tab' && dialogRef.current) {
         const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, [tabindex]:not([tabindex="-1"])'
+          'button:not(:disabled), [href], input:not(:disabled), [tabindex]:not([tabindex="-1"])'
         );
-        if (focusable.length === 0) return;
+        if (focusable.length === 0) {
+          e.preventDefault();
+          dialogRef.current.focus();
+          return;
+        }
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
           e.preventDefault();
           last.focus();
         } else if (!e.shiftKey && document.activeElement === last) {
@@ -65,18 +75,30 @@ export function ConfirmModal({
     };
 
     document.addEventListener('keydown', handleKey);
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = '';
-      previousActive?.focus();
+      document.body.style.overflow = previousOverflow;
+      if (previousActive?.isConnected) previousActive.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, close]);
 
-  const handleConfirm = useCallback(() => {
-    onConfirm();
-    onClose();
+  const handleConfirm = useCallback(async () => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      await onConfirm();
+      onClose();
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'Không thể hoàn tất. Vui lòng thử lại.');
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
   }, [onConfirm, onClose]);
 
   if (!isOpen) return null;
@@ -85,13 +107,14 @@ export function ConfirmModal({
   const isDanger = variant === 'danger';
 
   return (
-    <div className="confirm-modal-overlay" onClick={onClose}>
+    <div className="confirm-modal-overlay" onClick={close}>
       <div
         ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
         aria-describedby="confirm-modal-message"
+        aria-busy={busy}
         tabIndex={-1}
         className={`confirm-modal confirm-modal-${variant}`}
         onClick={(e) => e.stopPropagation()}
@@ -101,13 +124,15 @@ export function ConfirmModal({
           <h2 id="confirm-modal-title" className="confirm-modal-title">{title}</h2>
         </div>
         <p id="confirm-modal-message" className="confirm-modal-message">{message}</p>
+        {error && <p role="alert">{error}</p>}
         <div className="confirm-modal-actions">
-          <Button type="button" variant="ghost" onClick={onClose} className="confirm-modal-cancel">
+          <Button type="button" variant="ghost" onClick={close} disabled={busy} className="confirm-modal-cancel">
             {cancelText || t('common.cancel')}
           </Button>
           <Button
             type="button"
             onClick={handleConfirm}
+            loading={busy}
             className={isDanger ? 'confirm-modal-confirm-danger' : 'confirm-modal-confirm-primary'}
           >
             {confirmText || t('common.confirm')}

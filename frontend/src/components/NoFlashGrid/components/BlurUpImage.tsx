@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
 import type { ApiErrorResponse } from '@/types/errors';
-import { preloadImage, isImageLoaded } from '../utils/imagePreloader';
+import { preloadImage, isImageLoaded, loadedImages } from '../utils/imagePreloader';
 import { Heart, Download, Bookmark } from 'lucide-react';
 import { favoriteService } from '@/services/favoriteService';
 import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatchedFavoriteCheck';
@@ -25,12 +25,13 @@ type ExtendedImage = Image & { categoryName?: string; category?: string };
 
 export function getRegularImageUrl(image: Image, supportsAvif: boolean): string {
     return supportsAvif
-        ? image.regularAvifUrl || image.imageAvifUrl || image.regularUrl || image.imageUrl ||
-          image.smallAvifUrl || image.smallUrl || image.thumbnailAvifUrl || image.thumbnailUrl || ''
-        : image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl || '';
+        ? image.regularAvifUrl || image.regularUrl || image.smallAvifUrl || image.smallUrl ||
+          image.thumbnailAvifUrl || image.thumbnailUrl || image.imageAvifUrl || image.imageUrl || ''
+        : image.regularUrl || image.smallUrl || image.thumbnailUrl || image.imageUrl || '';
 }
 
 interface BlurUpImageProps {
+    previewSize?: 'small' | 'thumbnail';
     image: ExtendedImage;
     onClick?: () => void | Promise<void>;
     priority?: boolean;
@@ -48,18 +49,20 @@ export function BlurUpImage({
     images,
     currentIndex,
     minimal = false,
+    previewSize,
 }: BlurUpImageProps) {
     // Use base64 thumbnail for instant placeholder (like PHOTOCLOUD) - no network request needed
     const base64Placeholder = image.base64Thumbnail || null;
-    const networkPlaceholder = image.thumbnailUrl || image.smallUrl || image.imageUrl || null;
-    const placeholderInitial = base64Placeholder || networkPlaceholder;
     
     const [supportsAvif, setSupportsAvif] = useState<boolean | null>(() =>
         typeof window === 'undefined' ? false :
             (window as Window & { avifSupport?: boolean }).avifSupport ?? null
     );
-    const fullImageUrl = supportsAvif === null ? '' : getRegularImageUrl(image, supportsAvif);
-    const [readySrc, setReadySrc] = useState<string | null>(null);
+    const hasAvif = !!(image.regularAvifUrl || image.smallAvifUrl || image.thumbnailAvifUrl || image.imageAvifUrl);
+    const fullImageUrl = hasAvif && supportsAvif === null ? '' :
+        previewSize === 'thumbnail' ? image.thumbnailUrl || image.smallUrl || getRegularImageUrl(image, !!supportsAvif) :
+        previewSize === 'small' ? image.smallUrl || getRegularImageUrl(image, !!supportsAvif) :
+        getRegularImageUrl(image, !!supportsAvif);
     // Returning to a category remounts its cards. Keep cached photos visible
     // immediately instead of replaying the placeholder-to-photo transition.
     const [loadedSrc, setLoadedSrc] = useState<string | null>(() =>
@@ -67,9 +70,8 @@ export function BlurUpImage({
     );
     const [isInView, setIsInView] = useState(priority);
     const canLoad = priority || isInView;
-    // Cache reads are pure: never create an Image or start requests during render.
-    const fullSrc = canLoad && fullImageUrl &&
-        (readySrc === fullImageUrl || isImageLoaded(fullImageUrl)) ? fullImageUrl : null;
+    // Mount the actual image immediately; the browser owns fetching and HTTP cache reuse.
+    const fullSrc = canLoad && fullImageUrl ? fullImageUrl : null;
     const loaded = !!fullSrc && loadedSrc === fullSrc;
     const containerRef = useRef<HTMLDivElement | null>(null);
     const imgRef = useRef<HTMLImageElement | null>(null);
@@ -98,30 +100,9 @@ export function BlurUpImage({
         return () => { disposed = true; };
     }, [supportsAvif]);
 
-    useEffect(() => {
-        if (!canLoad || !fullImageUrl || isImageLoaded(fullImageUrl)) return;
-        let disposed = false;
-        const load = () => {
-            if (disposed) return;
-            preloadImage(fullImageUrl, true).then(src => {
-                if (!disposed) setReadySrc(src);
-            }).catch(() => { /* Keep the placeholder on failure. */ });
-        };
-        let idleId: number | undefined;
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        if (priority) load();
-        else if (typeof requestIdleCallback !== 'undefined') {
-            idleId = requestIdleCallback(load, { timeout: 1000 });
-        } else timeoutId = setTimeout(load, 0);
-        return () => {
-            disposed = true;
-            if (idleId !== undefined) cancelIdleCallback(idleId);
-            if (timeoutId !== undefined) clearTimeout(timeoutId);
-        };
-    }, [canLoad, fullImageUrl, priority]);
-
     const handleImageLoaded = useCallback(() => {
         if (!fullSrc) return;
+        loadedImages.add(fullSrc);
         setLoadedSrc(fullSrc);
         if (notifiedSrcRef.current !== fullSrc) {
             notifiedSrcRef.current = fullSrc;
@@ -508,10 +489,10 @@ export function BlurUpImage({
                 } : undefined}
                 style={isMobile ? { cursor: 'pointer', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' } : undefined}
             >
-                {/* Placeholder Image (Low Quality) - Hide immediately if image is cached to prevent flash */}
-                {placeholderInitial && (base64Placeholder || canLoad) && !loaded ? (
+                {/* Embedded placeholder only: do not download an extra image for the loading state. */}
+                {base64Placeholder && !loaded ? (
                     <img
-                        src={base64Placeholder || (canLoad ? networkPlaceholder : undefined) || undefined}
+                        src={base64Placeholder}
                         alt={image.imageTitle || 'photo'}
                         className="blur-up-image placeholder"
                         width={minimal ? undefined : (image.width || undefined)}
@@ -556,6 +537,8 @@ export function BlurUpImage({
                         width={minimal ? undefined : (image.width || undefined)}
                         height={minimal ? undefined : (image.height || undefined)}
                         loading="eager"
+                        fetchPriority={priority ? 'high' : 'auto'}
+                        decoding="async"
                         style={{ 
                             pointerEvents: 'none',
                             width: '100%',

@@ -3,10 +3,12 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { publicHeaderStartup } from './vite-plugin-public-header';
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    publicHeaderStartup(),
     react({
       // Ensure React is properly handled for React 19
       jsxRuntime: 'automatic',

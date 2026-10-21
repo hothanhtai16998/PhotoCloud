@@ -1,5 +1,7 @@
 # Trang bộ sưu tập — Visual overhaul (16/10/2026)
 
+> **Đính chính 18/10/2026:** Nhật ký lịch sử, không phải thiết kế cần khôi phục; trạng thái hiện tại theo PAGE_INVENTORY_AND_ANALYSIS.md. `npx tsc --noEmit` ở cấu hình gốc không kiểm source nên chưa chứng minh file sửa không lỗi; cần `npx tsc -b`/baseline khi kiểm code. Detector `[]` không xác nhận theme/accessibility hay chức năng; báo cáo này chưa có kiểm browser đầy đủ.
+
 ## Phạm vi
 
 - `frontend/src/pages/CollectionsPage.tsx`
@@ -72,6 +74,6 @@
 ## Chưa kiểm
 
 - Visual thật trên browser (MCP browser render trắng khi navigate, có thể session khác). Khi bạn vào `/collections` sẽ thấy skeleton ngay khi tải, card list có hover nâng rõ, empty state có illustration.
-- Dark mode visual: mọi biến đã dùng là palette token nên sẽ auto adapt. Bạn cần toggle theme để xác nhận.
+- Dark mode visual: dùng token là điều kiện hỗ trợ, chưa chứng minh tương phản/cascade/trạng thái đúng. Cần kiểm runtime sáng/tối.
 - RTL: không áp dụng cho trang này.
-- Touch target: action button 32×32 trên card hơi nhỏ cho touch, có thể cần 36×36 ở vòng responsive.
+- Touch target: báo cáo cũ ghi button 32×32; khi kiểm responsive, đo vùng tương tác thực tế và hướng tới khoảng 44×44 CSS px theo AGENTS.md, không coi 36×36 là mục tiêu nghiệm thu mặc định.

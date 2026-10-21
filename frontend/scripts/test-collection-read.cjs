@@ -1,0 +1,14 @@
+const fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript'),assert=require('node:assert/strict'),path=require('node:path');
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+(async()=>{let sentAt=null,viewsWritten=false,started;const sample={_id:'collection',createdBy:{_id:'owner'},isPublic:true,images:[]};
+const query={populate(){return this;},async lean(){await delay(100);return sample;}};
+const model={findOne:()=>query,findByIdAndUpdate:async()=>{await delay(600);viewsWritten=true;}};
+const context={exports:{},require:name=>{if(name.endsWith('/Collection.js'))return{default:model};if(name.includes('inputUtils'))return{isValidObjectId:()=>true};if(name.includes('logger'))return{logger:{error(){}}};return{};}};
+vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname,'../../backend/src/controllers/collection/collectionCRUDController.js'),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,context);
+const response={json(body){sentAt=performance.now()-started;assert.equal(body.collection._id,'collection');return this;},status(){return this;}};
+started=performance.now();await context.exports.getCollectionById({params:{collectionId:'collection'},user:{_id:'viewer'}},response);
+assert.equal(viewsWritten,true,'view count still recorded');
+const result={fixture:true,primaryQueryDelay:100,viewWriteDelay:600,responseMs:sentAt,totalHandlerMs:performance.now()-started};
+if(process.argv[2]==='after')assert.ok(sentAt<400,'nonessential view count cannot block response');
+fs.writeFileSync(path.resolve(__dirname,'../qa-policy-checkbox/collection-read-'+(process.argv[2]||'measurement')+'.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));
+})().catch(e=>{console.error(e);process.exitCode=1;});

@@ -220,7 +220,7 @@
 
 /* Only enable transition after image is loaded to prevent flash */
 .blur-up-image.full.loaded {
-  transition: opacity 0.15s ease, transform 0.25s ease;
+  transition: transform 0.25s ease;
 }
 
 @media (min-width: 769px) and (hover: hover) {

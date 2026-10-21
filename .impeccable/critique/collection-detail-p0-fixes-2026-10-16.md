@@ -1,5 +1,7 @@
 # Trang chi tiết bộ sưu tập — P0 quick wins (16/10/2026)
 
+> **Đính chính 18/10/2026:** Đây là nhật ký lịch sử, không phải checklist nghiệm thu hoặc chỉ dẫn tự áp dụng lại. Các nhãn P0 bên dưới là nhãn cũ; đổi màu, bỏ nhánh chữ trùng và metadata chưa có bằng chứng chặn tác vụ/mất dữ liệu nên không được coi là P0 theo AGENTS.md. `npx tsc --noEmit` với cấu hình gốc `files: []` không kiểm source; dòng kết quả cũ không chứng minh typecheck đạt, cần `npx tsc -b` và đối chiếu baseline khi kiểm code. Detector `[]` chỉ là kết quả quét cơ học, không xác nhận toàn bộ chất lượng. Trạng thái hiện tại theo PAGE_INVENTORY_AND_ANALYSIS.md.
+
 ## Phạm vi
 
 - `frontend/src/pages/collection/components/CollectionNoFlashGrid.css`

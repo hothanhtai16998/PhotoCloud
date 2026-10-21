@@ -1,0 +1,90 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const ts = require('typescript');
+const immer = require('immer');
+immer.enableMapSet();
+let session = 0;
+const service = {}, favorite = {};
+let collectionStore;
+const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; }); return { promise, resolve, reject }; };
+function load(file) {
+  const context = { exports: {}, AbortController, console: { ...console, error: () => {} }, navigator: { onLine: true }, require: name => {
+    if (name === 'zustand' || name === 'zustand/middleware/immer') return require(name);
+    if (name === 'sonner') return { toast: { success() {}, error() {} } };
+    if (name.includes('useAuthStore')) return { useAuthStore: { getState: () => ({ accessToken: 'fixture' }) } };
+    if (name.includes('collectionService')) return { collectionService: service };
+    if (name.includes('collectionFavoriteService')) return { collectionFavoriteService: favorite };
+    if (name.includes('useCollectionStore')) return { useCollectionStore: collectionStore };
+    if (name.includes('authSessionVersion')) return { getAuthSessionVersion: () => session };
+    throw Error(name);
+  }};
+  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.join(__dirname, '../src/stores', file), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, context);
+  return context.exports;
+}
+(async () => {
+  const store = load('useCollectionStore.ts').useCollectionStore;
+  collectionStore = store;
+  const images = load('useCollectionImageStore.ts').useCollectionImageStore;
+  const a = { _id:'a', name:'A', images:[{_id:'1'},{_id:'2'}], isPublic:true };
+  const b = { ...a, _id:'b', name:'B' };
+  const first = deferred(), second = deferred();
+  service.getCollectionById = id => id === 'a' ? first.promise : second.promise;
+  favorite.checkFavorites = async () => ({ favorites: { b:false } });
+  const readA = store.getState().fetchCollection('a'), readB = store.getState().fetchCollection('b');
+  second.resolve(b); await readB; first.resolve(a); await readA;
+  assert.equal(store.getState().collection._id, 'b', 'late route A cannot replace B');
+  const pending = deferred(); service.getCollectionById = () => pending.promise;
+  const read = store.getState().fetchCollection('a'); store.getState().clearCollection(); pending.resolve(a); await read;
+  assert.equal(store.getState().collection, null, 'unmount invalidates reads');
+  assert.equal(store.getState().loading, false);
+  const authRead = deferred(); service.getCollectionById = () => authRead.promise;
+  const oldSession = store.getState().fetchCollection('a'); session++; store.getState().clearCollection(); authRead.resolve(a); await oldSession;
+  assert.equal(store.getState().collection, null, 'old account data is ignored');
+
+  const check = deferred(); service.getCollectionById = async () => a;
+  favorite.checkFavorites = () => check.promise;
+  const favoriteRead = store.getState().fetchCollection('a'); await new Promise(setImmediate);
+  favorite.toggleFavorite = async () => ({ isFavorited:true });
+  await store.getState().toggleFavorite('a'); check.resolve({favorites:{a:false}}); await favoriteRead;
+  await new Promise(setImmediate);
+  assert.equal(store.getState().isFavorited, true, 'late favorite check cannot undo click');
+  const toggle = deferred(); favorite.toggleFavorite = () => toggle.promise;
+  const lateToggle = store.getState().toggleFavorite('a'); store.getState().clearCollection(); toggle.resolve({isFavorited:true}); await lateToggle;
+  assert.equal(store.getState().isFavorited, false, 'favorite mutation cannot cross route');
+  store.setState({collection:{...a,images:[]}});
+  store.getState().addImageToCollection('1',a.images[0]);
+  assert.equal(store.getState().collection.images[0]._id,'1','first real-time image stays populated');
+  store.setState({collection:a});
+
+  images.getState().setImages(a.images);
+  const reorder = deferred(); service.reorderCollectionImages = () => reorder.promise;
+  const moving = images.getState().reorderImages('a',['2','1']); reorder.reject(Error('offline')); await moving;
+  assert.equal(images.getState().images.map(i=>i._id).join(','),'1,2','failed reorder rolls back without network');
+  service.reorderCollectionImages = async () => ({...a,images:[...a.images].reverse()});
+  await images.getState().reorderImages('a',['2','1']);
+  assert.equal(store.getState().collection.images[0]._id,'2','successful reorder synchronizes canonical collection');
+  const staleReorder = deferred(); service.reorderCollectionImages = () => staleReorder.promise;
+  const stale = images.getState().reorderImages('a',['2','1']); images.getState().setImages([{_id:'new'}]); staleReorder.resolve(a); await stale;
+  assert.equal(images.getState().images[0]._id,'new','stale reorder cannot replace new dataset');
+
+  images.getState().setImages(a.images);
+  store.setState({collection:a});
+  const calls = []; let fail = true;
+  service.removeImageFromCollection = async (_,id) => { calls.push(id); if (id==='2' && fail) throw Error('retry'); };
+  await assert.rejects(images.getState().bulkRemoveImages('a',['1','2']),/1 ảnh chưa xóa/);
+  assert.equal(images.getState().images.map(i=>i._id).join(','),'2');
+  assert.equal([...images.getState().selectedImageIds].join(','),'2');
+  assert.equal(store.getState().collection.images.map(image=>image._id).join(','),'2','successful deletions are reconciled before retry');
+  fail=false; await images.getState().bulkRemoveImages('a',[...images.getState().selectedImageIds]);
+  assert.equal(calls.join(','),'1,2,2','retry never repeats successful deletions');
+  assert.equal(images.getState().images.length,0);
+
+  const lock = deferred(); let requests=0;
+  service.removeImageFromCollection=()=>{requests++;return lock.promise;}; images.getState().setImages([{_id:'1'}]);
+  const removing=images.getState().bulkRemoveImages('a',['1']); await images.getState().bulkRemoveImages('a',['1']);
+  assert.equal(requests,1,'duplicate mutation is locked'); images.getState().setImages([{_id:'new'}]); lock.resolve(); await removing;
+  assert.equal(images.getState().images[0]._id,'new','late delete cannot change new dataset');
+  console.log('PASS: route/session isolation, cleanup, favorite races, reorder rollback/stale result, partial delete retry and duplicate mutation locks.');
+})().catch(error => { console.error(error); process.exitCode=1; });

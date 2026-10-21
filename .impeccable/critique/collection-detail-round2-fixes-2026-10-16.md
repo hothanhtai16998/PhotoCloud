@@ -1,5 +1,7 @@
 # Trang chi tiết bộ sưu tập — Round 2 (Header, Hero, Cleanup) 16/10/2026
 
+> **Đính chính 18/10/2026:** Nhật ký lịch sử; hero/menu đã có thay đổi tiếp ở round 3, không tự khôi phục theo đề xuất cũ. `npx tsc --noEmit` ở cấu hình gốc không kiểm source; chưa đủ bằng chứng typecheck, cần `npx tsc -b`/baseline khi kiểm code. Detector `[]` không thay kiểm chức năng/theme/accessibility. Việc sửa admin re-export được ghi dưới đây không phải tiền lệ cho phép sửa admin: mọi thay đổi admin hoặc phần chung có admin phụ thuộc phải theo phạm vi/quyền trong AGENTS.md. Trạng thái nghiệm thu hiện tại theo PAGE_INVENTORY_AND_ANALYSIS.md.
+
 ## Phạm vi
 
 - `frontend/src/pages/collection/components/CollectionHeader.tsx` — redesign
@@ -74,10 +76,10 @@ CSS responsive: margin 24px desktop, 16px mobile; border-radius 16px desktop, 12
 
 ## Chưa làm (theo yêu cầu "làm tiếp cho xong", đã hết P0–P3 của assessment)
 
-Không còn issue nào từ report $impeccable critique round 1. Để vào round mới cần user chạy lại critique hoặc xác định ưu tiên tiếp theo.
+Nhật ký cũ ghi đã xử lý các mục của critique round 1; điều đó không chứng minh không còn lỗi. Có thể tiếp tục sửa/kiểm trong phạm vi người dùng đã giao mà không cần gọi lại critique. Chưa có bằng chứng hồi quy đầy đủ trong báo cáo này.
 
 ## Ghi chú kỹ thuật
 
-- `ConfirmModal` ở admin re-export để admin code không vỡ. Round sau nên migrate `AdminCollections.tsx` + `ActiveSessions.tsx` sang import trực tiếp từ shared để gỡ bỏ re-export.
+- Nhật ký ghi `ConfirmModal` admin re-export để giữ tương thích; chưa đủ bằng chứng kết luận admin không hồi quy. Migration import admin chỉ giao phiên admin hoặc thực hiện khi được người dùng cho phép, không tự làm trong phiên user.
 - Hero dùng `coverImage.regularUrl || coverImage.url` — nếu image object không có URL thì hero ẩn. Đúng kỳ vọng.
 - `CollectionShare` được render trong `.collection-detail-share-hidden` (0×0 opacity:0) để giữ state, khi click menu item "Chia sẻ" tìm nút con đầu tiên rồi `.click()`. Đây là hack tạm — nếu có thời gian nên refactor `CollectionShare` để nhận `isOpen` controlled.

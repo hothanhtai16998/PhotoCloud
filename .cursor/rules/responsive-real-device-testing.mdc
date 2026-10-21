@@ -10,25 +10,27 @@ alwaysApply: false
 
 ## Quy tắc cứng
 
-Trước khi gạch ngang `R-01…R-06` trong `PAGE_INVENTORY_AND_ANALYSIS.md` hoặc tự đánh dấu `[x]` cho bất kỳ mục responsive nào, **phải có đủ 3 dòng bằng chứng thiết bị thật** dưới đây. Không có → không được gạch ngang.
+Trước khi gạch ngang `R-01…R-06` trong `PAGE_INVENTORY_AND_ANALYSIS.md`, **phải có bằng chứng của đủ ba nhóm thiết bị thật** dưới đây và người dùng xác nhận đạt. Agent không tự đánh `[x]` dựa trên kết quả tự kiểm. Không có đủ bằng chứng → ghi chưa kiểm, không gạch ngang. Quy tắc này không chặn sửa code hoặc kiểm giả lập đã được giao.
 
 ### 3 thiết bị bắt buộc
 
-| # | Thiết bị | Trình duyệt mục tiêu | Viewport chuẩn |
+| # | Thiết bị | Trình duyệt mục tiêu | Viewport tham khảo |
 |---|---|---|---|
 | 1 | iPhone thật (Safari iOS) | Safari 17+ | 390×844 |
 | 2 | Android thật (Chrome) | Chrome 119+ | 412×915 |
 | 3 | iPad thật (Safari) **hoặc** desktop thật | Safari 17+ / Chrome 119+ | 1024×768 **hoặc** 1440×900 |
 
-> Nếu môi trường Cursor/Windows không có sẵn thiết bị, **dừng lại hỏi người dùng** thay vì dùng Emulation giả lập. Theo `responsive.md` mục 10 và 11, fixture/Emulation không thay thế thiết bị thật.
+> Ghi OS/browser/version và viewport CSS px đo thực tế, không gán số tham khảo cho mọi thiết bị. Nếu môi trường thiếu thiết bị thật, tiếp tục phần code/giả lập được giao và ghi rõ giới hạn. Chờ người dùng cung cấp kết quả thiết bị thật trước khi nghiệm thu; fixture/Emulation không thay thế bằng chứng đó.
 
 ## Bằng chứng bắt buộc ghi vào checklist
 
-Mỗi lần ghi `[x]` cho R-01…R-06, ghi kèm 3 dòng sau trong `frontend/qa-policy-checkbox/responsive-<route>-<device>-<theme>.png` hoặc checklist tương ứng:
+Khi người dùng xác nhận đạt R-01…R-06, ghi một bản thông tin dưới đây cho từng nhóm thiết bị trong Markdown/log hoặc mục bằng chứng tương ứng của inventory. Link ảnh `frontend/qa-policy-checkbox/responsive-<route>-<device>-<theme>.png` nếu có; không ghi văn bản vào file PNG. Không tạo nguồn trạng thái nghiệm thu thứ hai.
 
 ```
 - Thiết bị: <iPhone 14 · Safari iOS 17.1>
 - Viewport: <390×844>
+- Build/commit và thay đổi chưa commit liên quan: <…>
+- Route, theme, hướng màn hình và dữ liệu test: <…>
 - Ngày test: <YYYY-MM-DD>
 - Người test: <tên hoặc "người dùng">
 - Pass/Fail + ghi chú: <…>
@@ -45,9 +47,9 @@ Mỗi lần ghi `[x]` cho R-01…R-06, ghi kèm 3 dòng sau trong `frontend/qa-p
 
 Phiên Cursor trên Windows không có sẵn iPhone/Android/iPad thật:
 
-1. **Báo người dùng** trước khi sửa, nêu rõ mình chỉ có thể chuẩn bị code + checklist.
-2. Chuẩn bị sẵn `frontend/qa-policy-checkbox/responsive-environment.md` (danh sách thiết bị, baseline commit, môi trường).
-3. Chuẩn bị sẵn `frontend/qa-policy-checkbox/responsive-audit.md` (29 trang × R-01…R-06, để trống cho người dùng điền).
+1. Báo giới hạn thiết bị và tiếp tục phần sửa/kiểm có thể thực hiện trong phạm vi được giao; không hỏi lại quyền sửa đã có.
+2. Ghi môi trường/thiết bị thiếu trong bằng chứng hiện có; có thể dùng `frontend/qa-policy-checkbox/responsive-environment.md` nếu cần.
+3. Chuẩn bị checklist các route được giao trong inventory. Không tự sinh thêm checklist cho cả 29 trang nếu ngoài phạm vi.
 4. **Không tự gạch ngang** mục nào cho đến khi người dùng cung cấp kết quả kiểm trên thiết bị thật.
 
 ## Tài liệu liên quan

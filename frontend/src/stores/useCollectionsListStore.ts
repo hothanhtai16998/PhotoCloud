@@ -12,7 +12,7 @@ const initial = { collections: [], loading: false, deletingId: null, error: null
 export const useCollectionsListStore = create<CollectionsListState>((set, get) => ({
  ...initial,
  fetchCollections: async () => {
-  if (get().loading || !useAuthStore.getState().accessToken) return;
+  if (get().loading) return;
   if (typeof navigator !== 'undefined' && !navigator.onLine) { markCollectionsOffline(); return; }
   const request = new AbortController(); controller = request;
   const session = getAuthSessionVersion(); const currentRevision = revision;
@@ -67,13 +67,4 @@ if (typeof window !== 'undefined') {
 export function markCollectionsOffline(): void {
 	revision++; controller?.abort(); controller = null;
 	useCollectionsListStore.setState({ loading: false, error: 'Bạn đang ngoại tuyến. Kết nối mạng rồi bấm Thử lại.' });
-}
-
-// Called when the browser comes back online. Clears the offline error so the
-// banner disappears, but does NOT auto-fetch: keep the cached list visible and
-// let the user press Thử lại to avoid a stale write racing with a mutation.
-export function clearCollectionsOfflineError(): void {
-	const { error } = useCollectionsListStore.getState();
-	if (!error) return;
-	useCollectionsListStore.setState({ error: null });
 }

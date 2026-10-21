@@ -5,14 +5,16 @@ Sao chép đoạn dưới vào chat mới trong dự án, thay `[tên trang ho�
 ```text
 Đọc AGENTS.md và PAGE_INVENTORY_AND_ANALYSIS.md trước khi làm.
 
-Dùng $impeccable rà soát và sửa trang [tên trang hoặc route]:
+Dùng $ra-trang-user (nếu khả dụng) và tài liệu $impeccable rà soát và sửa trang [tên trang hoặc route]:
 - Đơn giản hóa logic, bỏ state dư, nhánh xử lý trùng và code không còn dùng.
 - Tái sử dụng code hiện có; giao diện lặp chuyển thành component chung, logic lặp chuyển thành hook/utility/service phù hợp. Tránh copy-paste và tổng quát hóa quá mức.
 - Tách theo trách nhiệm; file nguồn trên 1.000 dòng phải tách nhỏ.
 - Giữ các chức năng đã nghiệm thu; kiểm tra hiệu năng, accessibility, sáng/tối và các trạng thái tải/rỗng/lỗi/thử lại.
 - Chạy kiểm tra phù hợp, báo rõ kết quả và phần chưa kiểm.
+- Typecheck bằng `npx tsc -b` trong frontend; `tsc --noEmit` ở cấu hình gốc hiện tại không kiểm các project references. So sánh lỗi trước/sau, gồm cả caller ngoài file sửa.
 - Cập nhật inventory bằng checklist dễ hiểu, giữ dấu x/o của tôi; chỉ gạch ngang khi tôi xác nhận đạt hết.
 - Responsive kiểm riêng sau khi hoàn tất chức năng tất cả trang. Trang chủ để sau, các trang còn lại theo thứ tự inventory.
 
 Thực hiện sửa code và kiểm tra, không chỉ đưa ra đề xuất.
+Khi phạm vi đã rõ thì tiếp tục, không hỏi xác nhận lại; phần chung có admin phụ thuộc vẫn theo AGENTS.md. Nếu skill không khả dụng, báo rõ và làm theo hướng dẫn dự án. `$impeccable audit` là yêu cầu cho agent, không phải lệnh shell; detector CLI chỉ bổ trợ.
 ```

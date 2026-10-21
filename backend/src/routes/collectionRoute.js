@@ -15,28 +15,26 @@ import {
     updateCollaboratorPermission,
     trackCollectionShare,
 } from '../controllers/collectionController.js';
-import { protectedRoute } from '../middlewares/authMiddleware.js';
+import { protectedRoute, optionalAuth } from '../middlewares/authMiddleware.js';
 import { validateCsrf } from '../middlewares/csrfMiddleware.js';
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protectedRoute);
+// Public reads may identify the viewer, but never require a login.
+router.get('/', optionalAuth, getUserCollections);
+router.get('/:collectionId', optionalAuth, getCollectionById);
 
-// Get all collections for the authenticated user
-router.get('/', getUserCollections);
+// Personal pickers, exports and mutations remain authenticated.
+router.use(protectedRoute);
 
 // Get collections containing a specific image
 router.get('/containing/:imageId', getCollectionsContainingImage);
 
-// Track collection share (must be before /:collectionId route)
+// Track collection share
 router.post('/:collectionId/share', validateCsrf, trackCollectionShare);
 
-// Export collection as ZIP (must be before /:collectionId route)
+// Export collection as ZIP
 router.get('/:collectionId/export', exportCollection);
-
-// Get a single collection by ID
-router.get('/:collectionId', getCollectionById);
 
 // Create a new collection
 router.post('/', validateCsrf, createCollection);

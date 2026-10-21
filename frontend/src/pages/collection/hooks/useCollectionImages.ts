@@ -1,16 +1,18 @@
-import { useCallback, useMemo, useRef, useEffect, useContext } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useCallback, useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import type { Image } from '@/types/image';
 import type { Collection } from '@/types/collection';
 import { useCollectionImageStore } from '@/stores/useCollectionImageStore';
+import { useCollectionStore } from '@/stores/useCollectionStore';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
 import { generateImageSlug } from '@/lib/utils';
 import { saveScrollPosition, setModalActive, prepareModalNavigationState } from '@/utils/modalNavigation';
-import { ActualLocationContext } from '@/contexts/ActualLocationContext';
 
 interface UseCollectionImagesProps {
   collection: Collection | null;
   collectionId: string | undefined;
   isOwner: boolean;
+  canEdit: boolean;
   isMobile: boolean;
   fetchCollection: (id: string) => Promise<void>;
 }
@@ -19,20 +21,16 @@ export const useCollectionImages = ({
   collection,
   collectionId,
   isOwner,
+  canEdit,
   isMobile,
   fetchCollection,
 }: UseCollectionImagesProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [, setSearchParams] = useSearchParams();
-  const processedImages = useRef<Set<string>>(new Set());
-  const actualLocation = useContext(ActualLocationContext);
-  // Fallback to useLocation if actualLocation is not available
-  const currentLocation = actualLocation || location;
+  const imageScope = useRef<string | undefined>(undefined);
 
   const {
     images,
-    imageTypes,
     draggedImageId,
     dragOverImageId,
     isReordering,
@@ -40,8 +38,6 @@ export const useCollectionImages = ({
     selectedImageIds,
     isBulkRemoving,
     setImages,
-    updateImage,
-    setImageType,
     setDraggedImageId,
     setDragOverImageId,
     reorderImages,
@@ -50,10 +46,13 @@ export const useCollectionImages = ({
     selectAllImages,
     deselectAllImages,
     bulkRemoveImages,
+    clearSelection,
   } = useCollectionImageStore();
 
   // Sync images from collection to image store
   useEffect(() => {
+    if (imageScope.current !== collection?._id || !canEdit) clearSelection();
+    imageScope.current = collection?._id;
     if (collection) {
       const imageArray = Array.isArray(collection.images)
         ? collection.images.filter((img: unknown): img is Image => {
@@ -64,39 +63,15 @@ export const useCollectionImages = ({
     } else {
       setImages([]);
     }
-  }, [collection, setImages]);
-
-  // Get current image IDs for comparison
-  const currentImageIds = useMemo(() => new Set(images.map(img => img._id)), [images]);
-
-  // Determine image type when it loads
-  const handleImageLoad = useCallback((imageId: string, img: HTMLImageElement) => {
-    if (!currentImageIds.has(imageId) || processedImages.current.has(imageId)) return;
-
-    processedImages.current.add(imageId);
-    const isPortrait = img.naturalHeight > img.naturalWidth;
-    const imageType = isPortrait ? 'portrait' : 'landscape';
-    setImageType(imageId, imageType);
-  }, [currentImageIds, setImageType]);
-
-  // Update image in the state when stats change
-  const handleImageUpdate = useCallback((updatedImage: Image) => {
-    updateImage(updatedImage._id, updatedImage);
-  }, [updateImage]);
+  }, [collection, canEdit, setImages, clearSelection]);
 
   // Handle drag start
   const handleDragStart = useCallback((imageId: string, e: React.DragEvent) => {
-    if (!isOwner) return;
+    if (!isOwner || isReordering || selectionMode) { e.preventDefault(); return; }
     setDraggedImageId(imageId);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', imageId);
-    // Add a slight delay to allow drag image to be set
-    setTimeout(() => {
-      if (e.dataTransfer) {
-        e.dataTransfer.effectAllowed = 'move';
-      }
-    }, 0);
-  }, [isOwner, setDraggedImageId]);
+  }, [isOwner, isReordering, selectionMode, setDraggedImageId]);
 
   // Handle drag over
   const handleDragOver = useCallback((imageId: string, e: React.DragEvent) => {
@@ -113,7 +88,7 @@ export const useCollectionImages = ({
 
   // Handle drop
   const handleDrop = useCallback(async (targetImageId: string, e: React.DragEvent) => {
-    if (!isOwner || !draggedImageId || !collectionId) return;
+    if (!isOwner || isReordering || selectionMode || !draggedImageId || !collectionId) return;
 
     e.preventDefault();
     e.stopPropagation();
@@ -145,7 +120,7 @@ export const useCollectionImages = ({
 
     // Save to backend (store handles optimistic update and error handling)
     await reorderImages(collectionId, newOrder);
-  }, [isOwner, draggedImageId, collectionId, images, setDraggedImageId, setDragOverImageId, reorderImages]);
+  }, [isOwner, isReordering, selectionMode, draggedImageId, collectionId, images, setDraggedImageId, setDragOverImageId, reorderImages]);
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
@@ -155,7 +130,7 @@ export const useCollectionImages = ({
 
   // Handle image click
   const handleImageClick = useCallback((image: Image) => {
-    if (selectionMode) {
+    if (selectionMode && canEdit) {
       // Selection mode logic
       toggleImageSelection(image._id);
       return;
@@ -198,32 +173,30 @@ export const useCollectionImages = ({
       // Include clicked image for fast modal open
       state: { ...modalState, images, image, fromGrid: true }
     });
-  }, [selectionMode, isMobile, navigate, images, toggleImageSelection, location, collectionId]);
+  }, [selectionMode, canEdit, isMobile, navigate, images, toggleImageSelection, location, collectionId]);
 
   // Handle bulk remove - Note: Confirmation is now handled by the component using ConfirmModal
   const handleBulkRemove = useCallback(async () => {
-    if (!collectionId || selectedImageIds.size === 0) return;
+    if (!canEdit || !collectionId || selectedImageIds.size === 0 || isBulkRemoving) return;
 
     const imageIdsArray = Array.from(selectedImageIds);
+    const session = getAuthSessionVersion();
     await bulkRemoveImages(collectionId, imageIdsArray);
 
     // Reload collection to sync with backend
-    await fetchCollection(collectionId);
-  }, [collectionId, selectedImageIds, bulkRemoveImages, fetchCollection]);
+    if (session === getAuthSessionVersion() && useCollectionStore.getState().collection?._id === collectionId) {
+      void fetchCollection(collectionId).catch(() => {});
+    }
+  }, [canEdit, collectionId, selectedImageIds, isBulkRemoving, bulkRemoveImages, fetchCollection]);
 
   return {
     images,
-    imageTypes,
     draggedImageId,
     dragOverImageId,
     isReordering,
     selectionMode,
     selectedImageIds,
     isBulkRemoving,
-    currentImageIds,
-    processedImages,
-    handleImageLoad,
-    handleImageUpdate,
     handleDragStart,
     handleDragOver,
     handleDragLeave,
@@ -235,7 +208,6 @@ export const useCollectionImages = ({
     toggleImageSelection,
     selectAllImages,
     deselectAllImages,
-    setSearchParams,
   };
 };
 

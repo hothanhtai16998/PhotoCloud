@@ -50,9 +50,8 @@
     0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent),
     0 8px 24px color-mix(in srgb, var(--accent) 40%, transparent),
     inset 0 0 0 2px color-mix(in srgb, var(--bg-card) 20%, transparent);
-  position: relative;
   transform: scale(1.02);
-  z-index: 2;
+  z-index: 26;
 }
 
 .collection-grid-overlay.selected::after {
@@ -256,6 +255,17 @@
   background: color-mix(in srgb, var(--text-primary) 50%, transparent);
   opacity: 1;
   pointer-events: none;
+}
+
+.grid-item-wrapper:focus-within .collection-image-overlay {
+  background: color-mix(in srgb, var(--text-primary) 50%, transparent);
+  opacity: 1;
+}
+
+.collection-image-checkbox:focus-visible,
+.collection-image-set-cover-btn:focus-visible {
+  outline: 2px solid var(--button-focus);
+  outline-offset: 3px;
 }
 
 .grid-item-wrapper:hover .collection-image-overlay .collection-image-set-cover-btn {

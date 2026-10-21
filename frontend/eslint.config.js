@@ -66,6 +66,13 @@ export default defineConfig([
     },
   },
   {
+    files: ['vite-plugin-public-header.ts'],
+    languageOptions: {
+      globals: globals.node,
+      parserOptions: { project: './tsconfig.node.json' },
+    },
+  },
+  {
     files: ['**/ProgressiveImage.tsx'],
     rules: {
       'react-hooks/set-state-in-effect': 'off',

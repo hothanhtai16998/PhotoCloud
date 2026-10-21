@@ -11,6 +11,7 @@ import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
 import Header from "./components/Header";
 import HomePage from './pages/HomePage';
+import CollectionsPage from './pages/CollectionsPage';
 import { Footer } from "./components/Footer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
@@ -51,7 +52,6 @@ const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage").t
 const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const FavoriteCollectionsPage = lazy(() => import("./pages/FavoriteCollectionsPage"));
 const DownloadHistoryPage = lazy(() => import("./pages/DownloadHistoryPage"));
-const CollectionsPage = lazy(() => import("./pages/CollectionsPage"));
 const CollectionDetailPage = lazy(() => import("./pages/collection/CollectionDetailPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const BookingPage = lazy(() => import("./pages/BookingPage"));

@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from 'react';
 import type { Image } from '@/types/image';
 import './NoFlashGrid.css';
 
 // Import extracted modules
 import { GRID_CONFIG } from './constants/gridConfig';
-import { preloadImages } from './utils/imagePreloader';
 import { loadImageDimensions, getCachedImageDimensions } from './utils/imageDimensions';
 import { calculateImageLayout, getColumnCount } from './utils/gridLayout';
 import { BlurUpImage } from './components/BlurUpImage';
@@ -23,6 +22,12 @@ export interface NoFlashGridProps {
     className?: string;
     onImageClick?: (image: ExtendedImage, index: number) => void; // Handler for image click (typically navigates to ImagePage)
     onImageHover?: (image: ExtendedImage) => void; // Handler for image hover (for preloading)
+    /**
+     * Optional React overlay rendered inside each grid item, after the image.
+     * Used by the collection detail page to attach cover badges, drag handles,
+     * selection checkboxes, etc. without building DOM imperatively.
+     */
+    renderItemOverlay?: (image: ExtendedImage, index: number) => ReactNode;
     pagination?: {
         page: number;
         limit: number;
@@ -32,7 +37,7 @@ export interface NoFlashGridProps {
     onLoadMore?: () => Promise<void>; // Handler for loading more images (infinite scroll)
 }
 
-export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, pagination, onLoadMore, compactMobile = false, containerId = 'image-grid-container' }: NoFlashGridProps) {
+export function NoFlashGrid({ images, loading: externalLoading, onLoadData, className = '', onImageClick, onImageHover, renderItemOverlay, pagination, onLoadMore, compactMobile = false, containerId = 'image-grid-container' }: NoFlashGridProps) {
     const gridRef = useRef<HTMLDivElement | null>(null);
     const isMobile = useIsMobile();
     const compactLayout = compactMobile && isMobile;
@@ -89,22 +94,13 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
     // Use images directly - no filtering needed currently
     const filteredImages = images;
 
-    // Preload thumbnails for first batch of images when images change
-    useEffect(() => {
-        if (images.length === 0) return;
-        const thumbnails = images.slice(0, 20)
-            .map(img => img.thumbnailUrl || img.smallUrl)
-            .filter((src): src is string => Boolean(src));
-        preloadImages(thumbnails, true);
-    }, [images]);
-
     useEffect(() => {
         let active = true;
         const missing = filteredImages.slice(0, 50).filter(image => !(image.width && image.height) && !imageDimensionsRef.current.has(image._id));
         void (async () => {
             for (let i = 0; i < missing.length && active; i += 5) {
                 const results = await Promise.all(missing.slice(i, i + 5).map(async image => {
-                    const url = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                    const url = image.regularUrl || image.smallUrl || image.thumbnailUrl || image.imageUrl;
                     if (!url) return null;
                     try { return {id: image._id, dims: getCachedImageDimensions(url) || await loadImageDimensions(url)}; } catch { return null; }
                 }));
@@ -124,7 +120,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
         filteredImages.forEach(image => {
             if (image.width && image.height) map.set(image._id, {width: image.width, height: image.height});
             else {
-                const url = image.regularUrl || image.imageUrl || image.smallUrl || image.thumbnailUrl;
+                const url = image.regularUrl || image.smallUrl || image.thumbnailUrl || image.imageUrl;
                 const cached = url && getCachedImageDimensions(url);
                 if (cached) map.set(image._id, cached);
             }
@@ -301,6 +297,7 @@ export function NoFlashGrid({ images, loading: externalLoading, onLoadData, clas
                                             priority={isPriority}
                                         />
                                     </div>
+                                    {renderItemOverlay?.(image, idx)}
                                 </div>
                             );
                         })}

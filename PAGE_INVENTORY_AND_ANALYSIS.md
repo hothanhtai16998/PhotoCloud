@@ -2,6 +2,8 @@
 
 ## Trạng thái nghiệm thu và công việc hiện tại
 
+**🔴 CHỜ KIỂM THỰC TẾ — Bộ sưu tập #5/#6:** người dùng báo mở chậm và thẻ bộ không có ảnh vẫn xuất hiện tại `http://localhost:5173/collections`. Đã sửa và kiểm fixture, chưa xác nhận hết chậm với dữ liệu thật; xem mục 24.5. Offline được người dùng xác nhận đúng logic; hành vi online mới là tự tải lại một lần, chờ kiểm lại. Không thay các dấu nghiệm thu cũ.
+
 ~~[o] EXP-F05 — Khám phá: sắp xếp chưa đạt.~~ **ĐÃ ĐÓNG** ngày 16/10/2026 sau khi người dùng kiểm thật bằng chuột: chọn từng sort (Mới nhất/Xem nhiều/Yêu thích/Tải nhiều) ảnh đầu lưới đổi đúng theo thứ tự server. Bản sửa `mergeImages` trong `imageStoreHelpers.ts` không ép `sortBy='date'` khi user chọn sort khác, ghi chú tại mục 11.5.
 
 **Đã đóng theo xác nhận người dùng:** SEA-11, SEA-12, SEA-17, IMG-01, IMG-02, PHO-10, PHO-21, PHO-22 và **EXP-F05**. Ngày 16/10/2026, người dùng xác nhận toàn bộ chức năng Chi tiết ảnh đạt và mở ảnh đã mượt; toàn bộ chức năng tìm kiếm đã đạt; toàn bộ chức năng Khám phá đã đạt 20/20 ca. Responsive vẫn chưa nghiệm thu.
@@ -821,3 +823,181 @@ Phiên chạy 17/10/2026 không có sẵn ≥ 3 thiết bị thật (iPhone, And
 - Checklist R-01…R-06 (mục 23.1) sẵn sàng để ghi kết quả cho từng trang khi người dùng verify.
 
 Bước 4 (verify) và bước 5 (ghi R-01…R-06 cho từng trang vào checklist) sẽ hoàn thành khi người dùng cung cấp kết quả kiểm trên thiết bị thật. Bước 6 (hồi quy + báo cáo cuối) sẽ chạy sau khi mọi trang đã được xác nhận responsive. Phiên chỉ ghi nhận trạng thái; không tự nghiệm thu thay người dùng.
+
+## 24. Chi tiết bộ sưu tập (#6) — tiếp tục và kiểm hồi quy ngày 19/10/2026
+
+**Trạng thái:** đã hoàn tất lượt sửa và kiểm kỹ thuật cục bộ; **chờ người dùng kiểm**, chưa tự nghiệm thu. Giữ toàn bộ dấu x/o/N/A cũ ở mục 16 và các trang khác. Responsive vẫn để vòng cuối, chưa commit.
+
+### 24.1. Phạm vi và vấn đề đã xử lý
+
+- **P1 — Vòng đời request không còn được dọn:** diff đang dở bỏ `clearCollection()` khi rời trang; hook không phụ thuộc tài khoản nên dữ liệu/favorite có thể đi sang lần xem khác. Khôi phục cleanup, giới hạn dữ liệu theo route + tài khoản ngay khi render; request kiểm thêm phiên auth, reset trạng thái mutation khi đổi dữ liệu. Nội dung chính không chờ request kiểm yêu thích; kết quả kiểm yêu thích trả muộn không ghi đè thao tác vừa bấm. Unit fixture kiểm response A/B đảo thứ tự, cleanup và phiên cũ.
+- **P1 — Xóa đóng dialog trước khi API hoàn tất:** `ConfirmModal` trước đây gọi `onConfirm()` rồi đóng ngay; xóa nhiều ảnh dùng Promise.all nên thử lại có thể gửi lại cả ảnh đã xóa thành công. Dialog nay chờ Promise, khóa gửi/đóng khi busy, hiện lỗi và giữ lựa chọn thất bại. Store đối soát từng kết quả, cập nhật ảnh đã xóa thành công vào dữ liệu collection; chỉ thử lại phần thất bại. Fixture xác nhận chuỗi DELETE là ảnh 1, ảnh 2, thử lại ảnh 2; không xóa ảnh gốc.
+- **P1 — Quyền thao tác còn theo ownership/cộng tác của user thường:** trang #6 nay yêu cầu vai trò admin/super admin trước khi hiện quyền sửa, nhất quán nghiệp vụ user thường chỉ xem đã chốt ở mục 16.9. Fixture kiểm cả user thường có ID trùng chủ bộ vẫn không có Chọn/đặt bìa/kéo/xóa. Đây là bằng chứng UI; không thay cho kiểm quyền API trên backend thật.
+- **P2 — Refactor overlay đang dở chưa nối đúng drag/drop:** overlay đặt `pointer-events: none` nhưng nhận sự kiện drop ở chính overlay, không bao phủ thao tác trên ảnh bên dưới. Giữ hướng React composition của diff cũ; delegate drag/drop ở wrapper của trang qua `data-image-id`, bỏ listener/timer/DOM mutation cũ. Checkbox có tên truy cập và trạng thái chọn; lớp chọn giữ vị trí absolute, đặt bìa hiện khi focus keyboard. Fixture kiểm overlay không nhân đôi, drop trên ảnh bên dưới và rollback khi API lỗi.
+- **P2 — Xuất ZIP gửi trùng và phản hồi muộn:** thêm khóa và trạng thái đang xuất, bỏ download/toast từ request của trang hoặc phiên cũ. Đặt bìa và yêu thích bắt lỗi để tránh Promise rejection không được xử lý; đặt bìa khóa request trùng. Fixture kiểm một request ZIP trong lúc nút disabled.
+- **Typecheck:** bỏ biểu thức `ogImage` luôn trả undefined và tham chiếu sai `collection.coverImageId`; sửa kiểu union ảnh trong store realtime, không thêm any/ép kiểu để che diagnostic.
+
+### 24.2. Tái sử dụng và ranh giới file
+
+- **User:** `frontend/src/pages/collection/**`, `frontend/src/stores/useCollectionStore.ts`, `frontend/src/stores/useCollectionImageStore.ts`; hai fixture mới `test-collection-detail-state.cjs`, `test-collection-detail-browser.cjs`. Bỏ phần tính loại ảnh/handler/route state không có caller trong hook ảnh.
+- **Chung phục vụ user:** tiếp tục prop `renderItemOverlay` đang dở của `NoFlashGrid`; dùng lại grid, tải ảnh và điều hướng ảnh hiện có, không dựng grid riêng. `ConfirmModal` dùng lại cho async confirmation thay vì tạo bản sao riêng cho trang #6. Đã tra import các module này trong admin, không có phụ thuộc được tìm thấy; không sửa code admin hoặc `useSiteSettings.ts`.
+- **Hồi quy:** fixture danh sách cũ được sửa duy nhất kỳ vọng cuối ca online: banner tự ẩn và giữ cache theo COL-10 đã nghiệm thu, thay vì tìm nút Thử lại sau khi banner đã biến mất. Không đổi hành vi danh sách.
+- **Admin:** không sửa file code hoặc inventory admin. Các thay đổi tài liệu/skill có sẵn từ lượt trước được giữ nguyên.
+
+### 24.3. Bằng chứng kỹ thuật và giới hạn
+
+- `npx tsc -b`: exit 2, **34 → 30 diagnostic; không có diagnostic mới** khi so nội dung diagnostic bỏ số dòng/cột. Bốn diagnostic đã hết nằm ở `CollectionDetailPage.tsx` và `useCollectionStore.ts`; không diagnostic tại phần code bàn giao. Không kết luận typecheck toàn dự án đạt.
+- `npm run lint`: exit 1, **67 error / 236 warning** toàn dự án. ESLint riêng toàn thư mục trang collection, hai store, `ConfirmModal` và `NoFlashGrid`: **0 error / 0 warning**. Không mở rộng sửa lỗi ngoài phạm vi.
+- `npm run build`: PASS; còn cảnh báo chunk >500 kB. Không dùng thời gian build hoặc fixture để kết luận hiệu năng production.
+- Unit `test-collection-detail-state.cjs`: PASS, transpile ES2022 theo app; kiểm route/phiên, cleanup, race favorite, reorder rollback/kết quả cũ, đồng bộ dữ liệu canonical, partial delete/retry và khóa gửi trùng.
+- Edge headless **1440×900**, API giả lập cục bộ, sáng/tối: `test-collection-detail-browser.cjs` PASS đặt bìa bằng keyboard, overlay/drag rollback, favorite, export khóa trùng, xóa hủy/busy/lỗi một phần/thử lại, user thường chỉ xem, modal ảnh/Back/F5, tải lỗi/offline/retry, rỗng và 404; không có pageerror không xử lý trong lượt này. `test-collection-followup-browser.cjs` PASS dropdown ảnh/quyền viewer và `test-collections-browser.cjs` PASS hồi quy danh sách/dialog sáng/tối.
+- Detector Impeccable trả `[]`; chỉ là quét cơ học, không phải chứng nhận chất lượng toàn trang. Đã xem screenshot dialog lỗi sáng/tối. Không redesign bố cục đã duyệt.
+- Log/ảnh local trong `frontend/qa-policy-checkbox/`: `collection-detail-{state.txt,browser-final.txt,browser.json,typecheck-before.txt,typecheck-after.txt,typecheck-comparison.json,lint-focused.txt,lint-all.txt,build.txt,detector.json,list-regression.txt}`, `collection-detail-{owner,viewer,retry}-{light,dark}.png`. Thư mục này bị Git ignore; bằng chứng tóm tắt lưu tại mục này và fixture mới nằm trong source, cần giữ/xuất artifact riêng nếu chuyển máy.
+- **Chưa kiểm:** backend/DB thật, phân quyền API thực, WebSocket nhiều client, email/hạ tầng, hiệu năng production, tương phản toàn bộ trạng thái, responsive/touch/Safari/thiết bị thật. Không sửa/xóa dữ liệu thật. Trang chưa được tuyên bố sẵn sàng lên host.
+
+### 24.4. Checklist người dùng kiểm lại — chưa nghiệm thu
+
+- [ ] CDET-01 — Mở chi tiết từ danh sách và URL trực tiếp; F5 rồi mở ảnh/đóng/Back/Forward → đúng bộ, đúng ảnh và không mất ngữ cảnh danh sách.
+- [ ] CDET-02 — User thường xem bộ công khai → không có Chọn/đặt bìa/kéo/xóa; URL riêng tư/không có quyền cần được API từ chối. Kiểm bằng tài khoản test, không dữ liệu thật.
+- [ ] CDET-03 — Tài khoản admin có quyền: đặt bìa bằng chuột và Tab/Enter → đúng một ảnh bìa, không mở nhầm ảnh; lỗi giữ bộ hiện tại và cho thử lại.
+- [ ] CDET-04 — Admin có quyền kéo ảnh sang vị trí khác → lưu đúng sau F5; API lỗi → trở về thứ tự trước kéo, không mắc trạng thái đang kéo.
+- [ ] CDET-05 — Chọn ảnh/Chọn tất cả/Bỏ chọn: mỗi lần chỉ đổi một trạng thái. Xóa → Hủy/Escape không xóa; đang xử lý không gửi trùng/đóng; lỗi một phần giữ dialog và chỉ thử lại ảnh thất bại.
+- [ ] CDET-06 — Yêu thích và Xuất → phản hồi đúng; xuất chỉ gửi một request khi đang chờ. Rời trang/đổi phiên khi request chậm → không tải file hoặc ghi dữ liệu từ phiên cũ sang trang mới.
+- [ ] CDET-07 — API lỗi/offline khi mở hoặc F5 → giữ URL, hiện lỗi khác trạng thái rỗng; khôi phục mạng + Thử lại → tải được. ID không tồn tại có thông báo và đường quay về danh sách.
+- [ ] CDET-08 — Sáng/tối, tên tiếng Việt dài, bộ rỗng, Tab/Shift+Tab/Escape ở dialog → đọc và thao tác được; đóng dialog trả focus khi nút mở còn tồn tại.
+- [ ] CDET-R01 — Responsive: chưa kiểm; để vòng cuối riêng. Không đổi các dấu responsive cũ.
+
+### 24.5. Phản hồi mở chậm, bộ rỗng và online — chốt kiểm ngày 20/10/2026
+
+**Phản hồi người dùng:** mở bộ sưu tập mất lâu, thẻ không có ảnh vẫn hiện trên danh sách; offline đúng logic. Ảnh chụp cho thấy thẻ không có bìa nhưng badge ghi 1 ảnh; không thể kết luận riêng từ ảnh rằng collection thực sự có 0 ảnh. Người dùng cung cấp môi trường `http://localhost:5173/collections`. Chưa đánh đạt toàn bộ CDET-07 vì các ca API lỗi/timeout/ID sai chưa được người dùng xác nhận.
+
+**Đã sửa, chờ kiểm lại:**
+
+- API danh sách trước đây đếm số ID trong `images`, gồm cả ID không còn document ảnh. Route user `scope=browse` nay đối chiếu ảnh còn tồn tại, giữ thứ tự ID gốc khi chọn mẫu, tính `imageCount` từ các ID còn sống và loại bộ không còn ảnh khỏi danh sách xem. Nếu bìa đã xóa thì dùng ảnh còn lại. `scope=mine` vẫn giữ bộ rỗng cho hộp chọn/thêm ảnh; không xóa collection hoặc dữ liệu thật.
+- Trang danh sách cũng không dựng thẻ có `imageCount` bằng 0, để bộ mới tạo chưa thêm ảnh không lọt ra grid. Khi không có cover nhưng có sample hợp lệ, card dùng sample thay placeholder; count/tag/tìm kiếm chỉ tính các bộ đang được xuất hiện. Không suy từ lỗi tải URL ảnh rằng document ảnh đã bị xóa.
+- API chi tiết từng `await` ghi lượt xem trước `res.json`. Nay gửi nội dung trước rồi ghi thống kê, bắt/log lỗi thống kê riêng để lỗi ghi view không biến một lượt đọc thành 500. Không bỏ việc ghi lượt xem.
+- Trang chi tiết dùng khung tải cục bộ có đường quay lại thay cho div trống phụ thuộc overlay toàn cục; không sửa global loading dùng chung. Request chi tiết có timeout 15 giây và AbortSignal, hủy khi đổi request/rời trang/offline; các kiểm phiên cũ giữ nguyên.
+- **Online mới:** dùng chung hook `useCollectionConnection` cho danh sách và chi tiết: một lần đọc lại mỗi chu kỳ offline→online, giữ cache/bộ lọc và hiện trạng thái cập nhật; request không thành công vẫn có lỗi + Thử lại, không lặp tự thử vô hạn. Form đang mở hoặc mutation liên quan đang chạy thì hoãn đọc đến khi hoàn tất/đóng. Không tự gửi lại thao tác ghi. Hành vi này thay cho “chỉ xóa banner, không fetch” mô tả lịch sử ở 16.9; giữ dấu COL-10 cũ và kiểm riêng ca mới bên dưới.
+
+**Đo trước/sau (không phải đo dữ liệu production):**
+
+- Edge headless 1440×900, bản Vite build local, 3 lượt mỗi phiên bản, API fixture chi tiết cố định 700 ms và favorite cố định 900 ms, không throttle CPU. Trung vị từ click: khung header **888 → 29 ms**, điều khiển thật **888 → 753 ms**, ảnh loaded **888 → 763 ms**; mỗi lượt một request chi tiết. Trước sửa khung header chỉ xuất hiện cùng dữ liệu, sau sửa khung tải hiện trước; không coi khung tải là ảnh đã tải xong.
+- Fixture controller đặt độ trễ truy vấn nội dung 100 ms và ghi view 600 ms: phản hồi **724 → khoảng 103 ms**; tổng handler vẫn khoảng 712 ms do vẫn ghi view. Phép đo chứng minh việc ghi thống kê không còn nằm trước phản hồi trong điều kiện fixture; không chứng minh MongoDB thật mất 600 ms hoặc độ chậm người dùng đã hết.
+- Localhost 5173 được xác nhận trả HTTP 200 bằng kiểm tra chỉ đọc. Chưa đo waterfall/API có xác thực trong phiên trình duyệt thật của người dùng; chưa có số trước/sau trên DB thật. Aggregation mới được kiểm syntax và invariant pipeline, chưa chạy integration MongoDB với fixture DB riêng. Không dùng các số trên để tuyên bố production nhanh hơn.
+
+**Kiểm tra:** build PASS (còn cảnh báo chunk >500 kB); ESLint phần sửa 0 error/warning; `npx tsc -b` vẫn 30 diagnostic ngoài phạm vi, không có diagnostic tại phần sửa. Lint toàn dự án vẫn còn lỗi ngoài phạm vi, xem log. Node syntax backend PASS; fixture state/list/access/controller PASS. Edge sáng/tối: `test-collections-recovery.cjs` PASS ẩn bộ rỗng, fallback cover, online đúng một lượt, giữ filter/cache, lỗi phục hồi + retry thủ công, hoãn đọc khi editor còn draft; `test-collection-detail-browser.cjs` và `test-collections-browser.cjs` PASS hồi quy. Detector `[]`; đã xem screenshot dark của danh sách sau phục hồi, không coi detector/ảnh chụp là nghiệm thu toàn bộ.
+
+**Bằng chứng local bị Git ignore:** `frontend/qa-policy-checkbox/collection-open-{before,after}.json`, `collection-read-{before,after}.json`, `collections-recovery.json`, `collections-recovery-{light,dark}.png`, `collection-recovery-{build,types,lint,lint-all,list-regression}.txt`, `collection-recovery-detector.json`. Các script đo/fixture nằm trong `frontend/scripts/` để chạy lại.
+
+**Phân loại:** user frontend gồm `CollectionsPage`, `CollectionDetailPage`, `CollectionCard`, hai store collection, service gọi API và hook kết nối mới; backend user là `controllers/collection/collectionCRUDController.js`. Đã tra phụ thuộc admin: admin dùng route/controller `/admin/collections` riêng. Không sửa code/inventory admin, không sửa `useSiteSettings`, không commit.
+
+- [ ] COL-20 — F5 danh sách: bộ thực sự không còn ảnh không có thẻ; bộ còn ảnh nhưng mất bìa có bìa thay thế, số ảnh đúng. Bộ rỗng vẫn có trong khu vực quản lý/hộp chọn cần thêm ảnh; không bị xóa khỏi DB.
+- [ ] CDET-09 — Bấm mở bộ từ danh sách: thấy ngay khung và đường quay lại trong lúc tải; sau đó ảnh hiện. Kiểm lại độ chậm thực tế trên localhost; nếu còn chậm, ghi bộ cụ thể và thời gian request trong Network, không tự kết luận từ fixture.
+- [ ] CDET-10 — Ở cả danh sách và chi tiết: ngắt mạng → giữ dữ liệu đã có + thông báo; bật mạng → tự đọc lại một lần, giữ filter/URL. Nếu API vẫn lỗi → còn Thử lại; bấm để phục hồi, không gửi trùng.
+- [ ] CDET-11 — Mở form có draft rồi offline→online: draft còn nguyên, chưa refresh chen ngang; đóng form hoặc hoàn tất thao tác → cập nhật dữ liệu. Không tự thử lại thao tác ghi.
+
+Responsive, touch, Safari/thiết bị thật vẫn để vòng cuối. Các ca trên chưa được người dùng nghiệm thu.
+
+### 24.6. Bộ công khai phải xem được khi chưa đăng nhập — 20/10/2026
+
+**P1, phản hồi người dùng:** khách bấm Bộ sưu tập bị chuyển về trang chủ và hiện toast yêu cầu đăng nhập. `App.tsx` đã đặt hai route xem ngoài ProtectedRoute; nguyên nhân nằm ở guard/redirect trong `CollectionsPage`, store từ chối fetch khi thiếu token và `router.use(protectedRoute)` trước mọi endpoint collection. Các lượt fixture trước chỉ dùng tài khoản viewer nên đã bỏ sót khách không có token. Đã sửa, chưa tự nghiệm thu.
+
+- Trang danh sách bỏ redirect/toast đăng nhập, cho store tải `scope=browse` không token; metadata danh sách không noindex chỉ vì là khách. Route UI hiện tại được giữ nguyên, không sửa khung admin/App dùng chung.
+- `GET /api/collections?scope=browse` và `GET /api/collections/:id` đi qua `optionalAuth` có sẵn. Khách chỉ được query bộ `isPublic: true`, không có nhánh owner/collaborator, không nhận dữ liệu cộng tác. `scope=mine` khi thiếu user trả 401; private detail trả 404. Các endpoint containing/export/POST/PATCH/DELETE vẫn nằm sau protectedRoute và giữ CSRF hiện có.
+- Khách không gọi API kiểm favorite; bấm Yêu thích hoặc Xuất chỉ hiện lời nhắc đăng nhập, không gửi thao tác riêng. Quyền quản lý user thường/admin đã sửa ở vòng trước giữ nguyên.
+- **Bằng chứng:** fixture HTTP dùng router Express thật với auth/DB giả lập PASS guest browse/public detail 200, private 404, mine/export/mutations 401 và không trả collaborator. Browser Edge headless 1440×900 sáng/tối PASS guest danh sách→chi tiết→F5, không redirect về home/không gọi favorite check; các ca owner/viewer và offline/online hiện có vẫn PASS. Unit state/access/list và read-controller PASS.
+- **Kiểm chỉ đọc localhost thật:** `GET http://localhost:3000/api/collections?scope=browse` không token trả **200**, có **3 bộ**, **0 bộ riêng** trong response. Không ghi danh tính/token hoặc sửa/xóa DB để kiểm. Đây chưa xác nhận toàn bộ tương tác UI trong phiên trình duyệt thật của người dùng.
+- Build PASS; ESLint phần sửa 0 error/warning; TypeScript vẫn 30 diagnostic ngoài phạm vi, không diagnostic mới ở phần sửa. Không sửa code/inventory admin; giữ toàn bộ dấu nghiệm thu cũ, chưa commit. Fixture mới: `frontend/scripts/test-collection-public-access.cjs`; guest screenshot: `frontend/qa-policy-checkbox/collection-public-guest-{light,dark}.png` (artifact local bị ignore).
+
+- [ ] COL-21 — Tab ẩn danh/chưa đăng nhập → mở `/collections` hoặc bấm Bộ sưu tập trên header → thấy danh sách công khai, không bị về home và không có toast yêu cầu đăng nhập chỉ để xem.
+- [ ] CDET-12 — Khách mở bộ công khai rồi F5/link trực tiếp → vẫn xem được ảnh. Mở ID của bộ riêng → không lộ nội dung; thử API `scope=mine`/sửa/xóa không token → bị từ chối.
+- [ ] CDET-13 — Khách không thấy nút quản lý; bấm Yêu thích/Xuất → lời nhắc đăng nhập, không báo thành công giả hoặc gửi request ghi. Đăng nhập lại → quyền và trạng thái theo đúng tài khoản.
+
+
+### 24.7. Giảm lưu lượng ảnh xem trước và chớp khi F5 — 20/10/2026
+
+**Nguyên nhân xác nhận trên localhost:** thẻ danh sách thiếu `regularUrl` trong payload nên bộ chọn URL lấy `imageUrl` (ảnh gốc) trước `smallUrl`; cả ảnh mẫu nhỏ cũng tải gốc. Có ảnh rộng 6.630–8.192 px. Component còn tải thumbnail mạng, chờ detached preloader xong mới mount ảnh chính và chạy fade opacity. Cache HTTP vẫn hoạt động; chớp giao diện không chứng minh ảnh bị tải lại từ mạng.
+
+**Đã sửa (phạm vi user):** `CollectionCard` chọn small cho bìa, thumbnail cho ảnh mẫu. `BlurUpImage` ưu tiên derivative sẵn có trước original khi thiếu regular, mount img trực tiếp khi tới vùng tải, giữ placeholder nhúng nếu có và bỏ request thumbnail riêng; không còn chờ idle/detached preload cho ảnh đang hiển thị. Cache hit được kiểm bằng `complete/naturalWidth` trong layout effect; bỏ fade opacity lặp lại, giữ hover transform và thông báo hoàn tất. `NoFlashGrid` bỏ tải trước 20 thumbnail trùng; truy vấn kích thước thiếu ưu tiên derivative. Giữ nguyên dữ liệu ảnh gốc, luồng tải xuống và mở ảnh. Đã grep phụ thuộc admin: không thấy admin dùng các component sửa; không sửa admin hoặc hook settings dùng chung.
+
+**Đo với dữ liệu thật, chỉ đọc:** Edge headless 1440×900, localhost Vite dev và CDN hiện tại, không throttle, phiên browser mới; 3 bộ/9 ảnh xem trước. Trước sửa có request original cho cả 9 ảnh; riêng ảnh bìa đầu tải 3.539.656 byte. Sau sửa cùng ảnh dùng small 30.954 byte (giảm khoảng 99% trong lượt đo này); tổng 9 ảnh lần đầu **143.816 byte**, F5 sau khi tất cả tải xong **0 byte ảnh CDN** và 9 cache hit. Sau sửa cả 9 ảnh loaded khoảng 1.990 ms lần đầu và 1.052 ms F5, gồm khởi tạo app/API/dev; không có số thời gian trước tương đương để tuyên bố mức tăng tốc. Một lượt local không chứng minh tốc độ production, mạng yếu hay ngang Unsplash. Script chạy lại `frontend/scripts/measure-collection-image-cache.cjs`; JSON/screenshot trong `frontend/qa-policy-checkbox/image-cache-after.*` bị Git ignore.
+
+**Kiểm:** build PASS (còn cảnh báo chunk lớn); `npx tsc -b` còn 30 diagnostic ngoài phạm vi; lint toàn repo còn 67 error/236 warning như trước. ESLint phần sửa 0 error, 1 warning export helper có sẵn trong BlurUpImage. Unit card loading/actions, image card hooks, decode và navigation PASS; browser chi tiết bộ sưu tập sáng/tối PASS (guest, Back/F5, favorite, export, cover, quyền, offline/retry, rollback/xóa). Đã xem screenshot danh sách dữ liệu thật; responsive và thiết bị thật chưa nghiệm thu. Giữ toàn bộ dấu nghiệm thu cũ, chưa commit.
+
+- [ ] COL-22 — F5 danh sách sau khi ảnh đã tải xong: ảnh hiện ổn định, không lặp fade mờ→rõ; Network dùng cache cho cùng URL (tắt Disable cache, dùng reload thường).
+- [ ] COL-23 — Lần vào đầu: thẻ bìa rõ ở kích thước hiển thị, ảnh mẫu không vỡ bất thường; không tải original cho 9 ảnh xem trước khi small/thumbnail có sẵn. Kiểm lại mắt thường trên màn hình của người dùng.
+- [ ] CDET-14 — Mở chi tiết, cuộn ảnh, mở ảnh rồi Back/F5: ảnh đúng, không đổi vị trí/bộ; yêu thích, chọn bìa và tải xuống vẫn đúng. Ảnh ngoài vùng tải chưa bắt đầu tải chính chỉ vì dựng grid.
+
+
+### 24.8. Khung danh sách hiện trước dữ liệu/ảnh khi F5 — 20/10/2026
+
+Phạm vi user: chỉ `CollectionsPage.tsx` và script fixture. Bỏ `return null` khi auth đang khởi tạo; tiêu đề, mô tả khách, tìm kiếm, lọc/sắp xếp và skeleton dùng sẵn xuất hiện ngay khi module trang mount, không chờ API. Chừa dòng số lượng để khi có dữ liệu không đẩy tiêu đề xuống. Bộ lọc luôn xuất hiện cả khi danh sách rỗng/lỗi. Trong lúc auth chưa rõ, khóa input/lọc/sắp xếp ngắn hạn để reset phiên không xóa chữ vừa gõ; auth xong có thể nhập ngay khi API danh sách còn chờ. Không nháy “chưa có bộ sưu tập” trước lần tải đầu. API xong hiện metadata thẻ, ảnh hoàn tất độc lập; refresh nền giữ grid cũ. Không sửa App/global overlay dùng chung admin: tải chunk/khởi động ứng dụng vẫn có độ trễ, không hứa body xuất hiện trước JavaScript.
+
+Bằng chứng: fixture Edge 1440×900 sáng/tối giữ riêng ba promise auth/API/ảnh, PASS shell + skeleton trước auth, không có empty giả, tìm kiếm giữ chữ khi API trả về, thẻ và tên hiện trước ảnh chậm; recovery sáng/tối PASS giữ cache/filter và draft khi offline→online. Đã xem screenshot skeleton sáng. Build PASS; ESLint file sửa 0 lỗi/cảnh báo; `npx tsc -b` vẫn 30 diagnostic ngoài phạm vi, lint repo vẫn 67 error/236 warning. Không nghiệm thu responsive, không thay dấu cũ, chưa commit.
+
+- [ ] COL-24 — F5 `/collections`: tiêu đề và thanh tìm kiếm/bộ lọc hiện ngay khi trang mount, dưới là skeleton; không trắng body chờ auth/API, không thoáng hiện thông báo rỗng. Auth xong nhập tìm kiếm khi dữ liệu còn tải; chữ còn nguyên sau khi tải xong.
+- [ ] COL-25 — Mạng ảnh chậm: tên bộ và thẻ xuất hiện trước ảnh; khi ảnh hiện không đẩy khung. Offline/lỗi vẫn có thông báo + thử lại; cập nhật nền giữ thẻ đang xem. Các điều khiển hiện cả khi danh sách rỗng.
+
+
+### 24.9. Sửa body còn bị global loader che — 20/10/2026
+
+Người dùng kiểm lại 24.8 và báo body vẫn load nguyên khối; giữ ca COL-24/25 chưa nghiệm thu. Lần trước chỉ kiểm shell khi chờ auth/API, chưa ép trạng thái `global-loading-active`: bỏ sót CSS `GlobalLoadingOverlay.css` đặt visibility hidden/opacity 0 lên `.collections-page`, rồi fade lại sau khi global loader tắt. Đã thêm thuộc tính `data-loading-scope="local"` và quy tắc trong CSS riêng trang để shell luôn visible/opacity 1, không transition toàn trang ở cả hai trạng thái global loader. Không sửa App, overlay/store chung hoặc admin. Lazy route vẫn cần thời gian tải JavaScript trước khi component mount.
+
+Fixture `test-collection-shell.cjs` nay ép class global loader và kiểm computed visibility/opacity: trước sửa FAIL opacity, sau sửa PASS sáng/tối; các ca shell/auth/API/ảnh và recovery offline/online PASS. Kiểm đọc localhost Edge 1440×900: header xuất hiện ~303 ms, module trang mount ~433 ms với visibility visible/opacity 1 trong lúc global loader còn bật; loader tắt ~682 ms mà visibility/opacity của trang không thay đổi. Đây là một lượt dev, không phải benchmark production hoặc cam kết body/header xuất hiện cùng một frame. Đã xem screenshot local. Build PASS, lint file sửa 0; TypeScript còn 30 diagnostic và lint repo còn lỗi cũ ngoài phạm vi. Chưa commit; responsive vẫn vòng cuối.
+
+- [ ] COL-26 — F5 danh sách khi mạng chậm: sau khi khung trang xuất hiện, nó không bị ẩn hoặc fade nguyên body vì request/global loader khác; chỉ skeleton/dữ liệu/ảnh thay đổi cục bộ. Kiểm lại trên trình duyệt người dùng.
+
+
+### 24.10. Tách khung trang khỏi module danh sách — 20/10/2026
+
+Người dùng yêu cầu thực hiện tách hai vùng sau khi 24.8–24.9 vẫn chưa đạt cảm nhận khi F5. `App.tsx` đổi riêng import route user `/collections` từ lazy sang eager để khung trang được dựng cùng lượt với header; không thay logic/route admin. `CollectionsPage` giữ tiêu đề, bộ lọc, state editor và luồng đọc/reconnect hiện có. Phần kết quả được chuyển sang `components/collection/CollectionsResults.tsx`, lazy trong Suspense cục bộ; dùng lại store, filter utility, card, skeleton và error component, không nhân đôi dữ liệu. Props truyền danh sách browse đã đối chiếu và callback sửa/xóa. Boundary riêng giữ lỗi tải module ở vùng kết quả, có tải lại trang; không làm mất khung phía trên. Dữ liệu API và ảnh vẫn tải độc lập; số lượng/tag chỉ bổ sung khi biết dữ liệu.
+
+**Bằng chứng:** fixture Edge 1440×900 sáng/tối chặn riêng request chunk CollectionsResults, auth, API và ảnh: shell visible/opacity 1 trước khi release chunk; node header giữ nguyên sau khi thẻ hiện; nội dung tìm kiếm không mất khi API xong; metadata thẻ hiện trước ảnh. Giả lập abort chunk: lỗi cục bộ, tiêu đề và bộ lọc còn hiển thị. Recovery offline/online sáng/tối PASS. Hồi quy toàn danh sách sáng/tối PASS tạo/sửa/xóa, lỗi/retry, timeout, dialog focus/Escape, offline/online, rỗng và Back; lượt đầu timeout chờ dialog trong lúc build lại dist, lượt chạy riêng sau build ổn định PASS. Đo chỉ đọc localhost dev sau sửa: header và `.collections-page` cùng xuất hiện tại frame khoảng 472 ms, opacity 1; lượt trước header 303 ms, trang 433 ms. Chỉ đối chiếu thứ tự xuất hiện trong các lượt riêng, không kết luận tổng thời gian nhanh hơn từ hai phép đo khác phiên. Build entry gzip tăng khoảng 331,72 → 335,06 kB do nạp sớm khung (~3,34 kB); results chunk riêng ~1,88 kB gzip. Còn cảnh báo entry lớn có sẵn.
+
+Build PASS; ESLint hai file user 0; `npx tsc -b` còn 30 diagnostic ngoài phần sửa; lint toàn repo còn 67 error/236 warning như trước. Đã xem screenshot khung đang chờ chunk. Không sửa code/inventory admin, hook settings hoặc overlay chung. Chưa commit, giữ dấu nghiệm thu trước; responsive vẫn vòng cuối.
+
+- [ ] COL-27 — F5 `/collections` trên trình duyệt đang dùng: vùng đỏ (tiêu đề/tìm kiếm/sắp xếp) hiện cùng header và giữ nguyên; chỉ vùng kết quả bên dưới chờ module/dữ liệu/ảnh. Kiểm cả lần cache lạnh và reload thường.
+- [ ] COL-28 — Khi kết quả đang tải, nhập tìm kiếm sau khi auth xong: dữ liệu về vẫn giữ chữ; tạo/sửa/xóa, mở bộ rồi Back, offline/online vẫn đúng. Nếu module danh sách không tải được, chỉ vùng kết quả báo lỗi + Tải lại trang.
+
+
+### 24.11. Chống chớp màu trước JavaScript khi refresh — 20/10/2026
+
+Người dùng yêu cầu xử lý sau khi đối chiếu cảm nhận header Unsplash. **Nguyên nhân đã tái hiện trên localhost:** giữ request `/src/main.tsx` chưa hoàn tất, chọn theme dark nhưng trước CSS/JS body/root vẫn có nền `rgb(250,248,244)` (#FAF8F4). Script đầu chỉ đặt class dark, chưa cung cấp màu; cache palette chỉ được khôi phục trong main. Đây là bằng chứng chớp màu khởi động, không xác nhận kiến trúc Unsplash.
+
+**Sửa:** `frontend/index.html` (file khởi động chung, nhánh mới chỉ cho public, bỏ qua `/admin`): trước lần vẽ đầu cung cấp 4 màu nền/header/chữ/border của hai theme hoặc cache hợp lệ; chỉ nhận HEX 6 chữ số, fallback theo bảng mặc định trong shared/sitePalette.json. Dùng lại style `site-palette` để runtime thay thế/tiếp quản, không sửa paletteRuntime/useSiteSettings. Đưa meta theme-color trước bootstrap và chọn đúng màu ngay. Riêng `/collections` và chi tiết: lúc root còn rỗng, thay camera có animation bằng canvas + dải màu header tĩnh, biến mất tự nhiên khi React mount. Không cache HTML tài khoản, không giữ DOM cũ, không giả SSR. Logo/chữ/nút header vẫn đợi JS; chưa giải quyết khoảng chờ do dựng header bằng client rendering.
+
+**Đối chiếu:** sau sửa cùng điều kiện localhost giữ main chưa tải, dark body/root là `rgb(36,32,23)` (#242017), light vẫn #FAF8F4. Có screenshot dev trước JS: `frontend/qa-policy-checkbox/public-startup-dev-before-js.png`. Fixture bản build Edge 1440×900 `test-public-startup.cjs` chặn entry JS và CSS, PASS light/dark/cache palette riêng, JSON cache hỏng, màu sai định dạng/sai kiểu, storage bị chặn và nhánh bootstrap admin không đổi. Sau giải phóng tài nguyên: màu body và header khớp trước/sau, chuyển theme vẫn đúng. Đây không phải benchmark thời gian production hoặc nghiệm thu mobile.
+
+Build PASS; `npx tsc -b` còn 30 diagnostic cũ, lint repo còn 67 error/236 warning. Header surface unit PASS; shell/module/API/ảnh và recovery bộ sưu tập sáng/tối PASS. **Ca cũ ngoài sửa chưa PASS:** `test-header-scroll.cjs:20` đòi homepage cinematic-active tại scrollY=700, trong khi code ImmersiveHomeChrome hiện chỉ bật ở scrollY<=12; cả script và component đó không được sửa trong lượt này. Không đổi hành vi trang chủ để làm test cũ qua. Đã xem screenshot trước JS; responsive để vòng cuối. Chưa commit, giữ dấu nghiệm thu.
+
+- [ ] COL-29 — Chọn sáng/tối rồi F5 `/collections`: không lóe nền sáng sai theme; vùng header và canvas giữ đúng màu ngay cả lúc bundle chậm. Logo/chữ vẫn hiện khi JS sẵn sàng, không coi đây là HTML render sẵn trên server.
+- [ ] CDET-15 — Kiểm tương tự khi F5 chi tiết bộ; sau tải xong đổi theme qua lại vẫn đúng. Kiểm lần đầu không cache, reload thường và settings đổi bảng màu thật.
+
+
+### 24.12. Header còn chớp và nhãn đổi vị trí khi F5 — 21/10/2026
+
+**Phản hồi người dùng:** 24.11 chưa đạt: header còn chớp và các nhãn đổi vị trí. Không đổi dấu nghiệm thu cũ. **Đo trước sửa:** Edge headless 1705×900 và 1200×900, build local, auth fixture chậm 900 ms, cold load + F5. Nhóm actions tăng từ 44 lên ~295 px khi guest auth kết thúc; nhãn đầu dịch **125,7 px** ở 1705 và **82,4 px** ở 1200. Font loading→loaded không thay đổi vị trí trong các lượt này. HTML lúc đầu chưa chứa logo/nhãn, nên chỉ chống chớp màu như 24.11 chưa giải quyết được việc chúng biến mất rồi xuất hiện.
+
+**Sửa:** thêm plugin Vite `vite-plugin-public-header.ts` render sẵn logo và điều hướng công khai vào HTML cho vùng startup collections. Nội dung dùng một nguồn `src/config/publicHeader.ts`, được cả Header/LOGO_CONFIG và plugin dùng lại; CSS `HeaderFrame.css` dùng chung cho HTML startup/React và inline vào head. Không nhân bản HTML tài khoản. Startup chrome `aria-hidden` + inert, không có thao tác/tài khoản giả; Header bỏ nó trong layout effect khi React đã có chrome thật. Đây là prerender phần chrome công khai, không phải chuyển cả app sang SSR/hydration.
+
+Header chia track rõ, menu không còn bị chiều rộng auth/actions kéo qua lại. Chọn font hệ thống Arial cho chrome để hình học ổn định trước bundle/font; giữ link/menu/hover/focus. Ở desktop hẹp, phần actions có vùng riêng và nút đặt lịch thu gọn còn icon có tên truy cập; icon vẫn rõ cả dark. Dưới 1280 track dành chỗ cho bộ nút nhiều quyền, nav có thể cuộn nếu chật để không đè nhau (chưa nghiệm thu responsive). CSS cố định header theo 100vw: đã phát hiện riêng trên Vite dev còn lệch **4 px** do header đổi 1705→1697 px khi CSS chứa gutter được áp dụng; đã sửa và thêm kiểm trước-CSS→sau-CSS.
+
+**Kết quả:** `test-header-refresh.cjs` PASS 6 ca guest light/dark, member, admin trong user header, phiên hết hạn; viewport 1705/1200 và kiểm tránh đè ở 1000. Giữ entry JS rồi giải phóng, auth chậm và font chậm 700 ms: logo ổn định, nhãn **0 px dịch**, không frame trống ở chuyển giao HTML→React, cùng màu header và không đè actions. `test-public-startup.cjs` nay kiểm cả tọa độ trước khi CSS ứng dụng tải, PASS theme/cache/error cases và nhánh admin bootstrap cũ. Đối chiếu localhost dev cold+F5 ở 1705 và 1200 với API guest fixture: **0 px** qua tất cả giai đoạn, màu header không thay đổi. Đây là dữ liệu local/fixture, không phải đo mọi trình duyệt/production hoặc xác nhận thay người dùng. Đã xem ảnh static light + ready dark và xác nhận icon đặt lịch sau lượt sửa.
+
+**Hồi quy/check:** shell/module/API/ảnh, startup theme, collection recovery sáng/tối và toàn bộ danh sách sáng/tối PASS (tạo/sửa/xóa/retry/timeout/dialog/offline/Back). Header surface unit PASS. Build PASS (chunk lớn cũ); ESLint phần sửa 0 error/warning; lint repo còn 67 error/236 warning cũ. `npx tsc -b` giảm 30→28 diagnostic do sửa kiểu native PointerEvent cho listener pointerdown đang nằm trong Header; 28 diagnostic còn lại ngoài thay đổi. Test cuộn homepage cũ ở 24.11 chưa sửa vì ngoài phạm vi.
+
+**Phân loại:** user: Header/HeaderFrame/publicHeader/logo config và script kiểm; chung phục vụ build/khởi động: index.html, vite.config.ts/plugin, tsconfig.node.json và override ESLint chỉ cho plugin mới. Không sửa mã/inventory admin, useSiteSettings hoặc paletteRuntime; đã tra phụ thuộc admin. HTML startup chỉ hiện tại collections, các route khác vẫn dùng Header React; không tự bật prerender cho hero/home/auth. Giữ dấu cũ, responsive vòng cuối, chưa commit. Bằng chứng local bị ignore: `header-refresh-{before,after-local}.json`, `header-refresh-regression.json`, `header-{static,ready}-{light,dark}.png`, `header-stable-{build,types,focused,lint}.txt`.
+
+- [ ] COL-30 — F5 `/collections` ở sáng/tối: logo/nhãn đã có ngay trong HTML, không lóe/mất rồi hiện lại khi React tiếp quản; nhãn giữ vị trí khi đăng nhập xong, guest/member/admin hoặc cookie hết hạn.
+- [ ] COL-31 — Kiểm cache lạnh và reload thường; các link header vẫn điều hướng đúng, theme toggle đúng, nút Đặt lịch chụp mở/đóng dialog. Menu không đè nhóm tài khoản. Responsive riêng chưa đánh đạt.
+
+
+### 24.13. Đánh giá áp dụng logic menu đã đạt cho logo/actions/body — 21/10/2026
+
+Người dùng xác nhận riêng menu điều hướng ở ảnh 3 đã đạt (không chớp/không xê dịch). Logo, ba nút bên phải và vùng tiêu đề/bộ lọc ảnh 2 vẫn chưa đạt. Không đánh đạt cả COL-30/31 vì chúng còn gồm các phần chưa được xác nhận.
+
+Kiểm chỉ đọc localhost Edge 1705×900, giữ main chưa tải rồi giải phóng, API guest fixture: trước main menu có 5 nhãn; logo width 135,015625 px, text-rendering auto, ligatures normal, font smoothing auto. Sau main logo width 135,9375 px, text-rendering optimizelegibility, ligatures common-ligatures, smoothing antialiased. Chênh lệch glyph/chiều rộng này chưa được ca đo chỉ tọa độ sau CSS trước đây bao phủ. Trước main có 0 right controls và chưa có collections-header; sau main có 3 controls và có collections-header. Không suy ảnh chụp tĩnh thành bằng chứng toàn bộ animation; các khác biệt lifecycle/style trên được đo thực.
+
+Đánh giá khả thi: logo cần đồng nhất đầy đủ typography từ CSS critical; theme/booking là phần public có thể render sớm, còn Đăng nhập/account cần giải quyết auth chưa biết để không lóe sai trạng thái. Vùng title/subtitle/search/sort có thể prerender như menu; count/tags là dữ liệu động, phải bổ sung sau API hoặc dùng cache public có kiểm tra/hạn dùng và đối soát, không bịa count/tag hoặc cache thông tin riêng. Các vùng nên dùng cùng source trình bày/critical CSS để tránh hai bản markup lệch nhau. Lượt này đánh giá, chưa sửa thêm source; fixture đo local `frontend/qa-policy-checkbox/assess-remaining-flash.cjs` bị ignore. Responsive chưa nghiệm thu.
+
+- [x] ~~COL-32 — Riêng menu điều hướng ở ảnh 3: người dùng xác nhận không chớp và không xê dịch khi refresh. Giữ nguyên hành vi đã đạt; không mở rộng dấu này sang logo/actions/body hoặc responsive.~~

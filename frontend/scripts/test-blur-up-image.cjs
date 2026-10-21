@@ -75,7 +75,7 @@ function fixture({ mobile = false, guest = false } = {}) {
     'react/jsx-runtime': { jsx, jsxs: jsx },
     'lucide-react': { Heart: 'Heart', Download: 'Download', Bookmark: 'Bookmark' },
     '../utils/imagePreloader': {
-      isImageLoaded: src => cache.has(src),
+      isImageLoaded: src => cache.has(src), loadedImages: cache,
       preloadImage: src => new Promise((resolve, reject) => requests.push({
         src, reject, resolve: () => { cache.add(src); resolve(src); },
       })),
@@ -158,55 +158,30 @@ const image = name => ({ _id: name, imageUrl: `${name}.webp`, regularAvifUrl: `$
 const event = () => ({ stopPropagation() {}, preventDefault() {} });
 
 async function loading() {
-  const f = fixture();
-  const a = image('A');
+  const f = fixture(); const a = image('A');
   f.render({ image: a }); await settle(); f.render({ image: a });
-  assert.equal(f.requests.length, 0, 'render/cache reads must not request off-screen images');
-  f.observers[0].callback([{ isIntersecting: true }]); f.render({ image: a }); f.tick();
-  assert.deepEqual(f.requests.map(request => request.src), ['A.avif'], 'load only the selected format');
-  f.requests[0].resolve(); await settle(); f.render({ image: a });
-  assert.ok(f.full().props.className.includes('loading'), 'preload alone must not hide the placeholder');
-  f.full().props.onLoad(); f.full().props.onLoad(); f.render({ image: a });
-  assert.equal(f.loadCount, 1, 'completion notified once');
+  assert.equal(f.full(), undefined, 'offscreen image does not start a request');
+  f.observers[0].callback([{ isIntersecting: true }]); f.render({ image: a });
+  assert.equal(f.full().props.src, 'A.avif', 'visible image mounts directly');
+  assert.equal(f.requests.length, 0, 'no detached preloader before DOM image');
+  f.full().props.onLoad(); f.render({ image: a });
   assert.ok(f.full().props.className.includes('loaded'));
-
-  const race = fixture();
-  race.render({ image: a, priority: true }); await settle(); race.render({ image: a, priority: true });
-  const b = image('B'); race.render({ image: b, priority: true });
-  race.requests[1].resolve(); await settle(); race.render({ image: b, priority: true });
-  race.requests[0].resolve(); await settle(); race.render({ image: b, priority: true });
-  assert.equal(race.full().props.src, 'B.avif', 'late image result cannot restore the old image');
-  race.unmount(); await settle();
-  assert.equal(race.afterUnmount, 0);
-
-  const unmounted = fixture();
-  unmounted.render({ image: a, priority: true }); await settle(); unmounted.render({ image: a, priority: true });
-  unmounted.unmount(); unmounted.requests[0].resolve(); await settle();
-  assert.equal(unmounted.afterUnmount, 0, 'pending preload result ignored after unmount');
-
-  const failed = fixture();
-  failed.render({ image: a, priority: true }); await settle(); failed.render({ image: a, priority: true });
-  failed.requests[0].reject(new Error('offline')); await settle(); failed.render({ image: a, priority: true });
-  assert.equal(failed.full(), undefined, 'failed request keeps the placeholder');
-
-  const deferred = fixture();
-  deferred.render({ image: a }); await settle(); deferred.render({ image: a });
-  deferred.observers[0].callback([{ isIntersecting: true }]); deferred.render({ image: a });
-  deferred.unmount(); deferred.tick();
-  assert.equal(deferred.requests.length, 0, 'idle preload cancelled on unmount');
-
-  const cached = fixture(); cached.cache.add('A.avif');
-  cached.render({ image: a, priority: true }); await settle();
-  cached.render({ image: a, priority: true }, true);
-  cached.render({ image: a, priority: true }, true);
-  assert.equal(cached.requests.length, 0, 'known cached image avoids a preload');
-  assert.ok(cached.full().props.className.includes('loaded'));
-  assert.equal(cached.loadCount, 1, 'cached image still notifies completion once');
-
-  const neighbors = fixture(); const neighborProps = { image: a, images: [a, b], currentIndex: 0, priority: true };
-  neighbors.render(neighborProps); await settle(); neighbors.render(neighborProps);
-  neighbors.nodes()[0].props.onMouseEnter();
-  assert.deepEqual(neighbors.requests.map(request => request.src), ['A.avif', 'B.avif'], 'two-image gallery preloads its neighbor once');
+  assert.equal(f.loadCount, 1);
+  const b = image('B'); f.render({ image: b });
+  assert.equal(f.full().props.src, 'B.avif');
+  assert.ok(f.full().props.className.includes('loading'), 'new URL cannot inherit old loaded state');
+  const cached = fixture(); cached.render({ image: a, priority: true }); await settle();
+  cached.render({ image: a, priority: true }, true); cached.render({ image: a, priority: true }, true);
+  assert.ok(cached.full().props.className.includes('loaded'), 'browser cache hit revealed in layout effect');
+  assert.equal(cached.loadCount, 1);
+  const cover = fixture(); const sized = {...a, smallUrl: 'small.webp', thumbnailUrl: 'thumb.webp'};
+  cover.render({image:sized, priority:true, previewSize:'small'}); await settle(); cover.render({image:sized,priority:true,previewSize:'small'});
+  assert.equal(cover.full().props.src, 'small.webp');
+  cover.render({image:sized, priority:true, previewSize:'thumbnail'});
+  assert.equal(cover.full().props.src, 'thumb.webp');
+  const fallback = fixture(); const legacy = {...a, regularAvifUrl: undefined, smallUrl:'small.webp'};
+  fallback.render({image:legacy,priority:true});
+  assert.equal(fallback.full().props.src,'small.webp','grid prefers available derivative over original');
 }
 
 async function actions() {
