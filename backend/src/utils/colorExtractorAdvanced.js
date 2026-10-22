@@ -32,9 +32,9 @@ function rgbToLab(r, g, b) {
 
     const L = (116 * y) - 16;
     const a = 500 * (x - y);
-    const b = 200 * (y - z);
+    const labB = 200 * (y - z);
 
-    return { L, a, b };
+    return { L, a, b: labB };
 }
 
 /**

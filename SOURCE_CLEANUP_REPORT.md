@@ -186,3 +186,9 @@ ZIP và .local-backups giữ vì là bản sao lưu phục hồi, không phải 
 - Edge desktop 1440×900 sáng/tối PASS: collection không tải route khác; Trang chủ/Back/F5; header Trang chủ/Collection/Giới thiệu guest/account. Không console pageerror trong các ca này.
 - Giữ dấu nghiệm thu và responsive; chưa commit.
 - Cộng hai lượt: 112 file đã xóa, 8.519.674 byte. Ảnh QA/không được dùng không đi vào payload website; không tuyên bố website nhanh hơn vì dọn source.
+
+## Sửa lỗi cú pháp backend đã phát hiện — 22/10/2026
+
+Theo yêu cầu người dùng, đã sửa backend/src/utils/colorExtractorAdvanced.js: tham số b (RGB blue) bị trùng với const b của LAB. Đổi tên biến cục bộ thành labB và giữ output { L, a, b: labB }, không đổi công thức/ngưỡng màu. Lỗi cũ làm dynamic import của nhánh nâng cao thất bại và extractDominantColors chuyển sang cách đơn giản; nay module import được.
+
+Phạm vi: utility xử lý màu backend dùng chung và script kiểm; không sửa controller admin hoặc chạy database. Node --test backend/scripts/test-color-extraction.test.js PASS 4 test: màu đơn đỏ/xanh lá/xanh dương/trắng ở fast/accurate, ảnh hai màu, entry advanced/simple và ảnh đen rỗng. Fixture ảnh chỉ tạo trong bộ nhớ bằng Sharp. node --check PASS toàn bộ 135 file source JS backend ngoài admin. git diff --check PASS. Chưa chạy upload thật hoặc xử lý lại màu ảnh trong database; không chạy lại frontend build/lint/typecheck vì không thay frontend. Chưa commit.
