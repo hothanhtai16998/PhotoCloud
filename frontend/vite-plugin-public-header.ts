@@ -7,6 +7,8 @@ import { HEADER_BRAND, HEADER_LINKS } from './src/config/publicHeader';
 import { AccountHeaderFrame } from './src/components/AccountHeaderFrame';
 import { PublicHeaderActions } from './src/components/PublicHeaderActions';
 import { CollectionDetailSkeleton } from './src/pages/collection/components/CollectionDetailFrame';
+import { ExploreStartup } from './src/pages/explore/ExploreToolbar';
+import { readExploreCategories } from './src/pages/explore/categorySnapshot';
 import { CollectionsToolbar } from './src/components/collection/CollectionsToolbar';
 import { gallery as viGallery } from './src/i18n/locales/vi/gallery';
 import { gallery as enGallery } from './src/i18n/locales/en/gallery';
@@ -35,10 +37,32 @@ export function publicHeaderStartup(): Plugin {
     transformIndexHtml: {
       order: 'pre',
       handler(html): string {
-        const css = ['./src/components/HeaderFrame.css', './src/components/PublicHeaderActions.css', './src/components/collection/CollectionsToolbar.css', './src/pages/collection/components/CollectionDetailFrame.css'].map(file => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8')).join('\n');
+        const css = ['./src/pages/ExplorePage.css', './src/components/HeaderFrame.css', './src/components/PublicHeaderActions.css', './src/components/collection/CollectionsToolbar.css', './src/pages/collection/components/CollectionDetailFrame.css'].map(file => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8')).join('\n');
         const palette = JSON.parse(fs.readFileSync(fileURLToPath(new URL('../shared/sitePalette.json', import.meta.url)), 'utf8')) as unknown;
         const detail = renderToStaticMarkup(createElement(CollectionDetailSkeleton));
-        const markup = startupMarkup('vi') + `<template id="public-startup-en">${startupMarkup('en')}</template><div id="public-collection-detail-startup" class="public-collection-detail-startup app-body" aria-hidden="true" inert>${detail}</div>`;
+        const explore = renderToStaticMarkup(createElement(ExploreStartup));
+        const markup = startupMarkup('vi') + `<template id="public-startup-en">${startupMarkup('en')}</template><div id="public-collection-detail-startup" class="public-collection-detail-startup app-body" aria-hidden="true" inert>${detail}</div><div id="public-explore-startup" class="public-explore-startup app-body" aria-hidden="true" inert>${explore}</div>`;
+        // Run before the generated stylesheet link: a body script would wait for CSS
+        // and could paint the empty category row while a cached list already exists.
+        const restoreCategories = `<script>(()=>{
+          if(document.documentElement.dataset.startupSurface!=='explore')return;
+          const observer=new MutationObserver(()=>{
+          const group=document.querySelector('#public-explore-startup .explore-categories');
+          if(group?.firstElementChild) {
+            observer.disconnect();
+            const categories=(${readExploreCategories.toString()})();
+            for(const category of categories) {
+              const button=group.firstElementChild.cloneNode(false);
+              button.classList.remove('is-active');button.setAttribute('aria-pressed','false');
+              button.textContent=category.translated;
+              if(category.imageCount>0){const count=document.createElement('span');count.className='explore-chip-count';count.textContent=String(category.imageCount);button.append(count);}
+              group.append(button);
+            }
+          }
+          });
+          observer.observe(document.documentElement,{childList:true,subtree:true});
+          window.addEventListener('DOMContentLoaded',()=>observer.disconnect(),{once:true});
+        })();</script>`;
         const activate = `<script>(()=>{
           if(document.documentElement.dataset.publicLocale==='en'){
             const template=document.getElementById('public-startup-en');
@@ -52,7 +76,7 @@ export function publicHeaderStartup(): Plugin {
             if(link.dataset.exact==='true'?location.pathname===href:location.pathname===href||location.pathname.startsWith(href+'/'))link.setAttribute('aria-current','page');
           }
         })();</script>`;
-        return html.replace('/* public-palette-defaults */ {}', JSON.stringify(palette)).replace('<!-- public-header-critical -->', `<style id="public-header-critical">${css}</style>`).replace('<!-- public-header-startup -->', markup).replace('<!-- public-header-activate -->', activate);
+        return html.replace('/* public-palette-defaults */ {}', JSON.stringify(palette)).replace('<!-- public-header-critical -->', `${restoreCategories}<style id="public-header-critical">${css}</style>`).replace('<!-- public-header-startup -->', markup).replace('<!-- public-header-activate -->', activate);
       },
     },
   };

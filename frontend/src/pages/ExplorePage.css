@@ -272,3 +272,48 @@
     padding: 0 12px;
   }
 }
+
+/* React takes over the prebuilt public shell in a layout effect. */
+.public-explore-startup { display: none; }
+html[data-startup-surface='explore'] .public-explore-startup,
+html[data-startup-surface='explore'] .public-header-startup { display: block; }
+
+/* Page-local defaults are available before the application stylesheet. */
+.explore-page {
+  --studio-bg-warm: var(--bg-primary);
+  --studio-bg-card: var(--bg-card);
+  --studio-text-primary: var(--text-primary);
+  --studio-text-muted: var(--text-secondary);
+  --studio-text-faint: var(--text-muted);
+  --studio-border-soft: var(--border-color);
+  --studio-accent-copper: var(--accent);
+  --studio-accent-copper-dark: var(--button-primary-hover);
+  --studio-font-display: 'Fraunces', 'Playfair Display', Georgia, serif;
+  --studio-font-body: Arial, sans-serif;
+  font-family: var(--studio-font-body);
+  line-height: 1.5;
+}
+.explore-page, .explore-page * { box-sizing: border-box; }
+.explore-page h2 { margin: 0; }
+.explore-page button, .explore-page select { line-height: inherit; }
+.app-body .explore-hero { padding-top: 48px; }
+.explore-hero { background: radial-gradient(ellipse at 70% 0%, rgba(184,134,91,.10), transparent 60%), linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%); }
+.public-explore-startup { padding-top: var(--header-height, 80px); }
+.explore-page .page-photo-search { width: 100%; max-width: 1280px; margin: 0 auto 20px; }
+/* Reserve the same scrollbar gutter before and after the global CSS arrives. */
+html[data-startup-surface='explore'] { scrollbar-width: auto !important; }
+html[data-startup-surface='explore']::-webkit-scrollbar { display: block !important; width: 8px !important; height: 8px !important; }
+.explore-page { color: var(--text-primary); }
+
+/* One search frame for startup and the live SearchBar, including its inner geometry. */
+.explore-page .search-bar-container { position: relative !important; inset: auto !important; transform: none !important; width: 100% !important; max-width: 640px !important; min-width: 0 !important; padding: 0 !important; background: transparent !important; }
+.explore-page .header-search { display: flex; align-items: center; width: 100%; min-height: 44px; border: 1px solid var(--border-strong); border-radius: 20px; background: var(--bg-card); padding: 0; }
+.explore-page .search-icon-left { display: flex; align-items: center; justify-content: center; padding: 0 12px; color: #767676; flex-shrink: 0; }
+.explore-page .search-input { flex: 1 1 0; width: 0; min-width: 0; border: 0; outline: none; background: transparent; color: var(--text-primary); font: inherit; padding: 0; }
+.explore-page .search-input::placeholder { color: #767676; opacity: 1; }
+.explore-page .search-filters-wrapper { display: flex; align-items: center; flex-shrink: 0; border-left: 1px solid #e5e5e5; padding-left: 8px; margin-left: 8px; }
+.explore-page .search-filters-container { position: relative; display: inline-block; }
+.explore-page .search-filters-toggle { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border: 0; border-radius: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--button-secondary-fg); line-height: inherit; }
+.explore-page svg { display: block; vertical-align: middle; flex-shrink: 0; }
+.explore-page { font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; text-size-adjust: 100%; }
+.explore-page .search-filters-toggle { appearance: button; position: relative; cursor: pointer; border-radius: 8px; }

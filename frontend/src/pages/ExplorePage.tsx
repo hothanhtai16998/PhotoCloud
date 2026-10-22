@@ -1,6 +1,6 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { Compass, Camera, RotateCcw } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { useImageStore } from '@/stores/useImageStore';
 import { categoryService, type Category } from '@/services/categoryService';
 import { categoryNameToSlug, getCategoryNameFromSlug } from '@/utils/categorySlug';
@@ -18,27 +18,15 @@ import { BRAND } from '@/constants/brand';
 import { getLocale } from '@/i18n';
 import { getTranslatedCategoryName } from '@/utils/categoryTranslations';
 import './ExplorePage.css';
+import { ExploreToolbar } from './explore/ExploreToolbar';
+import { readExploreCategories, saveExploreCategories } from './explore/categorySnapshot';
 import { saveImagePageScroll } from '@/utils/imagePageScroll';
 import { useImagePageScrollRestore } from '@/hooks/useImagePageScrollRestore';
 
 const returnCategories = new Map<string, string>();
 
-const ORIENTATIONS = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'landscape', label: 'Ngang' },
-  { value: 'portrait', label: 'Dọc' },
-  { value: 'square', label: 'Vuông' },
-];
-
-const SORTS = [
-  { value: 'views', label: 'Phổ biến' },
-  { value: 'date', label: 'Mới nhất' },
-  { value: 'favorites', label: 'Nhiều lượt thích' },
-  { value: 'downloads', label: 'Nhiều lượt tải' },
-  { value: 'relevance', label: 'Liên quan' },
-];
-
 export default function ExplorePage() {
+  useLayoutEffect(() => { document.getElementById('public-explore-startup')?.remove(); }, []);
   const navigate = useNavigate();
   const actualLocation = useContext(ActualLocationContext);
   const isMobile = useIsMobile();
@@ -58,6 +46,7 @@ export default function ExplorePage() {
   const pagination = useImageStore((s) => s.pagination);
   const error = useImageStore((s) => s.error);
   const [requestedPage, setRequestedPage] = useState(1);
+  const [hasRequested, setHasRequested] = useState(false);
   useImagePageScrollRestore(location, pageRef,
     navigationType === 'POP' && !loading && images.length > 0, false, undefined, images.length);
 
@@ -87,9 +76,8 @@ export default function ExplorePage() {
     });
   }, [navigate, images, actualLocation, isMobile, location, activeCategory]);
 
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(readExploreCategories);
   const { filters, setFilters, resetFilters } = useSearchFilters();
-  const orientation = filters.orientation;
   const sort = filters.sortBy || 'date';
   const [locale, setLocale] = useState<'vi' | 'en'>(getLocale());
   const [categoryError, setCategoryError] = useState(false);
@@ -102,7 +90,12 @@ export default function ExplorePage() {
     let active = true;
     categoryService
       .fetchCategories()
-      .then((data) => { if (active) { setCategories(data || []); setCategoryError(false); } })
+      .then((data) => { if (active) {
+        setCategories(data || []); setCategoryError(false);
+        const currentLocale = getLocale();
+        saveExploreCategories((data || []).map(category => ({ ...category,
+          translated: getTranslatedCategoryName(category.name, currentLocale) })), currentLocale);
+      } })
       .catch(() => { if (active) setCategoryError(true); });
     return () => { active = false; };
   }, [categoryAttempt]);
@@ -114,12 +107,9 @@ export default function ExplorePage() {
     return () => window.removeEventListener('localeChange', handle);
   }, []);
 
+  const categoryName = activeCategory === 'all'
+    ? undefined : getCategoryNameFromSlug(activeCategory, categories) ?? undefined;
   const params = useMemo(() => {
-    const categoryName =
-      activeCategory === 'all'
-        ? undefined
-        : getCategoryNameFromSlug(activeCategory, categories) ?? undefined;
-
     return {
       ...buildFilterParams(filters, { page: 1, category: categoryName }),
       sortBy: sort,
@@ -128,8 +118,9 @@ export default function ExplorePage() {
       limit: 30,
     };
 
-  }, [activeCategory, sort, filters, categories]);
+  }, [categoryName, sort, filters]);
   useEffect(() => {
+    setHasRequested(true);
     setRequestedPage(1);
     void fetchImages(params);
   }, [params, fetchImages]);
@@ -152,92 +143,17 @@ export default function ExplorePage() {
   );
 
   return (
-    <main ref={pageRef} className="explore-page">
-      <section className="explore-hero">
-        <div className="explore-hero-inner">
-          <h1>
-            Khám phá <em>những khung hình</em>
-          </h1>
-          <p>
-            Tìm cảm hứng từ những bức ảnh tại {BRAND.nameLong}. Chọn chủ đề và bố cục bạn yêu thích.
-          </p>
-        </div>
-      </section>
-
-      <section className="explore-filters">
-        <div className="page-photo-search">
-          <SearchBar filterButtonLabel="Bộ lọc nâng cao" />
-        </div>
-        <div className="explore-filter-row">
-          <h2 className="explore-filter-label">
-            <Compass size={15} aria-hidden /> Danh mục
-          </h2>
-          <div className="explore-categories" role="group" aria-label="Danh mục ảnh">
-            <button
-              type="button"
-              aria-pressed={activeCategory === 'all'}
-              className={`explore-chip${activeCategory === 'all' ? ' is-active' : ''}`}
-              onClick={() => setActiveCategory('all')}
-            >
-              Tất cả
-            </button>
-            {translatedCategories.map((cat) => (
-              <button
-                key={cat.slug}
-                type="button"
-                aria-pressed={activeCategory === cat.slug}
-                className={`explore-chip${activeCategory === cat.slug ? ' is-active' : ''}`}
-                onClick={() => setActiveCategory(cat.slug)}
-              >
-                {cat.translated}
-                {cat.count > 0 && <span className="explore-chip-count">{cat.count}</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-        {categoryError && <p className="explore-category-error" role="alert">Không tải được danh mục. <button type="button" onClick={() => setCategoryAttempt(value => value + 1)}>Thử lại</button></p>}
-
-        <div className="explore-filter-row explore-filter-row--compact">
-          <div className="explore-filter-group">
-            <span className="explore-filter-label">Bố cục</span>
-            <div className="explore-segmented">
-              {ORIENTATIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`explore-segmented-btn${orientation === opt.value ? ' is-active' : ''}`}
-                  aria-pressed={orientation === opt.value}
-                  onClick={() => setFilters({ ...filters, orientation: opt.value as typeof filters.orientation })}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="explore-filter-group">
-            <label htmlFor="explore-sort" className="explore-filter-label">Sắp xếp</label>
-            <select
-              id="explore-sort"
-              className="explore-select"
-              value={sort}
-              onChange={(e) => setFilters({ ...filters, sortBy: e.target.value as typeof filters.sortBy })}
-            >
-              {SORTS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          {hasActiveFilters && <button className="explore-reset" type="button" onClick={clearFilters}><RotateCcw size={15} /> Xóa bộ lọc</button>}
-        </div>
-      </section>
+    <main ref={pageRef} className="explore-page" data-loading-scope="local">
+      <ExploreToolbar search={<SearchBar filterButtonLabel="Bộ lọc nâng cao" />}
+        activeCategory={activeCategory} translatedCategories={translatedCategories}
+        filters={filters} setFilters={setFilters} setActiveCategory={setActiveCategory}
+        categoryError={categoryError} onRetryCategories={() => setCategoryAttempt(value => value + 1)}
+        hasActiveFilters={hasActiveFilters} clearFilters={clearFilters} />
 
       <section className="explore-grid-wrap">
-        <p className="explore-results" role="status">{loading ? 'Đang tải ảnh…' : error ? 'Chưa tải được kết quả mới.' : `${new Intl.NumberFormat('vi-VN').format(pagination?.total ?? images.length)} ảnh${activeCategory !== 'all' ? ` · ${translatedCategories.find(category => category.slug === activeCategory)?.translated || ''}` : ''}`}</p>
+        <p className="explore-results" role="status">{!hasRequested || loading ? 'Đang tải ảnh…' : error ? 'Chưa tải được kết quả mới.' : `${new Intl.NumberFormat('vi-VN').format(pagination?.total ?? images.length)} ảnh${activeCategory !== 'all' ? ` · ${translatedCategories.find(category => category.slug === activeCategory)?.translated || ''}` : ''}`}</p>
         {error && <div className="explore-error" role="alert"><p>Không thể tải ảnh. Bạn có thể thử lại.</p><button type="button" onClick={() => void fetchImages({ ...params, page: requestedPage, _refresh: true })}>Thử lại tải ảnh</button></div>}
-        {loading && requestedPage === 1 ? (
+        {!hasRequested || (loading && requestedPage === 1) ? (
           <div className="explore-empty" aria-hidden="true">Đang chuẩn bị những khung hình…</div>
         ) : !error && images.length === 0 ? (
           <div className="explore-empty">

@@ -38,6 +38,7 @@
         document.querySelector('meta[name="theme-color"]').content =
           typeof themeColor === 'string' && /^#[a-f\d]{6}$/i.test(themeColor)
             ? themeColor : defaults[dark ? 'dark' : 'light']['--bg-primary'];
+        if (/^\/explore\/?$/.test(location.pathname)) document.documentElement.dataset.startupSurface = 'explore';
         if (/^\/collections(?:\/|$)/.test(location.pathname)) {
           document.documentElement.dataset.startupSurface = location.pathname.replace(/\/$/, '') === '/collections' ? 'collections-list' : 'collections-detail';
         }
@@ -203,7 +204,9 @@
       }
       /* Keep the collection canvas/header surface steady until React mounts.
          No fake user controls or cached account markup in the startup shell. */
+      html[data-startup-surface="explore"] #root:empty::before,
       html[data-startup-surface^="collections"] #root:empty::before { content: none; }
+      html[data-startup-surface="explore"] #root:empty::after,
       html[data-startup-surface^="collections"] #root:empty::after { content: none; }
 
            </style>

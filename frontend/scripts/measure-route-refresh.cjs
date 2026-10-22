@@ -21,8 +21,10 @@ const LABEL = process.argv[3] || 'before';
           await ctx.addInitScript(() => sessionStorage.setItem('publicChromeHint', 'member'));
         }
         // Measure real navigation timing: first paint is a reload-time property.
+        const apiLog = [];
         await ctx.route('**/api/**', async route => {
           const u = new URL(route.request().url());
+          apiLog.push({ path: u.pathname, query: u.search });
           if (u.pathname === '/api/auth/refresh') {
             await new Promise(r => setTimeout(r, 700));
             return route.fulfill({ status: 401, json: { message: 'Guest' } });
@@ -57,21 +59,44 @@ const LABEL = process.argv[3] || 'before';
         });
 
         // Frame sampler: geometry of header + page frame + data region only.
-        await page.addInitScript(() => {
+        await page.addInitScript(({ shellSel, dataSel }) => {
           window.__frames = [];
+          window.__cls = 0;
+          window.__shifts = [];
           let prev = '';
           const round = n => Math.round(n * 10) / 10;
           const box = el => { if (!el) return null; const r = el.getBoundingClientRect(); return { x: round(r.x), y: round(r.y + scrollY), w: round(r.width), h: round(r.height) }; };
+          // Only count shifts of visible content; startup shells are inert/hidden
+          // and their geometry must never drive a CLS verdict.
+          const hidden = el => !el || el.hasAttribute('inert') || getComputedStyle(el).display === 'none';
+          new PerformanceObserver(list => {
+            for (const entry of list.getEntries()) {
+              if (entry.hadRecentInput) continue;
+              window.__cls += entry.value;
+              window.__shifts.push({
+                ms: Math.round(entry.startTime),
+                value: Math.round(entry.value * 1000) / 1000,
+                nodes: entry.sources.map(s => ({
+                  tag: s.node?.nodeName ?? null,
+                  cls: s.node?.className?.toString?.().slice(0, 60) ?? null,
+                  from: { x: round(s.previousRect.x), y: round(s.previousRect.y), w: round(s.previousRect.width), h: round(s.previousRect.height) },
+                  to: { x: round(s.currentRect.x), y: round(s.currentRect.y), w: round(s.currentRect.width), h: round(s.currentRect.height) },
+                })),
+              });
+            }
+          }).observe({ type: 'layout-shift', buffered: true });
           const tick = () => {
             const header = document.querySelector('.PHOTOCLOUD-header') || document.querySelector('.public-header-startup');
             const logo = header?.querySelector('.header-logo, .text-logo');
             const nav = header?.querySelector('.header-studio-nav');
             const actions = header?.querySelector('.header-actions');
-            const shell = document.querySelector('.app-body [class$="-page"],.app-body [class*="-page "]');
-            const data = document.querySelector('.explore-grid-wrap, .collections-grid, .collection-detail-grid-placeholder');
+            const shell = document.querySelector(shellSel);
+            const data = document.querySelector(dataSel);
+            const startup = document.querySelector('.public-header-startup, .public-collections-startup, .public-explore-startup, .public-collection-detail-startup');
             const value = {
               headerBox: box(header), logoBox: box(logo), navBox: box(nav), actionsBox: box(actions),
               shellBox: box(shell), dataBox: box(data),
+              startupVisible: startup ? box(startup) : null,
               headerSurface: header?.dataset?.surface ?? null,
               rootEmpty: !document.querySelector('#root')?.childElementCount,
               fonts: document.fonts.status,
@@ -85,6 +110,9 @@ const LABEL = process.argv[3] || 'before';
             if (performance.now() < 5000) requestAnimationFrame(tick);
           };
           requestAnimationFrame(tick);
+        }, {
+          shellSel: ROUTE === '/explore' ? '.explore-page' : ROUTE.startsWith('/collections/') ? '.collection-detail-page' : '.collections-page',
+          dataSel: ROUTE === '/explore' ? '.explore-grid-wrap' : ROUTE.startsWith('/collections/') ? '.collection-detail-grid, .collection-detail-grid-placeholder' : '.collections-grid, .collections-page-shell',
         });
 
         await page.goto(origin + ROUTE, { waitUntil: 'load' });
@@ -105,9 +133,12 @@ const LABEL = process.argv[3] || 'before';
 
         // Layout shift, ignoring shifts inside startup shells that are already hidden.
         const cls = await page.evaluate(() => (window.__cls ?? 0));
+        const shifts = await page.evaluate(() => (window.__shifts ?? []));
         const frames = await page.evaluate(() => window.__frames);
+        const apiCalls = apiLog.map(a => `${a.path}?${a.query}`);
         reports.push({
-          route: ROUTE, width, authMode, timing, cls,
+          route: ROUTE, width, authMode, timing, cls: Math.round(cls * 1000) / 1000, shifts,
+          apiCalls,
           jsTotalBytes: jsBytes.reduce((a, b) => a + b.bytes, 0),
           jsRequests: jsBytes.length,
           jsFiles: jsBytes.sort((a, b) => b.bytes - a.bytes).slice(0, 8),
@@ -125,6 +156,6 @@ const LABEL = process.argv[3] || 'before';
   fs.mkdirSync('qa-policy-checkbox', { recursive: true });
   fs.writeFileSync(`qa-policy-checkbox/route-refresh-${LABEL}.json`, JSON.stringify(reports, null, 2));
   for (const r of reports) {
-    console.log(`[${r.route}] ${r.width}px ${r.authMode}: frames=${r.frameCount} JS=${(r.jsTotalBytes / 1024).toFixed(0)}kB/${r.jsRequests}req FCP=${r.timing['first-contentful-paint']} LCPish=${r.timing.loadEvent} errors=${r.consoleErrors.length}`);
+    console.log(`[${r.route}] ${r.width}px ${r.authMode}: frames=${r.frameCount} CLS=${r.cls} JS=${(r.jsTotalBytes / 1024).toFixed(0)}kB/${r.jsRequests}req FCP=${r.timing['first-contentful-paint']} DCL=${r.timing.domContentLoaded} errors=${r.consoleErrors.length}`);
   }
 })().catch(e => { console.error(e); process.exitCode = 1; });
