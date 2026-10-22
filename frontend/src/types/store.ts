@@ -16,6 +16,7 @@ export type UploadImageData = {
 };
 
 export interface AuthState {
+	sessionError: string | null;
 	accessToken: string | null;
 	loading: boolean;
 	isInitializing: boolean;
@@ -37,6 +38,7 @@ export interface AuthState {
 }
 
 export interface UserState {
+	error: string | null;
 	user: User | null;
 	loading: boolean;
 	fetchMe: () => Promise<void>;

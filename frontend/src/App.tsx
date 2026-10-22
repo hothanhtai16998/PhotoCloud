@@ -10,14 +10,12 @@ import { useStructuredData, schemaHelpers } from "./hooks/useStructuredData";
 import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
 import Header from "./components/Header";
-import HomePage from './pages/HomePage';
 import CollectionsPage from './pages/CollectionsPage';
 import { Footer } from "./components/Footer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { PWAInstallPrompt } from "./components/PWAInstallPrompt";
 import { GlobalLoadingOverlay } from "./components/ui/GlobalLoadingOverlay";
 import { syncGlobalLoading } from "./stores/helpers/syncGlobalLoading";
-import ImagePage from "./pages/ImagePage";
 import {
   isPageRefresh,
   clearModalStateOnRefresh,
@@ -27,6 +25,9 @@ import {
 
 
 // Lazy load pages for code splitting
+// Keep unrelated public routes out of the collection startup bundle.
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ImagePage = lazy(() => import('./pages/ImagePage'));
 const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
 const SignInPage = lazy(() => import("./pages/SignInPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));

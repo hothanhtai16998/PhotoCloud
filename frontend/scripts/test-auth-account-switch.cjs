@@ -7,7 +7,7 @@ const load = (file, mocks, globals = {}) => {
   const exports = {};
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path.resolve(__dirname, '../src', file), 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText, { exports, require: name => name in mocks ? mocks[name] : require(name), console, ...globals });
+  }).outputText, { exports, require: name => name in mocks ? mocks[name] : require(name), console, setTimeout, clearTimeout, ...globals });
   return exports;
 };
 const deferred = () => { let resolve, reject; const promise = new Promise((yes,no) => { resolve=yes;reject=no; });return {promise,resolve,reject}; };
@@ -24,6 +24,7 @@ const deferred = () => { let resolve, reject; const promise = new Promise((yes,n
   const service = { refresh: () => refresh.promise, signIn: async () => { signinCalls++;return {accessToken:'admin-token'}; }, signOut: () => logoutOperation,
     fetchMe: () => {const request=deferred();profiles.push(request);return request.promise;} };
   const mocks = { '@/services/authService': {authService:service}, '@/utils/authEvents':authEvents, '@/utils/authSessionVersion':version,
+    '@/utils/pageDeparture':{isPageDeparting:()=>false,getPageDepartureVersion:()=>0}, '@/utils/sessionRecovery':load('utils/sessionRecovery.ts',{}), '@/utils/safeStorage':{removeSessionItem(){},setSessionItem(){}},
     sonner:{toast:{success(){},error(){}}}, '@/i18n':{t:key=>key} };
   const auth = load('stores/useAuthStore.ts',mocks,{window:{},sessionStorage:{removeItem(){}}}).useAuthStore;
   const users = load('stores/useUserStore.ts',{...mocks,'./useAuthStore':{useAuthStore:auth}},{window:{}}).useUserStore;

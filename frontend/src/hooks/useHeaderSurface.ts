@@ -26,9 +26,11 @@ export function useHeaderSurface(pathname: string): void {
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     const measure = () => {
-      const homeHero = document.querySelector<HTMLElement>('.homepage .hero-section');
-      const hero = homeHero ?? document.querySelector<HTMLElement>('.explore-hero,.blog-hero,.about-hero,.travel-stage');
-      const page = document.querySelector<HTMLElement>('.app-body [class$="-page"],.app-body [class*="-page "]');
+      // Startup shells outside React can remain hidden on other routes. Their
+      // geometry must not determine the active page's header surface.
+      const homeHero = root.querySelector<HTMLElement>('.homepage .hero-section');
+      const hero = homeHero ?? root.querySelector<HTMLElement>('.explore-hero,.blog-hero,.about-hero,.travel-stage');
+      const page = root.querySelector<HTMLElement>('.app-body [class$="-page"],.app-body [class*="-page "]');
       const band = hero ?? page;
       if (band !== observedBand) {
         if (observedBand) resize.unobserve(observedBand);

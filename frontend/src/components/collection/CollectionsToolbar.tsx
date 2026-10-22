@@ -22,7 +22,7 @@ export interface CollectionsToolbarLabels {
 }
 interface Props {
   labels: CollectionsToolbarLabels;
-  totalLabel?: string;
+  createPending?: boolean;
   canCreate?: boolean;
   isInitializing?: boolean;
   allTags?: string[];
@@ -36,11 +36,10 @@ interface Props {
   onPublicChange?: (value: boolean) => void;
   onSortChange?: (value: SortBy) => void;
 }
-export function CollectionsToolbar({ labels, totalLabel = '', canCreate = false, isInitializing = false, allTags = [], searchQuery = '', selectedTag = null, showPublicOnly = false, sortBy = 'newest', onCreate, onSearchChange, onTagChange, onPublicChange, onSortChange }: Props): React.ReactElement {
+export function CollectionsToolbar({ labels, createPending = false, canCreate = false, isInitializing = false, allTags = [], searchQuery = '', selectedTag = null, showPublicOnly = false, sortBy = 'newest', onCreate, onSearchChange, onTagChange, onPublicChange, onSortChange }: Props): React.ReactElement {
   return <section data-collections-frame>
 	<header className="collections-header">
 		<div className="collections-header-titles">
-			<span className="collections-eyebrow" style={{ visibility: totalLabel ? 'visible' : 'hidden' }}>{totalLabel}</span>
 			<h1>{labels.title}</h1>
 				<p className="collections-header-subtitle">
 					{labels.subtitleViewer}
@@ -49,6 +48,7 @@ export function CollectionsToolbar({ labels, totalLabel = '', canCreate = false,
 		{canCreate && (
 			<button
 				className="collections-create-btn"
+                disabled={createPending}
 				type="button"
 				onClick={onCreate}
 			>

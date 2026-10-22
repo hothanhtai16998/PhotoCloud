@@ -1,62 +1,37 @@
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useEffect, useRef } from 'react';
+import { useUserStore } from '@/stores/useUserStore';
+import { useEffect } from 'react';
+import { SessionRecoveryPanel } from './SessionRecoveryPanel';
+import { isPageDeparting } from '@/utils/pageDeparture';
 
-/**
- * AuthInitializer - Optimized for better UX, especially poor connections
- * 
- * Strategy:
- * - Render children immediately (no blocking) - app works even if auth fails/times out
- * - Initialize auth in background - doesn't block public pages
- * - ProtectedRoute handles auth-gated content gracefully with timeout fallback
- * - Poor internet: Public pages work immediately, protected pages timeout gracefully after 15s
- * - This prevents blank screen flash and improves perceived performance
- */
-const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
-	const { initializeApp, isInitializing } = useAuthStore();
-	const hasInitialized = useRef(false);
-	const initAbortControllerRef = useRef<AbortController | null>(null);
-
-	useEffect(() => {
-		// Reset on mount to handle rapid refreshes
-		hasInitialized.current = false;
-		
-		// Abort any pending initialization from previous mount
-		if (initAbortControllerRef.current) {
-			initAbortControllerRef.current.abort();
-		}
-		
-		// Only initialize once per mount - non-blocking
-		// Don't check isInitializing here - it starts as true and we need to call initializeApp to set it to false
-		if (!hasInitialized.current) {
-			hasInitialized.current = true;
-			const abortController = new AbortController();
-			initAbortControllerRef.current = abortController;
-			
-			// Initialize auth in background, don't block rendering
-			initializeApp().catch(() => {
-				// Silently handle - user might not be logged in
-				// ProtectedRoute will handle redirect if needed
-			}).finally(() => {
-				if (abortController.signal.aborted) {
-					// Don't clear ref if this was aborted
-					return;
-				}
-				initAbortControllerRef.current = null;
-			});
-		}
-		
-		return () => {
-			// Cleanup: abort pending initialization on unmount
-			if (initAbortControllerRef.current) {
-				initAbortControllerRef.current.abort();
-				initAbortControllerRef.current = null;
-			}
-		};
-	}, [initializeApp]); // Removed isInitializing from dependencies
-
-	// Render children immediately - no blocking loader
-	// Individual components handle their own loading states
-	return <>{children}</>;
-};
-
-export default AuthInitializer;
+export default function AuthInitializer({ children }: { children: React.ReactNode }) {
+    const { initializeApp, sessionError, isInitializing, accessToken } = useAuthStore();
+    const { user, error: profileError, loading: profileLoading, fetchMe } = useUserStore();
+    const recoveryMessage = sessionError || (accessToken && !user ? profileError : null);
+    useEffect(() => {
+        void initializeApp();
+        const recover = () => {
+            const state = useAuthStore.getState();
+            if (document.visibilityState === 'hidden' || isPageDeparting()) return;
+            if (state.sessionError || state.isInitializing) void state.initializeApp();
+            else {
+                const profile = useUserStore.getState();
+                if (state.accessToken && !profile.user && !profile.loading) void profile.fetchMe();
+            }
+        };
+        window.addEventListener('online', recover);
+        window.addEventListener('pageshow', recover);
+        document.addEventListener('visibilitychange', recover);
+        return () => {
+            window.removeEventListener('online', recover);
+            window.removeEventListener('pageshow', recover);
+            document.removeEventListener('visibilitychange', recover);
+        };
+    }, [initializeApp]);
+    return <>
+        {children}
+        {recoveryMessage && !isInitializing && !profileLoading && <div className="session-recovery-notice">
+            <SessionRecoveryPanel message="Chưa thể hoàn tất kiểm tra tài khoản. Vui lòng thử lại." onRetry={() => { void (sessionError ? initializeApp() : fetchMe()); }} />
+        </div>}
+    </>;
+}

@@ -1,0 +1,178 @@
+.collection-detail-header {
+  max-width: 1296px;
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+  border-bottom: 1px solid hsl(var(--border) / 0.2);
+  background: transparent;
+}
+
+.collection-detail-back {
+  background: transparent;
+  border: none;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: none;
+  margin: 0 0 20px;
+  padding: 6px 0;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.collection-detail-back:hover {
+  color: hsl(var(--foreground));
+}
+
+.collection-detail-content {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  width: 100%;
+}
+
+.collection-detail-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Icon-only action buttons: dùng shared Button (ui/button.tsx).
+   Kích thước vuông cố định, rộng hơn cao để icon có chỗ và trông cân đối. */
+.collection-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.collection-detail-actions .collection-action-btn {
+  width: 52px;
+  height: 40px;
+  min-width: 52px;
+  padding: 0;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+
+
+.collection-detail-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.collection-detail-main h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.collection-detail-image-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
+}
+
+.collection-detail-stat-dot {
+  font-size: 0.5rem;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+/* (collection-selection-mode-btn styles removed — dùng shared Button default/outline) */
+
+.collection-detail-description {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.6;
+  max-width: 600px;
+  font-weight: 400;
+}
+
+.collection-detail-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.collection-detail-author-avatar,
+.collection-detail-author-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.collection-detail-author-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.collection-detail-author-name {
+  font-size: 0.9375rem;
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+
+/* The same public frame is in the first HTML response and the live detail page. */
+.collection-detail-page { box-sizing:border-box; width:100vw; margin:0; min-height:100vh; padding:32px 0 64px; color:var(--text-primary); background:var(--bg-primary); }
+.app-body > .collection-detail-page { margin-left:0; padding-top:32px; }
+.collection-detail-page[data-loading-scope='local'] { visibility:visible!important; opacity:1!important; transition:none!important; }
+[data-collection-detail-frame], [data-collection-detail-frame] * { box-sizing:border-box; }
+[data-collection-detail-frame] { font-family:Arial,sans-serif; font-feature-settings:"cv11","ss01"; line-height:1.5; -webkit-font-smoothing:antialiased; }
+[data-collection-detail-frame] h1 { color:var(--text-primary); }
+[data-collection-detail-frame] .collection-detail-back { color:var(--text-secondary); line-height:1.5; }
+[data-collection-detail-frame] .collection-detail-content { min-height:154px; }
+.collection-detail-meta-placeholder { display:grid; gap:16px; }
+.collection-detail-title-placeholder { display:block; width:min(320px,65vw); height:1.2em; border-radius:4px; background:var(--bg-secondary); }
+.collection-detail-meta-placeholder span { display:block; width:min(260px,80%); height:20px; border-radius:4px; background:var(--bg-secondary); }
+.collection-detail-meta-placeholder span:last-child { width:min(440px,90%); }
+.collection-detail-action-placeholders { display:flex; gap:8px; }
+.collection-detail-action-placeholders span { width:52px; height:40px; border-radius:8px; background:var(--bg-secondary); }
+.collection-detail-grid-placeholder { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; max-width:1296px; padding:24px 16px; margin:auto; }
+.collection-detail-grid-placeholder span { display:block; aspect-ratio:3/4; border-radius:8px; background:var(--bg-secondary); }
+.public-collection-detail-startup { display:none; }
+html[data-startup-surface='collections-detail'] .public-collection-detail-startup { display:block; padding-top:80px; }
+html[data-startup-surface='collections-detail'] #root:empty { display:none; }
+@media(max-width:768px) {
+ html[data-startup-surface='collections-detail'] .public-collection-detail-startup { padding-top:52px; }
+ .collection-detail-grid-placeholder { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ [data-collection-detail-frame] .collection-detail-content { flex-direction:column; gap:24px; }
+ [data-collection-detail-frame] { padding:64px 20px 40px; }
+ [data-collection-detail-frame] .collection-detail-title-row { flex-direction:column; align-items:flex-start; gap:8px; margin-bottom:12px; }
+ [data-collection-detail-frame] .collection-detail-main h1 { font-size:2rem; }
+}
+
+.collection-detail-page { background-image:radial-gradient(ellipse at 70% 0%,rgba(184,134,91,.10),transparent 60%),linear-gradient(180deg,var(--bg-secondary) 0%,var(--bg-primary) 100%); background-size:100% 360px; background-repeat:no-repeat; }
+[data-collection-detail-frame] { border-bottom:1px solid var(--border-color); }
+.collection-detail-back:focus-visible { outline:2px solid var(--text-primary); outline-offset:3px; }
+@media(max-width:600px) { .collection-detail-page { background-size:100% 300px; } }
+
+@media(max-width:768px) {
+ .collection-detail-image-count { font-size:.9375rem; }
+ .collection-detail-author { margin-bottom:12px; }
+ .collection-detail-description { font-size:.9375rem; margin-bottom:12px; }
+ .collection-detail-meta { font-size:.8125rem; }
+ .collection-detail-actions { width:100%; justify-content:flex-start; gap:8px; }
+}

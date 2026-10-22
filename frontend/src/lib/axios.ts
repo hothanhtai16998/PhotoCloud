@@ -2,9 +2,10 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { appConfig } from '@/config/appConfig';
 import { getAuthSessionVersion } from '@/utils/authSessionVersion';
+import { isPageDeparting, setPageDeparting } from '@/utils/pageDeparture';
 
 // Helper to get the API base URL
-const getApiBaseURL = () => {
+const getApiBaseURL = (): string => {
   if (import.meta.env.MODE === 'development') {
     return 'http://localhost:3000/api';
   }
@@ -33,13 +34,13 @@ const api = axios.create({
 const pendingRequests = new Set<AbortController>();
 
 // Cancel all pending requests when page is about to unload (refresh/navigation)
-export const cancelAllPendingRequests = () => {
+export const cancelAllPendingRequests = (): number => {
   const count = pendingRequests.size;
   if (count > 0) {
     pendingRequests.forEach((controller) => {
       try {
         controller.abort();
-      } catch (error) {
+      } catch {
         // Ignore errors when aborting
       }
     });
@@ -52,19 +53,17 @@ export const cancelAllPendingRequests = () => {
 // Use pagehide instead of unload (unload is deprecated and prevents bfcache)
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
+    setPageDeparting(true);
     cancelAllPendingRequests();
   });
   // Use pagehide instead of unload - works with bfcache
   window.addEventListener('pagehide', () => {
+    setPageDeparting(true);
     cancelAllPendingRequests();
   });
-  // Also handle visibility change (tab switch) - cancel if page is being unloaded
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      // Don't cancel on tab switch, only on actual unload
-      // The beforeunload event will handle refresh/navigation
-    }
-  });
+
+  window.addEventListener('pageshow', () => setPageDeparting(false));
+
 }
 
 /**
@@ -90,6 +89,7 @@ const getCsrfTokenFromCookie = (): string | null => {
  */
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (isPageDeparting()) throw new axios.CanceledError('Page is leaving');
     const sessionConfig = config as InternalAxiosRequestConfig & { _authSessionVersion?: number };
     sessionConfig._authSessionVersion ??= getAuthSessionVersion();
     if (sessionConfig._authSessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
@@ -102,19 +102,18 @@ api.interceptors.request.use(
       
       // Remove from tracking when request completes (success or error)
       const originalSignal = config.signal;
-      const cleanup = () => {
+      const cleanup = (): void => {
         pendingRequests.delete(controller);
         if (originalSignal) {
-          originalSignal.removeEventListener('abort', cleanup);
+          originalSignal.removeEventListener?.('abort', cleanup);
         }
       };
       
       // Clean up when request is aborted or completes
-      originalSignal.addEventListener('abort', cleanup);
+      originalSignal.addEventListener?.('abort', cleanup);
       
       // Also clean up on response (handled in response interceptor)
-      (config as any)._abortController = controller;
-      (config as any)._cleanupAbort = cleanup;
+      Object.assign(config, { _cleanupAbort: cleanup, _ownedAbortController: controller });
     }
 
     return config;
@@ -147,6 +146,7 @@ api.interceptors.request.use(
  */
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    if (isPageDeparting()) throw new axios.CanceledError('Page is leaving');
     const sessionConfig = config as InternalAxiosRequestConfig & { _authSessionVersion?: number };
     sessionConfig._authSessionVersion ??= getAuthSessionVersion();
     const isStateChangingMethod = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(
@@ -210,6 +210,7 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _authSessionVersion?: number;
       _retryCount?: number;
+      _ownedAbortController?: AbortController;
       _cleanupAbort?: () => void;
     };
 
@@ -237,6 +238,9 @@ api.interceptors.response.use(
 
     // Handle 429 - rate limit with exponential backoff (PHOTOCLOUD-style)
     if (error.response?.status === 429) {
+      // Profile recovery is explicit; do not hold a route guard for a potentially
+      // very long Retry-After interval or disguise this failure as missing auth.
+      if (originalRequest.url?.split('?')[0] === '/users/me') return Promise.reject(error);
       // Rate limited - respect Retry-After header if present
       const retryAfter = error.response?.headers?.['retry-after'];
       if (retryAfter && originalRequest._retryCount === undefined) {
@@ -254,107 +258,22 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 401 - access token expired, try to refresh
-    // Use a module-level promise to prevent multiple simultaneous refresh requests
-    if (error.response?.status === 401) {
-      originalRequest._retryCount = originalRequest._retryCount ?? 0;
-
-      if (originalRequest._retryCount < 3) {
-        originalRequest._retryCount += 1;
-
-        // Check if a refresh is already in progress (module-level variable)
-        if ((api as any)._refreshPromise) {
-          // Wait for the existing refresh to complete, then retry
-          return (api as any)._refreshPromise.then(() => {
-            if (originalRequest.headers) {
-              const currentToken = useAuthStore.getState().accessToken;
-              if (currentToken) {
-                originalRequest.headers.Authorization = `Bearer ${currentToken}`;
-              }
-            }
-            return api(originalRequest);
-          }).catch((refreshError: any) => {
-            // If refresh failed due to rate limit (429), don't fail the original request
-            // Just reject with the original 401 error so user stays logged in
-            if (refreshError?.response?.status === 429) {
-              return Promise.reject(error); // Return original 401, not 429
-            }
-            // For other refresh errors, reject with refresh error
-            return Promise.reject(refreshError);
-          });
-        }
-
-        // Create a new refresh promise
-        const refreshPromise = (async () => {
-          const sessionVersion = getAuthSessionVersion();
-          try {
-            const refreshResponse = await api.post(
-              '/auth/refresh',
-              {},
-              { withCredentials: true }
-            );
-
-            const newAccessToken = refreshResponse.data.accessToken;
-            if (sessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
-            useAuthStore.getState().setAccessToken(newAccessToken);
-
-            return newAccessToken;
-          } catch (refreshError: any) {
-            if (sessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
-            // Don't sign out user on rate limit (429) or cancelled requests
-            // Only clear auth for actual auth failures (401, 403, etc.)
-            const status = refreshError?.response?.status;
-            const isCancelled = 
-              refreshError?.name === 'CanceledError' || 
-              refreshError?.code === 'ERR_CANCELED' ||
-              refreshError?.message === 'canceled' ||
-              axios.isCancel(refreshError);
-            
-            if (status === 429 || isCancelled) {
-              // Rate limited or cancelled - don't clear auth, just throw error
-              // The request will fail but user stays logged in
-              throw refreshError;
-            }
-            // Only clear auth for actual authentication failures
-            if (status === 401 || status === 403 || !status) {
-              useAuthStore.getState().clearAuth();
-            }
-            throw refreshError;
-          } finally {
-            // Clear the refresh promise after completion
-            (api as any)._refreshPromise = null;
-          }
-        })();
-
-        // Store the promise so other requests can wait for it
-        (api as any)._refreshPromise = refreshPromise;
-
-        try {
-          const newAccessToken = await refreshPromise;
-
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          }
-
-          return api(originalRequest);
-        } catch (refreshError: any) {
-          // If refresh failed due to rate limit (429) or was cancelled, don't sign user out
-          // Just fail the request - user stays logged in and can retry later
-          const isCancelled = 
-            refreshError?.name === 'CanceledError' || 
-            refreshError?.code === 'ERR_CANCELED' ||
-            refreshError?.message === 'canceled' ||
-            axios.isCancel(refreshError);
-          
-          if (refreshError?.response?.status === 429 || isCancelled) {
-            // Return original 401 error instead of 429/cancelled to avoid confusion
-            // User stays logged in
-            return Promise.reject(error);
-          }
-          // For other refresh errors (auth failures), reject normally
-          return Promise.reject(refreshError);
-        }
+    // Refresh is owned by authService (single flight), including startup and sockets.
+    // Preserve a temporary refresh failure; returning the original 401 would log
+    // callers out even though their cookie has not been rejected.
+    if (error.response?.status === 401 && !originalRequest._retryCount) {
+      originalRequest._retryCount = 1;
+      await useAuthStore.getState().refresh();
+      if (originalRequest._authSessionVersion !== getAuthSessionVersion()) throw new axios.CanceledError('Session changed');
+      const token = useAuthStore.getState().accessToken;
+      if (!token) return Promise.reject(error);
+      if (originalRequest.signal?.aborted) throw new axios.CanceledError('Request cancelled');
+      originalRequest.headers.Authorization = `Bearer ${token}`;
+      if (originalRequest._ownedAbortController) {
+        originalRequest.signal = undefined;
+        originalRequest._ownedAbortController = undefined;
       }
+      return api(originalRequest);
     }
 
     // Handle 403 - CSRF token might be invalid

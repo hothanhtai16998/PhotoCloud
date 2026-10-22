@@ -3,10 +3,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom"
 import { User, Menu, Heart, Download, Shield, Info, CalendarDays, Compass, Camera, BookOpen } from "lucide-react"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useUserStore } from "@/stores/useUserStore"
-import { getSessionItem, setSessionItem, removeSessionItem } from "@/utils/safeStorage"
+import { setSessionItem, removeSessionItem } from "@/utils/safeStorage"
 import { Avatar } from "./Avatar"
 import NotificationBell from "./NotificationBell"
-import { Button } from "@/components/ui/button"
 import LOGO_CONFIG from "@/config/logo"
 import { updateFaviconWithImage } from "@/utils/faviconUpdater"
 import { t } from "@/i18n"
@@ -21,6 +20,8 @@ import './Header.css'
 import './HeaderFrame.css'
 import './PublicHeaderActions.css'
 import { PublicHeaderActions } from './PublicHeaderActions'
+import { AccountHeaderFrame } from './AccountHeaderFrame'
+import { getPublicChromeHint } from '@/utils/publicChromeHint'
 import { getSiteTheme, setSiteTheme, subscribeSiteTheme } from '@/utils/siteTheme'
 import { HEADER_LINKS } from '@/config/publicHeader'
 import ImagePageSidebar from './ImagePageSidebar'
@@ -40,6 +41,7 @@ export const Header = memo(function Header() {
   const accessToken = useAuthStore(state => state.accessToken)
   const signOut = useAuthStore(state => state.signOut)
   const isInitializing = useAuthStore(state => state.isInitializing)
+  const sessionError = useAuthStore(state => state.sessionError)
   const user = useUserStore(state => state.user)
   const navigate = useNavigate()
   const location = useLocation()
@@ -81,23 +83,27 @@ export const Header = memo(function Header() {
   // CRITICAL: refreshToken cookie is httpOnly, so we can't check it from JavaScript
   // Instead, use sessionStorage to persist auth state across refreshes
   // This prevents icons from flashing on refresh
-  // Initialize stableHasAuth from sessionStorage (persists across refreshes)
-  const [hadAuthOnMount] = useState(() => getSessionItem('hasAuth') === 'true');
   
   // Update sessionStorage when accessToken changes
   useEffect(() => {
     if (accessToken) {
       setSessionItem('hasAuth', 'true');
-    } else if (!isInitializing) {
+    } else if (!isInitializing && !sessionError) {
       // Only clear on logout (when not initializing), not on initial load
       removeSessionItem('hasAuth');
     }
-  }, [accessToken, isInitializing]);
+  }, [accessToken, isInitializing, sessionError]);
   
-  const [guestOnMount] = useState(() => getSessionItem('headerAuthHint') === 'guest');
+  const [chromeHint] = useState(getPublicChromeHint);
+  useEffect(() => {
+    if (isInitializing || sessionError) return;
+    if (!accessToken) setSessionItem('publicChromeHint', 'guest');
+    else if (user) setSessionItem('publicChromeHint', isAdmin || user.isSuperAdmin ? 'admin' : canOpenAdmin ? 'manager' : 'member');
+  }, [accessToken, isInitializing, sessionError, user, isAdmin, canOpenAdmin]);
+  const awaitingProfile = isInitializing || Boolean(sessionError) || Boolean(accessToken && !user);
+  const frameHasAdmin = awaitingProfile ? chromeHint === 'admin' || chromeHint === 'manager' : canOpenAdmin;
   const theme = useSyncExternalStore(subscribeSiteTheme, getSiteTheme, () => 'light');
-  useEffect(() => { if (!isInitializing) setSessionItem('headerAuthHint', accessToken ? 'account' : 'guest'); }, [accessToken, isInitializing]);
-  const stableHasAuth = Boolean(accessToken) || (isInitializing && hadAuthOnMount);
+  const stableHasAuth = Boolean(accessToken) || ((isInitializing || Boolean(sessionError)) && chromeHint !== 'guest');
   
   // PHOTOCLOUD-style: Optimistically show icons during initialization
   // Only show placeholder if we're initializing AND never had auth before
@@ -327,20 +333,17 @@ export const Header = memo(function Header() {
           {!isMobile && <div className="header-actions desktop-only">
             {/* CRITICAL: Show icons if we have token OR are initializing (optimistic) */}
             {stableHasAuth && (
-              <div className="header-actions-group">
-                <Button
+              <AccountHeaderFrame admin={frameHasAdmin}
+                booking={<button type="button"
                   onClick={() => openBookingModal()}
-                  className="header-booking-button"
+                  className="header-booking-button public-booking-button"
                   aria-label="Đặt lịch chụp"
                 >
-                  <CalendarDays size={16} />
-                  <span>Đặt lịch chụp</span>
-                </Button>
-                {(canOpenAdmin || isAdmin) && <div className="header-admin-group">
-                {canOpenAdmin && <Link to="/admin" className="header-library-action" aria-label="Quản trị" title="Quản trị"><Shield size={20} /></Link>}
-                </div>}
-                <NotificationBell />
-                <UserMenu
+                  <span><CalendarDays size={16} aria-hidden="true" /><span>Đặt lịch chụp</span></span>
+                </button>}
+                administration={canOpenAdmin ? <Link to="/admin" className="header-library-action" aria-label="Quản trị" title="Quản trị"><Shield size={20} /></Link> : undefined}
+                notifications={accessToken ? <NotificationBell /> : undefined}
+                account={user ? <UserMenu
                   user={user}
                   onSignOut={handleSignOut}
                   align="end"
@@ -354,12 +357,12 @@ export const Header = memo(function Header() {
                       fallbackClassName="header-user-avatar-placeholder"
                     />
                   }
-                />
-              </div>
+                /> : undefined}
+              />
             )}
             
             {!stableHasAuth && <PublicHeaderActions
-              signInLabel={t('auth.signIn')} dark={theme === 'dark'} pending={isInitializing && !guestOnMount}
+              signInLabel={t('auth.signIn')} dark={theme === 'dark'}
               signInLink={<Link to="/signin" className="header-link public-sign-in">{t('auth.signIn')}</Link>}
               onToggleTheme={() => setSiteTheme(theme === 'dark' ? 'light' : 'dark')}
               onBooking={() => openBookingModal()}

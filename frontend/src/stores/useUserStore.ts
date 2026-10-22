@@ -2,25 +2,28 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { authService } from '@/services/authService';
 import type { UserState } from '@/types/store';
-import type { HttpErrorResponse } from '@/types/errors';
-import { onLogout, onLoginSuccess, dispatchLogout } from '@/utils/authEvents';
+import { isSessionCancelled, isSessionRejected } from '@/utils/sessionRecovery';
+import { isPageDeparting } from '@/utils/pageDeparture';
+import { onLogout, onLoginSuccess } from '@/utils/authEvents';
 import { getAuthSessionVersion } from '@/utils/authSessionVersion';
 import { useAuthStore } from './useAuthStore';
 
 let userRequest = 0;
 
 export const useUserStore = create(
-	immer<UserState>((set) => ({
+	immer<UserState>((set, get) => ({
+		error: null,
 		user: null,
 		loading: false,
 
 		fetchMe: async () => {
+			if (isPageDeparting() || get().loading || !useAuthStore.getState().accessToken) return;
 			const request = ++userRequest;
 			const version = getAuthSessionVersion();
-			if (!useAuthStore.getState().accessToken) return;
 			try {
 				set((state) => {
 					state.loading = true;
+					state.error = null;
 				});
 
 				const user = await authService.fetchMe();
@@ -32,22 +35,20 @@ export const useUserStore = create(
 				});
 			} catch (error) {
 				if (request !== userRequest || version !== getAuthSessionVersion()) return;
+                if (isSessionCancelled(error)) {
+                    set(state => { state.loading = false; });
+                    if (!isPageDeparting()) void get().fetchMe();
+                    return;
+                }
 				// Only clear state if it's a 401/403 (unauthorized/forbidden)
 				// This means the user is actually not authenticated
-				const errorStatus = (error as HttpErrorResponse)?.response?.status;
-
-				if (errorStatus === 401 || errorStatus === 403) {
-					// User is not authenticated, clear user state
-					set((state) => {
-						state.user = null;
-						state.loading = false;
-					});
-					// Dispatch logout event to notify auth store (decoupled)
-					dispatchLogout();
+                if (isSessionRejected(error)) {
+                    useAuthStore.getState().clearAuth();
 				} else {
-					// For other errors (network, 500, etc.), keep existing user data
+					// Temporary failures preserve identity and offer a retry.
 					set((state) => {
 						state.loading = false;
+						state.error = 'Không thể tải thông tin tài khoản. Vui lòng thử lại.';
 					});
 				}
 				// Don't show error toast on fetchMe failure during initialization
@@ -58,6 +59,7 @@ export const useUserStore = create(
 		clearUser: () => {
 			userRequest++;
 			set((state) => {
+				state.error = null;
 				state.user = null;
 				state.loading = false;
 			});

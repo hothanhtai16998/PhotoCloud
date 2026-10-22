@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
+import { isSessionRejected } from '@/utils/sessionRecovery';
 import { authService } from '@/services/authService';
 import { logger } from '@/utils/logger';
 import { toast } from 'sonner';
@@ -180,10 +182,12 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 					// logger.info (removed - no-op)('WebSocket auth error detected, attempting token refresh...');
 					isRefreshingToken = true;
 					refreshAttempts++;
+					const refreshVersion = getAuthSessionVersion();
 
 					try {
 						// Attempt to refresh token
 						const newToken = await authService.refresh();
+						if (refreshVersion !== getAuthSessionVersion()) return;
 						setAccessToken(newToken);
 						
 						// logger.info (removed - no-op)('Token refreshed, reconnecting WebSocket...');
@@ -203,18 +207,21 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 						// The useEffect will handle the actual reconnection
 						refreshAttempts = 0; // Reset attempts
 					} catch (refreshError) {
+						if (refreshVersion !== getAuthSessionVersion()) return;
 						logger.error('Failed to refresh token for WebSocket:', { data: refreshError });
 						refreshAttempts = MAX_REFRESH_ATTEMPTS; // Stop retrying
 						
-						// Clear auth state if refresh fails
-						clearAuth();
+						// Only a rejected session can sign the user out.
+						const rejected = isSessionRejected(refreshError);
+						if (rejected) clearAuth();
+						const message = rejected ? 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' : 'Kết nối tạm thời gián đoạn. Vui lòng thử lại sau.';
 						
 						// Notify error handlers
 						eventHandlers.get('error')?.forEach(handler => 
-							handler(new Error('Authentication failed. Please sign in again.'))
+							handler(new Error(message))
 						);
 						
-						toast.error('Connection failed. Please sign in again.', { duration: 5000 });
+						toast.error(message, { duration: 5000 });
 					} finally {
 						isRefreshingToken = false;
 					}
@@ -226,7 +233,7 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 					// Auth error but max attempts reached
 					logger.error('WebSocket auth error: Max refresh attempts reached');
 					eventHandlers.get('error')?.forEach(handler => 
-						handler(new Error('Authentication failed. Please sign in again.'))
+						handler(new Error('Không thể khôi phục kết nối trực tiếp. Vui lòng thử lại sau.'))
 					);
 					toast.error('Connection failed. Please refresh the page.', { duration: 5000 });
 				}
@@ -489,8 +496,10 @@ export const useWebSocket = (options: UseWebSocketOptions = {}) => {
 			if (timeLeft < refreshThreshold && timeLeft > 0) {
 				// logger.info (removed - no-op)('Token expiring soon, refreshing proactively...');
 				
+				const refreshVersion = getAuthSessionVersion();
 				authService.refresh()
 					.then(newToken => {
+						if (refreshVersion !== getAuthSessionVersion()) return;
 						setAccessToken(newToken);
 						// logger.info (removed - no-op)('Token refreshed proactively');
 					})

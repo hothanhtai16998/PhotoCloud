@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { useCollectionStore } from '@/stores/useCollectionStore';
 
@@ -7,6 +8,8 @@ export const useCollectionDetail = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
   const navigate = useNavigate();
   const { user } = useUserStore();
+  const { isInitializing, accessToken } = useAuthStore();
+  const awaitingSession = isInitializing || Boolean(accessToken && !user);
   const {
     collection,
     loading,
@@ -23,6 +26,7 @@ export const useCollectionDetail = () => {
       navigate('/collections');
       return;
     }
+    if (awaitingSession) return;
     clearCollection();
     let active = true;
 
@@ -39,7 +43,7 @@ export const useCollectionDetail = () => {
 
     loadCollection();
     return () => { active = false; clearCollection(); };
-  }, [collectionId, scope, navigate, fetchCollection, clearCollection]);
+  }, [collectionId, scope, awaitingSession, navigate, fetchCollection, clearCollection]);
 
   // Check if user owns the collection
   const isOwner = useMemo(() => {

@@ -2,33 +2,53 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 import { authService } from '@/services/authService';
 import type { AuthState } from '@/types/store';
-import type { ApiErrorResponse, ValidationErrorResponse, HttpErrorResponse } from '@/types/errors';
+import type { ApiErrorResponse, ValidationErrorResponse } from '@/types/errors';
 import { dispatchLogout, dispatchLoginSuccess } from '@/utils/authEvents';
 import { t } from '@/i18n';
+import { removeSessionItem, setSessionItem } from '@/utils/safeStorage';
+import { isSessionCancelled, isSessionRejected, sessionRetryDelay } from '@/utils/sessionRecovery';
+import { getPageDepartureVersion, isPageDeparting } from '@/utils/pageDeparture';
 import { getAuthSessionVersion, invalidateAuthSession } from '@/utils/authSessionVersion';
 
+let cancelRetryWait: (() => void) | null = null;
+
+function waitForRetry(delay: number): Promise<void> {
+    return new Promise(resolve => {
+        const finish = (): void => {
+            clearTimeout(timer);
+            if (cancelRetryWait === finish) cancelRetryWait = null;
+            resolve();
+        };
+        const timer = setTimeout(finish, delay);
+        cancelRetryWait = finish;
+    });
+}
+
 let pendingSignOut: Promise<unknown> | null = null;
-let initializationPromise: Promise<void> | null = null;
+let initializationFlight: { version: number; departure: number; promise: Promise<void> } | null = null;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
+	sessionError: null,
 	accessToken: null,
 	loading: false,
 	isInitializing: true,
 
 	setAccessToken: (accessToken) => {
-		set({ accessToken });
+		set({ accessToken, sessionError: null });
 	},
 
 	clearAuth: () => {
 		invalidateAuthSession();
+		cancelRetryWait?.();
 		set({
 			accessToken: null,
+			sessionError: null,
+			isInitializing: false,
 			loading: false,
 		});
 		// Clear sessionStorage on logout to prevent icons from showing on next refresh
-		if (typeof window !== 'undefined') {
-			sessionStorage.removeItem('hasAuth');
-		}
+		removeSessionItem('hasAuth');
+		setSessionItem('publicChromeHint', 'guest');
 		// Dispatch event to notify other stores (decoupled from useUserStore)
 		dispatchLogout();
 	},
@@ -139,61 +159,56 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		},
 
 		refresh: async () => {
-			const sessionVersion = getAuthSessionVersion();
-			try {
-				const { setAccessToken } = get();
-				const accessToken = await authService.refresh();
-				if (sessionVersion !== getAuthSessionVersion()) return;
+            const version = getAuthSessionVersion();
+            const departure = getPageDepartureVersion();
+            try {
+                const accessToken = await authService.refresh();
+                if (version !== getAuthSessionVersion() || departure !== getPageDepartureVersion() || isPageDeparting()) return;
+                get().setAccessToken(accessToken);
+                dispatchLoginSuccess();
+            } catch (error: unknown) {
+                if (version !== getAuthSessionVersion()) return;
+                if (isSessionCancelled(error) && (isPageDeparting() || departure !== getPageDepartureVersion())) throw error;
+                if (isSessionRejected(error)) {
+                    if (get().accessToken) get().clearAuth();
+                    else {
+                        // A confirmed guest must not invalidate public requests.
+                        removeSessionItem('hasAuth');
+                        setSessionItem('publicChromeHint', 'guest');
+                        set({ sessionError: null });
+                        dispatchLogout();
+                    }
+                    return;
+                }
+                set({ sessionError: 'Chưa xác minh được phiên đăng nhập. Vui lòng thử lại khi kết nối ổn định.' });
+                throw error;
+            }
+        },
 
-				setAccessToken(accessToken);
-
-				// Dispatch event to let user store handle fetching user data
-				dispatchLoginSuccess();
-			} catch (error: unknown) {
-				if (sessionVersion !== getAuthSessionVersion()) return;
-				const errorResponse = error as HttpErrorResponse;
-				const errorStatus = errorResponse?.response?.status;
-				
-				// Check if request was cancelled (e.g., during rapid refresh)
-				const isCancelled = 
-					(error as any)?.name === 'CanceledError' || 
-					(error as any)?.code === 'ERR_CANCELED' ||
-					(error as any)?.message === 'canceled';
-				
-				// Don't sign out if request was cancelled or rate limited
-				// Only sign out on actual auth failures
-				if (isCancelled || errorStatus === 429) {
-					// Request was cancelled or rate limited - don't sign out
-					// User stays logged in
-					return;
-				}
-				
-				// Only show error if it's not a 401/403 (expected when not logged in)
-				if (errorStatus !== 401 && errorStatus !== 403) {
-					toast.error(t('auth.sessionExpired'));
-				}
-				
-				// Only clear auth on actual auth failures (401, 403)
-				if (errorStatus === 401 || errorStatus === 403) {
-					if (get().accessToken) get().clearAuth();
-					else {
-						// Confirming a guest is not an account switch: keep public requests valid.
-						if (typeof window !== 'undefined') sessionStorage.removeItem('hasAuth');
-						dispatchLogout();
-					}
-				}
-			}
-		},
-
-		initializeApp: async () => {
-			if (initializationPromise) return initializationPromise;
-			if (!get().isInitializing) return;
-			initializationPromise = (async () => {
-				try { await get().refresh(); }
-				catch { /* Guests can continue without a session. */ }
-				finally { set({ isInitializing: false }); }
-			})();
-			try { await initializationPromise; }
-			finally { initializationPromise = null; }
-		},
-	}));
+        initializeApp: async () => {
+            const version = getAuthSessionVersion();
+            const departure = getPageDepartureVersion();
+            if (initializationFlight?.version === version && initializationFlight.departure === departure) return initializationFlight.promise;
+            if (!get().isInitializing && !get().sessionError) return;
+            set({ isInitializing: true });
+            const promise = (async () => {
+                try {
+                    for (let attempt = 0; attempt < 3; attempt++) {
+                        if (version !== getAuthSessionVersion() || departure !== getPageDepartureVersion()) return;
+                        try { await get().refresh(); return; }
+                        catch (error: unknown) {
+                            const delay = sessionRetryDelay(error, attempt);
+                            if (delay === null || version !== getAuthSessionVersion() || departure !== getPageDepartureVersion()) return;
+                            await waitForRetry(delay);
+                        }
+                    }
+                } finally {
+                    if (version === getAuthSessionVersion() && departure === getPageDepartureVersion() && !isPageDeparting()) set({ isInitializing: false });
+                }
+            })();
+            const flight = { version, departure, promise };
+            initializationFlight = flight;
+            try { await promise; }
+            finally { if (initializationFlight === flight) initializationFlight = null; }
+        },
+    }));

@@ -33,7 +33,7 @@ const assert = require('node:assert/strict'), fs = require('node:fs'), path = re
   await page.locator('.collections-filter-btn').click(); await page.locator('.collections-empty').waitFor(); await page.locator('.collections-empty-btn').click(); assert.equal(await page.locator('.collection-card').count(), 3);
   await page.locator('.collections-sort-select').selectOption('oldest'); assert.match(await page.locator('.collection-card-title').first().innerText(), /Ánh sáng/);
   await page.locator('.collections-sort-select').selectOption('images'); assert.match(await page.locator('.collection-card-title').first().innerText(), /Bình minh/);
-  await page.locator('.collection-card-link').first().focus(); await page.keyboard.press('Enter'); await page.waitForURL(/\/collections\/b$/); await page.getByRole('link', { name: 'Quay lại bộ sưu tập' }).waitFor();
+  await page.locator('.collection-card-link').first().focus(); await page.keyboard.press('Enter'); await page.waitForURL(/\/collections\/b$/); await page.locator('.collection-detail-title-row h1').waitFor();
   const backBox = await page.locator('.collection-detail-back').boundingBox(), titleBox = await page.locator('.collection-detail-title-row h1').boundingBox(); assert.ok(Math.abs(backBox.x - titleBox.x) < 2); assert.ok(backBox.height < 40);
   assert.equal(await page.locator('.collection-detail-header').evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)');
   await page.screenshot({ path: path.resolve(__dirname, '../qa-policy-checkbox/collection-detail-refined-' + theme + '.png') }); await context.setOffline(true); await page.evaluate(() => window.dispatchEvent(new Event('offline'))); await page.locator('.collection-load-error-actions').waitFor();

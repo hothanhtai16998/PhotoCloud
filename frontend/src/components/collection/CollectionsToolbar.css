@@ -40,14 +40,6 @@ body:not(.global-loading-active) .collections-page[data-loading-scope="local"] {
   min-width: 0;
 }
 
-.collections-eyebrow {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
 .collections-header h1 {
   margin: 0;
   font-size: 2rem;
@@ -193,7 +185,7 @@ body:not(.global-loading-active) .collections-page[data-loading-scope="local"] {
   padding: 6px 12px;
   background: var(--button-secondary-bg);
   border: 1px solid var(--button-secondary-border);
-  border-radius: 999px;
+  border-radius: 8px;
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--button-secondary-fg);
@@ -293,7 +285,6 @@ body:not(.global-loading-active) .collections-page[data-loading-scope="local"] {
 /* This frame is also emitted in the first HTML response. */
 [data-collections-frame], [data-collections-frame] * { box-sizing:border-box; }
 [data-collections-frame] { font-family:Arial,sans-serif; font-feature-settings:"cv11","ss01"; text-size-adjust:100%; line-height:1.5; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-[data-collections-frame] .collections-eyebrow { min-height:18px; }
 [data-collections-frame] .collections-header-subtitle { margin:0; }
 [data-collections-frame] :is(input,select,button) { font-family:inherit; font-feature-settings:inherit; font-variation-settings:inherit; letter-spacing:inherit; line-height:normal; }
 [data-collections-frame] :is(input,select,button):disabled { opacity:1; }
@@ -366,3 +357,9 @@ html[data-startup-surface='collections-list'] #root:empty { display:none; }
  [data-collections-frame] .collections-filters { grid-template-columns:minmax(0,1fr); }
  [data-collections-frame] .collections-filter-controls { grid-row:3; grid-column:1; }
 }
+
+/* Match the existing global button radius before its stylesheet arrives. */
+[data-collections-frame] :is(.collections-tag-filter-btn,.collections-filter-btn,.collections-create-btn) { border-radius:8px!important; }
+[data-collections-frame] .collections-tag-filter-btn { transition:background-color .15s ease,color .15s ease,border-color .15s ease; }
+[data-collections-frame] .collections-create-btn:disabled { cursor:wait; }
+.collections-result-summary { min-height:22px; margin:0 0 12px; color:var(--text-secondary); font:400 13px/22px Arial,sans-serif; }

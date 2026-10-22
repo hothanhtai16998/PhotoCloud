@@ -1,3 +1,4 @@
+import { CollectionDetailFrame } from './CollectionDetailFrame';
 import { Heart, X, ArrowLeft, SquareCheckBig, ArrowUpFromLine } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -31,16 +32,10 @@ export const CollectionHeader = ({
   handleExportCollection,
   toggleSelectionMode,
 }: CollectionHeaderProps) => {
-  return (
-    <div className="collection-detail-header">
-      <Link className="collection-detail-back" to="/collections">
-        <ArrowLeft size={16} aria-hidden="true" />
-        <span>Quay lại bộ sưu tập</span>
-      </Link>
-      <div className="collection-detail-content">
-        <div className="collection-detail-main">
-          <div className="collection-detail-title-row">
-            <h1>{collection?.name || 'Bộ sưu tập'}</h1>
+  return <CollectionDetailFrame
+    title={collection?.name || 'Bộ sưu tập'}
+    backLink={<Link className="collection-detail-back" to="/collections"><ArrowLeft size={16} aria-hidden="true" /><span>Quay lại bộ sưu tập</span></Link>}
+    stats={<>
             {(imagesCount > 0 || (collection?.views ?? 0) > 0) && (
               <span className="collection-detail-image-count">
                 {imagesCount > 0 && (
@@ -54,7 +49,8 @@ export const CollectionHeader = ({
                 )}
               </span>
             )}
-          </div>
+    </>}
+    metadata={<>
           {typeof collection?.createdBy === 'object' &&
             collection.createdBy && (
               <div className="collection-detail-author">
@@ -79,9 +75,9 @@ export const CollectionHeader = ({
               {collection.description}
             </p>
           )}
-        </div>
+    </>}
+    actions={<>
 
-        <div className="collection-detail-actions">
           <IconTooltip label={isFavorited ? 'Bỏ yêu thích' : 'Yêu thích'}>
             <Button
               variant={isFavorited ? 'default' : 'outline'}
@@ -133,8 +129,6 @@ export const CollectionHeader = ({
               </Button>
             </IconTooltip>
           )}
-        </div>
-      </div>
-    </div>
-  );
+    </>}
+  />;
 };

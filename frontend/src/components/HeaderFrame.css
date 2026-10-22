@@ -125,3 +125,12 @@ html[data-startup-surface^='collections'] .public-header-startup { display: bloc
   :root [data-header-frame] .header-studio-nav { min-width: 0; max-width: 100%; overflow-x: auto; justify-content: safe center; }
 }
 @media (max-width:480px) { :root [data-header-frame] .text-logo { font-size: 20px; } }
+
+/* Select a public presentation variant before HTML activation or app JavaScript.
+   Streaming HTML must never paint guest actions and replace them with account actions. */
+#public-header-startup [data-startup-actions] { display:none; }
+html:not(:is([data-public-chrome='member'],[data-public-chrome='manager'],[data-public-chrome='admin'])) #public-header-startup [data-startup-actions='guest'],
+html[data-public-chrome='member'] #public-header-startup [data-startup-actions='member'],
+html:is([data-public-chrome='manager'],[data-public-chrome='admin']) #public-header-startup [data-startup-actions='admin'] { display:contents; }
+.public-collections-startup .collections-create-btn { display:none; }
+html[data-public-chrome='admin'] .public-collections-startup .collections-create-btn { display:inline-flex; }

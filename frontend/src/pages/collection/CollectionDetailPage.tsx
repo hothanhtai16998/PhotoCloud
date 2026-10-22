@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react';
 import { collectionService } from '@/services/collectionService';
 import { toast } from 'sonner';
 import { useCollectionStore, markCollectionOffline } from '@/stores/useCollectionStore';
@@ -12,13 +12,15 @@ import { appConfig } from '@/config/appConfig';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import type { Collection } from '@/types/collection';
-import { Link } from 'react-router-dom';
+import { CollectionDetailFrame, CollectionDetailSkeleton } from './components/CollectionDetailFrame';
+import './components/CollectionDetailFrame.css';
 import { useCollectionConnection } from '@/hooks/useCollectionConnection';
 import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
 import { getAuthSessionVersion } from '@/utils/authSessionVersion';
 import './CollectionDetailPage.css';
 
 export default function CollectionDetailPage() {
+  useLayoutEffect(() => { document.getElementById('public-collection-detail-startup')?.remove(); }, []);
  const error = useCollectionStore(state => state.error);
 	const [isMobile, setIsMobile] = useState(() => {
 		if (typeof window === 'undefined') return false;
@@ -257,24 +259,13 @@ export default function CollectionDetailPage() {
 		}
 	}, [collectionId, collection, images.length, pageScope, user]);
 
-	if (loading && !collection) {
-		return (
-			<>
-				<div className="collection-detail-page">
-					<div className="collection-detail-header">
-						<Link className="collection-detail-back" to="/collections">Quay lại bộ sưu tập</Link>
-						<h1>Bộ sưu tập</h1>
-					</div>
-					<div className="collection-detail-loading" role="status"><p>Đang tải bộ sưu tập…</p></div>
-				</div>
-			</>
-		);
-	}
+	if (loading && !collection) return <CollectionDetailSkeleton />;
 
 	if (!collection) {
 		return (
 			<>
-				<div className="collection-detail-page">
+				<div className="collection-detail-page" data-loading-scope="local">
+					<CollectionDetailFrame />
 					<div className="collection-detail-error">
 						<CollectionLoadError message={error || 'Không tìm thấy bộ sưu tập'} onRetry={() => { if (collectionId) void fetchCollection(collectionId).catch(() => {}); }} backTo="/collections" />
 					</div>
@@ -285,7 +276,7 @@ export default function CollectionDetailPage() {
 
 	return (
 		<>
-			<div className="collection-detail-page">
+			<div className="collection-detail-page" data-loading-scope="local">
 				{error && <CollectionLoadError message={error} busy={loading} onRetry={() => void reconnect().catch(() => {})} backTo="/collections" />}
 				{loading && <p role="status">Đang cập nhật bộ sưu tập…</p>}
 				<CollectionHeader

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useState, useMemo, lazy, Suspense } from 'react';
 
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -14,22 +14,17 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 import './CollectionsPage.css';
 import '../components/collection/CollectionsToolbar.css';
+import { getPublicChromeHint } from '@/utils/publicChromeHint';
 import { CollectionsToolbar } from '@/components/collection/CollectionsToolbar';
 
 const CollectionsResults = lazy(() => import('@/components/collection/CollectionsResults'));
 const CollectionModal = lazy(() => import('@/components/collection/CollectionModal'));
 
 export default function CollectionsPage() {
-  // Startup shell (static toolbar) chỉ là nơi giữ layout trước khi React mount.
-  // Xoá nó bằng useEffect (sau paint) để nội dung React đã kịp commit trước khi
-  // biến mất — tránh khoảng thời gian #root rỗng khiến trang bị cắt/cụt.
-  useEffect(() => {
-    const shell = document.getElementById('public-collections-startup');
-    if (!shell) return;
-    const frame = requestAnimationFrame(() => shell.remove());
-    return () => cancelAnimationFrame(frame);
+  useLayoutEffect(() => {
+    document.getElementById('public-collections-startup')?.remove();
   }, []);
-	const { accessToken, isInitializing } = useAuthStore();
+	const { accessToken, isInitializing, sessionError } = useAuthStore();
 	const { user } = useUserStore();
 
 	const {
@@ -49,6 +44,8 @@ export default function CollectionsPage() {
 		checkAndRefreshIfStale,
 	} = useCollectionsListStore();
 
+	const [chromeHint] = useState(getPublicChromeHint);
+	const awaitingProfile = isInitializing || Boolean(sessionError) || Boolean(accessToken && !user);
 	const canCreate = !!(user?.isAdmin || user?.isSuperAdmin);
 
 	// Tab title + meta. Sở hữu tại page-level hook — useSiteSettings không được ghi đè.
@@ -94,9 +91,6 @@ export default function CollectionsPage() {
 		void refreshCollections();
 	};
 
-	const totalLabel = browseCollections.length === 1
-		? t('collections.totalCountOne', { count: browseCollections.length })
-		: t('collections.totalCount', { count: browseCollections.length });
 
 	return (
 		<>
@@ -104,8 +98,7 @@ export default function CollectionsPage() {
 				<div className="collections-page-shell">
                     <CollectionsToolbar
                         labels={{title: t('collections.title'), subtitleViewer: t('collections.subtitleViewer'), createCollection: t('collections.createCollection'), searchPlaceholder: t('collections.searchPlaceholder'), clearSearch: t('collections.clearSearch'), allTags: t('collections.allTags'), all: t('collections.all'), filterBy: t('collections.filterBy'), showAll: t('collections.showAll'), showPublicOnly: t('collections.showPublicOnly'), public: t('collections.public'), sortAriaLabel: t('collections.sortAriaLabel'), sortNewest: t('collections.sortNewest'), sortOldest: t('collections.sortOldest'), sortName: t('collections.sortName'), sortImages: t('collections.sortImages')}}
-                        totalLabel={hasLoaded && browseCollections.length > 0 ? totalLabel : ''}
-                        canCreate={canCreate} isInitializing={isInitializing} allTags={allTags}
+                        canCreate={canCreate || (awaitingProfile && chromeHint === 'admin')} createPending={!canCreate || awaitingProfile} isInitializing={isInitializing} allTags={allTags}
                         searchQuery={searchQuery} selectedTag={selectedTag} showPublicOnly={showPublicOnly} sortBy={sortBy}
                         onCreate={() => setEditor('create')} onSearchChange={setSearchQuery}
                         onTagChange={setSelectedTag} onPublicChange={setShowPublicOnly} onSortChange={setSortBy}

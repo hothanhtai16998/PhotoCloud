@@ -16,7 +16,8 @@
         document.documentElement.dataset.publicStartup = '1';
         try {
           document.documentElement.dataset.publicLocale = localStorage.getItem('app_locale') === 'en' ? 'en' : 'vi';
-          document.documentElement.dataset.publicAuth = sessionStorage.getItem('headerAuthHint') === 'guest' ? 'guest' : 'pending';
+          const chromeHint = sessionStorage.getItem('publicChromeHint');
+          document.documentElement.dataset.publicChrome = ['member', 'manager', 'admin'].includes(chromeHint) ? chromeHint : 'guest';
         } catch {}
         const defaults = /* public-palette-defaults */ {};
         let cached;

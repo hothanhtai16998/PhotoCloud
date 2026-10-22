@@ -2,7 +2,6 @@
 :root [data-header-frame] .public-guest-actions { display:flex; align-items:center; gap:20px; font-family:Arial,sans-serif; line-height:normal; }
 :root [data-header-frame] .public-guest-actions button { font-feature-settings:inherit; font-variation-settings:inherit; letter-spacing:inherit; }
 :root [data-header-frame] .public-sign-in-slot { min-width:72px; display:inline-flex; justify-content:center; }
-:root [data-header-frame] .public-guest-actions[data-auth-pending='true'] .public-sign-in-slot { visibility:hidden; }
 :root [data-header-frame] .public-sign-in { font-family:Arial,sans-serif; font-size:15px; font-weight:400; line-height:normal; color:var(--button-secondary-fg); text-decoration:none; padding:0; }
 :root [data-header-frame] .public-theme-toggle { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:44px; height:44px; padding:0; border:0; border-radius:6px; color:var(--text-primary); background:transparent; }
 :root [data-header-frame] .public-theme-toggle svg { flex-shrink:0; }
@@ -27,3 +26,16 @@ html.dark-theme [data-header-frame] .public-theme-moon { display:none; }
  :root [data-header-frame] .public-booking-button > span > span { display:none; }
 }
 @media(max-width:768px) { .public-header-startup .header-actions { display:none; } }
+
+/* Account chrome has the same slots in startup HTML and the live header. */
+:root [data-header-frame] .account-header-frame { box-sizing:border-box; }
+:root [data-header-frame] .account-header-frame .header-admin-group { box-sizing:border-box; }
+:root [data-header-frame] .account-admin-placeholder { display:flex; align-items:center; justify-content:center; width:44px; height:44px; color:var(--text-primary); }
+:root [data-header-frame] .account-notifications-slot { width:44px; height:44px; flex-shrink:0; }
+:root [data-header-frame] .account-bell-placeholder { display:flex; align-items:center; justify-content:center; width:44px; height:44px; color:var(--button-secondary-fg); }
+:root [data-header-frame] .account-avatar-slot { display:flex; align-items:center; justify-content:center; width:46px; height:46px; flex-shrink:0; }
+:root [data-header-frame] .account-avatar-placeholder { width:42px; height:42px; border-radius:50%; background:var(--bg-secondary); }
+:root [data-header-frame] .account-header-frame .public-booking-button:disabled { opacity:1; }
+/* Global button rules arrive later in dev; match their final radius at first paint. */
+:root [data-header-frame] :is(.public-theme-toggle,.public-booking-button) { border-radius:8px!important; }
+:root [data-header-frame] .public-theme-toggle { border:1px solid transparent; }

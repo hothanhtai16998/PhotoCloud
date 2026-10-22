@@ -27,6 +27,7 @@ export default function CollectionsResults({ collections: browseCollections, onE
   const isNoMatch = hasLoaded && !loading && !error && browseCollections.length > 0 && filteredCollections.length === 0;
   const showGrid = filteredCollections.length > 0;
   return <>
+    <div className="collections-result-summary" aria-live="polite">{hasLoaded ? t(filteredCollections.length === 1 ? 'collections.totalCountOne' : 'collections.totalCount', { count: filteredCollections.length }) : ''}</div>
 	{error && (
 		<CollectionLoadError message={error} busy={loading} onRetry={() => void fetchCollections()} />
 	)}

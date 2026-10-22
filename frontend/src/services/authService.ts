@@ -1,3 +1,6 @@
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
+import { getPageDepartureVersion, isPageDeparting } from '@/utils/pageDeparture';
+import { CanceledError } from 'axios';
 import api from '@/lib/axios';
 import type {
 	SignUpResponse,
@@ -9,6 +12,8 @@ import type {
 	FetchMeResponse,
 } from '@/types/auth';
 import type { User } from '@/types/user';
+
+let refreshFlight: { version: number; departure: number; promise: Promise<string> } | null = null;
 
 export const authService = {
 	signUp: async (
@@ -63,17 +68,26 @@ export const authService = {
 			'/users/me',
 			{ withCredentials: true, params: { _t: Date.now() }, headers: { 'Cache-Control': 'no-cache' } }
 		);
-		return res.data.user;
+		const user = res.data?.user;
+        if (!user || typeof user !== 'object' || typeof user._id !== 'string' || !user._id) throw new Error('Invalid profile response');
+        return user;
 	},
 
-	refresh: async (): Promise<string> => {
-		const res = await api.post<RefreshTokenResponse>(
-			'/auth/refresh',
-			{},
-			{ withCredentials: true }
-		);
-		return res.data.accessToken;
-	},
+	refresh: (): Promise<string> => {
+        const version = getAuthSessionVersion();
+        const departure = getPageDepartureVersion();
+        if (refreshFlight?.version === version && refreshFlight.departure === departure) return refreshFlight.promise;
+        const promise = api.post<RefreshTokenResponse>('/auth/refresh', {}, { withCredentials: true }).then(res => {
+            if (departure !== getPageDepartureVersion() || isPageDeparting()) throw new CanceledError('Page changed');
+            const token = res.data.accessToken;
+            if (typeof token !== 'string' || !token.trim()) throw new Error('Invalid refresh response');
+            return token;
+        });
+        const flight = { version, departure, promise };
+        refreshFlight = flight;
+        void promise.finally(() => { if (refreshFlight === flight) refreshFlight = null; }).catch(() => {});
+        return promise;
+    },
 
 	checkEmailAvailability: async (email: string): Promise<CheckEmailAvailabilityResponse> => {
 		const res = await api.get<CheckEmailAvailabilityResponse>(
