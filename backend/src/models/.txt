@@ -1,3 +1,0 @@
-nơi định nghĩa Schema và model của MongoDB
-
-các model này sẽ là các bảng dữ liệu trong mongoDB

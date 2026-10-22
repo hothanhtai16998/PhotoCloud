@@ -1,1 +1,0 @@
-chứa các thư viện và hàm tiện ích
