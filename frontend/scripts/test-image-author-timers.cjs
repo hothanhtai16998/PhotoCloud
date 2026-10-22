@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const source = fs.readFileSync('frontend/src/pages/ImagePage.tsx', 'utf8');
+const path = require('node:path');
+const source = fs.readFileSync(path.join(__dirname, '../src/pages/image/useImagePageController.ts'), 'utf8');
 let next = 0;
 const timers = new Map();
 let hovered = false, focused = false, shown = true, animated = true;

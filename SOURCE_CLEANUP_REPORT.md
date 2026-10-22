@@ -192,3 +192,16 @@ ZIP và .local-backups giữ vì là bản sao lưu phục hồi, không phải 
 Theo yêu cầu người dùng, đã sửa backend/src/utils/colorExtractorAdvanced.js: tham số b (RGB blue) bị trùng với const b của LAB. Đổi tên biến cục bộ thành labB và giữ output { L, a, b: labB }, không đổi công thức/ngưỡng màu. Lỗi cũ làm dynamic import của nhánh nâng cao thất bại và extractDominantColors chuyển sang cách đơn giản; nay module import được.
 
 Phạm vi: utility xử lý màu backend dùng chung và script kiểm; không sửa controller admin hoặc chạy database. Node --test backend/scripts/test-color-extraction.test.js PASS 4 test: màu đơn đỏ/xanh lá/xanh dương/trắng ở fast/accurate, ảnh hai màu, entry advanced/simple và ảnh đen rỗng. Fixture ảnh chỉ tạo trong bộ nhớ bằng Sharp. node --check PASS toàn bộ 135 file source JS backend ngoài admin. git diff --check PASS. Chưa chạy upload thật hoặc xử lý lại màu ảnh trong database; không chạy lại frontend build/lint/typecheck vì không thay frontend. Chưa commit.
+
+## Vòng 3 — Các mục người dùng khoanh ở thư mục gốc — 22/10/2026
+
+Quyết định này thay thế các quyết định giữ tạm ở vòng trước, sau khi người dùng yêu cầu kiểm tra hết và xác nhận website không cần công cụ trích ảnh video.
+
+- Xóa tools/extract_video_frames.js và tools/extract_video_frames.ps1: script dùng một lần, hardcode video trên máy Fenn và thư mục video_frames; không được source/npm/CI gọi. Xóa tools sau khi kiểm tra đã rỗng, không xóa đệ quy.
+- Xóa 5 PhotoCloud-*.zip: kiểm danh sách entry, là snapshot source cũ; PRODUCT.md xác nhận các giai đoạn cũ không được tự phục hồi. Các file đều đã tracked trong HEAD, có thể lấy lại từ lịch sử Git. Không xóa JSON sao lưu category trong .local-backups.
+- Xóa dockerignore ở gốc: không phải tên .dockerignore chuẩn và không có cấu hình/script trong repo gọi. Cấu hình Fly trỏ Dockerfile backend; backend/.dockerignore thật được giữ. Không thay cấu hình deploy ngoài repo.
+- Chuyển cloudfront-function-cors.js → deployment/cloudfront/cors-function.js và thêm README vai trò/giới hạn. Đối chiếu HEAD sau chuẩn hóa CRLF: nội dung không đổi. Không có code/npm/workflow gọi file; giữ bản source triển khai thủ công, không tuyên bố đã xác minh CloudFront AWS đang dùng bản này. Không kết nối/publish AWS.
+- Chuyển test-image-author-timers.cjs → frontend/scripts/test-image-author-timers.cjs. Trước sửa test FAIL vì đọc ImagePage.tsx sau khi code đã tách hook. Sửa đường dẫn sang useImagePageController.ts dựa trên __dirname; chạy từ root và frontend đều PASS. Không sửa mã runtime.
+- Xóa hai thư mục src/components và src ở gốc sau khi xác minh rỗng; không đụng thư mục admin lồng bên trong frontend/frontend.
+
+Kiểm: timer regression PASS, ImagePage lifecycle regression PASS, focused ESLint PASS, node --check CloudFront PASS, nội dung CloudFront khớp HEAD sau chuẩn hóa line ending. Không chạy lại toàn bộ build/typecheck vì chỉ dọn snapshot/tool ngoài runtime và di chuyển script test; build/typecheck ứng dụng không thay đổi so với lượt trước. Chưa commit.
