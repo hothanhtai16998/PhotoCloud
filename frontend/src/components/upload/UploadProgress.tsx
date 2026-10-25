@@ -10,7 +10,7 @@ export const UploadProgress = ({ uploadingIndex, totalUploads, uploadProgress }:
   const t = useUploadTranslation();
   // Calculate progress for multiple uploads
   // Each image contributes 100/totalUploads to the overall progress
-  const progressPerImage = 100 / totalUploads;
+  const progressPerImage = totalUploads > 0 ? 100 / totalUploads : 0;
   const completedImages = uploadingIndex;
   const currentImageProgress = uploadProgress;
   const overallProgress = (completedImages * progressPerImage) + (currentImageProgress * progressPerImage / 100);
@@ -20,7 +20,7 @@ export const UploadProgress = ({ uploadingIndex, totalUploads, uploadProgress }:
 
   return (
     <div className="upload-modal-overlay">
-      <div className="upload-progress-screen">
+      <div className="upload-progress-screen" role="status" aria-live="polite" aria-atomic="true">
         <div className="progress-circle-container">
           <svg className="progress-circle" viewBox="0 0 100 100">
             <circle
@@ -41,7 +41,7 @@ export const UploadProgress = ({ uploadingIndex, totalUploads, uploadProgress }:
           <div className="progress-percentage">{Math.round(displayProgress)}%</div>
         </div>
         <p className="progress-text">
-          {t('upload.published')} <strong>{publishedCount}</strong> {t('upload.ofImages')} <strong>{totalUploads}</strong> {t('upload.images')}...
+          {t('upload.processingConfirmed')} <strong>{publishedCount}</strong> / <strong>{totalUploads}</strong>
         </p>
       </div>
     </div>

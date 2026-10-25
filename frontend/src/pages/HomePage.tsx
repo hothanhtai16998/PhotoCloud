@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { LayoutGroup, motion, useReducedMotion } from 'motion/react';
 import { CATEGORY_NAVIGATION_EVENT } from '@/utils/categoryNavigationEvent';
 import { sliderLayoutTransition } from '@/utils/sliderLayoutTransition';
@@ -236,7 +237,7 @@ function HomePage() {
 
     return (
         <>
-            <main className={`homepage layout-preview layout-intro${isCategoryPage && sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
+            <main data-loading-scope="local" className={`homepage layout-preview layout-intro${isCategoryPage && sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
                 {(!isCategoryPage || !currentSearch) && <VisualArtFormsSlider />}
                 <div className="homepage-content-below-slider">
                 <LayoutGroup>
@@ -255,6 +256,7 @@ function HomePage() {
                 </section>}
                 {isCategoryPage && <motion.div className="category-grid" layout="position" layoutDependency={sliderCollapsed} transition={sliderTransition} style={{position: 'relative', willChange: 'transform', overflowAnchor: 'none'}}>
                 <ActiveFiltersIndicator filters={filters} />
+                {loading && <DataLoading size={visibleImages.length ? 'inline' : 'section'} message={visibleImages.length ? 'Đang cập nhật ảnh' : 'Đang tải ảnh'} />}
                 <RetainedCategoryGrid
                     images={visibleImages}
                     loading={loading}

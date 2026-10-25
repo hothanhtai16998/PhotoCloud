@@ -11,6 +11,7 @@ import {
     createBulkUploadNotification,
 } from '../controllers/imageController.js';
 import { proxyImage } from '../controllers/image/imageProxyController.js';
+import { getUploadStatus } from '../controllers/image/uploadStatusController.js';
 import {
     incrementView,
     incrementDownload,
@@ -62,6 +63,7 @@ router.post('/pre-upload', protectedRoute, uploadLimiter, preUploadImage);
 router.delete('/pre-upload', protectedRoute, deletePreUploadedFile);
 // Finalize: Link metadata to pre-uploaded image and create database record
 router.post('/finalize', protectedRoute, finalizeImageUpload);
+router.get('/uploads/:uploadId', protectedRoute, getUploadStatus);
 // Bulk upload notification
 router.post('/bulk-upload-notification', protectedRoute, createBulkUploadNotification);
 // Legacy upload endpoint (kept for backward compatibility)

@@ -19,6 +19,7 @@ import {
   AreaChart,
 } from 'recharts';
 import './UserAnalyticsDashboard.css';
+import { DataLoading } from '@/components/user/DataLoading';
 
 interface Goals {
   views: number | null;
@@ -58,6 +59,7 @@ export const UserAnalyticsDashboard = () => {
   }, [periodDropdownOpen]);
 
   useEffect(() => {
+    let active = true;
     const loadAnalytics = async () => {
       try {
         setLoading(true);
@@ -65,6 +67,7 @@ export const UserAnalyticsDashboard = () => {
           analyticsService.getUserAnalytics(days),
           analyticsService.getUserAnalytics(days).catch(() => null), // Try to get previous period
         ]);
+        if (!active) return;
         setAnalytics(currentData);
         
         // For comparison, we'd ideally fetch previous period data
@@ -72,14 +75,16 @@ export const UserAnalyticsDashboard = () => {
         // In a real implementation, you'd fetch with a date range offset
         setPreviousAnalytics(null); // Placeholder - would need backend support
       } catch (error) {
+        if (!active) return;
         console.error('Failed to load analytics:', error);
         toast.error(t('profile.analyticsLoadFailed'));
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     loadAnalytics();
+    return () => { active = false; };
   }, [days]);
 
   // Calculate comparison with previous period
@@ -245,7 +250,7 @@ export const UserAnalyticsDashboard = () => {
     },
   };
 
-  if (loading) {
+  if (loading && !analytics) {
     return (
       <div className="analytics-dashboard">
         <div className="insights-header">
@@ -272,6 +277,7 @@ export const UserAnalyticsDashboard = () => {
 
   return (
     <div className="analytics-dashboard">
+      {loading && <DataLoading size="inline" message="Đang cập nhật thống kê" />}
       {/* Insights Header */}
       <div className="insights-header">
         <h2 className="insights-title">{t('profile.stats')}</h2>

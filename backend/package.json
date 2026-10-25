@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "src/server.js",
 	"scripts": {
-		"dev": "nodemon --exec \"node --no-deprecation src/server.js\"",
+		"dev": "nodemon --quiet --exec \"node --no-deprecation src/server.js\"",
 		"start": "node --no-deprecation src/server.js",
 		"make:superadmin": "node src/utils/makeSuperAdmin.js",
 		"kill:3000": "node kill-port-3000.js"

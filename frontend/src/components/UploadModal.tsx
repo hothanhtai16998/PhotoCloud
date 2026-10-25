@@ -118,7 +118,7 @@ function UploadModalContent({ isOpen, onClose, languageControl }: UploadModalPro
                 });
             });
         }
-    }, [isAdmin, categories.length, imagesData.length]);
+    }, [isAdmin, categories, imagesData.length, setImagesData]);
 
     // Check if all images have required fields filled AND all are pre-uploaded
     // Title is no longer required, category is only required for admin users
@@ -288,7 +288,9 @@ function UploadModalContent({ isOpen, onClose, languageControl }: UploadModalPro
                     <div className="success-content">
                         <div className="success-header">
                             <h1 className="success-title">{t('upload.success')}</h1>
-                            <p className="success-subtitle">{t('upload.successHint')}</p>
+                            <p className="success-subtitle">{isAdmin
+                                ? t('upload.readyHint')
+                                : t('upload.reviewHint')}</p>
                         </div>
                         <Button
                             className="success-button"

@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -12,8 +13,8 @@ import { syncGlobalLoading } from '@/stores/helpers/syncGlobalLoading';
 import './FavoriteCollectionsPage.css';
 
 export default function FavoriteCollectionsPage() {
-	const { accessToken } = useAuthStore();
-	const { user } = useUserStore();
+	const { accessToken, isInitializing } = useAuthStore();
+	const { user, error: userError } = useUserStore();
 	const navigate = useNavigate();
 	const [collections, setCollections] = useState<Collection[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -26,6 +27,8 @@ export default function FavoriteCollectionsPage() {
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const fetchFavoriteCollections = useCallback(async (page = 1) => {
+		// Session restoration and the account request finish independently.
+		if (isInitializing || (accessToken && !user && !userError)) return;
 		if (!accessToken || !user?._id) {
 			navigate('/signin');
 			return;
@@ -45,30 +48,30 @@ export default function FavoriteCollectionsPage() {
 		} finally {
 			setLoading(false);
 		}
-	}, [accessToken, user, navigate]);
+	}, [accessToken, isInitializing, user, userError, navigate]);
 
 	useEffect(() => {
-		// ProtectedRoute ensures user is authenticated
+		// Re-run when the restored session and account become available.
 		fetchFavoriteCollections(1);
 	}, [fetchFavoriteCollections]);
 
 	// Sync loading state to global loading store
 	useEffect(() => {
-		syncGlobalLoading('favoriteCollectionsPage', loading);
+		syncGlobalLoading('favoriteCollectionsPage', loading && collections.length === 0);
 		return () => {
 			syncGlobalLoading('favoriteCollectionsPage', false);
 		};
-	}, [loading]);
+	}, [loading, collections.length]);
 
 	const handleCollectionClick = (collection: Collection) => {
 		navigate(`/collections/${collection._id}`);
 	};
 
-	if (loading) {
+	if (loading && collections.length === 0) {
 		return (
 			<>
 				<div className="favorite-collections-page">
-					{/* GlobalLoadingOverlay handles the spinner */}
+					<DataLoading message="Đang tải bộ sưu tập yêu thích" />
 				</div>
 			</>
 		);
@@ -76,7 +79,8 @@ export default function FavoriteCollectionsPage() {
 
 	return (
 		<>
-			<div className="favorite-collections-page">
+			<div className="favorite-collections-page" data-loading-scope="local">
+				{loading && <DataLoading size="inline" message="Đang cập nhật bộ sưu tập yêu thích" />}
 				<div className="favorite-collections-header">
 					<h1>
 						<Heart size={28} fill="currentColor" />
@@ -159,7 +163,7 @@ export default function FavoriteCollectionsPage() {
 								<button
 									className="pagination-btn"
 									onClick={() => fetchFavoriteCollections(currentPage - 1)}
-									disabled={currentPage === 1}
+									disabled={loading || currentPage === 1}
 								>
 									← {t('pagination.previous')}
 								</button>
@@ -169,7 +173,7 @@ export default function FavoriteCollectionsPage() {
 								<button
 									className="pagination-btn"
 									onClick={() => fetchFavoriteCollections(currentPage + 1)}
-									disabled={currentPage === pagination.pages}
+									disabled={loading || currentPage === pagination.pages}
 								>
 									{t('pagination.next')} →
 								</button>

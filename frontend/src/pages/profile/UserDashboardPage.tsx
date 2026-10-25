@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { UploadTrigger } from '@/components/UploadTrigger';
 import './UserDashboardPage.css';
+import { DataLoading } from '@/components/user/DataLoading';
 
 interface StatCardProps {
     label: string;
@@ -57,6 +58,7 @@ export default memo(function UserDashboardPage() {
                 </Button>
             </header>
 
+            {loading && data && <DataLoading size="inline" message="Đang cập nhật tổng quan" />}
             {error && (
                 <div className="user-dash-error" role="alert">
                     <span>{error}</span>

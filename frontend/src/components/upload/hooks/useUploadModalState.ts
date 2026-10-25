@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import type { ImageData } from './useImageUpload';
 import { useUploadTranslation } from '../UploadTranslationContext';
+import { onLogout } from '@/utils/authEvents';
 
 interface UseUploadModalStateProps {
   preUploadAllImages: (
@@ -27,7 +28,10 @@ export const useUploadModalState = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadInProgressRef = useRef(false);
-  const lastUpdateRef = useRef({ time: 0 });
+  const uploadGeneration = useRef(0);
+  const mounted = useRef(true);
+  const [uploadPass, setUploadPass] = useState(0);
+  useEffect(() => { mounted.current = true;return () => { mounted.current = false; }; }, []);
 
   // Validate file based on settings
   const validateFile = useCallback(
@@ -71,15 +75,15 @@ export const useUploadModalState = ({
     if (selectedFiles.length > 0) {
       setImagesData((prev) => {
         // Create a map of existing images by file identity to preserve form data
-        const existingMap = new Map<string, ImageData>();
+        const existingMap = new Map<File, ImageData>();
         prev.forEach((img) => {
-          const key = `${img.file.name}-${img.file.size}`;
+          const key = img.file;
           existingMap.set(key, img);
         });
 
         // Create new imagesData array
         const newImagesData = selectedFiles.map((file) => {
-          const key = `${file.name}-${file.size}`;
+          const key = file;
           const existing = existingMap.get(key);
 
           if (existing) {
@@ -111,191 +115,42 @@ export const useUploadModalState = ({
     }
   }, [selectedFiles]);
 
-  // Auto-start pre-upload when imagesData is initialized with files
+  // Keep side effects outside state updaters; match File objects, never moving indices.
   useEffect(() => {
-    if (
-      imagesData.length > 0 &&
-      preUploadAllImages &&
-      !uploadInProgressRef.current
-    ) {
-      // Check if any images need to be uploaded
-      const needsUpload = imagesData.some(
-        (img) => !img.preUploadData && !img.isUploading && !img.uploadError
-      );
-
-      if (needsUpload) {
-        // Prevent duplicate upload attempts
-        uploadInProgressRef.current = true;
-
-        // DEFER pre-upload to prevent blocking UI
-        const startPreUpload = () => {
-          // Throttle frequent progress updates
-          const minIntervalMs = 200; // ~5 updates/sec - good balance between smoothness and performance
-
-          // Get fresh state
-          setImagesData((currentImagesData) => {
-            // Filter to only images that need uploading
-            const imagesNeedingUpload = currentImagesData.filter(
-              (img) => !img.preUploadData && !img.isUploading && !img.uploadError
-            );
-
-            // If no images need uploading, skip
-            if (imagesNeedingUpload.length === 0) {
-              uploadInProgressRef.current = false;
-              return currentImagesData;
-            }
-
-            // Create a map of file identity to index for progress callback
-            const fileToIndexMap = new Map<string, number>();
-            currentImagesData.forEach((img, idx) => {
-              if (!img.preUploadData && !img.isUploading && !img.uploadError) {
-                const fileKey = `${img.file.name}-${img.file.size}`;
-                fileToIndexMap.set(fileKey, idx);
-              }
-            });
-
-            // Set isUploading immediately for all images that need upload
-            const updatedImagesData = currentImagesData.map((img) => {
-              if (!img.preUploadData && !img.isUploading && !img.uploadError) {
-                return {
-                  ...img,
-                  isUploading: true,
-                  uploadProgress: 0,
-                };
-              }
-              return img;
-            });
-
-            // Start uploading - pass ALL images that need uploading
-            // preUploadAllImages will process them in batches of 3
-            preUploadAllImages(
-              imagesNeedingUpload,
-              preserveQuality,
-              (uploadIndex, progress) => {
-                // Map uploadIndex back to actual array index using file identity
-                const uploadedImg = imagesNeedingUpload[uploadIndex];
-                if (!uploadedImg) return;
-
-                const fileKey = `${uploadedImg.file.name}-${uploadedImg.file.size}`;
-                const actualIndex = fileToIndexMap.get(fileKey);
-                if (actualIndex === undefined) return;
-
-                const now = performance.now();
-                // Always update at 0% and 100% for immediate feedback
-                const isBoundary = progress === 0 || progress === 100;
-                const timeSinceLastUpdate = now - lastUpdateRef.current.time;
-
-                if (!isBoundary && timeSinceLastUpdate < minIntervalMs) {
-                  return; // Skip too-frequent intermediate updates
-                }
-                lastUpdateRef.current.time = now;
-
-                // Batch state updates using requestAnimationFrame
-                requestAnimationFrame(() => {
-                  setImagesData((prev) => {
-                    const updated = [...prev];
-                    if (updated[actualIndex]) {
-                      updated[actualIndex] = {
-                        ...updated[actualIndex],
-                        uploadProgress: Math.min(100, Math.max(0, progress)),
-                        isUploading: true,
-                      };
-                    }
-                    return updated;
-                  });
-                });
-              }
-            )
-              .then((uploadedImagesData) => {
-                // Map uploaded results back to full array by matching file identity
-                requestAnimationFrame(() => {
-                  setImagesData((prev) => {
-                    return prev.map((existingImg) => {
-                      // Find matching uploaded image by file identity
-                      const uploadedImg = uploadedImagesData.find(
-                        (u) =>
-                          u.file.name === existingImg.file.name &&
-                          u.file.size === existingImg.file.size
-                      );
-
-                      if (uploadedImg && uploadedImg.preUploadData) {
-                        // Merge: uploaded data + existing form fields
-                        return {
-                          ...uploadedImg,
-                          // Preserve form fields from existing data
-                          title: existingImg.title.trim()
-                            ? existingImg.title
-                            : uploadedImg.title,
-                          category: existingImg.category.trim()
-                            ? existingImg.category
-                            : uploadedImg.category,
-                          location: existingImg.location.trim()
-                            ? existingImg.location
-                            : uploadedImg.location,
-                          coordinates:
-                            existingImg.coordinates || uploadedImg.coordinates,
-                          cameraModel: existingImg.cameraModel.trim()
-                            ? existingImg.cameraModel
-                            : uploadedImg.cameraModel,
-                          tags:
-                            existingImg.tags && existingImg.tags.length > 0
-                              ? existingImg.tags
-                              : uploadedImg.tags,
-                          errors: existingImg.errors || uploadedImg.errors,
-                        };
-                      }
-                      return existingImg;
-                    });
-                  });
-                });
-
-                // Check if all uploads succeeded
-                const allSucceeded = uploadedImagesData.every(
-                  (img) => img.preUploadData && !img.uploadError
-                );
-                if (allSucceeded && uploadedImagesData.length > 0) {
-                  toast.success(t('upload.allUploadedSuccess'));
-                } else {
-                  const failedCount = uploadedImagesData.filter(
-                    (img) => img.uploadError
-                  ).length;
-                  if (failedCount > 0) {
-                    toast.error(t('upload.uploadFailed'));
-                  }
-                }
-              })
-              .catch((error) => {
-                console.error('Failed to pre-upload images:', error);
-                toast.error(t('upload.uploadFailed'));
-              })
-              .finally(() => {
-                uploadInProgressRef.current = false;
-              });
-
-            return updatedImagesData;
-          });
-        };
-
-        // Use requestIdleCallback if available, otherwise setTimeout
-        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-          requestIdleCallback(startPreUpload, { timeout: 500 });
-        } else {
-          setTimeout(startPreUpload, 300);
-        }
-      } else {
-        // No upload needed, reset flag
+    if (uploadInProgressRef.current) return;
+    const pending = imagesData.filter(img => !img.preUploadData && !img.isUploading && !img.uploadError);
+    if (!pending.length) return;
+    const generation = uploadGeneration.current;
+    const current = () => mounted.current && generation === uploadGeneration.current;
+    const files = new Set(pending.map(img => img.file));
+    uploadInProgressRef.current = true;
+    void preUploadAllImages(pending, preserveQuality, (index, progress) => {
+      if (!current()) return;
+      const file = pending[index]?.file;
+      if (!file) return;
+      setImagesData(previous => previous.map(img => img.file === file
+        ? { ...img, isUploading: true, uploadProgress: Math.min(100, Math.max(0, progress)) } : img));
+    }).then(results => {
+      if (!current()) return;
+      const uploaded = new Map(results.map(img => [img.file, img]));
+      setImagesData(previous => previous.map(img => {
+        const result = uploaded.get(img.file);
+        return result ? { ...img, preUploadData: result.preUploadData, uploadProgress: result.uploadProgress,
+          isUploading: false, uploadError: result.uploadError } : img;
+      }));
+      if (results.some(img => img.uploadError)) toast.error(t('upload.uploadFailed'));
+      // Storage transfer is not publication; completion is shown only after processing.
+    }).catch(error => {
+      if (!current()) return;
+      setImagesData(previous => previous.map(img => files.has(img.file)
+        ? { ...img, isUploading: false, uploadError: error instanceof Error ? error.message : t('upload.uploadFailed') } : img));
+    }).finally(() => {
+      if (current()) {
         uploadInProgressRef.current = false;
+        setUploadPass(pass => pass + 1);
       }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    imagesData.length,
-    // Also trigger when imagesData changes (e.g., when preUploadData is added)
-    // This ensures remaining images are picked up after a batch completes
-    imagesData.map((img) => (img.preUploadData ? 'uploaded' : 'pending')).join(','),
-    preUploadAllImages,
-    preserveQuality,
-  ]); // Trigger when imagesData length changes, upload status changes, or when upload completes
+    });
+  }, [imagesData, preUploadAllImages, preserveQuality, t, uploadPass]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     // Only handle file drags, ignore other drag operations
@@ -519,11 +374,13 @@ export const useUploadModalState = ({
     setDragActive(false);
     setShowTooltip(false);
     uploadInProgressRef.current = false;
-    lastUpdateRef.current = { time: 0 };
+    uploadGeneration.current++;
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   }, []);
+
+  useEffect(() => onLogout(resetState), [resetState]);
 
   return {
     dragActive,

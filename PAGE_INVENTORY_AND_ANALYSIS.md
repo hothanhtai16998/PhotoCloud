@@ -1,6 +1,8 @@
-﻿# PhotoCloud — Danh sách trang và phân tích hệ thống
+# PhotoCloud — Danh sách trang và phân tích hệ thống
 
 ## Trạng thái nghiệm thu và công việc hiện tại
+
+**🔴 P1 ĐÃ SỬA — CHỜ KIỂM UPLOAD THẬT (25/10/2026):** người dùng báo đăng xong nhưng chưa thấy ảnh. Frontend trước đây coi 202 là hoàn tất, hàng đợi chỉ ở RAM và vòng batch chờ thiếu ảnh ở lượt sau. Đã sửa trạng thái chờ ảnh thật, job MongoDB/retry/lease và chống tạo ảnh trùng; xem mục 24.30 và [luồng upload](UPLOAD_PIPELINE.md). Fixture đã qua, chưa nghiệm thu với Mongo/R2 thật hoặc khôi phục những job RAM cũ mất metadata. Không đổi dấu nghiệm thu.
 
 **🔴 P1 ĐÃ SỬA — CHỜ KIỂM PHIÊN THẬT: Khôi phục đăng nhập khi refresh liên tiếp (21/10/2026).** Không còn coi 429/5xx/lỗi mạng/hủy request là guest; đã sửa auth dùng chung sau khi người dùng cho phép mở phạm vi, xem mục 24.17. Kiểm fixture và localhost có lỗi mô phỏng đã qua; chưa có nghiệm thu của người dùng hoặc bằng chứng cookie thật bị mất ở backend. Giữ nguyên các dấu nghiệm thu cũ.
 
@@ -763,10 +765,10 @@ Phạm vi: `/packages` (danh sách) và `/packages/:slug` (chi tiết). Mục 5.
 - [x ] PKG-01 — Mở `/packages` trực tiếp và F5: hiện đúng số gói đang active từ API; tab title = "Gói chụp"; không trắng trang lúc tải.
 - [ ] PKG-02 — Bấm vào một gói, mở `/packages/:slug`: vào đúng trang chi tiết, có ảnh, bao gồm, giá, thời lượng, số ảnh. Quay lại → về `/packages` đúng thứ tự.
 - [ ] PKG-03 — Thay đổi gói trong admin (bật active, sửa giá, ẩn): trang marketing phản ánh đúng sau F5; không cần build lại.
-- [ ] PKG-04 — Ngắt mạng rồi F5 `/packages`: hiện gói fallback (CORE_PACKAGES) + banner "Đang hiển thị danh sách dự phòng". Bật mạng + bấm Thử lại (sau khi có nút) → tải lại từ API.
-- [ ] PKG-05 — Bấm "Đặt lịch gói này" ở card hoặc detail: mở `BookingModal` đúng gói đang chọn.
+- [ ] PKG-04 — Ngắt mạng rồi F5 `/packages`: hiện gói fallback (CORE_PACKAGES) + banner "Đang hiển thị danh sách dự phòng". Bật mạng + bấm Thử lại → tải lại từ API. (Đã có nút trong banner ngày 24/10/2026.)
+- [ ] PKG-05 — Bấm "Chọn gói này" ở card hoặc "Đặt lịch gói này" ở detail: mở `BookingModal` đúng gói đang chọn.
 - [ ] PKG-06 — Bấm "Xem form đầy đủ" ở detail: chuyển sang `/booking` đúng.
-- [ ] PKG-07 — Cover image: gói có slug trùng CORE_PACKAGES hiện ảnh Unsplash; gói admin mới (slug chưa có) hiện placeholder icon, không lộ ảnh hỏng.
+- [ ] PKG-07 — Ảnh minh họa: dùng ảnh theo slug hoặc category API khai báo rõ, có nhãn minh họa; category không xác định và ảnh lỗi không bị gán ảnh ngẫu nhiên, không hiện ảnh hỏng. (UI cập nhật 24/10/2026.)
 - [ ] PKG-08 — Sáng/tối + Tab/Enter: focus rõ, hover/đã chọn đúng token PhotoCloud, không có nút cần dùng bị che.
 - [ ] PKG-R01 — Responsive: chưa nghiệm thu; làm vòng cuối.
 
@@ -774,6 +776,167 @@ Phạm vi: `/packages` (danh sách) và `/packages/:slug` (chi tiết). Mục 5.
 
 - Bật `active=true` cho gói "Gia đình" trong admin để nó hiện trên `/packages`. Hiện tại API chỉ trả 3 gói; khi admin thêm/bật, hook tự cập nhật.
 - Nếu muốn gói có ảnh marketing riêng (khác Unsplash), bổ sung trường cover image trong `BookingPackage` schema (cần can thiệp admin + backend) — hiện tại hook an toàn render placeholder nếu coverUrl rỗng.
+
+### 20.6. Nâng cấp UI/UX trang Gói chụp — 24/10/2026
+
+Người dùng chuyển ưu tiên từ Explore (đánh giá khoảng 90%, chưa nghiệm thu toàn bộ phần mới) sang /packages vì giao diện thô. Chỉ sửa trang user và hook marketing; không sửa dữ liệu/ảnh/gói admin hoặc constants dùng chung.
+
+**Vấn đề có bằng chứng trước sửa:** card thiếu ảnh vẫn dành toàn bộ khối 4:3 cho gradient + camera, trong khi giá chỉ18px và thông số12px; hero/subtitle cùng căn giữa, diễn đạt quyền lợi/cam kết áp cho mọi gói chưa có dữ liệu kiểm chứng. Hook inferPopular gắn badge theo slug hoặc index thứ2, includes lấy bản constants theo slug có thể lệch thông số API. Fallback banner chưa có nút Thử lại. Slug lạ rơi về list mà URL vẫn là detail.
+
+**Thay đổi:**
+- Giữ màu kem/nâu, serif display và token sáng/tối. Hero hai cột, tiêu đề lớn có nhấn italic, đoạn dẫn ngắn và anchor xuống danh sách. Bỏ eyebrow, cam kết “mọi gói”, nhãn phổ biến không có bằng chứng.
+- Card gọn: tên/link, mô tả, giá dễ đọc, hai trường dl cho thời lượng/số ảnh, CTA Chọn gói này và link Khám phá gói. Thứ tự API/giá/slug không đổi. Thiếu ảnh không dựng ô trống; ảnh minh họa có sẵn chỉ làm thumbnail nhỏ với caption, ảnh lỗi tháo figure bằng state theo URL. Không chọn ảnh ngẫu nhiên hoặc tạo ảnh giả làm ảnh studio.
+- Khối yêu cầu riêng thành một section riêng cuối trang; mở BookingModal custom-quote như trước, bỏ lời hứa trả báo giá24h chưa được xác nhận.
+- Detail cùng hệ thống: tiêu đề/mô tả, ảnh minh họa nếu có, danh sách bao gồm từ thông số API; khung giá/thời lượng/số ảnh và CTA đặt lịch. Giữ link form đầy đủ. Desktop khung đặt lịch sticky, màn hẹp trở lại luồng thường.
+- Hook marketing không tự gắn popular; các quyền lợi includes luôn dùng durationMinutes/includedPhotos/deliveryDays/includedPeople từ API, không lấy bản cố định cùng slug. Cover minh họa vẫn dùng mapping exact slug cũ. Không đổi shared StudioPackage/constants hay trang admin.
+- Loading dùng DataLoading đã duyệt, giữ tiêu đề/khung danh sách. Empty có lời giải thích và đường sang yêu cầu riêng. Lỗi có banner nêu thông tin tham khảo/dữ liệu cũ và nút Thử lại; API xong thay dữ liệu mới. Slug không tồn tại có thông báo riêng và link về danh sách, không im lặng trả list. Metadata trang tiếp tục do useDocumentMeta sở hữu.
+
+**Bằng chứng:** build cuối PASS; focused ESLint PackagesPage/usePublicPackages 0 error/warning; full lint repo 56 error/172 warning ngoài phần sửa, không tuyên bố sạch repo. Typecheck 27 diagnostic ngoài PackagesPage/usePublicPackages; detector trang `[]`, diff check PASS. Browser fixture Edge headless 1440×1000 và390×1000, light/dark: PASS đúng3 gói API/thứ tự/giá, không badge giả, không ô gradient; detail phản ánh ngày giao thay đổi từ API kể cả slug có constants; Enter mở BookingModal và chọn đúng gói, đóng trả focus; mode custom-quote; Back giữ thứ tự; F5/deep-link; unknown slug; ảnh404; fallback có banner/Thử lại → API; API [] không lộ gói constants. Kiểm không tràn document ở viewport hẹp, chưa thay nghiệm thu responsive/thiết bị thật. Hồi quy loader8route sáng/tối PASS.
+
+Đã xem ảnh fixture danh sách desktop sáng/tối và detail màn hẹp sáng. Ảnh test thay ảnh mạng bằng SVG màu đơn chỉ trong fixture, không phải ảnh studio hay asset ship. Chưa đo latency production/ảnh thật hoặc thực hiện đặt lịch thật. Log local ignore: `frontend/qa-policy-checkbox/packages-redesign-{build,types,lint,full-lint,browser,loading}.txt`; ảnh `packages-public-{1440,390}-{light,dark}.png`, `package-detail-{1440,390}-{light,dark}.png`. Script mới `frontend/scripts/test-packages-public.cjs` dùng API giả lập, không ghi dữ liệu thật.
+
+**Giới hạn và nghiệm thu:** ảnh marketing riêng cho gói thiếu cover vẫn cần chủ studio cung cấp/cấu hình ở phiên admin; không mượn ảnh sai hoặc tuyên bố studio sở hữu ảnh Unsplash. Giữ PKG-01 dấu x có trước, các ô khác chưa tích. Điều chỉnh lời PKG-07 theo UI không còn placeholder lớn; responsive vẫn PKG-R01 để vòng cuối. Phạm vi user: PackagesPage.tsx/CSS và usePublicPackages.ts; QA và inventory user. Không sửa admin/code chung, không commit.
+
+- [ ] PKG-U01 — So sánh giá/thời lượng/số ảnh giữa các gói, tên dài và gói thiếu ảnh vẫn dễ đọc; ảnh minh họa được phân biệt rõ.
+- [ ] PKG-U02 — Tab/Enter Chọn gói này → hộp đặt lịch đúng gói; đóng trả focus. Link chi tiết/Back/F5 và yêu cầu riêng giữ đúng luồng.
+- [ ] PKG-U03 — Đổi thông số gói ở admin rồi tải lại: giá và “bao gồm” khớp API; không còn nhãn phổ biến tự suy ra. Khi API lỗi có trạng thái tham khảo và Thử lại.
+
+### 20.7. Bố cục tạp chí ảnh cho Gói chụp — 24/10/2026
+
+Người dùng chọn hướng ảnh lớn, ảnh xếp lớp và bố cục từng gói xen kẽ sau khi xem tham khảo Shoott/Flytographer. Đây là thay đổi trong hệ màu/font studio hiện có, không thay thiết kế toàn site.
+
+- Hero có hai ảnh minh họa dạng bản in chồng nhẹ, bóng lệch có blur và một chuyển động mở đầu; nút tìm gói và link Khám phá hoạt động độc lập với request dữ liệu. Tôn trọng reduced-motion. Không thêm số liệu, nhận xét khách hàng hoặc nhãn phổ biến giả.
+- Mỗi gói thành một hàng ảnh lớn/thông tin, đổi bên ở hàng kế tiếp. Giữ thứ tự, tên, giá, thời lượng, số ảnh, URL và hành động mở BookingModal từ API. Detail giữ luồng đã có và ảnh minh họa cùng component.
+- Bảng so sánh dùng chính danh sách đang hiển thị, gồm tên/thời lượng/số ảnh/giá và link trở lại gói tương ứng. Có table heading/caption, focus và vùng cuộn ngang riêng. Empty API không dựng bảng hoặc gói giả.
+- Ảnh chỉ là minh họa Unsplash đã có trong CORE_PACKAGES. Hook user bổ sung mapping theo category API khai báo chính xác khi slug không trùng; category lạ không mượn ảnh portrait do accent suy ra. Mọi ảnh có caption; ảnh lỗi tháo figure, thông tin/CTA vẫn dùng được. Không xây gallery thành phẩm giả cho từng gói khi chưa có bộ ảnh thật được studio xác nhận.
+- Tái sử dụng PackageImage cho hero/danh sách/detail, formatters cho danh sách/bảng/detail; bảng không có state hoặc request mới. Bỏ CSS card ba cột/thumbnail cũ. Khắc phục vị trí chữ ẩn của bảng để không tạo vùng chụp ngoài màn hẹp.
+
+**Kiểm tra:** Vite build PASS; focused ESLint 0 error/warning; toàn repo vẫn 56 error/172 warning và typecheck 27 diagnostic ngoài PackagesPage/usePublicPackages. Detector trang/CSS `[]`; không dùng kết quả này làm nghiệm thu chức năng. Edge headless với API fixture 1440×1000/390×1000, sáng/tối: chọn gói bằng Enter, đóng trả focus, detail/Back/F5, includes API, yêu cầu riêng, lỗi/retry, empty, bảng/anchor đúng gói, category không xác định, ảnh404 và reduced-motion. Có lượt chụp bằng ảnh Unsplash thật, API vẫn giả lập; không đặt lịch hoặc sửa dữ liệu thật. Responsive chưa nghiệm thu, thiết bị thật để vòng cuối.
+
+Log local ignore: `frontend/qa-policy-checkbox/packages-editorial-{build,types,full-lint,browser-final,photos-final}.txt`. Ảnh: `packages-editorial-real-{1440,390}-{light,dark}.png`, `packages-editorial-hero-{1440,390}-{light,dark}.png`. Đợt chạy Edge trong sandbox đầu tiên không khởi động được; chạy lại ngoài sandbox với cùng fixture. Không coi lượt bị lỗi là PASS.
+
+**Phạm vi:** user — PackagesPage.tsx/CSS, usePublicPackages.ts; hỗ trợ — test-packages-public.cjs và inventory user. Không sửa admin hoặc code chung. Giữ mọi dấu x/o; chờ người dùng kiểm giao diện và ảnh thực của studio.
+
+- [ ] PKG-U04 — Hero ảnh xếp lớp, ảnh lớn từng gói và bảng so sánh dễ đọc; bấm Xem gói cuộn đến đúng gói, chọn gói mở đúng hộp đặt lịch.
+- [ ] PKG-U05 — Category lạ/ảnh lỗi vẫn đọc thông tin và đặt lịch; minh họa được phân biệt với thành phẩm studio; sáng/tối và giảm chuyển động dùng được.
+
+### 20.8. Chuyển động theo cuộn lên/xuống — 24/10/2026
+
+Theo yêu cầu làm trang Gói chụp bắt mắt hơn khi cuộn: hai bản in hero dịch chuyển/xoay khác nhịp khi rời đầu trang; ảnh từng gói mở nhẹ khung cắt khi vào màn hình và dịch chuyển trong khung theo tiến độ cuộn. Cuộn ngược đảo chiều trực tiếp, không dùng timer phát lại. Nội dung, giá, nút và chiều cao hàng giữ ổn định; không chặn wheel/touch, không thêm scroll snapping hoặc phụ thuộc mới.
+
+**Triển khai và giới hạn:** đã tìm hiểu CSS scroll-driven animations (MDN) và useScroll/useTransform (Motion docs). Thử nghiệm CSS ViewTimeline xác nhận cấu trúc overflow của body bám vùng không cuộn, nên bỏ thử nghiệm đó, dùng Motion đã có trong repo với target theo viewport. Clip-path cũng tính qua callback tiến độ để tránh native ViewTimeline bám nhầm vùng. Không sửa body/index.css/cơ chế cuộn chung. PackageImage dùng lại cho hero/list/detail; chỉ hero và ảnh trong danh sách nhận MotionStyle. Motion sở hữu đăng ký/hủy theo vòng đời component, không thêm state React cập nhật trên mỗi scroll.
+
+Màn hẹp giảm biên độ; prefers-reduced-motion có CSS tĩnh rõ ràng cho cả ảnh/khung/hero và hook chọn style tĩnh. Khi focus trong một gói, khung ảnh mở đầy đủ. Không thêm opacity=0 hoặc ẩn thông tin chờ cuộn. Dọn toàn bộ CSS timeline/keyframe thử nghiệm không dùng.
+
+**Bằng chứng:** build PASS, ESLint PackagesPage 0 error/warning; typecheck toàn repo vẫn 27 diagnostic ngoài phần sửa. Detector lần đầu CSS `[]` chỉ là kiểm bổ trợ, không chứng minh motion; đã dùng runtime để phát hiện/sửa timeline sai. Edge headless 1440×1000 và390×1000, light/dark, API giả lập + ảnh Unsplash thật: PASS so transform khi cuộn xuống/đảo về, clip-path thay đổi khi vào viewport, ảnh pan và đảo ngược, vị trí nội dung theo document không đổi; reduced-motion bật ngay trong phiên giữ ảnh tĩnh. Hồi quy chọn gói bằng Enter/đóng trả focus/detail/Back/F5/custom-quote/404/fallback retry/empty/ảnh404 PASS. Không ghi dữ liệu thật.
+
+Log local ignore: `frontend/qa-policy-checkbox/packages-scroll-{build,lint,types,browser}.txt`; ảnh trạng thái đang cuộn `packages-scroll-{1440,390}-{light,dark}.png`. Đã xem ảnh viewport desktop sáng và màn hẹp tối. Không suy ra FPS, độ mượt production hoặc nghiệm thu responsive/thiết bị thật từ fixture; chưa đo hiệu năng trên thiết bị thực.
+
+Phạm vi user: PackagesPage.tsx/CSS; hỗ trợ: script test-packages-public.cjs và inventory user. Không sửa admin/code chung. Giữ mọi dấu nghiệm thu cũ.
+
+- [ ] PKG-U06 — Cuộn chuột xuống rồi lên: ảnh hero chuyển động khác nhịp, ảnh từng gói mở khung/dịch nhẹ và đảo chiều; chữ/giá/nút dễ đọc, bấm chọn đúng gói. Bật giảm chuyển động của hệ điều hành: ảnh giữ tĩnh.
+
+### 20.9. Bản thử khung chọn gói thay danh sách dài — 24/10/2026
+
+Người dùng phản hồi chuyển động nhỏ khó nhận thấy và mỗi gói chiếm quá nhiều chiều dài dù cấu trúc giống nhau; đồng ý thử khung chọn gói bằng tab/nút. Thay các hàng ảnh xen kẽ bằng một panel; các mô tả ở20.7/20.8 về danh sách nhiều hàng, anchor tới từng hàng và pan/crop ảnh theo cuộn là lịch sử, đã được thay thế trong bản thử này. Hero giữ chuyển động theo cuộn.
+
+- Tabs có tên gói thật từ API, nút trước/sau và vị trí đang xem. Chọn gói đổi ảnh bằng chuyển cảnh trượt khoảng100px/xoay5độ/thu nhẹ trong420ms; nội dung cập nhật ngay với chuyển nhẹ250ms. Không tự chạy carousel. Reduced-motion giữ transform tĩnh bằng CSS; vẫn có phản hồi đổi gói.
+- Một panel đang hoạt động có ảnh420px desktop/340px màn hẹp, tên/mô tả, hàng giá/thời lượng/số ảnh và CTA. Tái sử dụng PackageImage/formatters; bỏ hooks pan/crop và CSS nhiều hàng không dùng. Không thêm dependency, dữ kiện hoặc request mới. Bảng so sánh giữ đủ mọi gói; Xem gói chọn đúng tab, cuộn về catalog và trả focus tab tương ứng.
+- role tablist/tab/tabpanel, roving tabIndex, ArrowLeft/Right vòng qua tab, Home/End và focus nhìn thấy. Nút trước/sau disabled ở đầu/cuối. Vuốt ngang trên vùng ảnh đổi gói, pointercancel và cử chỉ dọc không đổi gói, không chặn scroll dọc/pinch zoom. Vuốt đã kiểm bằng PointerEvent giả lập, chưa phải thiết bị cảm ứng thật.
+- Chỉ ảnh minh họa tham gia exit animation, không giữ CTA của gói cũ trong lớp thoát. Thông tin/đặt lịch luôn trỏ gói đang chọn; chọn liên tục vẫn kết thúc ở gói cuối cùng. Nếu API thay danh sách và gói chọn không còn, suy ra lựa chọn đầu hợp lệ. Gói thiếu ảnh/ảnh404 co về thông tin, không dựng gradient/icon lớn. Empty/error/retry/detail/deep-link giữ luồng hiện có.
+
+**Bằng chứng:** Vite build PASS; ESLint PackagesPage0error/warning; typecheck vẫn27diagnostic ngoài trang. Detector TSX/CSS `[]`, diff check PASS. Edge headless1440×1000/390×1000, light/dark, API fixture và ảnh Unsplash thật: tabs đúng thứ tự, chỉ1panel, nút so sánh chọn/focus đúng, Home/End/ArrowRight, trước/sau disabled, vuốt/cancel, chọn liên tục, có transform/opacity trung gian khi chuyển, reduced-motion tĩnh; đặt lịch đúng gói/đóng trả focus, detail/Back/F5/custom-quote/404/fallback retry/empty/category lạ/ảnh404 PASS. Desktop fixture có chiều cao document dưới3000px thay vì các hàng lặp trước đó; đây là bằng chứng bố cục fixture, không phải đo tốc độ production. Không đặt lịch thật hoặc sửa dữ liệu thật.
+
+Đã xem ảnh viewport desktop sáng và màn hẹp tối. Log local ignore `frontend/qa-policy-checkbox/packages-stage-{build,lint,types,browser-final}.txt`; ảnh `packages-stage-{1440,390}-{light,dark}.png` và `packages-stage-focus-{1440,390}-{light,dark}.png`. Responsive vẫn để vòng cuối; chưa đo FPS/thiết bị thật. Phạm vi user: PackagesPage.tsx/CSS; hỗ trợ: test-packages-public.cjs và inventory user. Không sửa admin/code chung, không tự đánh dấu nghiệm thu bản thử.
+
+- [ ] PKG-U07 — Chọn tab, trước/sau, phím mũi tên/Home/End: ảnh chuyển rõ, tên/giá/thời lượng/số ảnh khớp; chọn liên tục rồi đặt lịch vẫn đúng gói. Bảng so sánh Xem gói đưa về đúng lựa chọn.
+- [ ] PKG-U08 — Màn hẹp vuốt ngang ảnh đổi gói; cuộn dọc/hủy cử chỉ không đổi nhầm. Bật giảm chuyển động giữ ảnh tĩnh; tab/focus và nút đặt lịch sử dụng được.
+
+### 20.10. Đổi gói bằng con lăn, bỏ nội dung so sánh lặp — 24/10/2026
+
+Người dùng không chấp nhận bản20.9 vì vẫn phải bấm để đổi gói và bảng dưới lặp thông tin; yêu cầu cuộn chuột chuyển gói kèm chuyển động rõ. Đã xóa PackageComparison cùng CSS/table/caption không còn dùng. Các ca trước nhắc Xem gói trong bảng là lịch sử; thay bằng PKG-U09 bên dưới. Không tự đổi các dấu x/o.
+
+- Khung gói có nền cùng hệ token, ảnh như bản in có viền giấy. Chuyển cảnh dọc160px/ngang50px/xoay9độ/scale.84 trong550ms; nội dung dịch35px trong400ms. Hỗ trợ giảm chuyển động giữ transform tĩnh. Không tự phát carousel; thông tin và đặt lịch đổi ngay sang lựa chọn mới.
+- Hook user `pages/packages/usePackageWheel.ts` nhận ref/index/count/select. Con lăn bắt đầu trong khung sẽ đổi gói và căn khung dưới header112px; các lượt sau giữ vị trí trang. Có ngưỡng60px, chuẩn hóa deltaMode và khóa550ms để tránh đà trackpad nhảy nhiều gói. Cuộn ngược đổi về gói trước. Ở đầu/cuối trả cuộn trang; rê con trỏ ra ngoài cũng nhả quyền điều khiển.
+- Listener wheel/pointermove đặt trên window trong vòng đời stage để giữ được đà cuộn khi khung căn lại làm nó dịch khỏi con trỏ đứng yên. Mọi sự kiện ngoài stage đều bỏ qua trừ lượt đã bắt đầu trong stage; khi rê ra ngoài, tới biên, vào dialog/form hoặc viewport không phù hợp sẽ trả về luồng thường. Không chặn Ctrl/Meta/Shift-wheel hay cuộn ngang. Có cleanup khi unmount/đổi props; không thêm timer/dependency/request. Không sửa body/index.css hoặc cơ chế cuộn chung.
+- Chỉ điều khiển wheel khi rộng>=900px, cao>=780px và toàn bộ stage vừa vùng hiển thị dưới header. Viewport hẹp/thấp giữ cuộn dọc để đọc đủ nội dung, vẫn dùng tab/nút/vuốt ngang. Gợi ý cuộn chỉ hiện ở kích thước desktop phù hợp. Tab/phím mũi tên/Home/End, đặt lịch và detail giữ hành vi.
+
+**Bằng chứng:** build PASS, focused ESLint page/hook0error/warning; typecheck27diagnostic ngoài page/hook. Detector TSX/CSS `[]`, diff check PASS. Edge headless1440×1000, sáng/tối, wheel thật qua `page.mouse.wheel`: PASS3lượt nhanh chỉ đổi1gói, căn khungy112, đổi tiếp tới gói cuối mà scrollY không đổi, cuộn tiếp ở cuối đi xuống trang, cuộn lên đổi ngược và ở gói đầu đi lên trang. Kiểm fixture390×1000 sáng/tối giữ các luồng tab/vuốt/cancel/reduced-motion; hồi quy đúng gói đặt lịch/đóng trả focus/detail/Back/F5/custom-quote/404/fallback retry/empty/category lạ/ảnh404 PASS. Có ảnh Unsplash thật, API vẫn fixture; không đặt lịch/sửa dữ liệu thật. Chưa kết luận FPS/độ mượt production, chưa nghiệm thu touch/trackpad thiết bị thật hoặc responsive vòng cuối.
+
+Log local ignore `frontend/qa-policy-checkbox/packages-wheel-{build,lint,types,browser}.txt`; ảnh viewport `packages-stage-focus-{1440,390}-{light,dark}.png` đã cập nhật. Đã xem desktop sáng và màn hẹp tối trong vòng giao diện. Phạm vi user: PackagesPage.tsx/CSS, hook user mới; hỗ trợ script fixture và inventory user. Không sửa admin/code chung.
+
+- [ ] PKG-U09 — Desktop: đưa chuột vào khung gói rồi cuộn xuống/lên, chuyển lần lượt đúng gói có animation rõ, không trôi xuống footer giữa chừng; cuộn nhanh không nhảy loạn. Hết gói cuối tiếp tục xuống trang; ở gói đầu cuộn lên về phần đầu. Rê ra ngoài cuộn trang bình thường.
+- [ ] PKG-U10 — Không còn bảng so sánh lặp. Modal đặt lịch cuộn độc lập, chọn gói vẫn đúng sau cuộn; màn thấp/hẹp đọc đủ thông tin và dùng tab/nút/vuốt được, giảm chuyển động giữ ảnh tĩnh.
+
+### 20.11. Tăng chuyển động hero, mở rộng gói và sửa lọt vùng cuộn — 24/10/2026
+
+Người dùng phản hồi ảnh hero còn khó nhận thấy chuyển động, khung gói cần lớn hơn, thanh chọn chưa đẹp và đôi lúc lướt qua vùng bốn gói đi thẳng header/footer. Bản20.10 chỉ bắt đầu nhận wheel nếu pointer nằm trong stage và bỏ qua height<780; đây là hai điều kiện có thể gây lọt. Chưa suy ra chúng là toàn bộ nguyên nhân trên thiết bị thật.
+
+- Hero bắt đầu phản hồi sớm hơn (offset start0.18), bản in trước đi lên tối đa320px/ngang90px/xoay thêm13độ; bản in sau dịch khác hướng90px/ngang60px/xoay thêm11độ. Màn hẹp vẫn giảm biên độ, reduced-motion giữ tĩnh. Không thêm vòng lặp tự chạy.
+- Container rộng tối đa1400px thay1280px; vùng ảnh gói dùng clamp360px/cao viewport trừ350px/tối đa540px thay400px cố định. Giữ khoảng đủ để đọc toàn panel. Thanh tab thành nhóm nút nền liền, selected nền nâu/chữ tương phản, hover không ghi đè màu selected; tab/nút/bàn phím giữ hành vi.
+- Hook wheel không còn phụ thuộc pointermove để giữ/nhả lượt điều khiển. Nhận diện vùng đang căn dưới header hoặc bước cuộn dự kiến cắt qua mốc112px, kể cả pointer ở lề và delta lớn. Đi vào từ trên trình bày gói đầu, từ dưới trình bày gói cuối; giữ lượt vào rồi mới chuyển tiếp/ngược, không lấy lựa chọn cũ để nhảy khỏi vùng. Đầu/cuối vẫn cho cuộn trang; dialog/form, Ctrl/Meta/Shift-wheel, cuộn ngang và viewport không đủ chỗ được bỏ qua. Ngưỡng cao giảm700px kèm kiểm chiều cao stage thực tế. Xóa listener pointermove cũ; cleanup wheel khi unmount.
+- Vì chủ đích mới là bắt vùng gói khi đi qua, không dùng ca “rê ra lề luôn nhả” của20.10 nữa. Khi ở vùng đã căn, pointer ở lề vẫn chuyển gói để tránh bug bỏ qua. Không sửa style/listener của admin hoặc body/index.css.
+
+**Bằng chứng:** build PASS, focused ESLint page/hook0error/warning; typecheck27diagnostic ngoài phần sửa. Detector TSX/CSS `[]`, diff check PASS. Fixture đổi sang4gói Chân dung/Gia đình/Mini/Couple. Edge headless desktop1440×1000 light/dark: PASS đà cuộn nhanh không nhảy ngay nhiều gói, giữ mốc112px và scrollY giữa các gói; đi tới cuối cho cuộn xuống, vào lại từ dưới ở gói cuối rồi chuyển ngược; cuộn về đầu cho đi lên. Delta±1800 từ đầu/cuối trang với pointerx4px ở lề vẫn vào đúng đầu/cuối vùng gói. Viewport1440×760 vẫn đổi gói bằng wheel. Hồi quy tab/keyboard/vuốt giả lập/reduced-motion/đặt lịch/detail/Back/F5/error retry/empty/ảnh404 ở1440/390 sáng/tối PASS. API giả lập, ảnh Unsplash thật; không ghi dữ liệu thật.
+
+Đã xem ảnh full-page và stage desktop sáng; phần giao diện màn hẹp chỉ kiểm giới hạn theo fixture, responsive chưa nghiệm thu. Chưa đo FPS hoặc tái hiện với trackpad/thiết bị thật của người dùng. Log local ignore `frontend/qa-policy-checkbox/packages-wheel2-{build,lint,types,browser}.txt`; ảnh `packages-stage-{1440,390}-{light,dark}.png` và `packages-stage-focus-{1440,390}-{light,dark}.png`. Chỉ sửa user PackagesPage.tsx/CSS/usePackageWheel.ts và hỗ trợ QA/inventory. Giữ dấu nghiệm thu cũ.
+
+- [ ] PKG-U11 — Hero chuyển động tách lớp rõ khi cuộn lên/xuống, khung gói lớn hơn, tab dễ thấy lựa chọn; các nút không bị che.
+- [ ] PKG-U12 — Lặp đi từ header xuống vùng bốn gói và từ footer lên; thử cuộn mạnh, pointer giữa khung/lề và cửa sổ thấp: không bỏ qua các gói, vào từ trên ở gói đầu/từ dưới ở gói cuối, thoát đúng hai đầu. Modal và đặt lịch vẫn dùng đúng.
+
+### 20.12. Ảnh hero chuyển giao vào khung gói — 24/10/2026
+
+Người dùng đề xuất ảnh thu nhỏ treo ở góc hoặc cuộn xuống lấp vào vị trí pack. Chọn và triển khai phương án thứ hai: bản in chân dung thật trong hero rời vị trí cũ, dịch xuống/trái, đổi kích thước và xoay thẳng theo cuộn để đáp vào vùng ảnh gói; cuộn lên đảo ngược. Không thêm bản ảnh fixed ở góc hoặc dây treo trong phiên bản này.
+
+- Hook user `usePackagePhotoTransfer` đo anchor hero và vùng ảnh stage theo layout thật, lấy điểm kết thúc trùng mốc wheel stage112px. MotionValue tính vị trí/kích thước/padding/góc xoay từ scrollY; không giữ bản sao React state theo từng scroll. Khoảng6% cuối chuyển giao opacity giữa bản in và ảnh gói, chỉ còn ảnh stage khi đáp xong. Không tạo clone ảnh hoặc thêm nguồn ảnh; ảnh vẫn là minh họa, không giả gallery studio.
+- Anchor hero giữ nguyên không gian bố cục trong khi figure absolute đi xuống. Xóa animation mở đầu wrapper cũ để đo tọa độ không lệch. Bản in không nhận pointer event; thanh chọn gói ở lớp cao hơn để không bị ảnh đi qua che điều khiển. Đổi gói và modal vẫn dùng luồng có trước.
+- ResizeObserver/MutationObserver trên trang, resize và media-query change cập nhật phép đo khi layout/dữ liệu thay đổi; chỉ quan sát childList, không theo dõi style mỗi frame. Dọn observer/listener/RAF khi unmount hoặc chuyển detail. Không có ảnh nguồn/đích hợp lệ thì dùng bố cục thường. Màn rộng dưới900px hoặc reduced-motion bỏ chuyển giao và hiện ảnh stage đầy đủ; không sửa CSS/body/admin dùng chung.
+- Đây là chuyển động của một figure absolute: width/height/padding thay đổi trong phạm vi ảnh, chưa đo chi phí trên thiết bị thật; không tuyên bố chạy60FPS hoặc compositor-only.
+
+**Bằng chứng:** build PASS; focused ESLint page/hook0error/warning sau khi bổ sung kiểu trả về; typecheck vẫn27diagnostic ngoài phần sửa. Detector TSX/CSS `[]`, diff check PASS. Edge headless1440×1000 sáng/tối, API fixture4gói/ảnh Unsplash thật: PASS vị trí giữa hành trình dịch ngang hơn100px, điểm đáp sai lệch tọa độ/kích thước dưới2px, opacity cuối chỉ còn ảnh stage, cuộn ngược khôi phục hero; reduced-motion ảnh stage luôn hiện. Hồi quy wheel hai chiều/đà cuộn/đi từ header-footer/lề/viewport760, tab/vuốt giả lập/đặt lịch/detail/Back/F5/fallback retry/empty/ảnh404 ở1440/390 sáng/tối PASS. Không thay dữ liệu thật, chưa nghiệm thu responsive hoặc thiết bị thật.
+
+Đã xem ảnh giữa hành trình và sau khi đáp; tăng lớp thanh điều khiển trong lượt sửa cuối. Log local ignore `frontend/qa-policy-checkbox/packages-transfer-{build,lint,types,browser-final}.txt`; ảnh `packages-transfer-mid-{light,dark}.png` và `packages-stage-focus-{1440,390}-{light,dark}.png`. Phạm vi user: PackagesPage.tsx/CSS và hook user mới; hỗ trợ fixture/inventory. Không tự tích nghiệm thu.
+
+- [ ] PKG-U13 — Desktop cuộn từ hero tới gói: bản in di chuyển liên tục xuống đúng vùng ảnh pack, không nhảy vị trí ở điểm đáp; cuộn ngược trở về. Thanh tab và nút vẫn thấy/dùng được khi ảnh đi qua.
+- [ ] PKG-U14 — Đổi qua bốn gói, mở/đóng đặt lịch, F5 và thay kích thước cửa sổ: không có ảnh bay bị kẹt hoặc vùng ảnh trống. Màn hẹp và giảm chuyển động giữ ảnh tĩnh đầy đủ.
+
+### 20.13. Sửa ảnh chuyển giao che nội dung khi dừng cuộn — 24/10/2026
+
+Người dùng gửi ảnh bản in nằm giữa tiêu đề/tab và phần thông tin gói. Bản20.12 kết thúc chuyển giao ở mốc wheel giữ stage112px; dừng trước mốc này có thể để figure còn nổi trên vùng đọc. Đây là lỗi bố cục chuyển động; lượt kiểm trước chỉ xác nhận tọa độ điểm cuối, chưa bảo vệ trạng thái dừng giữa hành trình.
+
+Đã cho chuyển giao hoàn tất sớm khi catalog đến vùng đọc giữa viewport, trước khi wheel giữ gói. Catalog có nền và lớp cao hơn đường bay: ảnh đi phía sau phần nội dung, không che heading, tab, giá hoặc CTA kể cả người dùng dừng ở bất kỳ tiến độ nào. Giữ đường trở về hero, điểm đáp đúng vùng ảnh và cơ chế đổi bốn gói. Không sửa wheel handler/admin/code chung.
+
+Build PASS; focused ESLint0error/warning; typecheck27diagnostic ngoài phần sửa. Detector CSS `[]`, diff check PASS. Edge fixture sáng/tối thêm ca dừng với tab ởy310 như ảnh báo lỗi: nguồn đã opacity<.02, ảnh stage>.98; kiểm lớp catalog cao hơn hero để bảo vệ cả lúc bay. Điểm đáp/kích thước dưới2px, đảo chiều/reduced-motion và hồi quy wheel/đặt lịch/detail/Back/F5/error retry/empty/ảnh404 ở1440/390 PASS. Đã xem screenshot `frontend/qa-policy-checkbox/packages-transfer-reading-light.png` cho thấy tên gói/giá/nút không bị che. API vẫn giả lập, chưa thay nghiệm thu người dùng/thiết bị thật.
+
+Log local ignore `packages-transfer-fix-{build,lint,types,browser}.txt`; screenshot `packages-transfer-reading-{light,dark}.png` trong `frontend/qa-policy-checkbox/`. Phạm vi user: usePackagePhotoTransfer.ts và PackagesPage.css; hỗ trợ fixture/inventory. Giữ dấu x/o.
+
+- [ ] PKG-U15 — Cuộn chậm rồi dừng ở giữa hero và vùng gói, cuộn ngược và vào lại: ảnh không nằm trên tiêu đề/tab/thông số/nút; khi vùng đọc hiện ra, ảnh đã vào khung. Cuộn đổi gói và đặt lịch vẫn đúng.
+
+### 20.14. Giảm rối chuyển động và hiệu chỉnh nhịp cuộn — 25/10/2026
+
+Người dùng phản hồi hiệu ứng không mượt và gây rối, cho phép hiệu chỉnh hoặc chọn phương án cuộn khác. Đã đối chiếu hướng scroll-linked/spring trong tài liệu chính thức Motion; chọn chuyển ảnh kiểu album trong khung và hero chuyển động nhẹ, thay đường bay giữa hai section của20.12/20.13. Giữ điều khiển cuộn đổi gói đã yêu cầu, không thay bằng trang tĩnh.
+
+- Gỡ hoàn toàn usePackagePhotoTransfer, props/style trung gian, phép đo đích, MutationObserver/ResizeObserver và các lớp bảo vệ đường bay không còn cần. Không còn đổi width/height/padding ảnh theo scroll hoặc che/ẩn ảnh gói chờ hero tới. Hero dùng spring stiffness160/damping32/mass.8, biên độ24/-48px và xoay thêm2/-3độ trong vùng riêng; reduced-motion giữ ảnh tĩnh.
+- Gói đổi bằng opacity và trượt dọc28px vào/18px ra, không xoay9độ/scale.84/dịch160px nữa. Vào400ms, ra180ms; chữ chỉ đổi opacity200ms, giữ vị trí. Khóa wheel chuyển gói giảm380ms phù hợp nhịp mới; khung vẫn có ngưỡng/kiểm đầu-cuối/chống bỏ qua. Bước căn khung khi vào vùng dùng native smooth scroll, reduced-motion dùng instant. Không thêm thư viện hoặc sửa body/admin.
+- Test dọn các assertion ảnh bay/đáp đã bỏ, kiểm hero giữ width/height/padding và ảnh gói luôn hiện. waitPrint đợi cả ảnh mới ổn định, tránh coi exit nhanh hơn là transition đã xong. Mọi ID nghiệm thu cũ giữ nguyên; các ca chuyển giao hero là lịch sử, bản hiện tại kiểm theo PKG-U16.
+
+**Đo có điều kiện:** Edge headless156.0.4314.42,1440×1000/light,4gói API fixture, ảnh SVG giả lập, font đã sẵn sàng,90frame cuộn bằng script từ hero tới stage; một lượt trước và một lượt sau. LayoutCount35→2; tổng LayoutDuration5.09→0.45ms; RecalcStyleCount180→174; RAF p956.6→4.6ms, cả hai lượt đều1khoảng RAF>32ms. Số này chỉ cho thấy giảm công việc layout trong fixture sau khi gỡ thay đổi kích thước; không chứng minh60FPS, ảnh production hoặc trackpad thật đã hết giật. File `frontend/qa-policy-checkbox/packages-calm-{before,after}.txt` ghi nguyên môi trường/kết quả; không dùng số fixture làm nghiệm thu hiệu năng production.
+
+**Kiểm tra chức năng:** build PASS, focused ESLint0error/warning; typecheck vẫn27diagnostic ngoài trang/hook. Detector TSX/CSS `[]`, diff check PASS. Edge API fixture + ảnh Unsplash thật1440/390 light/dark: PASS cuộn đổi4gói/đà cuộn/đầu-cuối/đi từ header-footer/pointer lề/viewport760; tab/keyboard/vuốt/cancel/chọn liên tục; reduced-motion; ảnh gói luôn hiện; đúng gói đặt lịch/đóng trả focus/detail/Back/F5/custom-quote/fallback retry/empty/ảnh404. Đã xem desktop sáng và màn hẹp tối; chưa nghiệm thu responsive hoặc thiết bị thật.
+
+Log local ignore `packages-calm-{build,lint,types,browser-final}.txt`; ảnh `packages-calm-reading-{light,dark}.png` và `packages-stage-focus-{1440,390}-{light,dark}.png` trong `frontend/qa-policy-checkbox/`. Phạm vi user: PackagesPage.tsx/CSS, usePackageWheel.ts, xóa hook transfer; hỗ trợ script fixture/inventory. Không sửa admin/code chung; không tự tick nghiệm thu.
+
+- [ ] PKG-U16 — Cuộn hero→gói và đảo chiều: ảnh không bay qua chữ hoặc để trống khung. Đổi gói trượt ngắn/mờ chéo, chữ đứng yên; bước vào vùng gói căn nhẹ, không nhảy đột ngột. Kiểm lại chuột/trackpad thật, chọn liên tục và đúng gói đặt lịch.
+
+### 20.15. Chuyển động album và phản hồi chọn gói — 25/10/2026
+
+Theo yêu cầu tiếp tục làm trang chỉn chu hơn khi khách cân nhắc dịch vụ: giữ bố cục, giá, nội dung và wheel navigation hiện tại. Hero có nhịp đặt bản in xuống một lần (850ms), phần chữ xuất hiện nhẹ (650ms); không chờ animation mới dùng được nút. Khung ảnh gói mở phần crop từ 7%/5% về đầy đủ theo cuộn bằng CSS view timeline; trình duyệt không hỗ trợ giữ ảnh đầy đủ. Nét nhấn dưới chữ khoảnh khắc hiện theo cuộn. Nền tab được chọn chuyển liền mạch bằng Motion layoutId; phản hồi icon/nút ngắn, không di chuyển vùng đọc giá. Reduced motion tắt entrance/crop/underline động, chuyển tab tức thời và icon tĩnh. Không thêm dependency.
+
+**Kiểm tra:** build PASS; ESLint riêng PackagesPage.tsx PASS; detector TSX/CSS `[]`; diff check PASS. Lint toàn repo còn 56 error/174 warning, typecheck 27 diagnostic không thuộc PackagesPage. Log local `frontend/qa-policy-checkbox/packages-editorial-{build,lint,types,browser-final}.txt`. Edge headless, API/ảnh SVG fixture 1440×1000: bản sáng PASS wheel/keyboard/touch cancel/reduced motion/modal đúng gói/detail/Back/F5/fallback retry/empty/ảnh lỗi; bản tối PASS wheel/đà cuộn/đầu-cuối và hình học hero/ảnh stage. Lượt gộp dừng do timeout đợi tab “Gói chưa có ảnh” sau reload ở bản tối (test-packages-public.cjs:260), chưa xác định nguyên nhân; không coi toàn suite PASS. Các lượt 390 chưa chạy tới, screenshot cũ không dùng làm bằng chứng mới. Đã xem ảnh desktop sáng mới với ảnh SVG fixture; chưa kiểm cảm nhận với ảnh thật/trackpad và responsive riêng.
+
+Phạm vi user: PackagesPage.tsx/CSS; tài liệu inventory user. Không sửa admin hoặc mã chung. Giữ toàn bộ dấu nghiệm thu.
+
+- [ ] PKG-U17 — F5 rồi cuộn hero→gói và ngược lại: ảnh mở đầu có nhịp đặt xuống, khung ảnh mở nhẹ khi vào màn hình, không che chữ/giá/nút. Chuyển tab bằng click/phím/cuộn: dấu chọn theo đúng gói, đặt lịch đúng lựa chọn. Bật giảm chuyển động: không có entrance/crop/di chuyển dấu chọn.
 
 ## 22. Sửa cấu trúc inventory — 16/10/2026
 
@@ -1166,3 +1329,115 @@ Người dùng báo phần hero/tìm kiếm/danh mục/bộ lọc còn nháy ho�
 **Dung lượng, không phải benchmark production:** HTML build hiện 73.654 byte / gzip 14.749 byte. So cùng HTML khi loại riêng CSS inline, DOM startup và script restore Explore: chênh 14.867 byte thô / gzip 2.971 byte. Phần này hiện được chèn trong HTML chung nên các route khác cũng mang dung lượng này. Đây là chi phí truyền/phân tích thêm; chưa đo latency/LCP/INP production hoặc CPU/mạng thiết bị thật, không kết luận nhanh/chậm hơn từ kích thước gzip. Cache không thêm request; fixture xác nhận không lặp request ảnh khi danh mục hoàn tất trong ca đã đo.
 
 **Phạm vi:** user: ExplorePage/CSS, ExploreToolbar, categorySnapshot mới; chung startup public: plugin, chỉ thêm xử lý Explore. QA: mở rộng script refresh. Không sửa admin, hook settings hoặc SearchBar dùng chung; giữ thay đổi có trước ở script measure. Giữ EXP-R01/R02 chưa đánh dấu, chờ người dùng kiểm; responsive vẫn vòng cuối. Lựa chọn filter lưu trong localStorage vẫn khôi phục khi React chạy, chưa đo mọi filter đã lưu/locale/font/thiết bị.
+
+### 24.24. Khám phá: font lúc refresh và giao diện chờ ảnh — 23/10/2026
+
+Theo phản hồi ảnh của người dùng: phần trên vẫn nháy, phần dưới là vùng trống với hai dòng tải. CSS startup trước đây chưa khai báo font Fraunces; font chỉ được khai báo khi CSS ứng dụng tới, dùng swap nên có thể thay chữ đang hiển thị. Đổi sang face riêng Explore Fraunces, khai báo ngay trong CSS dùng chung cho HTML startup/React, dùng optional để không đổi font muộn trong cùng lượt trang. Font sao chép từ asset có sẵn, không tải nguồn ngoài; font global không sửa. Bổ sung các thuộc tính reset của điều khiển ngay trong CSS Explore. Đây là xử lý nguồn chuyển font trong mã, không kết luận mọi nguyên nhân nháy trên máy người dùng đã hết.
+
+Thay dòng “Đang chuẩn bị những khung hình…” bằng skeleton lưới ảnh tĩnh, cùng component cho startup và React, giữ một dòng trạng thái tải có role status. Dùng token sáng/tối, không shimmer và không thêm timer. Giữ nguyên request, lọc, sort và luồng ảnh đã nghiệm thu.
+
+**Bằng chứng:** build PASS; focused ESLint 0 error/1 warning effect có sẵn. Typecheck toàn repo lỗi ngoài file sửa; lint toàn repo 60 error/174 warning. Detector `[]`, diff check PASS. Edge headless 1440×900, build local/API fixture, light/dark PASS: cố tình chặn font và JS/CSS, so hình học tiêu đề/chip/search/input/filter/header/skeleton trước và sau React; tải danh mục rồi refresh giữ đủ chip. Đã xem screenshot sáng. Hồi quy sáng/tối PASS pagination, page2 retry, category retry, advanced filter, order asc, empty/reset. Artifact local bị ignore: `frontend/qa-policy-checkbox/explore-followup-{build,types,lint,refresh,regression}.txt`, `explore-runtime-{light,dark}.png`.
+
+**Phạm vi:** user: ExplorePage.tsx/CSS, ExploreToolbar.tsx, font public riêng Explore; QA: test-explore-refresh.cjs. Không sửa admin hoặc code chung. Giữ nguyên dấu nghiệm thu cũ, EXP-R01/R02 chờ người dùng. Chưa kiểm production, mọi cấu hình filter lưu, storage bị khóa, thiết bị thật; responsive vẫn vòng cuối.
+
+- [ ] EXP-R03 — F5 Khám phá với mạng chậm: phần tiêu đề/bộ lọc giữ ổn định, vùng ảnh hiện khung chờ theo lưới; API xong hiện ảnh hoặc trạng thái rỗng/lỗi đúng. Kiểm lại cả sáng/tối trên trình duyệt người dùng.
+
+### 24.25. Khám phá: đồng bộ bo góc và font ngay từ HTML — 23/10/2026
+
+Người dùng xác nhận bản 24.24 vẫn đổi chữ và nút pill → góc vuông, không nghiệm thu EXP-R01/R02/R03. Xác minh trong mã: `index.css` layer base ép button bo góc 8px !important, nhưng startup Explore chỉ khai báo 999px thường. CollectionsToolbar đã có rule đồng bộ 8px !important. Sửa trong ExplorePage.css để ngay startup đã có cùng bán kính 8px; không sửa CSS global.
+
+Font optional ở 24.24 chưa giải quyết được phản hồi thực tế. Bản này dùng chính Fraunces 500 có sẵn dưới dạng data URL trong CSS Explore, khai báo ở HTML startup trước ứng dụng, không chờ request font và không thay bằng font hệ thống. Xóa bản sao font public vừa tạo ở 24.24 vì không còn dùng. Chi phí: thêm khoảng 41KB base64 vào CSS được nhúng HTML và CSS route; chưa đo hiệu năng production, không gọi đây là cải thiện tốc độ.
+
+Theo yêu cầu UI tải đẹp hơn, bỏ skeleton ô lớn, dùng ExploreLoading chung cho HTML startup/React: thanh mảnh 96×2px màu accent với một dòng Đang tải ảnh, không giả phần trăm; reduced-motion hiện thanh tĩnh. Không đổi API/lọc/sort/tải thêm. Xóa CSS skeleton không còn dùng.
+
+**Kiểm:** build PASS, focused ESLint 0 error/1 warning effect có sẵn; detector `[]`; diff check PASS. Edge headless 1440×900, build local, API fixture, sáng/tối PASS: chặn JS/CSS ứng dụng, font check đã sẵn sàng trước ứng dụng; so kích thước chữ thực bằng Range (không chỉ hộp h1), font-weight, border-radius chip 8px, search/input/filter/header/loading trước/sau React; API danh mục/reload giữ chip. Hồi quy Explore sáng/tối PASS retry danh mục/trang2, filter nâng cao/order asc/pagination/empty/reset. Đã xem screenshot sáng của loading mới. Log local bị ignore: `frontend/qa-policy-checkbox/explore-v2-{build,focused-lint,types,refresh,regression}.txt`; ảnh `explore-runtime-{light,dark}.png`.
+
+Phạm vi user: ExplorePage.tsx/CSS, ExploreToolbar.tsx; QA: test-explore-refresh.cjs; inventory này. Không sửa code chung/admin. Giữ nguyên dấu nghiệm thu. Chưa xác minh trình duyệt người dùng, production, mọi filter lưu hoặc thiết bị thật; responsive vẫn vòng cuối. Typecheck/lint toàn repo có lỗi ngoài phạm vi như đã ghi 24.24.
+
+### 24.26. Chỉnh typography cụm tải Khám phá — 23/10/2026
+
+Theo phản hồi font dòng tải chưa đẹp: thay Arial 14px bằng display face Explore Fraunces đã có sẵn, italic 22px/1.4, weight 500, tracking -.02em, dùng text-primary cho độ đọc. Đặt chữ trên thanh tải 120px, gap 18px; bỏ dấu ba chấm, thanh chạy một chiều 1,8s thay dao động qua lại. Không thêm font/request hoặc timer; reduced-motion vẫn thanh tĩnh. HTML startup và React tiếp tục dùng chung ExploreLoading.
+
+Phạm vi user: ExplorePage.css và ExploreToolbar.tsx; không sửa admin/code chung. Build PASS, ESLint toolbar 0 error/warning, detector `[]`, diff check PASS. Edge headless 1440×900 fixture light/dark PASS refresh/chặn JS-CSS/font/glyph bounds/chip/search/header/API/reload; đã xem screenshot light. Log local ignore: `frontend/qa-policy-checkbox/explore-loading-polish-{build,lint,refresh}.txt`. Chỉ đổi trình bày, không chạy lại bộ hồi quy nghiệp vụ đã PASS 24.25. Chưa kiểm thiết bị thật/production; responsive và dấu nghiệm thu giữ nguyên, chưa tự xác nhận giao diện mới đạt.
+
+### 24.27. Tái sử dụng trạng thái tải dữ liệu cho phần user — 23/10/2026
+
+Người dùng đồng ý cụm tải 24.26 và yêu cầu áp dụng ở những nơi cần tải dữ liệu. Tách `components/user/DataLoadingFrame.tsx` (markup thuần cho HTML startup), `DataLoading.tsx` (entry React nạp CSS) và `DataLoading.css`. Hai kích thước section 240px/chữ22px và compact 128px/chữ18px; cùng font đã duyệt, thanh tải 120px, role status, reduced-motion tĩnh. Chuyển khai báo font và CSS từ Explore sang file riêng, không thêm bản sao font; plugin startup public đọc file này trước CSS Explore, giữ khung pre-JS/React. Không đổi cơ chế request/cache/API hoặc thêm thời gian chờ giả.
+
+**Nơi áp dụng:** Khám phá, Kết quả tìm kiếm (vùng chưa có ảnh), Ảnh yêu thích, Bộ sưu tập yêu thích, Lịch sử tải, Lịch đặt của tôi, Chi tiết lịch đặt, Gói chụp, Thông báo; panel Lịch đặt trong profile, Phiên đăng nhập, Cài đặt thông báo, Danh sách theo dõi/người theo dõi. Mỗi nơi có message phù hợp hoặc dùng bản dịch loading hiện có. Bỏ dòng status trùng ở lần tải tìm kiếm đầu. Xóa skeleton/import/CSS của thông báo, settings, user list và class loading panel không còn dùng. CSS loader chỉ cho phép vùng user đang chứa DataLoading hiện khi overlay cũ hoạt động, tránh bị ẩn cả status.
+
+**Giữ riêng:** skeleton Bộ sưu tập/Chi tiết bộ sưu tập giữ bố cục đã nghiệm thu; skeleton phân tích/dashboard giữ hình học biểu đồ; spinner của nút gửi/lưu, upload/download ảnh, gợi ý tìm kiếm và menu nhỏ tiếp tục theo thao tác. Không thay auth gate/global loader dùng chung admin. Không thêm loader giả cho trang không tải dữ liệu. Đây là tái sử dụng UI tải; không có nghĩa mọi route đã có HTML startup chống nháy như Explore/Collections.
+
+**Lỗi phát hiện khi kiểm:** Bộ sưu tập yêu thích có thể chuyển sang signin khi token/user chưa khôi phục xong. Trang nay chờ initializing và request tài khoản; nếu tài khoản lỗi thì không chờ vô hạn ở nhánh này mà giữ xử lý chuyển hướng trước đó. Không sửa store auth hoặc kiểm quyền backend.
+
+**Bằng chứng:** build cuối PASS. ESLint component mới + plugin 0 error/warning; lint repo 60 error/174 warning có sẵn, lint tập file chạm còn 7 error/8 warning ở mã legacy (duplicate import, unused, effect/declaration); không báo toàn repo sạch. Typecheck 27 diagnostic, không có ở các file giao diện mới/sửa; không sửa lỗi ngoài phạm vi. Detector component/trang kiểm `[]`; diff check PASS. Edge headless 1440×900/API fixture: 8 route × light/dark PASS giữ API pending → loader nhìn thấy/font đúng/role status/reduced-motion → kết thúc API và loader tháo; routes packages, profile/bookings, notifications, favorites/photos, favorites/collections, downloads, s/photos/loading-fixture, settings (bấm tab Thông báo). Đã xem packages sáng và settings tối. Explore refresh pre-JS/font/glyph/search/chip/header/reload PASS; hồi quy Explore filter/order/pagination/page2/category retry/empty/reset PASS; public startup Collections/palette/storage/admin bootstrap PASS.
+
+Script mới `frontend/scripts/test-user-data-loading.cjs`. Log/ảnh local ignore: `frontend/qa-policy-checkbox/user-data-loading-{types,lint,focused-lint,new-lint,build,browser,explore,explore-regression,public-startup}.txt`, `user-loading-{packages,settings}-{light,dark}.png`. Panel Phiên đăng nhập/Danh sách theo dõi/Lịch đặt profile và Chi tiết lịch đặt chưa kiểm tương tác riêng trong lượt này; dùng cùng frame nhưng không coi đó là kiểm toàn bộ chức năng. Chưa kiểm production/thiết bị thật; responsive vẫn vòng cuối.
+
+**Phạm vi:** user: component mới, các trang/panel và CSS vừa liệt kê; chung build public: chỉ thêm stylesheet user vào startup plugin; QA scripts và inventory user. Không sửa admin, inventory admin, auth gate/global loader/useSiteSettings. Giữ các dấu nghiệm thu cũ, không tự tích thêm ca chức năng.
+
+- [ ] LOAD-01 — Vào các trang danh sách user nêu trên với mạng chậm: hiện một cụm tải đúng nội dung, có kết quả/rỗng/lỗi thì kết thúc tải; dữ liệu đã có và nút đang gửi không bị thay bởi loader toàn trang.
+- [ ] LOAD-02 — Kiểm panel tài khoản và theme sáng/tối; cụm tải gọn, không nháy font, bật giảm chuyển động thì thanh tĩnh. Responsive nghiệm thu riêng.
+
+### 24.28. Hai kiểu tải cho các vùng user còn lại — 24/10/2026
+
+Theo yêu cầu người dùng sau 24.27: thống nhất tải lần đầu và tải lại/tải thêm. `DataLoading` có size section/compact cho lần đầu chưa có nội dung, size inline cho cập nhật cục bộ. Inline giữ cùng thanh chuyển động, chữ body 14px, không chiếm vùng 240px. Skeleton vẫn dùng ở bề mặt cần giữ hình học (Collections, chart/dashboard, ảnh đang giải mã); trạng thái nút gửi/lưu/upload/download vẫn theo thao tác. Không thay fetch nền thành màn hình chờ hoặc thêm delay giả.
+
+**Áp dụng và giữ hành vi:**
+- Khám phá: lần đầu chờ kết quả riêng của trang, không hiển thị ảnh còn trong store từ route trước; sau khi đã tải thành công, đổi bộ lọc/tải thêm giữ grid và hiển thị inline. Request lỗi giữ ảnh cũ/thử lại. Kết quả cũ không ghi nhận lượt tải đầu của query mới sau cleanup.
+- Bộ sưu tập yêu thích: chuyển trang giữ các thẻ cũ, inline, khóa Prev/Next khi đang tải; chỉ lần đầu rỗng mới dùng loader lớn. Không ẩn vùng nội dung qua overlay toàn cục lúc cập nhật.
+- Ảnh yêu thích, lịch sử tải, tìm kiếm, danh sách/chi tiết bộ sưu tập: thêm chỉ báo inline ở vùng đang cập nhật; tải thêm thủ công giữ nhãn nút xử lý hiện có. Không đổi contract/filter/sort/request.
+- Trang chủ/danh mục và ảnh nổi bật: có trạng thái tải cục bộ thay cho màn hình trống; nội dung sẵn có tiếp tục hiện. Giữ skeleton riêng ở khối bộ sưu tập nổi bật, không thay ảnh thật bằng loader khi refresh nền.
+- Đặt lịch: tải danh sách gói trong form dùng loader compact; không thay trạng thái submit. Gói chụp giữ dữ liệu API đã có khi cập nhật. Chi tiết ảnh có loader ban đầu trong vùng ảnh; không sửa phân biệt modal/trang hay cơ chế giải mã ảnh.
+- Hồ sơ: loader tài khoản/ảnh nằm trong trang; bỏ sync loading toàn trang do ProfilePage sở hữu. Tách phần ảnh thành ProfilePhotosPanel và phần bộ sưu tập thành ProfileCollectionsPanel, giữ cấu trúc thẻ/điều hướng/callback và các tab mounted. ProfilePage giảm từ 1.165 còn 994 dòng, không cắt cơ học hoặc thay store.
+- Thống kê: lần đầu giữ skeleton biểu đồ, đổi khoảng ngày giữ chart/số liệu cũ và báo inline; kết quả request của kỳ cũ không ghi đè kỳ mới sau cleanup. Dashboard giữ dữ liệu khi Làm mới; loading khởi tạo true để không thoáng hiện thẻ số 0 trước request đầu. Phiên đăng nhập/thông báo giữ nội dung khi đang cập nhật thay vì trả lại loader lớn.
+
+**Sửa tình huống phát hiện khi kiểm:** effect bộ sưu tập hồ sơ phụ thuộc loading/length nên kết quả [] kích hoạt tải lặp. Nay chỉ quyết định tải khi vào tab/đổi người dùng, dựa snapshot store; kết quả rỗng kết thúc tải. Rời rồi vào lại tab rỗng vẫn có thể thử tải lại. Không sửa store chung hoặc API. Một lượt test panel trước đó fail vì API fixture thiếu `success: true`; đã sửa fixture theo contract thật, không coi là lỗi sản phẩm.
+
+**Kiểm:** build cuối PASS. Typecheck ghi 27 diagnostic có sẵn (gồm thuộc tính follower trong hook dashboard), không có lỗi mới ở frame/panel mới; không báo typecheck sạch. Lint repo lần kiểm của lượt này 58 error/174 warning; lint frame/panel mới 0 error/warning; focused các trang legacy còn lỗi effect/ref/any/purity có sẵn. Detector frame/panel/Home/Explore `[]`; diff check PASS. Không sửa mã admin để làm sạch check.
+
+Edge headless 1440×900, API fixture local, light/dark:
+- PASS 8 route × 2 theme: giữ API pending → loader font/status/reduced-motion → API hoàn tất tháo loader, theo test-user-data-loading.cjs.
+- PASS Explore/FavoriteCollections/Dashboard: lần đầu có loader/skeleton, update giữ node DOM đã đánh dấu và còn nhìn thấy, kết thúc request không mất dữ liệu; Explore 503 giữ ảnh và hiện retry. `test-loading-modes.cjs`.
+- PASS hồ sơ: ảnh pending→empty, hiển thị thẻ bộ sưu tập sau tách panel, đổi kỳ giữ node số liệu/chart và cập nhật số mới. PASS riêng bộ sưu tập [] chỉ một request, không lặp tải. `test-profile-loading-modes.cjs` và `--empty`.
+- PASS hồi quy Explore filter/order/pagination/page2/category retry/empty/reset; refresh startup/font/glyph/chip/search/header; Search special query/filter/page2 retry/empty/error/query change/reload; Image modal/arrows/close/author/error/retry/reload không nháy modal. Số ms fixture không được dùng làm kết luận production.
+
+Đã xem screenshot Explore sáng (sau lỗi vẫn giữ ảnh) và hồ sơ tối (chart còn khi cập nhật). Log local ignore: `frontend/qa-policy-checkbox/loading-modes-{build,types,lint,new-lint,focused-lint,browser,initial,explore,refresh,profile,profile-empty,search,image}.txt`; ảnh `loading-modes-{explore,favorites,dashboard,profile}-{light,dark}.png`. Những panel nhỏ/menu, auth gate dùng chung và loader mã lazy toàn ứng dụng giữ cơ chế riêng; không tuyên bố mọi request toàn app đều có cùng DOM. Trang không fetch dữ liệu không thêm animation giả. Chưa kiểm production, mọi tài khoản/lỗi API thật hoặc thiết bị thật; responsive vẫn vòng cuối.
+
+**Phạm vi:** user: DataLoading/CSS, các trang/component/hook user liệt kê trên, hai panel mới; QA: hai script loading-modes/profile mới và script refresh đang có. Không sửa admin, inventory admin, useSiteSettings, global loader hoặc store ảnh/auth chung. Giữ nguyên dấu nghiệm thu và thay đổi có trước; chưa commit.
+
+- [ ] LOAD-03 — Khi đã có ảnh/thẻ/biểu đồ, đổi filter/kỳ/trang hoặc Làm mới: nội dung cũ vẫn hiện với chỉ báo tải nhỏ; xong thì cập nhật, lỗi thì giữ nội dung cùng phản hồi/thử lại phù hợp.
+- [ ] LOAD-04 — Hồ sơ: tải ảnh lần đầu đúng trạng thái, tab bộ sưu tập rỗng dừng tải, tab có dữ liệu vẫn mở được thẻ, đổi kỳ thống kê không làm mất biểu đồ. Kiểm thực trên trình duyệt người dùng; responsive riêng.
+
+### 24.29. Khám phá: ngắt dòng và nội dung rỗng theo ngữ cảnh — 24/10/2026
+
+Theo ảnh người dùng: mô tả hero bị giới hạn 70ch nên rơi riêng “yêu thích” xuống dòng; icon camera là block sau reset CSS nhưng không có margin ngang auto nên nằm lệch trái trong empty state. Nới mô tả lên 88ch, text-wrap pretty (không nowrap/width cứng), căn icon bằng margin auto; mô tả empty giới hạn 60ch và balance, rút gọn copy. Giữ font/chống nháy/hero đã duyệt.
+
+Nội dung empty nay dựa kết quả request thành công và tham số thật, không đoán từ imageCount mặc định 0/cache: (1) không chọn danh mục/không có bộ lọc kết quả → “Chưa có ảnh”; (2) chọn danh mục, không lọc kết quả → “Danh mục này chưa có ảnh”, nêu đúng tên danh mục và nút Xem tất cả ảnh; (3) có bộ lọc ảnh → “Chưa có ảnh phù hợp”, mô tả bộ lọc chung, không mặc định đổ lỗi bố cục. Sort/order không phải bộ lọc loại ảnh. Bỏ bộ lọc gọi resetFilters và giữ activeCategory; Xem tất cả ảnh gọi clearFilters để về tất cả. Nút Xóa bộ lọc trên toolbar vẫn giữ hành vi đã duyệt. Heading empty đổi thành h2 theo thứ bậc sau h1.
+
+Phạm vi user: ExplorePage.tsx/CSS; QA: test-explore-empty.cjs mới, chỉnh test-explore-refresh theo tiêu đề empty tổng quát. Không sửa admin hoặc code chung. Build PASS; ESLint Explore/Toolbar 0 error/1 warning effect có sẵn; typecheck hiện 25 diagnostic ngoài Explore; detector `[]`; diff check PASS. Edge headless 1440×900/API fixture/light-dark PASS: hero một dòng, ba loại empty, sort không đổi loại empty, bỏ lọc giữ danh mục, về tất cả, icon căn giữa sai số dưới1px. Hồi quy Explore filter/order/pagination/retry/empty/reset và startup/refresh/font/search/chip/header PASS. Cache có thể trả kết quả không gọi mạng; test kiểm hành vi UI sau reset, không buộc tạo request thừa. Đã xem screenshot light. Log/ảnh local ignore: `frontend/qa-policy-checkbox/explore-empty-{build,lint,types,browser,regression,refresh}.txt`, `explore-empty-category-{light,dark}.png`. Responsive/thiết bị thật/production chưa nghiệm thu; không đổi các dấu x/o có trước.
+
+- [ ] EXP-E01 — Chọn danh mục chưa có ảnh, không đặt bộ lọc ảnh: hiện đúng tên danh mục chưa có ảnh, icon và nội dung căn giữa; Xem tất cả ảnh về danh mục Tất cả.
+- [ ] EXP-E02 — Có bộ lọc mà kết quả rỗng: thông báo không có ảnh phù hợp; Bỏ bộ lọc giữ danh mục đã chọn. Chỉ đổi sort không bị báo như bộ lọc loại ảnh.
+- [ ] EXP-E03 — Mô tả hero desktop không rơi riêng vài chữ xuống dòng; nội dung dài ở màn hình hẹp vẫn ngắt tự nhiên. Responsive nghiệm thu riêng.
+
+### 24.30. Upload: trạng thái hoàn tất thật và hàng đợi MongoDB — 25/10/2026
+
+Người dùng báo có lúc đăng xong nhưng chưa thấy ảnh và cho phép sửa luồng upload chung có admin phụ thuộc, không sửa file khu vực admin. Đã xác nhận frontend coi `202 Accepted` là thành công dù backend chưa tạo ảnh. Hai vòng pre-upload/finalize thêm promise vào mảng sau khi `Promise.all` đã bắt đầu nên không đợi đủ các lượt sau. Queue backend là mảng RAM, không có phục hồi như lời log cũ.
+
+**Đã sửa:**
+- Lưu UploadJob có chủ sở hữu trước khi cấp URL R2; finalize đợi lưu queued mới trả202. Poll endpoint có auth/owner và no-store chỉ trả completed kèm ảnh Mongo thật. Frontend chờ ảnh thật mới tính tiến độ/refresh/success; timeout5phút nói kết quả chưa xác định, giữ form/mã upload để retry cùng lượt. Bỏ tiến độ xử lý giả ở service legacy và toast thành công khi mới chuyển file lên storage.
+- Batch dùng số worker cố định, chờ đủ mọi ảnh. Pre-upload chuyển tác dụng phụ ra khỏi updater và khớp File object thay vì vị trí/tên-size; thêm/xóa ảnh không gắn nhầm tiến độ. Logout/reset/unmount ngừng cập nhật của lượt cũ; kết quả finalize kiểm phiên auth trước/sau request.
+- Queue Mongo claim nguyên tử, lease120giây/heartbeat40giây,2job/APIprocess; retry tối đa3lần có backoff, job gián đoạn cuối cùng thành failed rõ ràng. ID ảnh cấp trước và kiểm bản ghi đã có để không tạo ảnh trùng khi replay. AVIF thành job lưu riêng, dùng chung giới hạn Sharp với WebP; ảnh WebP dùng được trước. Không xóa file nguồn đang queued/processing/failed từ cleanup hay nút hủy.
+- Giữ pending của user và approved của admin; success giải thích ảnh chờ duyệt. Thông báo batch chỉ sau xử lý thật. Cache danh sách ảnh hồ sơ được đổi phiên bản sau upload xác nhận, giữ qua F5 bằng sessionStorage; không dùng lại danh sách cũ. Đồng bộ màu tiến độ/nội dung success theo theme, sửa chữ/icon nút success xuống dòng. Không cần Redis; vẫn chạy trong API process. Log Sharp lúc khởi động đã bỏ, cấu hình xử lý giữ nguyên.
+
+**Bằng chứng:**11test Node PASS (API/mockMongo-R2, processor idempotency/lost lease, runner chia sẻ fake store/restart/claim/retry/AVIF, batch10ảnh/poll lỗi mạng/timeout/abort). Edge headless desktop1440×1000 light/dark + API/storage fixture: PASS chọn7ảnh mỗi ảnh chỉ pre-upload1lần, 202không báo xong, chờ đủ lượt sau, failed giữ form và retry cùng7ID, success giữ pending, bấm Xem trang cá nhân thấy đủ7ảnh. Ca cache/F5 bổ sung PASS sáng/tối, giữ đủ7ảnh và query revision sau reload; log upload-durable-browser-cache.txt. Đã xem screenshot progress sáng/success tối; sửa một batch và xác nhận browser tối đa một lượt nữa. Detector UI `[]`. Build PASS; lint phần sửa0error/1warning effect khởi tạo có trước; toàn frontend55error/167warning ngoài phần upload (ngoại trừ warning khởi tạo đã nêu); typecheck27diagnostic không thuộc phần upload. Log local ignore `frontend/qa-policy-checkbox/upload-durable-{tests-final,browser-confirm,types-confirm,lint-scope,lint-all,build-last}.txt`; screenshot `upload-{processing,confirmed}-{light,dark}.png`.
+
+**Giới hạn:** chưa upload thật vào Mongo/R2, chưa kill/restart backend thật khi đang xử lý ảnh lớn và chưa đo hiệu năng production. Test restart dùng fake store, không chứng minh đầy đủ vận hành Mongo. Lượt RAM cũ mất metadata không tự khôi phục; file được chọn trước bản mới cần chọn lại. Side effect email/AI/notification chưa có transactional outbox; failed source được giữ để retry, chính sách lưu lâu dài cần xử lý trước triển khai lớn. Responsive/thiết bị thật chưa nghiệm thu. Chi tiết triển khai/vận hành tại [UPLOAD_PIPELINE.md](UPLOAD_PIPELINE.md).
+
+**Phạm vi:** user UI UploadModal/upload hooks/progress/CSS; **chung được người dùng cho phép**: service upload/fetch ảnh user và types upload, locale upload, controller/routes/startup backend, model/queue/processor/Sharp và cleanup; QA và tài liệu user. Không sửa file khu vực admin hoặc useSiteSettings. Giữ mọi dấu x/o.
+
+- [ ] UPL-01 — Gửi1và hơn3ảnh: chưa báo thành công khi đang xử lý; ảnh xuất hiện trong hồ sơ sau khi hoàn tất. User thấy thông tin chờ duyệt, chưa xuất hiện công khai trước duyệt.
+- [ ] UPL-02 — Lỗi xử lý/mạng: form và nội dung còn nguyên; thử lại cùng lượt không tạo ảnh trùng hoặc báo thành công giả. Thêm/xóa ảnh giữa pre-upload không làm sai tiến độ.
+- [ ] UPL-03 — Môi trường test riêng: restart backend khi queued/processing, đợi lease phục hồi; lỗi liên tiếp báo failed; không xóa source đang dùng. Kiểm ảnh lớn và R2/Mongo gián đoạn.
+- [ ] UPL-04 — Đăng xuất/đổi tài khoản lúc đang chờ: không hiện ảnh/kết quả của phiên cũ trong phiên mới; tài khoản khác không đọc trạng thái/xóa source. Luồng admin chung giữ chọn danh mục/approved, cần phiên admin kiểm thật.

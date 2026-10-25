@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Camera, Check, Clock3, MapPin, Plus, AlertCircle, RefreshCw } from 'lucide-react';
@@ -156,7 +157,7 @@ export default function MyBookingsPage() {
         </nav>
 
         {loading ? (
-          <div className="booking-detail-state">Đang tải lịch đặt...</div>
+          <DataLoading message="Đang tải lịch đặt" />
         ) : filtered.length === 0 ? (
           <div className="my-bookings-empty">
             <Camera size={48} aria-hidden />

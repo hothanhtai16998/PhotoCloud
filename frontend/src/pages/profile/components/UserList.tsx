@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { followService } from '@/services/followService';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DataLoading } from '@/components/user/DataLoading';
 import { toast } from 'sonner';
 import type { FollowUser } from '@/types/follow';
 import { t } from '@/i18n';
@@ -59,15 +59,7 @@ export function UserList({ userId, mode, skipLoading = false }: UserListProps) {
     if (loading) {
         return (
             <div className="user-list">
-                {Array.from({ length: 10 }).map((_, i) => (
-                    <div key={i} className="user-item">
-                        <Skeleton className="user-avatar" />
-                        <div className="user-info">
-                            <Skeleton className="h-4 w-24 mb-2" />
-                            <Skeleton className="h-3 w-32" />
-                        </div>
-                    </div>
-                ))}
+                <DataLoading message={t('common.loading')} size="compact" />
             </div>
         );
     }

@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useState, useEffect } from 'react';
 import { authService, type Session } from '@/services/authService';
 import { toast } from 'sonner';
@@ -84,17 +85,18 @@ export function ActiveSessions() {
 		}
 	};
 
-	if (loading) {
+	if (loading && sessions.length === 0) {
 		return (
 			<div className="active-sessions">
 				<h2 className="form-title">{t('profile.activeSessionsTitle')}</h2>
-				<div className="sessions-loading">{t('common.loading')}</div>
+				<DataLoading message={t('common.loading')} size="compact" />
 			</div>
 		);
 	}
 
 	return (
 		<div className="active-sessions">
+			{loading && <DataLoading size="inline" message="Đang cập nhật phiên đăng nhập" />}
 			<div className="sessions-header">
 				<h2 className="form-title">{t('profile.activeSessionsTitle')}</h2>
 				{sessions.length > 1 && (

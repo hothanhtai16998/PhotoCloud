@@ -1,5 +1,6 @@
 /* ExplorePage — public explore with hero + filters + grid */
 
+
 .explore-page {
   min-height: 100vh;
   background: var(--studio-bg-warm);
@@ -38,7 +39,8 @@
   color: var(--studio-text-muted);
   font-size: 15px;
   line-height: 1.6;
-  max-width: 70ch;
+  max-width: 88ch;
+  text-wrap: pretty;
   margin: 0;
 }
 
@@ -217,10 +219,10 @@
 
 .explore-empty svg {
   color: var(--studio-accent-copper);
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
 }
 
-.explore-empty h3 {
+.explore-page .explore-empty h2 {
   font-family: var(--studio-font-display);
   font-weight: 500;
   font-size: 22px;
@@ -229,8 +231,11 @@
 }
 
 .explore-empty p {
-  margin: 0;
+  max-width: 60ch;
+  margin: 0 auto;
   font-size: 15px;
+  line-height: 1.6;
+  text-wrap: balance;
 }
 
 /* Mobile */
@@ -288,7 +293,7 @@ html[data-startup-surface='explore'] .public-header-startup { display: block; }
   --studio-border-soft: var(--border-color);
   --studio-accent-copper: var(--accent);
   --studio-accent-copper-dark: var(--button-primary-hover);
-  --studio-font-display: 'Fraunces', 'Playfair Display', Georgia, serif;
+  --studio-font-display: 'Explore Fraunces', Georgia, serif;
   --studio-font-body: Arial, sans-serif;
   font-family: var(--studio-font-body);
   line-height: 1.5;
@@ -317,3 +322,11 @@ html[data-startup-surface='explore']::-webkit-scrollbar { display: block !import
 .explore-page svg { display: block; vertical-align: middle; flex-shrink: 0; }
 .explore-page { font-feature-settings: "cv11", "ss01"; -webkit-font-smoothing: antialiased; text-size-adjust: 100%; }
 .explore-page .search-filters-toggle { appearance: button; position: relative; cursor: pointer; border-radius: 8px; }
+
+/* Include browser-reset properties in the early shell, before Tailwind loads. */
+.explore-page h1, .explore-page h2, .explore-page p { margin-block-start: 0; }
+.explore-page button, .explore-page input, .explore-page select { font-family: inherit; font-feature-settings: inherit; font-variation-settings: inherit; letter-spacing: inherit; }
+.explore-page .explore-filter-label { font-size: 12px; font-weight: 700; letter-spacing: .10em; }
+.explore-page .explore-chip { font-size: 13px; font-weight: 500; letter-spacing: normal; }
+/* Match the existing global rule before the app stylesheet arrives. */
+.explore-page button { border-radius: 8px !important; }

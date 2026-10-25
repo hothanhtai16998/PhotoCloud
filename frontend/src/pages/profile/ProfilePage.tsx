@@ -1,3 +1,6 @@
+import { DataLoading } from '@/components/user/DataLoading';
+import { ProfilePhotosPanel } from './components/ProfilePhotosPanel';
+import { ProfileCollectionsPanel } from './components/ProfileCollectionsPanel';
 import { useEffect, useLayoutEffect, useState, useCallback, useMemo, useRef, lazy, Suspense, useContext } from "react";
 import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
 import { useUserStore } from "@/stores/useUserStore";
@@ -5,14 +8,10 @@ import { useProfileStore } from "@/stores/useProfileStore";
 import { useUserImageStore } from "@/stores/useUserImageStore";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useUserFollowCountStore } from "@/stores/useUserFollowCountStore";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { syncGlobalLoading } from "@/stores/helpers/syncGlobalLoading";
 import type { Image } from "@/types/image";
-import { BlurUpImage } from "@/components/NoFlashGrid/components/BlurUpImage";
-// axios import removed - not used in this file
 import { generateImageSlug } from "@/lib/utils";
-import { Folder, Lock } from "lucide-react";
+
 // Lazy load analytics dashboard - only needed when stats tab is active
 const UserAnalyticsDashboard = lazy(() => import("./components/UserAnalyticsDashboard").then(module => ({ default: module.UserAnalyticsDashboard })));
 // Import UserList directly instead of lazy loading to prevent Suspense fallback on tab switch
@@ -29,9 +28,7 @@ import { useRequestCancellationOnChange } from "@/hooks/useRequestCancellation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { toast } from "sonner";
 import { appConfig } from "@/config/appConfig";
-import { uiConfig } from "@/config/uiConfig";
 import { t } from "@/i18n";
-import { NoFlashGrid } from "@/components/NoFlashGrid";
 import { saveScrollPosition, prepareModalNavigationState, setModalActive } from "@/utils/modalNavigation";
 import { ActualLocationContext } from "@/contexts/ActualLocationContext";
 import "./ProfilePage.css";
@@ -619,14 +616,11 @@ function ProfilePage() {
 
     // Lazy-load collections only when collections tab is active
     useEffect(() => {
-        if (activeTab === TABS.COLLECTIONS && !collectionsLoading && collections.length === 0 && displayUserId) {
-            fetchCollectionsWrapper(cancelSignal);
+        if (activeTab === TABS.COLLECTIONS && displayUserId) {
+            const snapshot = useProfileStore.getState();
+            if (!snapshot.collectionsLoading && snapshot.collections.length === 0) void fetchCollectionsWrapper(cancelSignal);
         }
-        // Mark collections tab as loaded when fetch completes (even if empty)
-        if (activeTab === TABS.COLLECTIONS && !collectionsLoading) {
-            loadedTabs.current.add(TABS.COLLECTIONS);
-        }
-    }, [activeTab, displayUserId, fetchCollectionsWrapper, cancelSignal, collectionsLoading, collections.length]);
+    }, [activeTab, displayUserId, fetchCollectionsWrapper, cancelSignal]);
 
     // Lazy-load stats only when stats tab is active
     useEffect(() => {
@@ -843,9 +837,7 @@ function ProfilePage() {
         }
     }, [imageParamFromUrl, isMobile, navigate, displayImages, setSearchParams]);
 
-
     // Get current image IDs for comparison
-
 
     // Cleanup processedImages when component unmounts or displayUserId changes
     useEffect(() => {
@@ -855,44 +847,15 @@ function ProfilePage() {
         };
     }, [displayUserId]);
 
-    // Sync loading state to global loading store
-    // Include both profile user loading and photos tab loading
-    useEffect(() => {
-        const isPageLoading = profileUserLoading || (loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS));
-        syncGlobalLoading('profilePage', isPageLoading);
-        return () => {
-            syncGlobalLoading('profilePage', false);
-        };
-    }, [profileUserLoading, loading, displayImages.length]);
-
-    if (profileUserLoading) {
-        return (
-            <>
-                <main className="profile-page">
-                    <div className="profile-container">
-                        <Skeleton className="h-32 w-full" />
-                    </div>
-                </main>
-            </>
-        );
-    }
-
-    // Guard: Ensure currentUser exists before accessing its properties
-    if (!currentUser || !displayUser) {
-        return (
-            <>
-                <main className="profile-page">
-                    <div className="profile-container">
-                        <Skeleton className="h-32 w-full" />
-                    </div>
-                </main>
-            </>
-        );
+    if (profileUserLoading || !currentUser || !displayUser) {
+        return <main className="profile-page" data-loading-scope="local">
+            <div className="profile-container"><DataLoading message="Đang tải hồ sơ" /></div>
+        </main>;
     }
 
     return (
         <>
-            <main className="profile-page">
+            <main className="profile-page" data-loading-scope="local">
                 <div className="profile-container">
                     {/* Loading Overlay for Profile Switch */}
                     {isSwitchingProfile && (
@@ -943,36 +906,11 @@ function ProfilePage() {
 
                     {/* Content Area */}
                     <div className="profile-content">
-                        {/* Photos Tab - Keep mounted to preserve state */}
+                        {/* Keep the photo grid mounted when switching tabs. */}
                         <div style={{ display: activeTab === TABS.PHOTOS ? 'block' : 'none' }}>
-                            {/* GlobalLoadingOverlay handles the spinner when loading */}
-                            {loading && displayImages.length === 0 && !loadedTabs.current.has(TABS.PHOTOS) ? null : displayImages.length === 0 ? (
-                                <div className="empty-state" role="status" aria-live="polite">
-                                    <p>{t('profile.noPhotos')}</p>
-                                    {isOwnProfile && (
-                                        <Button
-                                            variant="outline"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                setUploadModalOpen(true);
-                                            }}
-                                            className="mt-4"
-                                        >
-                                            {t('upload.addImage')}
-                                        </Button>
-                                    )}
-                                </div>
-                            ) : (
-                                <NoFlashGrid
-                                    images={displayImages}
-                                    loading={loading}
-                                    onLoadData={loadData}
-                                    onImageClick={handleImageClick}
-                                    pagination={pagination}
-                                    onLoadMore={loadMore}
-                                />
-                            )}
+                            <ProfilePhotosPanel firstLoad={loading && displayImages.length === 0}
+                                isOwnProfile={isOwnProfile} onUpload={() => setUploadModalOpen(true)}
+                                grid={{ images: displayImages, loading, onLoadData: loadData, onImageClick: handleImageClick, pagination, onLoadMore: loadMore }} />
                         </div>
 
                         {/* Following Tab - Keep mounted to preserve state */}
@@ -997,116 +935,8 @@ function ProfilePage() {
                             </div>
                         )}
 
-                        {/* Collections Tab - Keep mounted to preserve state */}
                         <div style={{ display: activeTab === TABS.COLLECTIONS ? 'block' : 'none' }}>
-                            {collectionsLoading && !loadedTabs.current.has(TABS.COLLECTIONS) ? (
-                                <div className="collections-grid" aria-label={t('profile.loadingCollections')} aria-live="polite">
-                                    {Array.from({ length: uiConfig.skeleton.collectionGridCount }).map((_, index) => (
-                                        <div key={`skeleton-${index}`} className="collection-card">
-                                            <Skeleton className="w-full h-48 rounded-lg mb-3" />
-                                            <Skeleton className="w-3/4 h-4 rounded" />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : collections.length === 0 ? (
-                                <div className="empty-state" role="status" aria-live="polite">
-                                    <p>{t('profile.noCollections')}</p>
-                                    {isOwnProfile && (
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => navigate('/collections')}
-                                            className="mt-4"
-                                        >
-                                            {t('collections.createCollection') || 'Create Collection'}
-                                        </Button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="collections-grid">
-                                    {collections.map((collection) => {
-                                        const coverImage =
-                                            collection.coverImage &&
-                                                typeof collection.coverImage === 'object'
-                                                ? collection.coverImage
-                                                : null;
-
-                                        // Get sample images (2-3 images for thumbnails)
-                                        // Filter out coverImage to avoid duplicates
-                                        const allSampleImages = collection.sampleImages && Array.isArray(collection.sampleImages)
-                                            ? collection.sampleImages.filter((img): img is Image => 
-                                                typeof img === 'object' && img !== null && '_id' in img
-                                            )
-                                            : [];
-                                        
-                                        // Exclude coverImage from thumbnails to avoid showing the same image twice
-                                        const coverImageId = coverImage?._id;
-                                        const sampleImages = coverImageId
-                                            ? allSampleImages.filter(img => img._id !== coverImageId)
-                                            : allSampleImages;
-
-                                        // Get creator name
-                                        const creatorName = typeof collection.createdBy === 'object' 
-                                            ? collection.createdBy.displayName || collection.createdBy.username
-                                            : displayUser?.displayName || displayUser?.username || 'You';
-
-                                        return (
-                                            <div
-                                                key={collection._id}
-                                                className="collection-card"
-                                                onClick={() => navigate(`/collections/${collection._id}`)}
-                                            >
-                                                <div className="collection-card-cover">
-                                                    <div className={`collection-card-images ${sampleImages.length < 2 ? 'no-thumbnails' : ''}`}>
-                                                        {/* Main large image on the left */}
-                                                        <div className="collection-card-main-image">
-                                                            {coverImage ? (
-                                                                <BlurUpImage
-                                                                    image={coverImage}
-                                                                    priority={false}
-                                                                    minimal={true}
-                                                                />
-                                                            ) : (
-                                                                <div className="collection-card-placeholder">
-                                                                    <Folder size={48} />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        {/* Smaller thumbnails on the right (stacked) - only show if we have 2+ sample images */}
-                                                        {sampleImages.length >= 2 && (
-                                                            <div className="collection-card-thumbnails">
-                                                                {sampleImages.slice(0, 2).map((img, idx) => (
-                                                                    <div key={img._id || idx} className="collection-card-thumbnail">
-                                                                        <BlurUpImage
-                                                                            image={img}
-                                                                            priority={false}
-                                                                            minimal={true}
-                                                                        />
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="collection-card-info">
-                                                    <div className="collection-card-header">
-                                                        <h3 className="collection-card-title">
-                                                            {collection.name}
-                                                            {!collection.isPublic && (
-                                                                <Lock size={14} className="collection-card-lock-icon" />
-                                                            )}
-                                                        </h3>
-                                                    </div>
-                                                    <div className="collection-card-meta">
-                                                        <span className="collection-card-meta-text">
-                                                            {collection.imageCount || 0} {collection.imageCount === 1 ? t('collections.image') : t('collections.images')} · {t('collections.curatedBy', { name: creatorName })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                            <ProfileCollectionsPanel collections={collections} collectionsLoading={collectionsLoading} isOwnProfile={isOwnProfile} creatorFallback={displayUser?.displayName || displayUser?.username || 'You'} />
                         </div>
 
                         <div style={{ display: activeTab === TABS.BOOKINGS ? 'block' : 'none' }}>
@@ -1134,7 +964,6 @@ function ProfilePage() {
                     </div>
                 </div>
             </main>
-
 
             {/* Edit Pins Modal */}
             {isOwnProfile && displayUserId && (

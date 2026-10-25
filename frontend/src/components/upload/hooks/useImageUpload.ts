@@ -1,12 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
 import { categoryService, type Category } from '@/services/categoryService';
 import { imageService } from '@/services/imageService';
-import type { PreUploadResponse, FinalizeImageData, Image } from '@/types/image';
+import type { PreUploadResponse, FinalizeImageData } from '@/types/image';
 import type { Coordinates } from '@/types/common';
 import { compressImage } from '@/utils/imageCompression';
 import { useUploadTranslation } from '../UploadTranslationContext';
+import { runUploadBatch } from '@/utils/uploadProcessing';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
+import { onLogout } from '@/utils/authEvents';
 
 export interface ImageData {
   file: File;
@@ -34,6 +37,9 @@ interface UseImageUploadProps {
 
 export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
   const t = useUploadTranslation();
+  const submission = useRef<AbortController | null>(null);
+  const notifiedBatches = useRef(new Set<string>());
+  useEffect(() => () => { submission.current?.abort(); }, []);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
@@ -174,28 +180,7 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
         }
       };
 
-      // Small concurrent batch uploader (max 3 at a time)
-      const maxConcurrent = 3;
-      let nextIndex = 0;
-      const running: Promise<void>[] = [];
-
-      const enqueueNext = () => {
-        if (nextIndex >= imagesData.length) return;
-        const current = nextIndex++;
-        const p = startUploadForIndex(current).then(() => {
-          // When one finishes, enqueue another if available
-          enqueueNext();
-        });
-        running.push(p);
-      };
-
-      // Prime initial batch
-      const initial = Math.min(maxConcurrent, imagesData.length);
-      for (let i = 0; i < initial; i++) {
-        enqueueNext();
-      }
-
-      await Promise.all(running);
+      await runUploadBatch(imagesData.length, 3, startUploadForIndex);
       return updatedImagesData;
     },
     [preUploadSingleImage, t]
@@ -217,169 +202,73 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
         return false;
       }
 
-      // Show finalizing progress
+      if (submission.current) return false;
+      toast.dismiss('upload-finalize-error');
+      const controller = new AbortController();
+      submission.current = controller;
+      const session = getAuthSessionVersion();
+      const isCurrent = () => !controller.signal.aborted && session === getAuthSessionVersion();
       setIsFinalizing(true);
+      setShowSuccess(false);
       setShowProgress(true);
       setTotalUploads(imagesData.length);
       setUploadingIndex(0);
-
-      const failedUploads: { index: number; title: string; error: unknown }[] =
-        [];
-      const successfulUploads: number[] = [];
-
+      let completed = 0;
       try {
-        // Finalize images with controlled concurrency (max 5 at a time)
-        // This balances speed with browser connection limits (typically 6 per domain)
-        const maxConcurrent = 5;
-        let completedCount = 0;
-        let nextIndex = 0;
-        const running: Promise<{ index: number; success: boolean; skipped: boolean; image: Image | null }>[] = [];
-        
-        const startFinalize = async (i: number): Promise<{ index: number; success: boolean; skipped: boolean; image: Image | null }> => {
-          const imgData = imagesData[i];
-          if (!imgData?.preUploadData) {
-            completedCount++;
-            setUploadingIndex(completedCount);
-            return { index: i, success: false, skipped: true, image: null };
-          }
-
+        const results = await runUploadBatch(imagesData.length, 3, async index => {
+          const img = imagesData[index];
           try {
-            const finalizeData: FinalizeImageData = {
-              uploadId: imgData.preUploadData.uploadId,
-              uploadKey: imgData.preUploadData.uploadKey,
-              imageTitle: imgData.title.trim() || undefined, // Title is optional
-              imageCategory:
-                imgData.category && imgData.category.trim()
-                  ? imgData.category.trim()
-                  : undefined, // Category is optional for normal users, but required for admin
-              location: imgData.location.trim() || undefined,
-              coordinates: imgData.coordinates,
-              cameraModel: imgData.cameraModel.trim() || undefined,
-              tags:
-                imgData.tags && imgData.tags.length > 0
-                  ? imgData.tags
-                  : undefined,
+            if (!img.preUploadData || !isCurrent()) throw new DOMException('Upload cancelled', 'AbortError');
+            const payload: FinalizeImageData = {
+              uploadId: img.preUploadData.uploadId, uploadKey: img.preUploadData.uploadKey,
+              imageTitle: img.title.trim() || undefined,
+              imageCategory: img.category.trim() || undefined,
+              location: img.location.trim() || undefined, coordinates: img.coordinates,
+              cameraModel: img.cameraModel.trim() || undefined, tags: img.tags.length ? img.tags : undefined,
             };
-
-            const response = await imageService.finalizeImageUpload(finalizeData);
-            completedCount++;
-            setUploadingIndex(completedCount); // Update progress as each completes
-            // Backend returns 202 Accepted for async processing, so image may not be in response yet
-            // Image will be available after background processing completes
-            return { 
-              index: i, 
-              success: response.success !== false, // Check if success is not explicitly false
-              skipped: false, 
-              image: response.image || null // Handle case where image is not in response (async processing)
-            };
+            const response = await imageService.finalizeImageUpload(payload, controller.signal);
+            if (!response.image || !isCurrent()) throw new DOMException('Upload cancelled', 'AbortError');
+            completed++;
+            setUploadingIndex(completed);
+            // Refresh only after the database image exists, also for partial batches.
+            window.dispatchEvent(new CustomEvent('refreshProfile', { detail: { optimisticImages: [response.image] } }));
+            window.dispatchEvent(new CustomEvent('imageUploaded'));
+            return { image: response.image, error: null };
           } catch (error) {
-            // Track failed finalize but continue with others
-            completedCount++;
-            setUploadingIndex(completedCount);
-            failedUploads.push({
-              index: i,
-              title: imgData.title || `Image ${i + 1}`,
-              error,
-            });
-            console.error(
-              `Failed to finalize image ${i + 1} (${imgData.title}):`,
-              error
-            );
-            return { index: i, success: false, skipped: false, image: null };
-          }
-        };
-
-        const enqueueNext = () => {
-          if (nextIndex >= imagesData.length) return;
-          const current = nextIndex++;
-          const promise = startFinalize(current).then((result) => {
-            // When one finishes, enqueue another if available
-            enqueueNext();
-            return result;
-          });
-          running.push(promise);
-        };
-
-        // Start initial batch
-        const initial = Math.min(maxConcurrent, imagesData.length);
-        for (let i = 0; i < initial; i++) {
-          enqueueNext();
-        }
-
-        // Wait for all finalizations to complete
-        const results = await Promise.all(running);
-        
-        // Track successful uploads and collect uploaded images for optimistic update
-        const uploadedImages: Image[] = [];
-        results.forEach((result) => {
-          // Safety check: ensure result exists and has expected properties
-          if (result && result.success && !result.skipped) {
-            successfulUploads.push(result.index);
-            if (result.image) {
-              uploadedImages.push(result.image);
-            }
+            return { image: null, error: getErrorMessage(error, t('upload.uploadFailed')) };
           }
         });
-
-        // Dispatch refresh events with uploaded images for optimistic UI update
-        // This ensures profile shows images immediately before API fetch completes
-        window.dispatchEvent(new CustomEvent('refreshProfile', { 
-          detail: { optimisticImages: uploadedImages } 
-        }));
-        window.dispatchEvent(new CustomEvent('imageUploaded'));
-
-        // Minimal delay for UI transition (just enough for smooth animation)
-        await new Promise((resolve) => setTimeout(resolve, 50));
-
-        setShowProgress(false);
-        setIsFinalizing(false);
-
-        // Create bulk upload notification
-        if (imagesData.length > 1) {
-          await imageService.createBulkUploadNotification(
-            successfulUploads.length,
-            imagesData.length,
-            failedUploads.length
-          );
-        }
-
-        // Show appropriate message based on results
-        if (failedUploads.length === 0) {
-          // All successful
-          setShowSuccess(true);
-        } else if (successfulUploads.length > 0) {
-          // Partial success
-          setShowSuccess(true);
-          const failedTitles = failedUploads.map((f) => f.title).join(', ');
-          toast.warning(
-            t('upload.localPartial', { success: successfulUploads.length, failed: failedUploads.length, titles: failedTitles }, '{success} ảnh đã tải lên thành công. {failed} ảnh thất bại: {titles}')
-          );
-        } else {
-          // All failed
+        if (!isCurrent()) return false;
+        const failed = results.filter(result => result.error);
+        if (failed.length) {
           setShowSuccess(false);
-          toast.error(
-            t('upload.uploadError')
-          );
+          toast.error(failed[0].error, { id: 'upload-finalize-error' });
+          // Keep the form and original upload IDs for an idempotent retry.
           return false;
         }
-
-        // Refresh events already dispatched above (immediately after finalization)
-
+        const batchId = imagesData.map(img => img.preUploadData?.uploadId).join(',');
+        if (imagesData.length > 1 && !notifiedBatches.current.has(batchId)) {
+          notifiedBatches.current.add(batchId);
+          void imageService.createBulkUploadNotification(completed, imagesData.length, 0);
+        }
+        setShowSuccess(true);
         onSuccess?.();
-        return failedUploads.length === 0; // Return true only if all succeeded
-      } catch (error) {
-        console.error('Failed to finalize images:', error);
-        setShowProgress(false);
-        setIsFinalizing(false);
-        setShowSuccess(false);
-        toast.error(t('upload.uploadError'));
-        return false;
+        return true;
+      } finally {
+        if (submission.current === controller) submission.current = null;
+        if (!controller.signal.aborted) {
+          setShowProgress(false);
+          setIsFinalizing(false);
+        }
       }
     },
-    [categories, validateAllImages, onSuccess, t]
+    [validateAllImages, onSuccess, t]
   );
 
   const resetUploadState = useCallback(() => {
+    toast.dismiss('upload-finalize-error');
+    submission.current?.abort();
+    submission.current = null;
     setShowProgress(false);
     setShowSuccess(false);
     setUploadingIndex(0);
@@ -387,6 +276,8 @@ export const useImageUpload = ({ onSuccess }: UseImageUploadProps = {}) => {
     setIsFinalizing(false);
 
   }, []);
+
+  useEffect(() => onLogout(resetUploadState), [resetUploadState]);
 
   // Calculate overall upload progress
   const uploadProgress = 0; // Finalization progress is tracked by uploadingIndex.

@@ -120,6 +120,8 @@ export interface FinalizeImageResponse {
   message: string;
   processingTime?: string; // For async processing (202 response)
   image?: Image; // Optional - may not be present for async processing
+  uploadId?: string;
+  status?: 'staged' | 'queued' | 'processing' | 'completed' | 'failed';
 }
 
 export interface IncrementViewResponse {

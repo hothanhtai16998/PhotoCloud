@@ -1,5 +1,8 @@
 import axios from 'axios';
 import api from '@/lib/api';
+import { waitForProcessedUpload } from '@/utils/uploadProcessing';
+import { getAuthSessionVersion } from '@/utils/authSessionVersion';
+import { markProcessedUpload } from '@/utils/uploadRefresh';
 import type { UploadImageData } from '@/types/store';
 import type {
   PreUploadResponse,
@@ -64,10 +67,10 @@ export const imageUploadService = {
 
         onUploadProgress?.(100);
         return preUploadData;
-      } catch (error: any) {
+      } catch (error: unknown) {
         lastError = error;
         // For 4xx errors (bad URL, forbidden, etc.) don't retry
-        const status = error?.response?.status;
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
         if (status && status >= 400 && status < 500) {
           break;
         }
@@ -83,14 +86,35 @@ export const imageUploadService = {
 
   // Finalize: Link metadata to pre-uploaded image and create database record
   finalizeImageUpload: async (
-    data: FinalizeImageData
+    data: FinalizeImageData, signal?: AbortSignal,
   ): Promise<FinalizeImageResponse> => {
+    const session = getAuthSessionVersion();
+    const checkSession = (): void => {
+      signal?.throwIfAborted();
+      if (session !== getAuthSessionVersion()) throw new DOMException('Phiên đăng nhập đã thay đổi.', 'AbortError');
+    };
+    checkSession();
     const res = await api.post('/images/finalize', data, {
       withCredentials: true,
-      timeout: 120000, // allow up to 2 minutes for Sharp processing
+      timeout: 30000,
+      signal,
     });
-
-    return res.data;
+    checkSession();
+    if (res.data.status === 'completed' && res.data.image) {
+      markProcessedUpload(res.data.image.uploadedBy._id);
+      return res.data;
+    }
+    if (!res.data.success || !res.data.uploadId) throw new Error(res.data.message || 'Không tiếp nhận được ảnh. Vui lòng thử lại.');
+    const result = await waitForProcessedUpload(async () => {
+      checkSession();
+      const status = await api.get<FinalizeImageResponse>(`/images/uploads/${encodeURIComponent(res.data.uploadId)}`, {
+        withCredentials: true, timeout: 15000, signal,
+      });
+      checkSession();
+      return status.data;
+    }, signal);
+    if (result.image) markProcessedUpload(result.image.uploadedBy._id);
+    return result;
   },
 
   // Legacy upload method (kept for backward compatibility)
@@ -104,8 +128,7 @@ export const imageUploadService = {
     const file = data.image;
 
     // Step 1: Upload file to storage (scale 0–85% to keep compatibility with old callers)
-    let preUpload: PreUploadResponse;
-    preUpload = await imageUploadService.preUploadImage(file, (progress) => {
+    const preUpload = await imageUploadService.preUploadImage(file, (progress) => {
       if (onUploadProgress) {
         const scaled = Math.round((progress * 85) / 100);
         onUploadProgress(scaled);
@@ -124,29 +147,9 @@ export const imageUploadService = {
       tags: data.tags,
     };
 
-    const finalizeRes = await api.post<FinalizeImageResponse>(
-      '/images/finalize',
-      finalizePayload,
-      {
-        withCredentials: true,
-        timeout: 60000,
-      }
-    );
-
-    // Step 3: Simulate remaining 15% (processing) for old progress UIs
-    if (onUploadProgress) {
-      let progress = 85;
-      const step = 3;
-      while (progress < 100) {
-        progress = Math.min(100, progress + step);
-        onUploadProgress(progress);
-        // short delay to show animation but not block too long
-        // eslint-disable-next-line no-await-in-loop
-        await new Promise((resolve) => setTimeout(resolve, 150));
-      }
-    }
-
-    return finalizeRes.data;
+    const result = await imageUploadService.finalizeImageUpload(finalizePayload);
+    onUploadProgress?.(100);
+    return result;
   },
 
   /**

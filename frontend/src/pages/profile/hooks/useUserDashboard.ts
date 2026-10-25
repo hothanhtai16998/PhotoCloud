@@ -39,7 +39,7 @@ interface UseUserDashboardReturn {
 export function useUserDashboard(): UseUserDashboardReturn {
     const { user } = useUserStore();
     const [data, setData] = useState<UserDashboardData | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const mountedRef = useRef(true);
     const requestRef = useRef(0);

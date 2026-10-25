@@ -1,5 +1,6 @@
 import { get } from '@/lib/api';
 import api from '@/lib/axios';
+import { getProcessedUploadRevision } from '@/utils/uploadRefresh';
 import type {
   Image,
   FetchImagesParams,
@@ -129,6 +130,8 @@ export const imageFetchService = {
     signal?: AbortSignal
   ): Promise<FetchImagesResponse> => {
     const queryParams = new URLSearchParams();
+    const uploadRevision = getProcessedUploadRevision(userId);
+    if (uploadRevision) queryParams.set('_t', String(uploadRevision));
 
     if (params?.page) {
       queryParams.append('page', params.page.toString());

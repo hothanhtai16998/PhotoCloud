@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useCallback, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFavoriteStore } from "@/stores/useFavoriteStore";
@@ -208,7 +209,7 @@ function FavoritesPage() {
 
     return (
         <>
-            <main className="favorites-page">
+            <main className="favorites-page" data-loading-scope="local">
                 <div className="favorites-container">
                     {/* Page Header */}
                     <div className="favorites-header">
@@ -238,8 +239,8 @@ function FavoritesPage() {
                     </div>
 
                     {/* Favorites Content */}
-                    {/* GlobalLoadingOverlay handles the spinner when loading */}
-                    {loading && images.length === 0 ? null : images.length === 0 ? (
+                    {loading && images.length > 0 && <DataLoading size="inline" message="Đang cập nhật ảnh yêu thích" />}
+                    {loading && images.length === 0 ? <DataLoading message="Đang tải ảnh yêu thích" /> : images.length === 0 ? (
                         <div className="favorites-empty" role="status" aria-live="polite">
                             <Heart size={64} className="empty-icon" />
                             <h2>{t('favorites.empty')}</h2>

@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Bell,
@@ -168,12 +169,9 @@ function NotificationPage() {
                     </button>
                 </div>
 
-                {loading ? (
-                    <div className="notification-list" aria-busy="true">
-                        {Array.from({ length: 4 }).map((_, idx) => (
-                            <div key={idx} className="notification-skeleton" />
-                        ))}
-                    </div>
+                {loading && notifications.length > 0 && <DataLoading size="inline" message="Đang cập nhật thông báo" />}
+                {loading && notifications.length === 0 ? (
+                    <DataLoading message="Đang tải thông báo" />
                 ) : visible.length === 0 ? (
                     <div className="notification-empty">
                         {filter === 'unread' ? <BellOff size={36} /> : <Bell size={36} />}

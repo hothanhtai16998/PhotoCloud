@@ -18,7 +18,9 @@ import { BRAND } from '@/constants/brand';
 import { getLocale } from '@/i18n';
 import { getTranslatedCategoryName } from '@/utils/categoryTranslations';
 import './ExplorePage.css';
-import { ExploreToolbar } from './explore/ExploreToolbar';
+import '@/components/user/DataLoading.css';
+import { DataLoading } from '@/components/user/DataLoading';
+import { ExploreLoading, ExploreToolbar } from './explore/ExploreToolbar';
 import { readExploreCategories, saveExploreCategories } from './explore/categorySnapshot';
 import { saveImagePageScroll } from '@/utils/imagePageScroll';
 import { useImagePageScrollRestore } from '@/hooks/useImagePageScrollRestore';
@@ -46,7 +48,7 @@ export default function ExplorePage() {
   const pagination = useImageStore((s) => s.pagination);
   const error = useImageStore((s) => s.error);
   const [requestedPage, setRequestedPage] = useState(1);
-  const [hasRequested, setHasRequested] = useState(false);
+  const [hasLoadedResults, setHasLoadedResults] = useState(false);
   useImagePageScrollRestore(location, pageRef,
     navigationType === 'POP' && !loading && images.length > 0, false, undefined, images.length);
 
@@ -83,6 +85,8 @@ export default function ExplorePage() {
   const [categoryError, setCategoryError] = useState(false);
   const [categoryAttempt, setCategoryAttempt] = useState(0);
   const hasActiveFilters = activeCategory !== 'all' || JSON.stringify(filters) !== JSON.stringify(DEFAULT_FILTERS);
+  // Sorting changes order, not whether a category contains matching images.
+  const hasResultFilters = Object.keys(buildFilterParams(filters)).some(key => key !== 'sortBy' && key !== 'order');
   const clearFilters = () => { setActiveCategory('all'); resetFilters(); };
 
   // Load categories
@@ -120,9 +124,12 @@ export default function ExplorePage() {
 
   }, [categoryName, sort, filters]);
   useEffect(() => {
-    setHasRequested(true);
+    let active = true;
     setRequestedPage(1);
-    void fetchImages(params);
+    void fetchImages(params).then(() => {
+      if (active && !useImageStore.getState().error) setHasLoadedResults(true);
+    });
+    return () => { active = false; };
   }, [params, fetchImages]);
   const loadNextPage = async () => {
     const state = useImageStore.getState();
@@ -141,6 +148,12 @@ export default function ExplorePage() {
       })),
     [categories, locale],
   );
+  const selectedCategoryLabel = translatedCategories.find(category => category.slug === activeCategory)?.translated;
+  const emptyTitle = hasResultFilters ? 'Chưa có ảnh phù hợp' : selectedCategoryLabel ? 'Danh mục này chưa có ảnh' : 'Chưa có ảnh';
+  const emptyDescription = hasResultFilters
+    ? 'Không tìm thấy ảnh với bộ lọc hiện tại. Thử bỏ bộ lọc hoặc chọn danh mục khác.'
+    : selectedCategoryLabel ? `Danh mục ${selectedCategoryLabel} chưa có ảnh. Bạn có thể chọn danh mục khác.`
+    : 'Hiện chưa có ảnh để hiển thị. Bạn có thể quay lại sau.';
 
   return (
     <main ref={pageRef} className="explore-page" data-loading-scope="local">
@@ -151,16 +164,18 @@ export default function ExplorePage() {
         hasActiveFilters={hasActiveFilters} clearFilters={clearFilters} />
 
       <section className="explore-grid-wrap">
-        <p className="explore-results" role="status">{!hasRequested || loading ? 'Đang tải ảnh…' : error ? 'Chưa tải được kết quả mới.' : `${new Intl.NumberFormat('vi-VN').format(pagination?.total ?? images.length)} ảnh${activeCategory !== 'all' ? ` · ${translatedCategories.find(category => category.slug === activeCategory)?.translated || ''}` : ''}`}</p>
+        {hasLoadedResults && !loading && <p className="explore-results" role="status">{error ? 'Chưa tải được kết quả mới.' : `${new Intl.NumberFormat('vi-VN').format(pagination?.total ?? images.length)} ảnh${activeCategory !== 'all' ? ` · ${translatedCategories.find(category => category.slug === activeCategory)?.translated || ''}` : ''}`}</p>}
         {error && <div className="explore-error" role="alert"><p>Không thể tải ảnh. Bạn có thể thử lại.</p><button type="button" onClick={() => void fetchImages({ ...params, page: requestedPage, _refresh: true })}>Thử lại tải ảnh</button></div>}
-        {!hasRequested || (loading && requestedPage === 1) ? (
-          <div className="explore-empty" aria-hidden="true">Đang chuẩn bị những khung hình…</div>
-        ) : !error && images.length === 0 ? (
+        {loading && hasLoadedResults && images.length > 0 && <DataLoading size="inline" message={requestedPage > 1 ? 'Đang tải thêm ảnh' : 'Đang cập nhật ảnh'} />}
+        {!error && (!hasLoadedResults || (loading && images.length === 0)) ? (
+          <ExploreLoading />
+        ) : !hasLoadedResults ? null : !error && images.length === 0 ? (
           <div className="explore-empty">
             <Camera size={48} aria-hidden />
-            <h3>Chưa có ảnh phù hợp</h3>
-            <p>Thử chọn danh mục khác hoặc bỏ bộ lọc bố cục.</p>
-            {hasActiveFilters && <button type="button" className="explore-reset" onClick={clearFilters}>Xóa bộ lọc</button>}
+            <h2>{emptyTitle}</h2>
+            <p>{emptyDescription}</p>
+            {hasResultFilters ? <button type="button" className="explore-reset" onClick={resetFilters}>Bỏ bộ lọc</button>
+              : activeCategory !== 'all' && <button type="button" className="explore-reset" onClick={clearFilters}>Xem tất cả ảnh</button>}
           </div>
         ) : (
           <NoFlashGrid

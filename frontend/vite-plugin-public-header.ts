@@ -37,7 +37,7 @@ export function publicHeaderStartup(): Plugin {
     transformIndexHtml: {
       order: 'pre',
       handler(html): string {
-        const css = ['./src/pages/ExplorePage.css', './src/components/HeaderFrame.css', './src/components/PublicHeaderActions.css', './src/components/collection/CollectionsToolbar.css', './src/pages/collection/components/CollectionDetailFrame.css'].map(file => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8')).join('\n');
+        const css = ['./src/components/user/DataLoading.css', './src/pages/ExplorePage.css', './src/components/HeaderFrame.css', './src/components/PublicHeaderActions.css', './src/components/collection/CollectionsToolbar.css', './src/pages/collection/components/CollectionDetailFrame.css'].map(file => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8')).join('\n');
         const palette = JSON.parse(fs.readFileSync(fileURLToPath(new URL('../shared/sitePalette.json', import.meta.url)), 'utf8')) as unknown;
         const detail = renderToStaticMarkup(createElement(CollectionDetailSkeleton));
         const explore = renderToStaticMarkup(createElement(ExploreStartup));

@@ -2,6 +2,7 @@ import React, { type ReactNode } from 'react';
 import { Compass, RotateCcw, Search, Filter } from 'lucide-react';
 import { BRAND } from '../../constants/brand';
 import type { SearchFiltersType } from '../../components/SearchBar/hooks/useSearchFilters';
+import { DataLoadingFrame } from '../../components/user/DataLoadingFrame';
 const ORIENTATIONS = [
   { value: 'all', label: 'Tất cả' },
   { value: 'landscape', label: 'Ngang' },
@@ -128,6 +129,9 @@ export function ExploreToolbar({ search = <div className="search-bar-container">
 }
 export function ExploreStartup() {
  return <main className="explore-page" data-loading-scope="local"><ExploreToolbar />
- <section className="explore-grid-wrap"><p className="explore-results">Đang tải ảnh…</p>
- <div className="explore-empty" aria-hidden="true">Đang chuẩn bị những khung hình…</div></section></main>;
+ <section className="explore-grid-wrap"><ExploreLoading /></section></main>;
+}
+
+export function ExploreLoading() {
+ return <DataLoadingFrame message="Đang tải ảnh" />;
 }

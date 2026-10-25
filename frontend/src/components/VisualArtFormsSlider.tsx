@@ -11,6 +11,7 @@ import { CardOpeningStage } from './CardOpeningStage';
 import { SliderZoomImage } from './SliderZoomImage';
 import { ImmersiveHomeChrome } from './ImmersiveHomeChrome';
 import { RefreshCw } from 'lucide-react';
+import { DataLoading } from '@/components/user/DataLoading';
 
 export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapsed = false}: {collapsed?: boolean}) {
   const slides = useSliderStore(state => state.slides);
@@ -88,7 +89,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
         playing={playing} togglePlaying={() => setPlaying(value => !value)}
         zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
       : <div className="travel-empty"><div role={error ? 'alert' : 'status'}>
-        <p>{loading ? 'Đang tải ảnh…' : error ? 'Không tải được ảnh nổi bật.' : 'Chưa có ảnh nổi bật'}</p>
+        {loading ? <DataLoading message="Đang tải ảnh nổi bật" /> : <p>{error ? 'Không tải được ảnh nổi bật.' : 'Chưa có ảnh nổi bật'}</p>}
         {error && !loading && <button type="button" className="slider-retry" onClick={() => void useSliderStore.getState().fetchSlides()}><RefreshCw size={18} /> Thử lại</button>}
       </div></div>}
     {collapsed && <div className="travel-controls">

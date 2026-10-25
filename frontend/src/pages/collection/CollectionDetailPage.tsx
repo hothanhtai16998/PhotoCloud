@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react';
 import { collectionService } from '@/services/collectionService';
 import { toast } from 'sonner';
@@ -278,7 +279,7 @@ export default function CollectionDetailPage() {
 		<>
 			<div className="collection-detail-page" data-loading-scope="local">
 				{error && <CollectionLoadError message={error} busy={loading} onRetry={() => void reconnect().catch(() => {})} backTo="/collections" />}
-				{loading && <p role="status">Đang cập nhật bộ sưu tập…</p>}
+				{loading && <DataLoading size="inline" message="Đang cập nhật bộ sưu tập" />}
 				<CollectionHeader
 					collection={collection}
 					imagesCount={images.length}

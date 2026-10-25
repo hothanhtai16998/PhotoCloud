@@ -5,7 +5,7 @@ import './DownloadHistoryPage.css';
 export default function DownloadHistoryPage() {
     return (
         <>
-            <main className="download-history-page">
+            <main className="download-history-page" data-loading-scope="local">
                 <div className="download-history-page-container">
                     <div className="download-history-page-header">
                         <h1 className="download-history-page-title">

@@ -10,7 +10,7 @@ import {
 export type PublicPackagesState = {
     /** Bộ gói đã sẵn sàng để hiển thị (luôn có, từ API hoặc fallback). */
     packages: StudioPackage[];
-    /** true khi hook chưa trả về lần đầu — dùng để hiển thị skeleton. */
+    /** Request is in flight; existing API data remains available on retry. */
     loading: boolean;
     /** Lỗi fetch gần nhất. Có thể có dữ liệu fallback nếu API fail. */
     error: string | null;
@@ -31,21 +31,12 @@ const slugToCategory = (slug: string): StudioPackageCategory => {
     return 'portrait';
 };
 
-const inferPopular = (pkg: BookingPackage, idx: number): boolean => {
-    // Couple là phổ biến nhất — fallback dựa trên sortOrder 0 + tên "couple"
-    if (pkg.slug === 'couple') return true;
-    if (typeof (pkg as { popular?: boolean }).popular === 'boolean') {
-        return (pkg as { popular?: boolean }).popular === true;
-    }
-    return idx === 1;
-};
-
-const descriptionToIncludes = (description: string, pkg: BookingPackage): string[] => {
+const buildIncludesFromApi = (pkg: BookingPackage): string[] => {
     // API chỉ có description ngắn; sinh danh sách includes từ thông số kỹ thuật
     // để UI detail page vẫn có bullet list mà không suy diễn thêm.
     return [
         `${pkg.durationMinutes} phút chụp (${Math.round(pkg.durationMinutes / 60 * 10) / 10} giờ)`,
-        `${pkg.includedPhotos} ảnh chỉnh màu cao cấp`,
+        `${pkg.includedPhotos} ảnh chỉnh màu`,
         `Giao ảnh trong ${pkg.deliveryDays} ngày`,
         `Bao gồm ${pkg.includedPeople} người`,
     ];
@@ -54,7 +45,6 @@ const descriptionToIncludes = (description: string, pkg: BookingPackage): string
 const mapApiToStudio = (
     api: BookingPackage,
     fallback?: StudioPackage,
-    index = 0,
 ): StudioPackage => {
     const slug = api.slug;
     return {
@@ -65,12 +55,12 @@ const mapApiToStudio = (
         duration: api.durationMinutes,
         photos: api.includedPhotos,
         description: api.description,
-        // Cover image không có trong API: dùng fallback nếu trùng slug; ngược lại
-        // trả về chuỗi rỗng để UI dùng placeholder, không tự chọn ảnh ngẫu nhiên.
-        coverUrl: fallback?.coverUrl ?? '',
-        popular: fallback?.popular ?? inferPopular(api, index),
-        accent: fallback?.accent ?? slugToCategory(slug),
-        includes: fallback?.includes ?? descriptionToIncludes(api.description, api),
+        // Illustrations only: explicit API category can select an existing cover.
+        // Unknown categories never inherit the inferred portrait accent's image.
+        coverUrl: fallback?.coverUrl ?? CORE_PACKAGES.find(pkg => pkg.accent === api.category)?.coverUrl ?? '',
+        accent: KNOWN_CATEGORIES.includes(api.category as StudioPackageCategory)
+            ? api.category as StudioPackageCategory : fallback?.accent ?? slugToCategory(slug),
+        includes: buildIncludesFromApi(api),
     };
 };
 
@@ -84,8 +74,8 @@ const FALLBACK_BY_SLUG = new Map(CORE_PACKAGES.map((p) => [p.slug, p]));
  * để trang không trắng; cảnh báo trong console để người vận hành xử lý.
  *
  * Map BookingPackage → StudioPackage để UI card không phụ thuộc cấu trúc DB.
- * Cover image, includes, popular, accent lấy từ CORE_PACKAGES theo slug
- * (nếu có) — tránh tự bịa ảnh/danh sách quyền lợi.
+ * Illustrative covers use an exact slug or an explicit API category match.
+ * Price, duration, delivery and included people/photos come from the live API.
  */
 export function usePublicPackages(): PublicPackagesState {
     const [apiPackages, setApiPackages] = useState<BookingPackage[] | null>(null);
@@ -129,7 +119,7 @@ export function usePublicPackages(): PublicPackagesState {
     }, [tick]);
 
     // Quyết định danh sách cuối cùng: API > fallback. Lọc bỏ slug trùng lặp,
-    // giữ thứ tự API; ghi nhận slug thiếu cover để UI tạo placeholder.
+    // giữ thứ tự API; gói thiếu ảnh vẫn hiển thị đầy đủ thông tin.
     let packages: StudioPackage[];
     let source: PublicPackagesState['source'];
 
@@ -142,16 +132,15 @@ export function usePublicPackages(): PublicPackagesState {
                 seen.add(p.slug);
                 return true;
             })
-            .map((p, i) => mapApiToStudio(p, FALLBACK_BY_SLUG.get(p.slug), i));
+            .map(p => mapApiToStudio(p, FALLBACK_BY_SLUG.get(p.slug)));
         source = 'api';
 
-        // Cảnh báo nếu admin có gói active mà constants chưa có cover/includes
+        // Ghi nhận các gói chưa có ảnh minh họa phù hợp.
         if (typeof window !== 'undefined' && import.meta.env.DEV) {
             const missing = packages.filter((p) => !p.coverUrl);
             if (missing.length > 0) {
-                // eslint-disable-next-line no-console
                 console.warn(
-                    `[usePublicPackages] ${missing.length} gói thiếu cover image: ${missing.map((p) => p.slug).join(', ')}. UI sẽ dùng placeholder.`,
+                    `[usePublicPackages] ${missing.length} gói chưa có ảnh minh họa: ${missing.map((p) => p.slug).join(', ')}.`,
                 );
             }
         }
@@ -159,7 +148,6 @@ export function usePublicPackages(): PublicPackagesState {
         packages = CORE_PACKAGES;
         source = 'fallback';
         if (typeof window !== 'undefined' && error) {
-            // eslint-disable-next-line no-console
             console.warn(
                 `[usePublicPackages] API lỗi (${error}). Đang dùng CORE_PACKAGES làm fallback. Bật admin/packages active=true hoặc thêm gói để hiện đúng.`,
             );

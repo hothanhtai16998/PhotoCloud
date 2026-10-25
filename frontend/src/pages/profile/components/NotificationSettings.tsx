@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from 'react';
 import { Bell, Mail, Smartphone, Check, Loader2 } from 'lucide-react';
 import { userService, type NotificationPreferences, type NotificationChannel } from '@/services/userService';
 import { toast } from 'sonner';
-import { Skeleton } from '@/components/ui/skeleton';
+import { DataLoading } from '@/components/user/DataLoading';
 import { Button } from '@/components/ui/button';
 import './NotificationSettings.css';
 
@@ -101,8 +101,7 @@ export default memo(function NotificationSettings() {
     if (loading) {
         return (
             <div className="notification-settings">
-                <Skeleton className="h-8 w-48 mb-4" />
-                <Skeleton className="h-40 w-full" />
+                <DataLoading message="Đang tải cài đặt thông báo" size="compact" />
             </div>
         );
     }

@@ -336,6 +336,7 @@ export async function uploadImageWithSizes(buffer, bucket, filename, mimetype = 
  */
 export async function generateAvifFormats(buffer, bucket, filename) {
 	try {
+		const { queueSharpOperation } = await import('../utils/sharpQueue.js');
 		logger.info(`[AVIF] Phase 2: Generating AVIF formats in background for ${filename}...`);
 		const avifStart = Date.now();
 		
@@ -347,10 +348,10 @@ export async function generateAvifFormats(buffer, bucket, filename) {
 			avifFullBuffer,
 		] = await Promise.all([
 			// AVIF sizes (optimized effort: 2 for faster encoding, still good quality)
-			sharp(buffer).resize(200, 200, { fit: 'cover' }).avif({ quality: 50, effort: 2 }).toBuffer(),
-			sharp(buffer).resize(500, 500, { fit: 'cover' }).avif({ quality: 50, effort: 2 }).toBuffer(),
-			sharp(buffer).resize(1000, 1000, { fit: 'inside' }).avif({ quality: 50, effort: 2 }).toBuffer(),
-			sharp(buffer).avif({ quality: 55, effort: 3 }).toBuffer(), // Full-size AVIF (slightly higher effort for quality)
+			queueSharpOperation(() => sharp(buffer).resize(200, 200, { fit: 'cover' }).avif({ quality: 50, effort: 2 }).toBuffer()),
+			queueSharpOperation(() => sharp(buffer).resize(500, 500, { fit: 'cover' }).avif({ quality: 50, effort: 2 }).toBuffer()),
+			queueSharpOperation(() => sharp(buffer).resize(1000, 1000, { fit: 'inside' }).avif({ quality: 50, effort: 2 }).toBuffer()),
+			queueSharpOperation(() => sharp(buffer).avif({ quality: 55, effort: 3 }).toBuffer()),
 		]);
 		
 		// Upload AVIF formats to R2

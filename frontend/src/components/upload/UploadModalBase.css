@@ -422,13 +422,13 @@
 
 .progress-circle-bg {
   fill: none;
-  stroke: #e5e5e5;
+  stroke: var(--border-color);
   stroke-width: 8;
 }
 
 .progress-circle-fill {
   fill: none;
-  stroke: #111;
+  stroke: var(--accent);
   stroke-width: 8;
   stroke-linecap: round;
   transition: stroke-dashoffset 0.3s ease;
@@ -446,7 +446,7 @@
 
 .progress-text {
   font-size: 1rem;
-  color: #767676;
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -540,7 +540,7 @@
 
 .success-subtitle {
   font-size: 1rem;
-  color: #767676;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.6;
 }
@@ -558,6 +558,13 @@
   align-items: center;
   gap: 8px;
   transition: background 0.2s ease;
+}
+
+.success-button > span {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
 }
 
 .success-button:hover {

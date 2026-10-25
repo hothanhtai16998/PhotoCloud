@@ -10,6 +10,7 @@ import Image from '../../models/Image.js';
 import Category from '../../models/Category.js';
 import Notification from '../../models/Notification.js';
 import Settings from '../../models/Settings.js';
+import UploadJob from '../../models/UploadJob.js';
 
 import {
     uploadImageWithSizes,
@@ -375,6 +376,7 @@ export const preUploadImage = asyncHandler(async (req, res) => {
         const extension = getFileExtension(fileName, fileType);
         const uploadKey = `${RAW_UPLOAD_FOLDER}/${uploadId}.${extension}`;
         const uploadUrl = await generatePresignedUploadUrl(uploadKey, fileType);
+        await UploadJob.create({ _id: uploadId, userId: req.user._id, uploadKey });
 
         res.status(200).json({
             message: 'Khởi tạo tải lên thành công',
@@ -397,7 +399,7 @@ export const preUploadImage = asyncHandler(async (req, res) => {
 export const deletePreUploadedFile = asyncHandler(async (req, res) => {
     const { uploadKey } = req.body;
 
-    if (!uploadKey) {
+    if (typeof uploadKey !== 'string' || !uploadKey) {
         return res.status(400).json({
             message: 'Thiếu uploadKey',
         });
@@ -411,6 +413,11 @@ export const deletePreUploadedFile = asyncHandler(async (req, res) => {
     }
 
     try {
+        const reservation = await UploadJob.findOne({ uploadKey, userId: req.user._id, kind: 'upload' });
+        if (!reservation) return res.status(404).json({ message: 'Không tìm thấy file tải lên của bạn.' });
+        if (reservation.status !== 'staged') return res.status(200).json({ message: 'File đang được xử lý hoặc đã hoàn tất.' });
+        const removed = await UploadJob.findOneAndDelete({ _id: reservation._id, userId: req.user._id, status: 'staged' });
+        if (!removed) return res.status(200).json({ message: 'File đã được tiếp nhận xử lý.' });
         await deleteObjectByKey(uploadKey);
         logger.info(`Deleted pre-uploaded file: ${uploadKey}`);
         res.status(200).json({
@@ -432,10 +439,11 @@ export const deletePreUploadedFile = asyncHandler(async (req, res) => {
 export const finalizeImageUpload = asyncHandler(async (req, res) => {
     const userId = req.user?._id;
     const isAdmin = req.user?.isAdmin || req.user?.isSuperAdmin;
-    const { uploadId, uploadKey, imageTitle, imageCategory, location, cameraModel, coordinates, tags } = req.body;
+    const { uploadId, uploadKey, imageTitle, location, cameraModel, coordinates, tags } = req.body;
+    let { imageCategory } = req.body;
 
     // Quick validation only — no downloads/processing here
-    if (!uploadId || !uploadKey) {
+    if (typeof uploadId !== 'string' || typeof uploadKey !== 'string' || !uploadId || !uploadKey) {
         return res.status(400).json({ success: false, message: 'uploadId and uploadKey required' });
     }
 
@@ -451,9 +459,15 @@ export const finalizeImageUpload = asyncHandler(async (req, res) => {
     // Title is optional - can be empty for normal users (admin will add later)
     const trimmedTitle = imageTitle ? String(imageTitle).trim() : '';
     const finalTitle = trimmedTitle || undefined; // Send undefined if empty
+    if (location != null && typeof location !== 'string' || cameraModel != null && typeof cameraModel !== 'string') {
+        return res.status(400).json({ success: false, message: 'Thông tin ảnh không hợp lệ.' });
+    }
 
     // Category validation: required for admin users, optional for normal users
     if (isAdmin) {
+        if (typeof imageCategory !== 'string' || !mongoose.Types.ObjectId.isValid(imageCategory.trim())) {
+            return res.status(400).json({ success: false, message: 'Danh mục ảnh không hợp lệ.' });
+        }
         // Admin users must provide a category
         if (typeof imageCategory === 'string') {
             if (imageCategory.trim() === '') {
@@ -474,7 +488,7 @@ export const finalizeImageUpload = asyncHandler(async (req, res) => {
     }
 
     // Enqueue background job — server does NOT download/process here
-    addJob({
+    const job = await addJob({
         uploadKey,
         uploadId,
         userId: userId.toString(),
@@ -487,11 +501,14 @@ export const finalizeImageUpload = asyncHandler(async (req, res) => {
         tags,
     });
 
+    if (!job) return res.status(404).json({ success: false, message: 'Phiên tải lên không tồn tại hoặc không thuộc tài khoản này. Vui lòng chọn lại file.' });
+
     // Return 202 Accepted immediately
     return res.status(202).json({
         success: true,
-        message: 'Upload accepted — processing in background',
-        processingTime: 'typically 30-60 seconds',
+        message: 'Đã tiếp nhận ảnh để xử lý.',
+        uploadId: job._id,
+        status: job.status,
     });
 });
 

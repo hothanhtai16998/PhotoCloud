@@ -9,6 +9,7 @@ import type { Collection } from '@/types/collection';
 import { CollectionCard } from '@/components/collection/CollectionCard';
 import { CollectionLoadError } from '@/components/collection/CollectionLoadError';
 import { CollectionsGridSkeleton } from '@/components/collection/CollectionsGridSkeleton';
+import { DataLoading } from '@/components/user/DataLoading';
 
 interface Props {
   collections: Collection[];
@@ -33,7 +34,7 @@ export default function CollectionsResults({ collections: browseCollections, onE
 	)}
 
 	{isInitialLoad && <CollectionsGridSkeleton count={6} />}
-	{loading && hasLoaded && <p role="status">Đang cập nhật bộ sưu tập…</p>}
+	{loading && hasLoaded && <DataLoading size="inline" message="Đang cập nhật bộ sưu tập" />}
 
 	{isEmptyState && (
 		<div className="collections-empty">

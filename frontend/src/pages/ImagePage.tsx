@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
 import { ImageRelatedGrid } from '@/components/ImageRelatedGrid';
 import '@/components/NoFlashGrid/components/ImageModal.css';
@@ -91,8 +92,8 @@ function ImagePage() {
   if (loading) {
     return (
       <>
-        <div className="image-page">
-          {/* GlobalLoadingOverlay handles the spinner */}
+        <div className="image-page" data-loading-scope="local">
+          <DataLoading message="Đang tải thông tin ảnh" />
         </div>
       </>
     );
@@ -651,7 +652,7 @@ function ImagePage() {
         </div>, document.body)
        ) : (
          // Regular page: Wrapper (sidebar is now rendered globally in App.tsx)
-         <div className="image-page">
+         <div className="image-page" data-loading-scope="local">
            <div
             className={`image-modal-container ${isScrolled ? 'scrolled' : ''} ${shouldAnimate ? 'animate' : ''} ${isImageChanging ? 'image-changing' : ''}`}
           >

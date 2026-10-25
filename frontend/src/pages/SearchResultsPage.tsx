@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useCallback, useContext, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Camera, RefreshCw } from 'lucide-react';
@@ -55,17 +56,18 @@ export default function SearchResultsPage() {
   }, [navigate, data.images, location, isMobile]);
 
   return (
-    <main ref={pageRef} className="search-results-page">
+    <main ref={pageRef} className="search-results-page" data-loading-scope="local">
       <div className="page-photo-search"><SearchBar filterButtonLabel="Bộ lọc tìm kiếm" /></div>
       <header className="search-results-content">
         <h1 className="search-results-heading">{query ? `Kết quả cho “${query}”` : 'Tìm kiếm ảnh'}</h1>
         <p className="search-results-summary" role="status">
-          {data.loading || (!data.ready && !data.error && query) ? 'Đang tìm ảnh…' : data.error
+          {data.loading || (!data.ready && !data.error && query) ? (data.images.length ? 'Đang tìm ảnh…' : '') : data.error
             ? 'Chưa tải được kết quả mới.' : `${new Intl.NumberFormat('vi-VN').format(data.pagination?.total ?? data.images.length)} ảnh phù hợp`}
         </p>
         {query && <SearchResultsTags query={query} />}
       </header>
       <ActiveFiltersIndicator filters={data.filters} />
+      {data.loading && data.images.length > 0 && <DataLoading size="inline" message="Đang cập nhật kết quả ảnh" />}
       {data.error && <div className="search-results-error" role="alert">
         <p>{data.error}</p>
         <button type="button" disabled={data.loading} onClick={() => void data.retry()}><RefreshCw size={16} /> Thử lại tải ảnh</button>
@@ -79,7 +81,7 @@ export default function SearchResultsPage() {
         <Camera size={36} aria-hidden="true" />
         <h2>Chưa tìm thấy ảnh phù hợp</h2>
         <p>Thử từ khóa khác hoặc xóa bớt bộ lọc đang chọn.</p>
-      </div> : !data.error ? <div className="search-results-grid-wrapper" aria-hidden="true" /> : null}
+      </div> : !data.error ? <div className="search-results-grid-wrapper"><DataLoading message="Đang tìm ảnh" /></div> : null}
     </main>
   );
 }

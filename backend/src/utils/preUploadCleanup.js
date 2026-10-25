@@ -2,6 +2,7 @@ import { logger } from './logger.js';
 import { r2Client, getBucketName, deleteObjectByKey } from '../libs/s3.js';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { RAW_UPLOAD_FOLDER } from './constants.js';
+import UploadJob from '../models/UploadJob.js';
 const MAX_AGE_HOURS = 24; // Delete pre-uploaded files older than 24 hours
 const MAX_AGE_MS = MAX_AGE_HOURS * 60 * 60 * 1000;
 
@@ -50,6 +51,11 @@ export const cleanupOldPreUploadedFiles = async () => {
             if (oldFiles.length > 0) {
                 const deletePromises = oldFiles.map(async (object) => {
                     try {
+                        // Atomically retire an abandoned reservation before deleting its object.
+                        // A concurrent finalize either wins first (and is protected below) or sees 404.
+                        await UploadJob.findOneAndDelete({ uploadKey: object.Key, kind: 'upload', status: 'staged' });
+                        // Queued, interrupted and failed jobs retain their source for recovery.
+                        if (await UploadJob.exists({ uploadKey: object.Key, status: { $in: ['queued', 'processing', 'failed'] } })) return;
                         await deleteObjectByKey(object.Key);
                         deletedCount++;
                     } catch (error) {

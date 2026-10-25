@@ -275,28 +275,6 @@
     cursor: not-allowed;
 }
 
-/* Skeleton */
-.notification-skeleton {
-    height: 64px;
-    background: linear-gradient(
-        90deg,
-        var(--studio-bg-cream),
-        var(--studio-bg-warm),
-        var(--studio-bg-cream)
-    );
-    background-size: 200% 100%;
-    animation: notification-shimmer 1.2s infinite;
-}
-
-@keyframes notification-shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
-}
-
 /* Empty state */
 .notification-empty {
     text-align: center;

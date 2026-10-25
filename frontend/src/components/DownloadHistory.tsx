@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Download } from 'lucide-react';
@@ -203,11 +204,11 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
         return new Date(b).getTime() - new Date(a).getTime();
     });
 
-    // GlobalLoadingOverlay handles the spinner when loading
+    // Keep the first-load status inside this data region.
     if (loading && downloads.length === 0) {
         return (
             <div className={`download-history ${className}`}>
-                {/* GlobalLoadingOverlay handles the spinner */}
+                <DataLoading message="Đang tải lịch sử tải ảnh" />
             </div>
         );
     }
@@ -226,6 +227,7 @@ export function DownloadHistory({ className = '' }: DownloadHistoryProps) {
 
     return (
         <div className={`download-history ${className}`}>
+            {loading && <DataLoading size="inline" message="Đang cập nhật lịch sử tải ảnh" />}
             <div className="download-history-content">
                 {sortedDates.map((date) => (
                     <div key={date} className="download-history-group">

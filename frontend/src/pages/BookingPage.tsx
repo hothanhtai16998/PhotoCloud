@@ -1,3 +1,4 @@
+import { DataLoading } from '@/components/user/DataLoading';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Check, Clock3, MapPin, Users, ArrowRight } from 'lucide-react';
@@ -117,7 +118,7 @@ function BookingPage() {
         <form className="booking-form" onSubmit={handleSubmit}>
           <section className="booking-section">
             <div className="booking-section-heading"><span>01</span><div><h2>Chọn gói chụp</h2><p>Bạn có thể trao đổi thêm về gói sau khi gửi yêu cầu.</p></div></div>
-            {loading ? <div className="booking-package-grid"><div className="booking-skeleton" /><div className="booking-skeleton" /></div> : (
+            {loading ? <DataLoading message="Đang tải gói chụp" size="compact" /> : (
               <div className="booking-package-grid">
                 {packages.map((item) => (
                   <button type="button" key={item.slug} className={`booking-package-card ${form.packageSlug === item.slug ? 'selected' : ''}`} onClick={() => updateForm('packageSlug', item.slug)}>

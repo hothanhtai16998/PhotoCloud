@@ -36,6 +36,8 @@ import { setCacheHeaders } from './middlewares/cacheHeaders.js';
 import { logger } from './utils/logger.js';
 import { startSessionCleanup, stopSessionCleanup } from './utils/sessionCleanup.js';
 import { startPreUploadCleanup, stopPreUploadCleanup } from './utils/preUploadCleanup.js';
+import { startUploadQueue, stopUploadQueue } from './workers/jobQueue.js';
+import UploadJob from './models/UploadJob.js';
 import { startBookingReminders, stopBookingReminders } from './utils/bookingReminders.js';
 import { checkSocialScraper } from './controllers/socialShareController.js';
 import { initializeSocketServer } from './utils/socketServer.js';
@@ -370,7 +372,9 @@ if (process.env.NODE_ENV === 'development') {
 const startServer = async () => {
     try {
         await CONNECT_DB();
+        await UploadJob.init();
         await initializeDefaultSettings();
+        startUploadQueue();
 
         // Start session cleanup scheduler
         startSessionCleanup();
@@ -397,6 +401,7 @@ const startServer = async () => {
 
         // Graceful shutdown handlers
         process.on('SIGTERM', async () => {
+            stopUploadQueue();
             stopSessionCleanup();
             stopPreUploadCleanup();
             stopBookingReminders();
@@ -406,6 +411,7 @@ const startServer = async () => {
         });
 
         process.on('SIGINT', async () => {
+            stopUploadQueue();
             stopSessionCleanup();
             stopPreUploadCleanup();
             const { stopMonitoring } = await import('./utils/alertMonitor.js');
