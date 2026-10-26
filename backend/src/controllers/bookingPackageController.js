@@ -1,7 +1,9 @@
+import { validatePackagePresentation, readPackagePresentation } from '../utils/packagePresentation.js';
 import BookingPackage from '../models/BookingPackage.js';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 
 const readPackage = (body = {}) => ({
+    ...readPackagePresentation(body),
     slug: String(body.slug || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'),
     name: String(body.name || '').trim().slice(0, 120),
     description: String(body.description || '').trim().slice(0, 1000),
@@ -28,6 +30,8 @@ export const listAdminPackages = asyncHandler(async (_req, res) => {
 });
 
 export const createAdminPackage = asyncHandler(async (req, res) => {
+    const presentationError = validatePackagePresentation(req.body);
+    if (presentationError) return res.status(400).json({ success: false, message: presentationError });
     const data = readPackage(req.body);
     const validationError = validatePackage(data);
     if (validationError) return res.status(400).json({ success: false, message: validationError });
@@ -36,6 +40,8 @@ export const createAdminPackage = asyncHandler(async (req, res) => {
 });
 
 export const updateAdminPackage = asyncHandler(async (req, res) => {
+    const presentationError = validatePackagePresentation(req.body);
+    if (presentationError) return res.status(400).json({ success: false, message: presentationError });
     const data = readPackage(req.body);
     const validationError = validatePackage(data);
     if (validationError) return res.status(400).json({ success: false, message: validationError });

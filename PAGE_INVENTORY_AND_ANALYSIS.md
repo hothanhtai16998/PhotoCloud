@@ -2,6 +2,8 @@
 
 ## Trạng thái nghiệm thu và công việc hiện tại
 
+**GÓI CHỤP — BẢN THỬ STICKY TỰ NHIÊN (26/10/2026):** theo yêu cầu người dùng, thay cơ chế khóa wheel bằng sticky dựa trên vị trí cuộn. Các ca bắt/khóa wheel cũ ở20.17–20.18 được thay bằng phương án20.19; chưa có nghiệm thu người dùng.
+
 **🔴 P1 ĐÃ SỬA — CHỜ KIỂM UPLOAD THẬT (25/10/2026):** người dùng báo đăng xong nhưng chưa thấy ảnh. Frontend trước đây coi 202 là hoàn tất, hàng đợi chỉ ở RAM và vòng batch chờ thiếu ảnh ở lượt sau. Đã sửa trạng thái chờ ảnh thật, job MongoDB/retry/lease và chống tạo ảnh trùng; xem mục 24.30 và [luồng upload](UPLOAD_PIPELINE.md). Fixture đã qua, chưa nghiệm thu với Mongo/R2 thật hoặc khôi phục những job RAM cũ mất metadata. Không đổi dấu nghiệm thu.
 
 **🔴 P1 ĐÃ SỬA — CHỜ KIỂM PHIÊN THẬT: Khôi phục đăng nhập khi refresh liên tiếp (21/10/2026).** Không còn coi 429/5xx/lỗi mạng/hủy request là guest; đã sửa auth dùng chung sau khi người dùng cho phép mở phạm vi, xem mục 24.17. Kiểm fixture và localhost có lỗi mô phỏng đã qua; chưa có nghiệm thu của người dùng hoặc bằng chứng cookie thật bị mất ở backend. Giữ nguyên các dấu nghiệm thu cũ.
@@ -938,6 +940,50 @@ Phạm vi user: PackagesPage.tsx/CSS; tài liệu inventory user. Không sửa a
 
 - [ ] PKG-U17 — F5 rồi cuộn hero→gói và ngược lại: ảnh mở đầu có nhịp đặt xuống, khung ảnh mở nhẹ khi vào màn hình, không che chữ/giá/nút. Chuyển tab bằng click/phím/cuộn: dấu chọn theo đúng gói, đặt lịch đúng lựa chọn. Bật giảm chuyển động: không có entrance/crop/di chuyển dấu chọn.
 
+### 20.16. Hero: hai bản in tách lớp rõ hơn — 25/10/2026
+
+Người dùng chọn ưu tiên “Ảnh hero chuyển động chưa rõ/đẹp”. Chỉ chỉnh hero, giữ wheel/animation chọn gói và nghiệp vụ bên dưới. Bản in trước dịch chéo trái44px/lên128px, xoay thêm4độ; ảnh sau dịch phải28px/lên20px, xoay thêm3độ theo scroll trong vùng hero. Offset mới hoàn tất chuyển động khi hero rời vùng xem, spring180/22/.6 giảm đuôi trễ khi đảo chiều. Không thay kích thước/chiều cao theo scroll, không bay sang catalog.
+
+Entrance tách thành hai neo riêng, tránh cùng một transform sở hữu cả nhịp vào và scroll. Mỗi neo chỉ chạy khi ảnh đó tải xong; ảnh tải chậm không mất nhịp entrance trước khi hiện. Mặc định nội dung vẫn nhìn thấy. Hero copy giới hạn560px để giữ khoảng cách với ảnh. Màn hẹp giảm cả dịch chuyển và góc xoay theo hệ số.45, neo ảnh trước nới trái24px để chuyển động không cắt mép. Reduced motion giữ bố cục tĩnh; không thêm dependency/listener riêng.
+
+**Kiểm tra:** build PASS; ESLint PackagesPage0error/warning (hook wheel không sửa có2warning kiểu trả về); typecheck27diagnostic ngoài trang; detector TSX/CSS `[]`, diff check PASS. Edge headless1440×1000 và390×1000 sáng/tối, API fixture và ảnh Unsplash thật: PASS entrance đợi ảnh, biên độ ảnh trước rõ ởdesktop, kích thước giữ nguyên, cuộn ngược trả về, ảnh nằm phía trên catalog, không tràn ngang, reduced-motion và chọn Gia đình→đặt lịch đúng gói. Lượt đầu phát hiện đuôi trễ khi đảo chiều, đã sửa trong batch; xem desktop sáng và màn hẹp tối, giữ nghiệm thu responsive riêng. Kiểm tọa độ bổ sung sau nới neo390px PASS sáng/tối: bản in nằm trọn viewport, log packages-hero-fan-bounds.txt. Không kết luận FPS hoặc trackpad thật từ kiểm fixture.
+
+Log/ảnh local ignore: `frontend/qa-policy-checkbox/packages-hero-fan-{build,lint-final,types-final,browser-confirm}.txt`, `packages-hero-fan-{1440,390}-{light,dark}-{top,scroll}.png`; ảnh390 trước khi nới neo không dùng làm bằng chứng vị trí cuối. Script `frontend/scripts/test-packages-hero-motion.cjs`. Phạm vi user: PackagesPage.tsx/CSS, QA và inventory user; không sửa admin/code chung. Giữ dấu x/o.
+
+- [ ] PKG-U18 — F5: hai ảnh hero xuất hiện có nhịp riêng sau khi tải. Cuộn chậm xuống/lên thấy hai bản in tách lớp rõ, không che chữ/nút hoặc bay vào phần chọn gói; dừng/đảo chiều không giật về vị trí khác. Giảm chuyển động giữ ảnh tĩnh. Kiểm cảm nhận bằng chuột/trackpad thật.
+
+### 20.17. Vùng chọn gói vừa một viewport và giữ cuộn đến hai đầu — 25/10/2026
+
+Người dùng yêu cầu phần tiêu đề/tab/gói chiếm một viewport; cuộn đổi lần lượt các tab, chỉ thoát xuống footer ở gói cuối và lên hero/header ở gói đầu. Đã xác nhận hook cũ bỏ giữ wheel khi stage cao hơn `innerHeight - 130`; chiều cao card/heading không chia chung không gian viewport, nên có thể thả trang giữa chừng trên cửa sổ thấp.
+
+**Đã sửa:** catalog có mode viewport từ900px ngang và600px cao, cao bằng100svh trừ header, gồm cả tiêu đề/tab/hint/card. Flex chia phần cao còn lại cho card/ảnh; nội dung dài có vùng cuộn chữ riêng để không mất CTA. Màn hẹp/cửa sổ dưới600px cao giữ cuộn trang và tab/nút, không khóa thành khung bị cắt. Không sửa header/body/global CSS.
+
+Hook giữ toàn catalog tại mốc scroll-margin lấy từ chiều cao header, thay mốc stage112px cũ. Entry căn tức thời để không chạy đua với smooth scroll. Wheel dùng trạng thái giữ/thoát và ref cập nhật index ngay; listener không bị tháo/gắn mỗi lần đổi tab. Bỏ điều kiện chiều cao tự vô hiệu giữa chừng; lề trang cũng đổi gói khi đang giữ. Cooldown420ms chặn burst nhảy nhiều gói và giữ gói cuối trước khi thả. Vào từ dưới hiện gói cuối, đảo chiều đi về gói đầu; rời hai đầu không bị hút vào lại cùng hướng. Modal/form/zoom/cuộn ngang không bị chiếm, keyboard/scrollbar vẫn có thể rời vùng. Nội dung chữ dài được đọc bằng cuộn nội bộ trước khi chuyển gói.
+
+**Kiểm tra:** build PASS, ESLint trang/hook0error/warning; typecheck27diagnostic ngoài phần sửa; detector UI `[]`, diff check PASS. Edge headless API fixture:1440×900 light/dark,1440×700 light/dark,1100×620 light và390×844 dark PASS. Các ca: vào từ hero bằng delta2400px ở lề, đủ4gói xuống/lên, burst không nhảy/không trôi trang khi chưa hết, viewport đủ heading/tab/card, thoát hai đầu và vào lại, modal đúng Gia đình/cuộn độc lập, reduced-motion;620px có mô tả dài cuộn trong panel và390px cuộn trang bình thường. Desktop sáng dùng ảnh Unsplash thật, các tổ hợp còn lại dùng SVG fixture. Đã xem screenshot trước/sau khi đợi transition ổn định. Chưa đo FPS/trackpad hoặc kiểm thiết bị thật; không tự nghiệm thu responsive.
+
+Hồi quy đầy đủ1440/390 sáng/tối PASS tab/phím/vuốt/modal/detail/Back/F5/fallback retry/empty/ảnh lỗi. Hồi quy cũ được cập nhật mốc catalog80px thay stage112px và thời gian chờ cooldown; fixture quay lại từ dưới cần thực sự tới mốc catalog trước khi yêu cầu chuyển gói. Script mới `frontend/scripts/test-packages-viewport.cjs`; hỗ trợ `test-packages-public.cjs`. Log local ignore `frontend/qa-policy-checkbox/packages-viewport-{build,lint,types,browser-confirm,regression-final}.txt`; screenshot `packages-viewport-{width}-{height}-{theme}.png`. Phạm vi user: PackagesPage.tsx/CSS, packages/usePackageWheel.ts, QA và inventory user. Không sửa admin/code chung, giữ mọi dấu nghiệm thu trước.
+
+- [ ] PKG-U19 — Desktop: cuộn đến Chọn cách lưu giữ khoảnh khắc; tiêu đề, tab, ảnh, giá và CTA cùng nằm trong phần màn hình dưới header. Lăn chuột đổi đủ các tab, trang giữ nguyên vị trí.
+- [ ] PKG-U20 — Cuộn mạnh/trackpad ở giữa hoặc lề: không bỏ qua gói. Gói cuối cuộn tiếp xuống nội dung cuối/footer; gói đầu cuộn lên hero/header. Quay lại từ hai phía và đảo chiều nhiều lần không bị hút hoặc kẹt.
+- [ ] PKG-U21 — Cửa sổ thấp và nội dung dài vẫn đọc/đặt lịch được; cuộn modal không đổi gói nền. Tab/phím và giảm chuyển động dùng được. Màn hẹp dùng cuộn trang bình thường, responsive nghiệm thu riêng.
+
+### 20.18. Gói chụp: bắt vị trí cuộn thực, không chỉ dự đoán delta wheel — 25/10/2026
+
+Người dùng báo bản20.17 vẫn bỏ qua gói khi kéo xuống/lên. Hook chỉ dự đoán giao điểm bằng `rect.top - event.deltaY`; khi vị trí cuộn thực thay đổi khác delta (quán tính/compositor/cuộn tăng tốc), giao điểm có thể bị bỏ lỡ. Hook còn chủ động bỏ locked nếu scrollY lệch pinnedY hơn3px, khiến một lần trượt có thể giải phóng trang dù chưa hết các gói.
+
+**Tái hiện trước sửa:** fixture gửi wheel1px rồi cho vị trí thực vượt qua mốc240px; bản20.17 timeout2500ms vì không quay về khung. Đây là mô phỏng displacement, không phải bằng chứng đo chuột/OS thật; log `packages-capture-before.txt`.
+
+**Đã sửa:** giữ window scroll listener theo dõi actual scrollY trước/sau mốc catalog trong phiên wheel gần nhất (1500ms). Giao điểm thực từ trên hoặc dưới chụp lại đúng gói đầu/cuối, kể cả wheel không cancelable. Wheel còn bắt khi vùng gói đã chiếm phần lớn khung xem để tránh cần đứng đúng một tọa độ. Bỏ nhánh unlock do lệch3px: khi đang giữ thì căn lại vị trí và giữ index, không coi trượt là được bỏ qua gói. ResizeObserver trên catalog/container cập nhật mốc khi layout/viewport thay đổi; dọn observer và mọi listener khi rời trang. Entry, cooldown420ms và điều kiện chỉ thoát ở hai đầu giữ nguyên.
+
+Phím điều hướng/Home/End, history/hash và touch có đường rời vùng rõ; wheel mới khôi phục cơ chế bắt ngay, không chờ hết khoảng miễn bắt của điều hướng bàn phím. Modal không bị chụp cuộn, nội dung dài vẫn cuộn panel riêng. Không thay giao diện hoặc dữ liệu gói. Fixture điều hướng chủ động ra khỏi vùng dùng Home/End thật thay vì giả lập scrollTo trong lúc đang locked; scrollTo khi đang locked nay là ca drift cần giữ lại.
+
+**Bằng chứng:** build PASS, ESLint trang/hook0error/warning; typecheck27diagnostic ngoài trang/hook; diff check PASS. Ca trước lỗi nay PASS1440×900/light,1440×700/dark,1100×620/light: giao điểm thực cả hai chiều, trượt100px khi locked không đổi tab, layout phía trên đổi40px vẫn đúng mốc, End có thể rời và vào lại từ dưới đúng gói cuối. Hồi quy cũ1440/390 sáng/tối PASS wheel/tab/phím/vuốt/modal/detail/Back/F5/fallback retry/empty/ảnh lỗi. Hồi quy viewport riêng giữ đủ4tab/cuộn burst/thoát hai đầu/modal/reduced-motion và nội dung dài. Toàn bộ API/ảnh ở các ca bắt vị trí dùng fixture; chưa kiểm chuột/trackpad thật hoặc khẳng định FPS/production.
+
+Phạm vi user: `frontend/src/pages/packages/usePackageWheel.ts`; hỗ trợ `test-packages-viewport.cjs`, `test-packages-public.cjs` và inventory user. Không sửa admin/code chung; CSS viewport và hero giữ bản trước. Log local ignore: `frontend/qa-policy-checkbox/packages-capture-{before,after,build-final,lint-final,types,regression,viewport-regression}.txt`. Giữ mọi dấu nghiệm thu, đặc biệt chưa đóng PKG-U20 theo fixture.
+
+- [ ] PKG-U22 — Chuột/trackpad thật: cuộn nhanh/chậm từ hero hoặc footer, dừng giữa chừng rồi tiếp tục, đảo chiều lúc có quán tính; luôn vào đúng khung và đi qua các gói trước khi thoát. Khi khung trượt nhẹ/đổi kích thước không tự nhảy ra trang. So sánh với lỗi đã báo ở20.17.
+
 ## 22. Sửa cấu trúc inventory — 16/10/2026
 
 Theo yêu cầu người dùng: di chuyển nhật ký sửa sort về 11.5 để checklist EXP-F01–20 liền mạch; đưa 18.5 về sau 18.4; sửa ký tự điều khiển và checkbox Markdown; cập nhật phân công admin/user và nguồn palette hiện tại. Khôi phục PHO-C01–04 và PHO-H01 đã bị xóa khỏi checklist bằng nội dung/dấu x có trong Git. Giữ ý nghĩa toàn bộ 130 dấu đánh giá hiện có trước sửa, gồm 6 dấu x DASH; không tự nghiệm thu thêm responsive hoặc trang khác. Ghi chú test của phiên khác được giữ như lịch sử báo cáo, không coi là lần kiểm mới ở đây.
@@ -1441,3 +1487,75 @@ Người dùng báo có lúc đăng xong nhưng chưa thấy ảnh và cho phép
 - [ ] UPL-02 — Lỗi xử lý/mạng: form và nội dung còn nguyên; thử lại cùng lượt không tạo ảnh trùng hoặc báo thành công giả. Thêm/xóa ảnh giữa pre-upload không làm sai tiến độ.
 - [ ] UPL-03 — Môi trường test riêng: restart backend khi queued/processing, đợi lease phục hồi; lỗi liên tiếp báo failed; không xóa source đang dùng. Kiểm ảnh lớn và R2/Mongo gián đoạn.
 - [ ] UPL-04 — Đăng xuất/đổi tài khoản lúc đang chờ: không hiện ảnh/kết quả của phiên cũ trong phiên mới; tài khoản khác không đọc trạng thái/xóa source. Luồng admin chung giữ chọn danh mục/approved, cần phiên admin kiểm thật.
+
+### 20.19. Gói chụp — thử sticky theo cuộn tự nhiên — 26/10/2026
+
+- Phạm vi user: PackagesPage.tsx/CSS, hook mới usePackageScroll thay usePackageWheel; không sửa admin hoặc hook dùng chung.
+- Xóa listener wheel/khóa cuộn/cooldown/căn ép vị trí. CSS sticky giữ một viewport dưới header trong đoạn cuộn; scroll thụ động + requestAnimationFrame suy ra tab từ tiến độ. Tab/mũi tên/bàn phím đồng bộ vị trí cuộn tức thời. Có link bỏ qua đến phần trao đổi với studio. Màn hình hẹp/thấp vẫn dùng tab, cuộn trang tự nhiên.
+- Body chỉ khi chứa packages-page dùng overflow-x:clip để không tạo ancestor phá sticky; modal scroll lock có overflow:hidden !important vẫn được giữ. Dọn observer/listener/frame khi rời trang.
+- Kiểm fixture Edge headless API giả lập: 1440×900,1440×700 sáng/tối;1100×620 nội dung dài;390×844 tối. Qua: tiến/lùi đủ4gói theo vị trí, khung và card vừa viewport, tab trực tiếp, wheel thực sự đổi scrollY, link xuống liên hệ; không có pageerror. Build/lint phần sửa đạt. Typecheck toàn dự án còn lỗi sẵn có ngoài phần sửa, không có chẩn đoán PackagesPage/usePackageScroll. Không kết luận hiệu năng hoặc responsive đã nghiệm thu.
+- Bằng chứng: frontend/scripts/test-packages-native-scroll.cjs, ảnh packages-native-stage-* và packages-native-* trong frontend/qa-policy-checkbox. Fixture khóa wheel cũ không còn là hợp đồng của thiết kế mới.
+- [ ] PKG-U23 — Thử thực tế F5 /packages: cuộn tự nhiên từ hero qua4gói xuống liên hệ, đảo chiều; chọn tab/mũi tên rồi cuộn tiếp không bị giật hoặc khóa. Nhấn Trao đổi với studio để bỏ qua. Xác nhận cảm giác bằng chuột/trackpad thật.
+
+### 20.20. Gói chụp — làm mềm điểm dừng hero → Chân dung — 26/10/2026
+
+- User báo cảm giác khựng khi vào khung đầu. Native sticky có điểm đổi vận tốc đột ngột tại mốc; đây là nhận định về chuyển động, chưa có bằng chứng tụt FPS.
+- Chỉ sửa user: usePackageScroll.ts và PackagesPage.css. Thêm offset transform theo vị trí cuộn trong dải ±80px quanh điểm ghim, tối đa20px; hàm bậc hai nối vận tốc hai phía, về0 ngoài dải. Không spring chạy trễ, không chặn wheel hoặc thêm dependency. Reduced motion giữ sticky nguyên bản. Cleanup xóa CSS variable khi rời trang.
+- Fixture Edge: lấy mẫu -81,-40,-5,0,5,40,81px quanh điểm ghim, kiểm vị trí liên tục và độ dịch chuyển gần hai phía bằng nhau; kiểm reduced motion. Hồi quy4gói, tab, hai chiều và link bỏ qua ở1440×900/700 sáng tối,1100×620;390×844 giữ fallback. Build và lint phần sửa đạt; typecheck toàn dự án vẫn có lỗi ngoài phạm vi. Không tuyên bố đo FPS/production hoặc nghiệm thu responsive.
+- [ ] PKG-U24 — Từ hero cuộn chậm xuống Chân dung rồi đảo chiều: cảm giác dừng mềm, không giật/căn ép trang; thử thêm cuộn nhanh và bấm Tìm gói chụp. Xác nhận bằng chuột/trackpad thật.
+
+### 20.21. Gói chụp — trang dịch vụ chi tiết theo tham chiếu Avery — 26/10/2026
+
+- Theo yêu cầu trực tiếp: homepage vẫn là nơi giới thiệu gọn; /packages chuyển thành các section dịch vụ đọc dọc, bỏ sticky/tab/wheel, có link nhảy theo gói, thông tin chi tiết, quyền lợi, giá/thời lượng/số ảnh, ảnh chính và album, so sánh các gói, CTA đặt lịch. Route /packages/:slug dùng cùng ảnh/album/quyền lợi. Không sao chép nội dung/chính sách Avery.
+- User yêu cầu để khung ảnh trống và bổ sung logic admin. Media dịch vụ không dùng Unsplash fallback; chưa nhập thì giữ placeholder rõ ràng. Hero vẫn giữ minh họa có nhãn hiện có. Chưa nhập mô tả dài/quyền lợi thêm thì không bịa nội dung. Giá/thông số vẫn lấy API, fallback có cảnh báo.
+- User: PackagesPage.tsx/CSS và PackageServices.tsx; bỏ hook usePackageScroll/usePackageWheel và CSS cũ không còn dùng. ServicePhoto/ServiceGallery tái sử dụng giữa overview/detail. Chung được người dùng cho phép trực tiếp: schema/controller package, BookingPackage/StudioPackage types và usePublicPackages. Admin được giao trực tiếp: xem lịch sử bổ sung trong inventory admin, không thay dấu nghiệm thu #35 cũ.
+- Kiểm Edge fixture6môi trường 1440×900/700 sáng tối,1100×620 nội dung dài,390×844 tối:4section, khung rỗng, album/mô tả do admin cấu hình, anchors, không tràn ngang, mở modal đặt lịch, route trực tiếp. Album bấm mở ảnh gốc ở tab mới. Ảnh QA services-* trong frontend/qa-policy-checkbox. Build đạt; lint0error,1warning sẵn có ở effect loadPackages admin; typecheck còn25chẩn đoán ngoài phần sửa. Node3test validation đạt. Chưa kiểm Mongo thật hoặc ảnh R2 thật; responsive không tự nghiệm thu.
+- Hợp đồng viewport/wheel ở20.17–20.20 đã được thay theo yêu cầu thiết kế mới; không tiếp tục dùng các fixture bắt cuộn cũ để nghiệm thu thiết kế này.
+- [ ] PKG-U25 — F5 /packages: thấy từng gói chi tiết nối tiếp, link đầu trang đến đúng gói, thông số và so sánh khớp; khung ảnh trống rõ ràng khi chưa cấu hình. Nhập nội dung trong admin rồi xác nhận lại ảnh/album/quyền lợi ở user và /packages/:slug; đặt lịch chọn đúng gói.
+
+### 20.22. Đặt lịch — bỏ bước chọn lại gói và chọn giờ cụ thể — 26/10/2026
+
+- User yêu cầu Chọn gói này mở thẳng thời gian. Modal đã chọn hợp lệ dùng3bước Thời gian/Liên hệ/Xác nhận; hiển thị tên gói+Đổi gói. Nút đặt lịch chung vẫn4bước, ID/slug không tồn tại quay lại chọn gói. Match theo API slug/_id trước CORE_PACKAGES; cleanup bỏ kết quả request cũ.
+- BookingTimePicker dùng chung modal và /booking: select giờ mỗi30phút (08:00sáng/08:30sáng...), có Linh hoạt; giờ Việt Nam, ghi rõ mong muốn/chờ studio xác nhận, không tuyên bố slot khả dụng. Giữ date picker có sẵn. Không sửa luồng đổi lịch ở vòng này.
+- User: BookingModal.tsx/CSS, BookingPage, BookingDetailPage, MyBookingsPage, profile MyBookings. Chung được người dùng cho phép: BookingPayload/Booking.requestedStartTime, utility định dạng, schema/controller booking; không chèn giờ vào notes. Backend kiểm HH:mm và suy ra period, client cũ không gửi giờ cụ thể vẫn hoạt động. Admin phạm vi được phép: inventory admin mục21.
+- Kiểm Edge fixture6môi trường1440×900/700 sáng tối,1100×620,390×844 tối: preselect→bước thời gian,08:00→review→payload requestedStartTime08:00/periodmorning/góicouple; generic/IDinvalid quay chọn; Đổi gói; admin390/1440 list/detail/calendar hiển thị08:00. Node3test format/malformed/legacy đạt. Build đạt; lint0error2warning effects sẵn có; typecheck còn23chẩn đoán ngoài thay đổi. Chưa ghi Mongo thật; không tự nghiệm thu responsive.
+- [ ] BOOK-U-TIME01 — Bấm Chọn gói này ở từng gói, phải vào thẳng thời gian, đúng tên gói; chọn08:00/14:30 hoặc Linh hoạt, sang review và gửi bằng tài khoản test; kiểm giờ ở lịch khách và admin. Thử Đổi gói, quay lại, đóng/mở gói khác và mạng chậm.
+
+### 20.23. Chọn lịch trực tiếp theo ảnh tham chiếu — 26/10/2026
+
+- Phạm vi user: BookingModal và components/booking/BookingDatePicker, BookingTimePicker, BookingSchedule.css; fixture test-booking-exact-time.cjs. Không sửa admin/backend hoặc hook settings. BookingTimePicker tái sử dụng ở /booking nên trang đầy đủ cũng dùng các ô giờ.
+- Thay input ngày trong modal bằng lịch tháng có điều hướng, thứ tiếng Việt, ngày đã chọn và khóa ngày quá khứ theo Asia/Ho_Chi_Minh. Chọn giờ bằng radio native hai cột, mỗi15phút theo ảnh mẫu; giữ toàn bộ khoảng giờ cũ và Linh hoạt. Đây là giờ mong muốn, không phải dữ liệu slot rảnh. Ngày/giờ cạnh nhau; loại địa điểm và địa chỉ cùng hàng, icon nằm cùng dòng nhãn.
+- Build PASS; focused ESLint0error,1warning effect có sẵn trong BookingModal. Typecheck25diagnostic ngoài phần sửa. Lint toàn repo54error/165warning ngoài phần thay đổi; không coi toàn repo sạch. Detector ba file picker/CSS trả[].
+- Edge headless với API fixture: PASS1440×900 sáng/tối,1440×700 sáng/tối,1100×620 sáng,390×844 tối. Kiểm chuyển tháng/chọn ngày,08:15→Linh hoạt→08:00, đúng requestedDate/requestedStartTime/requestedTimeSlot/packageSlug khi submit; giữ luồng bỏ chọn lại gói, đổi gói, ID không hợp lệ và Escape. Đã xem screenshot desktop sáng; ảnh tại frontend/qa-policy-checkbox/booking-time-*.png (artifact local). Không ghi dữ liệu thật. Responsive/thiết bị thật chưa nghiệm thu.
+- [ ] PKG-U26 — Mở đặt lịch từ gói: lịch tháng và các ô giờ dễ chọn; thử tháng trước/sau, ngày quá khứ, giờ15phút, Linh hoạt; địa điểm thẳng hàng. Tiếp tục/quay lại giữ ngày/giờ; xác nhận gửi đúng gói. Kiểm thêm /booking với các ô giờ mới. Chờ người dùng xác nhận.
+
+### 20.24. Nới modal và bỏ nội dung lặp — 26/10/2026
+
+- Theo ảnh người dùng: bỏ dòng Gói đã chọn và chú thích ngày dưới tiêu đề; giữ Đổi gói cạnh tiêu đề, xóa CSS khối cũ không còn dùng. Modal desktop rộng tối đa1040px (trước820), cao tối đa860px (trước680), vẫn giới hạn viewport và cuộn body độc lập.
+- Chỉ sửa user BookingModal.tsx/CSS và fixture test-booking-exact-time.cjs. Build PASS; Edge API fixture6cấu hình1440×900/700 sáng tối,1100×620 sáng,390×844 tối PASS chọn ngày/giờ/gửi đúng payload, đổi gói và Escape. Đã xem desktop sáng: lịch và địa điểm hiện đủ ở1440×900. Chưa nghiệm thu responsive/thiết bị thật.
+- [ ] PKG-U27 — Mở modal từ gói: không còn dòng Gói đã chọn/chú thích trong ảnh1; modal lớn dễ đọc, Đổi gói và Tiếp tục hoạt động, cửa sổ thấp vẫn cuộn để chọn đủ thông tin.
+
+### 20.25. Bỏ Đổi gói theo yêu cầu — 26/10/2026
+
+- User yêu cầu không cần đổi gói sau khi đã chọn: bỏ nút Đổi gói ở bước thời gian, dọn CSS của nút và flex không còn cần. Giữ packageSlug đã chọn và luồng đặt lịch chung/chọn gói không hợp lệ.
+- User: BookingModal.tsx/CSS; cập nhật fixture test-booking-exact-time.cjs. Build PASS; Edge API fixture6cấu hình sáng/tối PASS không còn nút, gửi đúng ngày/giờ/gói, fallback và Escape. Không sửa admin/chung; responsive vẫn chưa nghiệm thu.
+- [ ] PKG-U28 — Chọn gói từ trang dịch vụ: vào thẳng thời gian, không có Đổi gói; đi tiếp và xác nhận vẫn đúng gói ban đầu. PKG-U26/U27: phần kiểm nút Đổi gói N/A theo yêu cầu mới.
+
+### 20.26. Làm gọn nhóm địa điểm — 26/10/2026
+
+- Giữ hai trường và validation hiện có. Nhãn đậm đồng nhất; icon camera/map nằm trong ô, select dùng chevron cùng hệ icon; ô cao52px bo8px, địa chỉ rộng hơn theo tỷ lệ1:1.5, đường phân cách nhẹ với lịch. Màn hẹp xếp dọc; màu theo token sáng/tối, giữ select/input native và focus.
+- Phạm vi user: BookingModal.tsx, components/booking/BookingSchedule.css; không sửa admin/chung. Build PASS, ESLint file0error/1warning effect có sẵn, detector CSS[]. Edge fixture6cấu hình1440×900/700 sáng tối,1100×620 sáng,390×844 tối PASS luồng đặt lịch/gửi đúng payload. Đã xem ảnh desktop sáng. Không thay nghiệm thu responsive/thiết bị thật.
+- [ ] PKG-U29 — Hai ô địa điểm cùng hàng, nhãn/icon rõ; nhập địa chỉ và đổi loại địa điểm, Tab/tiếp tục/quay lại giữ dữ liệu. Cửa sổ thấp cuộn body để thấy đủ trường; sáng/tối dễ đọc. Chờ người dùng xác nhận.
+
+### 20.27. Menu loại địa điểm theo theme — 26/10/2026
+
+- Thay native select trong modal bằng BookingLocationPicker dùng Radix DropdownMenu có sẵn; giữ4giá trị outdoor/studio/home/other. Menu cùng chiều rộng trigger, nền/viền/bo góc theo theme, mục đã chọn có dấu check; hover/focus dùng token website. Portal tránh cắt bởi body modal, tự đổi phía theo viewport; Escape chỉ đóng menu, trả focus trigger.
+- User: BookingModal.tsx, components/booking/BookingLocationPicker.tsx và BookingSchedule.css; fixture test-booking-exact-time.cjs. Dọn icon/import/CSS select cũ. Không sửa admin/chung.
+- Build PASS, focused lint0error/1warning effect cũ; detector[]. Edge API fixture6cấu hình1440×900/700 sáng tối,1100×620 sáng,390×844 tối PASS chọn Studio, mở menu bằng ArrowDown, Escape không đóng modal, đổi về Ngoại cảnh và gửi lịch đúng payload. Đã xem menu desktop sáng tại frontend/qa-policy-checkbox/booking-location-menu-1440-900-light.png; ảnh các môi trường khác cùng prefix. Chưa nghiệm thu responsive/thiết bị thật.
+- [ ] PKG-U30 — Mở Loại địa điểm: menu theo theme, dấu check đúng; click/phím chọn4mục, Escape trả focus và giữ modal, dữ liệu giữ khi tiếp tục/quay lại. Cửa sổ thấp menu tự mở phía đủ chỗ.
+
+### 20.28. Chọn sẵn ngày hôm nay — 26/10/2026
+
+- Modal khởi tạo ngày mong muốn tại thời điểm mở theo Asia/Ho_Chi_Minh, ngày hiện tại có trạng thái selected thật và được gửi trong payload. Giữ ngày đã chọn còn hợp lệ khi mở lại; bản nháp đã quá ngày tự chuyển hôm nay. Tách getBookingToday dùng chung trong nhóm booking cho modal/calendar, không chỉ tô màu ngày khi form còn rỗng.
+- User: BookingModal.tsx, components/booking/bookingDate.ts, BookingDatePicker.tsx; fixture test-booking-exact-time.cjs. Build PASS; Edge fixture6cấu hình sáng/tối PASS hôm nay aria-pressed=true lúc mở, chọn ngày khác/mở lại giữ lựa chọn, luồng gửi đúng ngày/giờ/gói. Không sửa admin/chung; chưa nghiệm thu responsive/thiết bị thật.
+- [ ] PKG-U31 — Mở đặt lịch lần đầu: hôm nay được chọn sẵn theo giờ Việt Nam; chọn ngày khác, đóng/mở lại giữ ngày mới; xác nhận gửi đúng ngày. Bản nháp quá ngày chuyển về hôm nay khi mở lại.

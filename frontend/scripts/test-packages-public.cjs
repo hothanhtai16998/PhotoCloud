@@ -43,7 +43,7 @@ const assert = require('node:assert/strict');
           const before = await metrics();
           const gaps = await page.evaluate(async () => {
             document.documentElement.style.scrollBehavior = 'auto';
-            const target = document.querySelector('.package-stage').getBoundingClientRect().top + scrollY - 112;
+            const target = document.querySelector('.packages-catalog').getBoundingClientRect().top + scrollY - 80;
             const gaps = []; let previous = performance.now();
             for (let frame = 0; frame <= 90; frame++) {
               scrollTo({ top: target * frame / 90, behavior: 'instant' });
@@ -96,52 +96,61 @@ const assert = require('node:assert/strict');
         await page.getByRole('tab', { name: 'Chân dung cá nhân', exact: true }).click();
         await assertSelected('Chân dung cá nhân');
         if (width === 1440) {
-          const stage = page.locator('.package-stage');
-          await stage.evaluate(el => scrollTo({ top: scrollY + el.getBoundingClientRect().top - 112, behavior: 'instant' }));
+          const stage = page.locator('.packages-catalog');
+          await stage.evaluate(el => scrollTo({ top: scrollY + el.getBoundingClientRect().top - 80, behavior: 'instant' }));
           const hoverStage = async () => {
             const bounds = await stage.boundingBox();
             await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
           };
           await hoverStage();
+          await page.mouse.wheel(0, 1);
+          await page.waitForTimeout(460);
           await page.mouse.wheel(0, 100);
           await page.mouse.wheel(0, 100);
           await page.mouse.wheel(0, 100);
           await assertSelected('Gia đình');
           const heldY = await page.evaluate(() => scrollY);
           const stageY = (await stage.boundingBox()).y;
-          assert.ok(Math.abs(stageY - 112) < 3, `stage stays aligned below header: y=${stageY}, scroll=${heldY}`);
+          assert.ok(Math.abs(stageY - 80) < 3, `stage stays aligned below header: y=${stageY}, scroll=${heldY}`);
           for (const pkg of packages.slice(2)) {
+            await page.waitForTimeout(100);
             await page.mouse.wheel(0, 100);
             await assertSelected(pkg.name);
           }
           assert.equal(await page.evaluate(() => scrollY), heldY, 'wheel changes packages without scrolling to footer');
+          await page.waitForTimeout(100);
           await page.mouse.wheel(0, 150);
           await page.waitForFunction(y => scrollY > y, heldY);
           await hoverStage();
           // Entering from below first presents the last package again.
-          await page.mouse.wheel(0, -100);
+          await page.mouse.wheel(0, -600);
+          await page.waitForFunction(() => Math.abs(document.querySelector('.packages-catalog').getBoundingClientRect().top - 80) < 3);
           await assertSelected('Couple');
           await page.waitForTimeout(570);
           for (const pkg of packages.slice(0, -1).reverse()) {
+            await page.waitForTimeout(100);
             await page.mouse.wheel(0, -100);
             await assertSelected(pkg.name);
           }
           const firstY = await page.evaluate(() => scrollY);
+          await page.waitForTimeout(100);
           await page.mouse.wheel(0, -150);
           await page.waitForFunction(y => scrollY < y, firstY);
           // Large wheel deltas with the pointer in the page margin cannot skip the stage.
           await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
           await page.mouse.move(4, 400);
           await page.mouse.wheel(0, 1800);
-          await page.waitForFunction(() => Math.abs(document.querySelector('.package-stage').getBoundingClientRect().top - 112) < 3);
+          await page.waitForFunction(() => Math.abs(document.querySelector('.packages-catalog').getBoundingClientRect().top - 80) < 3);
           await assertSelected('Chân dung cá nhân');
           await page.waitForTimeout(570);
           await page.mouse.wheel(0, 100);
           await assertSelected('Gia đình');
-          await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+          await page.evaluate(() => document.activeElement?.blur());
+          await page.keyboard.press('End');
+          await page.waitForTimeout(650);
           await page.mouse.move(4, 400);
           await page.mouse.wheel(0, -1800);
-          await page.waitForFunction(() => Math.abs(document.querySelector('.package-stage').getBoundingClientRect().top - 112) < 3);
+          await page.waitForFunction(() => Math.abs(document.querySelector('.packages-catalog').getBoundingClientRect().top - 80) < 3);
           await assertSelected('Couple');
           await page.waitForTimeout(570);
           await page.mouse.wheel(0, -100);
@@ -149,8 +158,9 @@ const assert = require('node:assert/strict');
           await page.getByRole('tab', { name: 'Chân dung cá nhân', exact: true }).click();
           await assertSelected('Chân dung cá nhân');
           await page.setViewportSize({ width: 1440, height: 760 });
-          await stage.evaluate(el => scrollTo({ top: scrollY + el.getBoundingClientRect().top - 112, behavior: 'instant' }));
+          await stage.evaluate(el => scrollTo({ top: scrollY + el.getBoundingClientRect().top - 80, behavior: 'instant' }));
           await page.mouse.move(4, 400);
+          await page.waitForTimeout(100);
           await page.mouse.wheel(0, 100);
           await assertSelected('Gia đình');
           await page.setViewportSize({ width: 1440, height: 1000 });
@@ -174,6 +184,10 @@ const assert = require('node:assert/strict');
         await page.getByRole('button', { name: 'Gói trước', exact: true }).click();
         await assertSelected('Chân dung cá nhân');
         assert.match(await page.locator('.package-card-price').first().textContent(), /1\.500\.000đ/);
+        await page.evaluate(() => document.activeElement?.blur());
+        await page.keyboard.press('Home');
+        await page.waitForFunction(() => scrollY === 0);
+        await page.waitForTimeout(650);
         await page.evaluate(() => {
           document.documentElement.style.scrollBehavior = 'auto';
           scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -210,7 +224,7 @@ const assert = require('node:assert/strict');
         }
         if (width === 1440) assert.ok(await page.evaluate(() => document.documentElement.scrollHeight < 3000), 'stage replaces repeated long sections');
         await page.screenshot({ path: `qa-policy-checkbox/packages-stage-${width}-${theme}.png`, fullPage: true });
-        await page.locator('.package-stage').evaluate(el => scrollTo({ top: scrollY + el.getBoundingClientRect().top - 112, behavior: 'instant' }));
+        await page.locator('.packages-catalog').evaluate(el => scrollTo({ top: scrollY + el.getBoundingClientRect().top - 80, behavior: 'instant' }));
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await page.screenshot({ path: `qa-policy-checkbox/packages-stage-focus-${width}-${theme}.png` });
         const choose = page.getByRole('button', { name: 'Đặt lịch gói Chân dung cá nhân', exact: true });
@@ -255,7 +269,7 @@ const assert = require('node:assert/strict');
         await page.getByRole('button', { name: 'Thử lại', exact: true }).click();
         await page.locator('.packages-source-note').waitFor({ state: 'detached' });
         assert.equal(await page.locator('.package-card').count(), 1);
-        packages.push({ ...packages[0], _id: 'p4', slug: 'unknown-category', category: 'unknown', name: 'Gói chưa có ảnh' });
+        packages.push({ ...packages[0], _id: 'p-unknown', slug: 'unknown-category', category: 'unknown', name: 'Gói chưa có ảnh' });
         await page.reload();
         await page.getByRole('tab', { name: 'Gói chưa có ảnh', exact: true }).click(); await waitPrint();
         assert.equal(await page.locator('.package-card .package-photo').count(), 0, 'unknown category does not borrow a portrait');

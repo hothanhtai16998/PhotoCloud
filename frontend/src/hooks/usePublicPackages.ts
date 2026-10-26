@@ -57,10 +57,12 @@ const mapApiToStudio = (
         description: api.description,
         // Illustrations only: explicit API category can select an existing cover.
         // Unknown categories never inherit the inferred portrait accent's image.
-        coverUrl: fallback?.coverUrl ?? CORE_PACKAGES.find(pkg => pkg.accent === api.category)?.coverUrl ?? '',
+        coverUrl: api.coverUrl || '',
+        detailDescription: api.detailDescription || '',
+        gallery: api.gallery || [],
         accent: KNOWN_CATEGORIES.includes(api.category as StudioPackageCategory)
             ? api.category as StudioPackageCategory : fallback?.accent ?? slugToCategory(slug),
-        includes: buildIncludesFromApi(api),
+        includes: [...new Set([...buildIncludesFromApi(api), ...(api.includes || [])])],
     };
 };
 
@@ -74,7 +76,7 @@ const FALLBACK_BY_SLUG = new Map(CORE_PACKAGES.map((p) => [p.slug, p]));
  * để trang không trắng; cảnh báo trong console để người vận hành xử lý.
  *
  * Map BookingPackage → StudioPackage để UI card không phụ thuộc cấu trúc DB.
- * Illustrative covers use an exact slug or an explicit API category match.
+ * Service covers and galleries are empty until configured in admin.
  * Price, duration, delivery and included people/photos come from the live API.
  */
 export function usePublicPackages(): PublicPackagesState {
@@ -145,7 +147,7 @@ export function usePublicPackages(): PublicPackagesState {
             }
         }
     } else {
-        packages = CORE_PACKAGES;
+        packages = CORE_PACKAGES.map(pkg => ({ ...pkg, coverUrl: '', gallery: [] }));
         source = 'fallback';
         if (typeof window !== 'undefined' && error) {
             console.warn(

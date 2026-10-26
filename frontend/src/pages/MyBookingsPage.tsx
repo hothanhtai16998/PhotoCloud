@@ -1,5 +1,6 @@
+import { formatRequestedTime } from '@/utils/bookingTime';
 import { DataLoading } from '@/components/user/DataLoading';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Camera, Check, Clock3, MapPin, Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,12 +45,6 @@ const daysUntil = (isoDate: string): number => {
   return Math.round(diffMs / (1000 * 60 * 60 * 24));
 };
 
-const timeSlotLabels: Record<string, string> = {
-  morning: 'Buổi sáng',
-  afternoon: 'Buổi chiều',
-  evening: 'Buổi tối',
-  flexible: 'Linh hoạt',
-};
 
 export default function MyBookingsPage() {
   useDocumentMeta({
@@ -226,7 +221,7 @@ export default function MyBookingsPage() {
                       <Clock3 size={15} />
                       <span>
                         <small>Khung giờ</small>
-                        <strong>{timeSlotLabels[booking.requestedTimeSlot] ?? booking.requestedTimeSlot}</strong>
+                        <strong>{formatRequestedTime(booking)}</strong>
                       </span>
                     </div>
                     <div>

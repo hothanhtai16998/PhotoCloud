@@ -47,6 +47,7 @@ const bookingSchema = new mongoose.Schema(
             enum: ['morning', 'afternoon', 'evening', 'flexible'],
             required: true,
         },
+        requestedStartTime: { type: String, match: /^([01]\d|2[0-3]):[0-5]\d$/ },
         alternativeDate: { type: Date },
         confirmedDate: { type: Date },
         confirmedStartTime: { type: String, trim: true },

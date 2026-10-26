@@ -17,6 +17,10 @@ export interface BookingPackage {
   slug: string;
   name: string;
   description: string;
+  detailDescription?: string;
+  coverUrl?: string;
+  includes?: string[];
+  gallery?: string[];
   durationMinutes: number;
   basePrice: number;
   includedPhotos: number;
@@ -29,6 +33,7 @@ export interface BookingPayload {
   packageSlug: string;
   requestedDate: string;
   requestedTimeSlot: BookingTimeSlot;
+  requestedStartTime?: string;
   alternativeDate?: string;
   location: {
     type: BookingLocationType;
@@ -54,6 +59,7 @@ export interface Booking {
   status: BookingStatus;
   requestedDate: string;
   requestedTimeSlot: BookingTimeSlot;
+  requestedStartTime?: string;
   alternativeDate?: string;
   confirmedDate?: string;
   confirmedStartTime?: string;

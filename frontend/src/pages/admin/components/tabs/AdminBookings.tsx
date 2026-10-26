@@ -96,12 +96,13 @@ export function AdminBookings() {
     if (packageBusy) return;
     setPackageBusy(true);
     try {
+      const payload = { ...packageForm, includes: packageForm.includes?.map(line => line.trim()).filter(Boolean), gallery: packageForm.gallery?.map(line => line.trim()).filter(Boolean) };
       if (editingPackage?._id)
         await bookingService.updateAdminPackage(
           editingPackage._id,
-          packageForm
+          payload
         );
-      else await bookingService.createAdminPackage(packageForm);
+      else await bookingService.createAdminPackage(payload);
       toast.success(adminText("Đã lưu gói chụp"));
       setEditingPackage(null);
       setPackageForm(emptyPackage);
@@ -344,6 +345,21 @@ export function AdminBookings() {
                     })
                   }
                 />
+              </label>
+              <label className="pc-package-content-field">Mô tả chi tiết trên trang Gói chụp
+                <textarea rows={5} maxLength={5000} value={packageForm.detailDescription || ''} onChange={e => setPackageForm({ ...packageForm, detailDescription: e.target.value })} />
+              </label>
+              <label className="pc-package-content-field">Quyền lợi bổ sung — mỗi dòng một mục (tối đa 20)
+                <textarea rows={4} value={(packageForm.includes || []).join('\n')} onChange={e => setPackageForm({ ...packageForm, includes: e.target.value.split('\n') })} />
+                <small>Thời lượng, số ảnh, số người và ngày giao đã được hiển thị tự động từ thông số gói.</small>
+              </label>
+              <label className="pc-package-content-field">Đường dẫn ảnh bìa
+                <input type="url" placeholder="https://..." value={packageForm.coverUrl || ''} onChange={e => setPackageForm({ ...packageForm, coverUrl: e.target.value })} />
+                <small>Để trống nếu chưa có ảnh. Dùng URL HTTPS của ảnh studio có quyền công bố.</small>
+              </label>
+              <label className="pc-package-content-field">Ảnh buổi chụp — mỗi dòng một URL HTTPS (tối đa 12)
+                <textarea rows={5} value={(packageForm.gallery || []).join('\n')} onChange={e => setPackageForm({ ...packageForm, gallery: e.target.value.split('\n') })} />
+                <small>Giữ đúng thứ tự ảnh muốn xuất hiện. Có thể dán đường dẫn ảnh từ thư viện; chưa có ảnh thì để trống.</small>
               </label>
             </fieldset>
             <div className="admin-package-actions">

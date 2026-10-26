@@ -33,6 +33,8 @@ export interface StudioPackage {
   accent: StudioPackageCategory;
   /** Bulleted list of what is included (used on /packages/:slug later) */
   includes: string[];
+  detailDescription?: string;
+  gallery?: string[];
 }
 
 const formatVND = (value: number) => `${value.toLocaleString('vi-VN')}đ`;

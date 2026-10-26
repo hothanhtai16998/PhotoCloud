@@ -1,3 +1,4 @@
+import { readRequestedTime } from '../utils/bookingTime.js';
 import mongoose from 'mongoose';
 import { reschedulePolicyError, cancellationRefundPercent } from '../utils/bookingPolicyRules.js';
 import Booking from '../models/Booking.js';
@@ -110,7 +111,9 @@ export const createBooking = asyncHandler(async (req, res) => {
     const selectedPackage = await getPackage(body.packageSlug);
     const requestedDate = parseFutureDate(body.requestedDate);
     const participants = Number(body.participants);
-    const timeSlot = cleanString(body.requestedTimeSlot, 20);
+    const requestedTime = readRequestedTime(body.requestedStartTime, cleanString(body.requestedTimeSlot, 20));
+    if (requestedTime.error) return res.status(400).json({ success: false, message: requestedTime.error });
+    const timeSlot = requestedTime.slot;
     const locationType = cleanString(body.location?.type, 20);
     const contactName = cleanString(body.contact?.name, 120);
     const contactEmail = cleanString(body.contact?.email, 200).toLowerCase();
@@ -156,6 +159,7 @@ export const createBooking = asyncHandler(async (req, res) => {
         },
         requestedDate,
         requestedTimeSlot: timeSlot,
+        requestedStartTime: requestedTime.time,
         alternativeDate: parseFutureDate(body.alternativeDate) || undefined,
         location: { type: locationType, address, mapUrl: cleanString(body.location?.mapUrl, 1000) },
         participants,

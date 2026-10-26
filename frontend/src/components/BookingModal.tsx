@@ -1,6 +1,11 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { BookingDatePicker } from '@/components/booking/BookingDatePicker';
+import { getBookingToday } from '@/components/booking/bookingDate';
+import { BookingLocationPicker } from '@/components/booking/BookingLocationPicker';
+import { BookingTimePicker } from '@/components/booking/BookingTimePicker';
+import { formatRequestedTime } from '@/utils/bookingTime';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowLeft, ArrowRight, CalendarDays, Check, Clock3, MapPin, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock3, Sparkles, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { bookingService } from '@/services/bookingService';
@@ -8,10 +13,10 @@ import { useUserStore } from '@/stores/useUserStore';
 import { getErrorMessage } from '@/lib/utils';
 import { BOOKING_MODAL_EVENT, getBookingModalDetail, type BookingModalMode } from '@/utils/bookingModalEvent';
 import { CORE_PACKAGES } from '@/constants/packages';
-import type { BookingPackage, BookingPayload, BookingTimeSlot, BookingLocationType } from '@/types/booking';
+import type { BookingPackage, BookingPayload } from '@/types/booking';
 import './BookingModal.css';
 
-const today = new Date().toISOString().slice(0, 10);
+
 const blankForm: BookingPayload = {
   packageSlug: '',
   requestedDate: '',
@@ -33,12 +38,14 @@ const formatPrice = (value: number) => new Intl.NumberFormat('vi-VN', {
 /** Map a CORE_PACKAGES id ("portrait", "couple", …) to the matching API slug. */
 const matchPackageSlug = (packages: BookingPackage[], selectedId?: string) => {
   if (!selectedId) return '';
+  const direct = packages.find(pkg => pkg.slug === selectedId || pkg._id === selectedId);
+  if (direct) return direct.slug;
   const studioPkg = CORE_PACKAGES.find((p) => p.id === selectedId);
   if (!studioPkg) return '';
   const match = packages.find(
     (p) => p.slug === studioPkg.slug || p.slug === selectedId
   );
-  return match?.slug ?? studioPkg.slug;
+  return match?.slug ?? '';
 };
 
 export function BookingModal() {
@@ -46,9 +53,12 @@ export function BookingModal() {
   const { user } = useUserStore();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [skipPackage, setSkipPackage] = useState(false);
   const [packages, setPackages] = useState<BookingPackage[]>([]);
   const [form, setForm] = useState<BookingPayload>(blankForm);
   const [loading, setLoading] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
+  const [stepError, setStepError] = useState('');
   const triggerRef = useRef<HTMLElement | null>(null);
   const dialogRef = useRef<HTMLElement | null>(null);
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
@@ -60,10 +70,20 @@ export function BookingModal() {
       const detail = getBookingModalDetail(event);
       if (!open) triggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       setOpen(true);
-      setStep(1);
+      setShowErrors(false);
+      setStepError('');
+      const preselected = Boolean(detail.selectedPackageId && detail.mode !== 'custom-quote');
+      setSkipPackage(preselected);
+      setStep(preselected ? 2 : 1);
       setSubmittedCode(null);
       setMode(detail.mode ?? 'package');
       setPendingPackageId(detail.selectedPackageId);
+      const today = getBookingToday();
+      setForm(current => ({
+        ...current,
+        requestedDate: current.requestedDate >= today ? current.requestedDate : today,
+        packageSlug: detail.selectedPackageId ? '' : current.packageSlug,
+      }));
     };
     window.addEventListener(BOOKING_MODAL_EVENT, openHandler);
     return () => window.removeEventListener(BOOKING_MODAL_EVENT, openHandler);
@@ -71,16 +91,19 @@ export function BookingModal() {
 
   useEffect(() => {
     if (!open) return;
+    let cancelled = false;
     bookingService
       .getPackages()
       .then((data) => {
+        if (cancelled) return;
         setPackages(data.packages);
         if (pendingPackageId) {
           const slug = matchPackageSlug(data.packages, pendingPackageId);
           if (slug) setForm((current) => ({ ...current, packageSlug: slug }));
+          else { setSkipPackage(false);setStep(1);setForm(current => ({...current,packageSlug:''})); }
         }
       })
-      .catch((error: unknown) => toast.error(getErrorMessage(error, 'Không thể tải gói chụp')));
+      .catch((error: unknown) => { if (!cancelled) { setSkipPackage(false);setStep(1);toast.error(getErrorMessage(error, 'Không thể tải gói chụp')); } });
     if (user) {
       setForm((current) => ({
         ...current,
@@ -92,6 +115,7 @@ export function BookingModal() {
         },
       }));
     }
+    return () => { cancelled = true; };
   }, [open, user, pendingPackageId]);
 
   useEffect(() => {
@@ -110,24 +134,38 @@ export function BookingModal() {
 
   const isCustomQuote = mode === 'custom-quote';
   const totalSteps = isCustomQuote ? 3 : 4;
+  const visibleStep = skipPackage && !isCustomQuote ? step - 1 : step;
+  const visibleTotal = skipPackage && !isCustomQuote ? 3 : totalSteps;
 
   const contactError = () => {
     if (!form.contact.name.trim()) return 'Vui lòng nhập họ và tên.';
     if (!/^\S+@\S+\.\S+$/.test(form.contact.email.trim())) return 'Vui lòng nhập email hợp lệ.';
     if (form.contact.phone.trim().length < 7) return 'Vui lòng nhập số điện thoại có ít nhất 7 ký tự.';
+    if (!form.location.address.trim()) return 'Vui lòng nhập địa chỉ hoặc khu vực muốn chụp.';
     return null;
   };
 
+  const rejectStep = (message: string) => {
+    setStepError(message);
+    setShowErrors(true);
+    requestAnimationFrame(() => {
+      const field = dialogRef.current?.querySelector<HTMLElement>('[aria-invalid=true]');
+      field?.focus();
+      field?.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    });
+  };
+
   const next = () => {
+    setStepError('');
     if (isCustomQuote) {
-      if (step === 1 && (!form.requestedDate || !form.location.address.trim())) return toast.error('Vui lòng chọn ngày và nhập địa điểm.');
-      if (step === 2) { const message = contactError(); if (message) return toast.error(message); }
+      if (step === 1 && !form.requestedDate) return rejectStep('Bạn chọn ngày muốn chụp nhé.');
+      if (step === 2) { const message = contactError(); if (message) return rejectStep(message); }
       setStep((current) => current + 1);
       return;
     }
-    if (step === 1 && !selectedPackage) return toast.error('Vui lòng chọn một gói chụp.');
-    if (step === 2 && (!form.requestedDate || !form.location.address.trim())) return toast.error('Vui lòng chọn ngày và nhập địa điểm.');
-    if (step === 3) { const message = contactError(); if (message) return toast.error(message); }
+    if ((step === 1 || step === 2) && !selectedPackage) return rejectStep('Bạn chọn một gói chụp để tiếp tục nhé.');
+    if (step === 2 && !form.requestedDate) return rejectStep('Bạn chọn ngày muốn chụp nhé.');
+    if (step === 3) { const message = contactError(); if (message) return rejectStep(message); }
     setStep((current) => current + 1);
   };
 
@@ -135,7 +173,7 @@ export function BookingModal() {
     event.preventDefault();
     if (loading) return;
     const message = contactError();
-    if (message) { toast.error(message); return; }
+    if (message) { rejectStep(message); return; }
     if (!user) {
       close();
       navigate('/signin');
@@ -182,11 +220,11 @@ export function BookingModal() {
             </div>
           </div>
         ) : (
-          <form onSubmit={submit}>
-            <ol className="booking-stepper" aria-label={`Bước ${step}/${totalSteps}`} style={{ '--step-count': totalSteps } as React.CSSProperties}>
-              {(isCustomQuote ? ['Thời gian', 'Liên hệ', 'Yêu cầu'] : ['Gói chụp', 'Thời gian', 'Liên hệ', 'Xác nhận']).map((label, index) => {
-                const completed = step > index + 1;
-                const current = step === index + 1;
+          <form onSubmit={submit} noValidate>
+            <ol className="booking-stepper" aria-label={`Bước ${visibleStep}/${visibleTotal}`} style={{ '--step-count': visibleTotal } as React.CSSProperties}>
+              {(isCustomQuote ? ['Thời gian', 'Liên hệ', 'Yêu cầu'] : skipPackage ? ['Thời gian', 'Liên hệ', 'Xác nhận'] : ['Gói chụp', 'Thời gian', 'Liên hệ', 'Xác nhận']).map((label, index) => {
+                const completed = visibleStep > index + 1;
+                const current = visibleStep === index + 1;
                 return <li key={label} className={completed ? 'completed' : current ? 'current' : ''} aria-current={current ? 'step' : undefined} aria-label={`${label}${completed ? ': Đã hoàn thành' : ''}`}>
                   <div className="booking-step-marker" aria-hidden="true">{completed ? <Check size={16} /> : index + 1}</div>
                   <span>{label}</span>
@@ -195,6 +233,7 @@ export function BookingModal() {
             </ol>
 
             <div className="booking-modal-content">
+              {stepError && !(isCustomQuote ? step === 2 : step === 3) && <p className="booking-inline-error" role="alert">{stepError}</p>}
               {!isCustomQuote && step === 1 && (
                 <div className="booking-modal-step">
                   <h3>Chọn gói phù hợp</h3>
@@ -214,13 +253,15 @@ export function BookingModal() {
 
               {((!isCustomQuote && step === 2) || (isCustomQuote && step === 1)) && (
                 <div className="booking-modal-step">
-                  <h3>Thời gian và địa điểm</h3>
-                  <p className="booking-modal-help">Ngày bạn chọn là ngày mong muốn, chưa phải lịch đã xác nhận.</p>
-                  <div className="booking-modal-fields">
-                    <label><CalendarDays size={15} /> Ngày mong muốn<input type="date" min={today} value={form.requestedDate} onChange={(event) => update('requestedDate', event.target.value)} /></label>
-                    <label>Khung giờ<select value={form.requestedTimeSlot} onChange={(event) => update('requestedTimeSlot', event.target.value as BookingTimeSlot)}><option value="morning">Buổi sáng</option><option value="afternoon">Buổi chiều</option><option value="evening">Buổi tối</option><option value="flexible">Linh hoạt</option></select></label>
-                    <label>Loại địa điểm<select value={form.location.type} onChange={(event) => update('location', { ...form.location, type: event.target.value as BookingLocationType })}><option value="outdoor">Ngoại cảnh</option><option value="studio">Studio</option><option value="home">Tại nhà</option><option value="other">Khác</option></select></label>
-                    <label><MapPin size={15} /> Địa chỉ / khu vực<input value={form.location.address} onChange={(event) => update('location', { ...form.location, address: event.target.value })} placeholder="Ví dụ: Hồ Tây, Hà Nội" /></label>
+                  <div className="booking-schedule-heading">
+                    <h3>Thời gian và địa điểm</h3>
+                  </div>
+                  <div className="booking-schedule">
+                    <BookingDatePicker value={form.requestedDate} onChange={(date) => update('requestedDate', date)} />
+                    <BookingTimePicker value={form.requestedStartTime} onChange={(time, slot) => setForm(current => ({...current, requestedStartTime: time, requestedTimeSlot: slot}))} />
+                  </div>
+                  <div className="booking-modal-fields booking-location-fields">
+                    <BookingLocationPicker value={form.location.type} onChange={(type) => update('location', { ...form.location, type })} />
                   </div>
                 </div>
               )}
@@ -230,10 +271,11 @@ export function BookingModal() {
                   <h3>Thông tin liên hệ</h3>
                   <p className="booking-modal-help">Chúng tôi chỉ dùng thông tin này để trao đổi về yêu cầu của bạn.</p>
                   <div className="booking-modal-fields">
-                    <label>Họ và tên<input value={form.contact.name} onChange={(event) => update('contact', { ...form.contact, name: event.target.value })} /></label>
-                    <label>Email<input type="email" value={form.contact.email} onChange={(event) => update('contact', { ...form.contact, email: event.target.value })} /></label>
-                    <label>Số điện thoại<input type="tel" value={form.contact.phone} onChange={(event) => update('contact', { ...form.contact, phone: event.target.value })} /></label>
+                    <label>Họ và tên<input aria-label="Họ và tên" aria-invalid={showErrors && !form.contact.name.trim()} aria-describedby={showErrors && !form.contact.name.trim() ? 'booking-name-error' : undefined} value={form.contact.name} onChange={(event) => update('contact', { ...form.contact, name: event.target.value })} />{showErrors && !form.contact.name.trim() && <small id="booking-name-error" className="booking-inline-error">Bạn nhập họ và tên nhé.</small>}</label>
+                    <label>Email<input aria-label="Email" type="email" aria-invalid={showErrors && !/^\S+@\S+\.\S+$/.test(form.contact.email.trim())} aria-describedby={showErrors && !/^\S+@\S+\.\S+$/.test(form.contact.email.trim()) ? 'booking-email-error' : undefined} value={form.contact.email} onChange={(event) => update('contact', { ...form.contact, email: event.target.value })} />{showErrors && !/^\S+@\S+\.\S+$/.test(form.contact.email.trim()) && <small id="booking-email-error" className="booking-inline-error">Bạn nhập email hợp lệ nhé.</small>}</label>
+                    <label>Số điện thoại<input aria-label="Số điện thoại" type="tel" aria-invalid={showErrors && form.contact.phone.trim().length < 7} aria-describedby={showErrors && form.contact.phone.trim().length < 7 ? 'booking-phone-error' : undefined} value={form.contact.phone} onChange={(event) => update('contact', { ...form.contact, phone: event.target.value })} />{showErrors && form.contact.phone.trim().length < 7 && <small id="booking-phone-error" className="booking-inline-error">Bạn nhập số điện thoại có ít nhất 7 ký tự nhé.</small>}</label>
                     <label>Số người<input type="number" min={1} max={selectedPackage?.includedPeople || 50} value={form.participants} onChange={(event) => update('participants', Number(event.target.value))} /></label>
+                    <label>Địa chỉ / khu vực<input aria-label="Địa chỉ / khu vực" placeholder="Ví dụ: Hồ Tây, Hà Nội" aria-invalid={showErrors && !form.location.address.trim()} aria-describedby={showErrors && !form.location.address.trim() ? 'booking-address-error' : undefined} value={form.location.address} onChange={(event) => update('location', { ...form.location, address: event.target.value })} />{showErrors && !form.location.address.trim() && <small id="booking-address-error" className="booking-inline-error">Bạn nhập địa chỉ hoặc khu vực muốn chụp nhé.</small>}</label>
                   </div>
                 </div>
               )}
@@ -245,8 +287,8 @@ export function BookingModal() {
                   <div className="booking-modal-summary">
                     <div><span>Gói chụp</span><strong>{selectedPackage?.name}</strong></div>
                     <div><span>Giá tham khảo</span><strong>{selectedPackage ? formatPrice(selectedPackage.basePrice) : 'Đang cập nhật'}</strong></div>
-                    <div><span>Ngày / khung giờ</span><strong>{form.requestedDate} · {form.requestedTimeSlot}</strong></div>
-                    <div><span>Địa điểm</span><strong>{form.location.address}</strong></div>
+                    <div><span>Ngày / khung giờ</span><strong>{form.requestedDate} · {formatRequestedTime(form)}</strong></div>
+                    <div><span>Địa điểm</span><strong>{{ outdoor: 'Ngoại cảnh', studio: 'Studio', home: 'Tại nhà', other: 'Khác' }[form.location.type]} · {form.location.address}</strong></div>
                     <div><span>Liên hệ</span><strong>{form.contact.name} · {form.contact.phone}</strong></div>
                   </div>
                   <div className="booking-modal-policy"><Check size={14} /> Chưa cần thanh toán · Phản hồi trong 24h · Được tư vấn concept trước buổi chụp</div>
@@ -270,7 +312,7 @@ export function BookingModal() {
             </div>
 
             <footer className="booking-modal-footer">
-              {step > 1 ? <button type="button" className="booking-modal-back" onClick={() => setStep((current) => current - 1)}><ArrowLeft size={16} /> Quay lại</button> : <button type="button" className="booking-modal-full-page" onClick={() => { close(); navigate('/booking'); }}>{isCustomQuote ? 'Mở form báo giá đầy đủ' : 'Đặt lịch đầy đủ'}</button>}
+              {visibleStep > 1 ? <button type="button" className="booking-modal-back" onClick={() => setStep((current) => current - 1)}><ArrowLeft size={16} /> Quay lại</button> : <button type="button" className="booking-modal-full-page" onClick={() => { close(); navigate('/booking'); }}>{isCustomQuote ? 'Mở form báo giá đầy đủ' : 'Đặt lịch đầy đủ'}</button>}
               {step < totalSteps ? <button key="next-step" type="button" className="booking-modal-next" onClick={(event) => { event.preventDefault(); next(); }}>Tiếp tục <ArrowRight size={16} /></button> : <button key="submit-request" type="submit" className="booking-modal-next" disabled={loading}>{loading && <span className="booking-modal-spinner" />} {loading ? 'Đang gửi' : (isCustomQuote ? 'Gửi yêu cầu báo giá' : 'Gửi yêu cầu')} <Check size={16} /></button>}
             </footer>
           </form>

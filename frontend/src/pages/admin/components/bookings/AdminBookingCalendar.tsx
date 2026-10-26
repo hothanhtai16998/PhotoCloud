@@ -1,3 +1,4 @@
+import { formatRequestedTime } from '@/utils/bookingTime';
 import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
@@ -8,7 +9,6 @@ import { adminError } from '../../hooks/useAdminResource';
 import {
   bookingDate,
   bookingStatusLabels,
-  bookingTimeLabels,
   bookingTone,
 } from './bookingPresentation';
 import './AdminBookingCalendar.css';
@@ -36,7 +36,7 @@ const timeOf = (booking: Booking) =>
     ? [booking.confirmedStartTime, booking.confirmedEndTime]
         .filter(Boolean)
         .join(' – ') || adminText("Chưa chốt giờ")
-    : adminText(bookingTimeLabels[booking.requestedTimeSlot]) || adminText("Chưa chọn giờ");
+    : adminText(formatRequestedTime(booking)) || adminText("Chưa chọn giờ");
 
 export function AdminBookingCalendar() {
   useAdminLocale();

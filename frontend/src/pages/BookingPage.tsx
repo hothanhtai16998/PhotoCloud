@@ -1,5 +1,6 @@
+import { BookingTimePicker } from '@/components/booking/BookingTimePicker';
 import { DataLoading } from '@/components/user/DataLoading';
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Check, Clock3, MapPin, Users, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,7 +10,7 @@ import { useUserStore } from '@/stores/useUserStore';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { BRAND } from '@/constants/brand';
 import { BookingFAQ } from '@/components/booking/BookingFAQ';
-import type { BookingPackage, BookingPayload, BookingTimeSlot, BookingLocationType } from '@/types/booking';
+import type { BookingPackage, BookingPayload, BookingLocationType } from '@/types/booking';
 import './BookingPage.css';
 
 const formatPrice = (value: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
@@ -137,7 +138,7 @@ function BookingPage() {
             <div className="booking-fields booking-fields-two">
               <label>Ngày mong muốn<input type="date" min={today} value={form.requestedDate} onChange={(e) => updateForm('requestedDate', e.target.value)} required /></label>
               <label>Ngày thay thế <em>Không bắt buộc</em><input type="date" min={today} value={form.alternativeDate} onChange={(e) => updateForm('alternativeDate', e.target.value)} /></label>
-              <label>Khung giờ<select value={form.requestedTimeSlot} onChange={(e) => updateForm('requestedTimeSlot', e.target.value as BookingTimeSlot)}><option value="morning">Buổi sáng</option><option value="afternoon">Buổi chiều</option><option value="evening">Buổi tối</option><option value="flexible">Linh hoạt</option></select></label>
+              <BookingTimePicker value={form.requestedStartTime} onChange={(time, slot) => setForm(current => ({...current, requestedStartTime: time, requestedTimeSlot: slot}))} />
               <label>Số người<input type="number" min={1} max={selectedPackage?.includedPeople || 50} value={form.participants} onChange={(e) => updateForm('participants', Number(e.target.value))} required /></label>
             </div>
             <div className="booking-fields booking-fields-two">

@@ -27,8 +27,8 @@
 .booking-modal-header { gap:16px; }
 .booking-modal-header > div { min-width:0; }
 .booking-modal {
-  width:min(820px,100%);
-  height:min(680px,calc(100dvh - 48px));
+  width:min(1040px,100%);
+  height:min(860px,calc(100dvh - 48px));
   max-height:calc(100dvh - 48px);
   background:var(--bg-primary,#FAF8F4);
   border:1px solid var(--border-color,#E8E2D6);
@@ -97,3 +97,11 @@
   .booking-modal-packages button > span:not(.booking-package-thumb) { font-size:14px;line-height:1.4; }
   .booking-modal-packages small { font-size:13px;flex-wrap:wrap;line-height:1.4; }
 }
+
+.booking-schedule-heading { margin-bottom:20px; }
+.booking-schedule-heading h3 { margin:0; }
+.booking-modal-fields label small { font-size:12px; line-height:1.6; color:var(--text-secondary); }
+.booking-modal .booking-inline-error { margin:0;font-size:13px;line-height:1.5;color:var(--text-danger,#9f3d31); }
+.booking-modal-fields input[aria-invalid=true] { border-color:var(--text-danger,#9f3d31); }
+[data-theme=dark] .booking-modal .booking-inline-error { color:#f0aaa0; }
+[data-theme=dark] .booking-modal-fields input[aria-invalid=true] { border-color:#f0aaa0; }

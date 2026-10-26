@@ -1,3 +1,4 @@
+import { formatRequestedTime } from '@/utils/bookingTime';
 import { adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useCallback, useId, useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -213,7 +214,7 @@ export function AdminBookingRequests() {
                             (booking.confirmedEndTime
                               ? ' – ' + booking.confirmedEndTime
                               : '')
-                          : adminText(bookingTimeLabels[booking.requestedTimeSlot]) ||
+                          : adminText(formatRequestedTime(booking)) ||
                             adminText("Chưa chọn giờ")}
                       </span>
                       <small>
@@ -271,7 +272,7 @@ export function AdminBookingRequests() {
                   )}{' '}
                   ·{' '}
                   {booking.confirmedStartTime ||
-                    adminText(bookingTimeLabels[booking.requestedTimeSlot])}
+                    adminText(formatRequestedTime(booking))}
                 </div>
                 <div className="booking-mobile-line">
                   <Phone size={16} />
@@ -646,7 +647,7 @@ export function BookingDetail({
             <dt>{adminText("Thời gian mong muốn")}</dt>
             <dd>
               {bookingDate(booking.requestedDate)}
-              <small>{adminText(bookingTimeLabels[booking.requestedTimeSlot])}</small>
+              <small>{adminText(formatRequestedTime(booking))}</small>
             </dd>
           </div>
           <div>

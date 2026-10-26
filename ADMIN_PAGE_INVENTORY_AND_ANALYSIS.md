@@ -349,3 +349,18 @@ Người dùng yêu cầu thêm đổi ngôn ngữ và áp dụng admin trước
 - [ ] LNG-06 — Nhật ký có mô tả sự kiện theo ngôn ngữ; mở Thông điệp gốc vẫn thấy đúng log nguồn. Tìm kiếm vẫn theo message gốc và JSON giữ nguồn.
 - [ ] LNG-07 — Sáng/tối, bàn phím và nội dung dài tiếng Anh: bộ chọn ngôn ngữ, tên trường/nút và focus dùng được; các chức năng đã nghiệm thu không hồi quy.
 - [ ] LNG-R01 — Responsive/touch/thiết bị thật chưa nghiệm thu, để vòng cuối.
+
+### 20. Bổ sung nội dung công khai cho gói chụp — 26/10/2026
+
+- Người dùng trực tiếp giao trong chat user: “cứ để khung trống thôi, rồi trong admin thêm logic để thêm chi tiết vô đó”. Phạm vi mới của #35, giữ nguyên nghiệm thu chức năng trước đó. UI user và kiểm tra: xem inventory user mục20.21, không sao chép trạng thái nghiệm thu.
+- Admin /admin/bookings → Gói chụp → Sửa/Thêm: mô tả chi tiết tối đa5000ký tự, quyền lợi thêm20dòng×300ký tự, URL HTTPS ảnh bìa, album12URL HTTPS khác nhau. Để trống media thì user hiện khung chờ. Đây là nhập URL ảnh có sẵn, chưa thêm uploader/picker ảnh riêng.
+- Shared: schema lưu4trường optional, controller validate URL/giới hạn trước ghi, không nhận HTML; route vẫn adminRoute+CSRF. Client cũ không gửi các trường mới thì update không xóa nội dung. Thông số thời lượng/số ảnh/người/giao vẫn tự hiện ở user, admin chỉ nhập quyền lợi bổ sung.
+- Bằng chứng fixture test-package-content-admin.cjs trên Edge390/1440 sáng tối: điền nội dung/2quyền lợi/cover/2ảnh,503giữ nội dung, retry gửi đủ payload và đóng khi thành công; không ghi dữ liệu thật. Node packagePresentation.test.js3test đạt (optional preservation, roundtrip Unicode/empty, unsafe/oversized/duplicate rejection). Build đạt; lint có1warning effect loadPackages đã có, không có error. Chưa đối soát Mongo/R2production.
+- [ ] PKG-A01 — Sửa gói, nhập nội dung và URL ảnh thật, lưu; mở lại kiểm dữ liệu, kiểm /packages và /packages/:slug. Xóa URL để khung trở về trống. Thử lỗi lưu và URL không hợp lệ. Chưa đánh nghiệm thu hoặc responsive thay người dùng.
+
+### 21. Hiển thị giờ bắt đầu mong muốn của khách — 26/10/2026
+
+- Người dùng đã cho phép trực tiếp sửa booking dùng chung và admin để lưu/hiện giờ đầy đủ. Booking có optional requestedStartTime HH:mm, requestedTimeSlot cũ vẫn giữ cho tương thích; giờ mới là đề xuất, không phải giờ xác nhận.
+- AdminBookingRequests và AdminBookingCalendar hiển thị giờ cụ thể ở danh sách/detail/calendar, vẫn ưu tiên confirmedStartTime khi đã chốt. Dữ liệu cũ hiển thị sáng/chiều/tối/linh hoạt như trước. Không sửa quy tắc quyền, xác nhận, availability hoặc đổi lịch.
+- Edge fixture chỉ đọc390/1440 qua:list/detail/calendar hiện08:00; kiểm backend pure3test và build đạt. Chưa đối soát Mongo/production; hiện tại date/time không tự chứng minh slot còn trống. Chi tiết luồng user: inventory user20.22.
+- [ ] BOOK-A-TIME01 — Tạo yêu cầu test có08:00, xem list/detail/calendar; chốt giờ09:00 thì lịch ưu tiên09:00 nhưng giờ mong muốn08:00 vẫn lưu. Booking cũ không có field mới phải hiển thị bình thường.
