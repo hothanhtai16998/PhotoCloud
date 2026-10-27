@@ -1,0 +1,10 @@
+.pc-loading-indicator { --loading-dot: 6px; display: inline-flex; align-items: center; justify-content: center; gap: var(--loading-dot); min-height: 24px; flex-shrink: 0; vertical-align: middle; color: inherit; }
+.pc-loading-indicator--small { --loading-dot: 3px; min-height: 16px; }
+.pc-loading-indicator--large { --loading-dot: 8px; min-height: 32px; }
+.pc-loading-indicator > i { display: block; width: var(--loading-dot); height: var(--loading-dot); border-radius: 50%; background: currentColor; animation: pc-loading-pulse 1.4s ease-in-out infinite; }
+.pc-loading-indicator > i:nth-child(2) { animation-delay: .16s; }
+.pc-loading-indicator > i:nth-child(3) { animation-delay: .32s; }
+@keyframes pc-loading-pulse { 0%, 70%, 100% { opacity: .3; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .pc-loading-indicator > i { animation: none; opacity: .7; } }
+
+[data-slot="button"] > .pc-button-loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }

@@ -81,7 +81,7 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
   if (!isDesktop && collapsed) return null;
   return <motion.div ref={sliderRef} layout layoutDependency={collapsed} initial={false} transition={transition}
     className={`visual-art-slider${collapsed ? ' visual-art-slider-collapsed' : ''}`} style={{originX: 0, originY: 0}}>
-    {!collapsed && <ImmersiveHomeChrome />}
+    {!collapsed && slides.length > 0 && <ImmersiveHomeChrome />}
     {slides.length ? collapsed ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
       collapsed={collapsed} select={selectSlide}
       zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />

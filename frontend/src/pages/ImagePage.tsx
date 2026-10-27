@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { DataLoading } from '@/components/user/DataLoading';
 import { ImagePagePhoto } from '@/components/ImagePagePhoto';
 import { ImageRelatedGrid } from '@/components/ImageRelatedGrid';
@@ -7,7 +8,7 @@ import '@/components/NoFlashGrid/components/modal-footer.css';
 import '@/components/NoFlashGrid/components/modal-info.css';
 import { t } from '@/i18n';
 import '@/stores/useDownloadHistoryStore';
-import { ArrowLeft,CalendarDays,Camera,ChevronDown,ChevronLeft,ChevronRight,Download,Edit2,ExternalLink,FolderPlus,Heart,Info,LoaderCircle,MapPin,Share2,Tag,X } from 'lucide-react';
+import { ArrowLeft,CalendarDays,Camera,ChevronDown,ChevronLeft,ChevronRight,Download,Edit2,ExternalLink,FolderPlus,Heart,Info,MapPin,Share2,Tag,X } from 'lucide-react';
 import { lazy,Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useImagePageController } from './image/useImagePageController';
@@ -347,7 +348,7 @@ function ImagePage() {
             >
               <Download size={18} className="image-download-mobile-icon" aria-hidden="true" />
               <span className="image-action-label">{t('image.download')}</span>
-              {isDownloading ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <ChevronDown size={16} />}
+              {isDownloading ? <LoadingIndicator size="small" aria-hidden="true" /> : <ChevronDown size={16} />}
             </button>
             {showDownloadMenu && (
               <div
@@ -438,7 +439,7 @@ function ImagePage() {
                   title={t('share.share')}
                   className="image-modal-share-button"
                 >
-                  {isSharing ? <LoaderCircle size={16} className="image-action-spinner" aria-hidden="true" /> : <Share2 size={16} />}
+                  {isSharing ? <LoadingIndicator size="small" aria-hidden="true" /> : <Share2 size={16} />}
                   <span>{t('share.share')}</span>
                 </button>
                 <ImageModalInfo image={chartImage || image} />

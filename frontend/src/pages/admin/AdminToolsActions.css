@@ -90,19 +90,6 @@ button:disabled {
   opacity: 0.6;
 }
 
-/* Loading state spinner positioning */
-[data-slot='button']:has(> svg.animate-spin) {
-  position: relative;
-}
-
-[data-slot='button'] > svg.animate-spin {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-}
-
 /* Icon-only button improvements */
 [data-slot='button'][class*='icon'] {
   aspect-ratio: 1;
@@ -168,10 +155,7 @@ button:disabled {
   outline-offset: 2px;
 }
 
-/* Loading state - hide text when loading */
-[data-slot='button']:has(svg[class*='lucide-loader']) > span {
-  opacity: 0;
-}
+
 
 .admin-error-boundary {
   display: flex;

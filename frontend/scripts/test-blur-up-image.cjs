@@ -92,6 +92,7 @@ function fixture({ mobile = false, guest = false } = {}) {
     '@/lib/axios': { default: { get: () => new Promise(resolve => downloads.push({ resolve })) } },
     sonner: { toast: { success: noop, error: noop } },
     '@/i18n': { t: text => text },
+    '@/components/ui/LoadingIndicator': { LoadingIndicator: () => null },
     '@/stores/useUserStore': { useUserStore: selector => selector({ user: guest ? null : { _id: 'user' } }) },
     'react-router-dom': { useNavigate: () => route => navigations.push(route) },
     '@/hooks/useIsMobile': { useIsMobile: () => mobile },

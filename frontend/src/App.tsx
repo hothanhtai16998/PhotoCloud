@@ -5,11 +5,13 @@ import AdminRoute from "./components/auth/AdminRoute";
 import { PageViewTracker } from "./components/PageViewTracker";
 import { ActualLocationContext, BackgroundRouteContext, ImagePresentationContext } from "./contexts/ActualLocationContext";
 import { useIsMobile } from "./hooks/useIsMobile";
+import { useRouteScrollReset } from "./hooks/useRouteScrollReset";
 import { useSiteSettings } from "./hooks/useSiteSettings";
 import { useStructuredData, schemaHelpers } from "./hooks/useStructuredData";
 import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
 import Header from "./components/Header";
+import { HomeLoadingGate } from './components/HomeLoadingGate';
 import CollectionsPage from './pages/CollectionsPage';
 import { Footer } from "./components/Footer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
@@ -36,10 +38,7 @@ const SignUpPage = lazy(() => import("./pages/SignUpPage"));
 const GoogleCallbackPage = lazy(() => import("./pages/GoogleCallbackPage"));
 const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
 const SettingsPage = lazy(() => import("./pages/profile/SettingsPage").then(m => ({ default: m.default })));
-const UserDashboardPage = lazy(() => import("./pages/profile/UserDashboardPage").then(m => ({ default: m.default })));
-const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 const ProfileRouteHandler = lazy(() => import("./pages/profile/ProfileRouteHandler").then(module => ({ default: module.ProfileRouteHandler })));
-const ProfileRedirect = lazy(() => import("./pages/profile/ProfileRedirect").then(module => ({ default: module.ProfileRedirect })));
 import { AdminAccess } from './pages/admin/components/AdminAccess';
 const AdminToolsPage = lazy(() => import('./pages/admin/AdminToolsPage').then(m => ({ default: m.AdminToolsPage })));
 // Admin v2 - new layout-based routing
@@ -97,6 +96,9 @@ const PageLoader = () => {
 function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  // A newly opened page starts at the top edge; Back/Forward and the photo
+  // modal keep their own position. Single owner for the whole app shell.
+  useRouteScrollReset(location);
   const isMobile = useIsMobile();
   // Load site settings for runtime use (e.g. palette, upload limits).
   // Document title is owned by per-page `useDocumentMeta` — App must not
@@ -222,6 +224,7 @@ function App() {
 
   return (
     <ActualLocationContext.Provider value={location}>
+      {location.pathname === '/' && <HomeLoadingGate />}
       {/* Header - PHOTOCLOUD-style: Always visible, even during loading */}
       {shouldShowHeader && !isAdminArea && <Header />}
 
@@ -272,18 +275,20 @@ function App() {
             <Route path="/booking/:bookingId" element={<BookingDetailPage />} />
           </Route>
           {/* Fallback route for users without username */}
-          <Route path="/profile/user/:userId" element={<ProfilePage />} />
+          <Route path="/profile/user/:userId" element={<Navigate to="/my-bookings" replace />} />
 
 
           {/**protected routes */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/profile" element={<ProfileRedirect />} />
+            <Route path="/profile" element={<Navigate to="/my-bookings" replace />} />
+            <Route path="/my-bookings" element={<MyBookingsPage />} />
+            <Route path="/profile/bookings" element={<Navigate to="/my-bookings" replace />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/settings/profile" element={<SettingsPage />} />
             <Route path="/settings/notifications" element={<SettingsPage />} />
             <Route path="/upload" element={<Navigate to="/" replace />} />
-            <Route path="/me" element={<UserDashboardPage />} />
+            <Route path="/me" element={<Navigate to="/my-bookings" replace />} />
           </Route>
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/favorites/photos" element={<FavoritesPage />} />
@@ -292,7 +297,7 @@ function App() {
           <Route path="/favorite-collections" element={<FavoriteCollectionsPage />} />
           <Route path="/downloads" element={<DownloadHistoryPage />} />
           <Route path="/notifications" element={<NotificationPage />} />
-          <Route path="/profile/bookings" element={<MyBookingsPage />} />
+
 
           {/**admin routes v2 - per-route lazy load */}
           <Route element={<AdminRoute />}>

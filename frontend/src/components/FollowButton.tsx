@@ -1,6 +1,7 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { UserPlus, UserMinus, Loader2 } from 'lucide-react';
+import { UserPlus, UserMinus } from 'lucide-react';
 import { followService } from '@/services/followService';
 import { useUserStore } from '@/stores/useUserStore';
 import { toast } from 'sonner';
@@ -95,7 +96,7 @@ export const FollowButton = ({
 				disabled
 				className={`follow-btn ${className}`}
 			>
-				<Loader2 size={16} className="spinning" />
+				<LoadingIndicator size="small" aria-hidden="true" />
 			</Button>
 		);
 	}
@@ -109,7 +110,7 @@ export const FollowButton = ({
 			className={`follow-btn ${isFollowing ? 'following' : ''} ${className}`}
 		>
 			{actionLoading ? (
-				<Loader2 size={16} className="spinning" />
+				<LoadingIndicator size="small" aria-hidden="true" />
 			) : showIcon ? (
 				isFollowing ? (
 					<UserMinus size={16} />

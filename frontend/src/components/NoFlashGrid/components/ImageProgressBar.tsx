@@ -1,5 +1,6 @@
 import './ImageProgressBar.css';
 import { t } from '@/i18n';
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 
 interface ImageProgressBarProps {
   progress?: number; // Undefined when the browser cannot report byte progress.
@@ -12,6 +13,7 @@ export function ImageProgressBar({ progress, visible }: ImageProgressBarProps) {
   }
 
   const progressValue = progress !== undefined && Number.isFinite(progress) ? Math.max(0, Math.min(100, progress)) : undefined;
+  if (progressValue === undefined) return <div className="image-loading-indicator"><LoadingIndicator label={t('imagePage.loading')} /></div>;
 
   return (
     <div className={`image-progress-bar-container ${progressValue === undefined ? 'is-indeterminate' : ''}`}

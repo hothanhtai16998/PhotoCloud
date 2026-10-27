@@ -249,11 +249,6 @@ main.homepage {
   color: var(--text-secondary) !important;
 }
 
-.dark-theme .loading-spinner {
-  border-color: var(--border-color);
-  border-top-color: var(--text-primary);
-}
-
 .dark-theme .retry-button,
 .dark-theme .empty-action {
   background: var(--text-primary);

@@ -202,18 +202,10 @@
     hsl(var(--muted)) 100%
   );
   background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
   border-radius: calc(var(--radius) - 2px);
 }
 
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
+
 
 .skeleton-card {
   background: hsl(var(--card));
@@ -235,7 +227,6 @@
   height: 48px;
   border-radius: 50%;
   background: hsl(var(--muted));
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
 .skeleton-title {
@@ -243,7 +234,6 @@
   width: 60%;
   border-radius: 4px;
   background: hsl(var(--muted));
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
 .skeleton-text {
@@ -251,7 +241,6 @@
   width: 100%;
   border-radius: 4px;
   background: hsl(var(--muted));
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
   margin-bottom: 0.5rem;
 }
 

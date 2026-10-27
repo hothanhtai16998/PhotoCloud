@@ -1,5 +1,5 @@
 import { useLocation, Navigate } from "react-router-dom";
-import ProfilePage from "./ProfilePage";
+
 
 /**
  * Route handler for /@username pattern
@@ -20,6 +20,6 @@ export function ProfileRouteHandler() {
     }
     
     // Render ProfilePage - it will extract username and tab from pathname
-    return <ProfilePage />;
+    return <Navigate to="/my-bookings" replace />;
 }
 

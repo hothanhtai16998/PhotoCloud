@@ -1,3 +1,4 @@
+@import '../../styles/public-content-layout.css';
 /* Collections page - palette-driven, depth system, scan-friendly. */
 
 /* This page owns its skeleton/error states. Unrelated global requests must

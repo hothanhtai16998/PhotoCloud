@@ -78,7 +78,7 @@ function MyComponent() {
 ```tsx
 // Each page had its own spinner
 {loading && images.length === 0 && (
-  <LoadingSpinner size="large" />
+  <LoadingIndicator size="large" />
 )}
 ```
 

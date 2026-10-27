@@ -56,5 +56,15 @@ function loadStore(cached, fetchImages = async () => { throw new Error('offline'
   await fetched.store.getState().fetchSlides();
   assert.equal(fetched.store.getState().slides[0].image, '/regular.jpg');
   assert.equal(loadStore(fetched.cached()).store.getState().slides.length, 1, 'next refresh restores fetched metadata');
+  const requests=[];
+  const racing=loadStore(null,()=>new Promise((resolve,reject)=>requests.push({resolve,reject})));
+  const old=racing.store.getState().fetchSlides();
+  const latest=racing.store.getState().fetchSlides();
+  requests[1].resolve({images:[{_id:'latest',imageUrl:'/latest.jpg',width:100,height:100}]});await latest;
+  requests[0].resolve({images:[{_id:'old',imageUrl:'/old.jpg',width:100,height:100}]});await old;
+  assert.equal(racing.store.getState().slides[0].id,'latest','late response cannot replace newer slides');
+  const clearing=racing.store.getState().fetchSlides();racing.store.getState().clearSlides();
+  requests[2].resolve({images:[{_id:'cleared',imageUrl:'/cleared.jpg',width:100,height:100}]});await clearing;
+  assert.equal(racing.store.getState().slides.length,0,'cleared slides cannot be restored by stale request');
   console.log('Slider refresh checks passed: restore, expiry, corrupt cache, fetch, failure, clear.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

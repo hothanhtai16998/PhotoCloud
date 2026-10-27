@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -52,7 +53,7 @@ export const ProfileForm = ({
             )}
             {isUploadingAvatar && (
               <div className="image-upload-overlay">
-                <div className="upload-spinner"></div>
+                <LoadingIndicator aria-hidden="true" />
                 <p className="upload-text">{t('common.loading')}</p>
               </div>
             )}

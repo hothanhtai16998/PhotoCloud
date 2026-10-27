@@ -185,7 +185,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload, sh
             {!isMobile && <>
             {/* Desktop: tài khoản trên cùng, mỗi mục quản lý một hàng, đăng xuất dưới cùng. */}
             <Link
-              to={currentUser?.username ? `/@${currentUser.username}` : '/profile'}
+              to="/my-bookings"
               className="user-menu-desktop-header"
               onClick={handleMenuItemClick}
             >
@@ -208,7 +208,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload, sh
                   {currentUser?.displayName || currentUser?.username || 'User'}
                 </div>
                 <div className="user-menu-view-profile">
-                  {t('header.viewProfile')}
+                  Lịch chụp của tôi
                 </div>
               </div>
             </Link>
@@ -247,7 +247,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload, sh
             {/* Mobile Menu Items */}
             {/* Mobile Menu - User Info Section */}
             <Link
-              to={currentUser?.username ? `/@${currentUser.username}` : '/profile'}
+              to="/my-bookings"
               className="user-menu-item user-menu-item-mobile-only user-menu-mobile-header"
               onClick={handleMenuItemClick}
             >
@@ -270,7 +270,7 @@ export function UserMenu({ user, onSignOut, trigger, align = 'end', onUpload, sh
                   {currentUser?.displayName || currentUser?.username || 'User'}
                 </div>
                 <div className="user-menu-mobile-view-profile">
-                  {t('header.viewProfile')}
+                  Lịch chụp của tôi
                 </div>
               </div>
             </Link>

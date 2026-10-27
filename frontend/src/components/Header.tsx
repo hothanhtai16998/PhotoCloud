@@ -178,22 +178,12 @@ export const Header = memo(function Header() {
   }, [location.pathname, accessToken])
 
 
-  const logoTopRequested = useRef(false)
-  useLayoutEffect(() => {
-    if (location.pathname !== '/' || !logoTopRequested.current) return
-    logoTopRequested.current = false
-    window.scrollTo({ top: 0, behavior: 'instant' })
-    const frame = requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'instant' }))
-    return () => cancelAnimationFrame(frame)
-  }, [location.pathname, location.key])
   const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return
     event.preventDefault()
+    // Same route: no navigation happens, so the app-shell reset cannot run.
     if (location.pathname === '/') window.scrollTo({ top: 0, behavior: 'instant' })
-    else {
-      logoTopRequested.current = true
-      navigate('/')
-    }
+    else navigate('/')
   }
 
   const handleSignOut = async () => {
@@ -468,12 +458,12 @@ export const Header = memo(function Header() {
               </Link>
 
               <Link 
-                to={user?.username ? `/@${user.username}` : '/profile'} 
+                to="/my-bookings"
                 className="user-menu-item user-menu-item-mobile-only mobile-hamburger-menu-item" 
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <User size={16} />
-                {t('header.account')}
+                Lịch chụp của tôi
               </Link>
 
               <ThemeToggle menu />

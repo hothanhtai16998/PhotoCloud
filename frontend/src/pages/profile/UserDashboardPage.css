@@ -283,16 +283,6 @@
     font-size: 13px;
 }
 
-/* Spinning refresh icon */
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.spin {
-    animation: spin 1s linear infinite;
-}
-
 /* Responsive */
 @media (max-width: 600px) {
     .user-dash-header {

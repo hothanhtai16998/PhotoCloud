@@ -160,26 +160,11 @@
   z-index: 10;
 }
 
-.upload-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: var(--bg-card, #FFFFFF);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
 .upload-text {
   color: var(--bg-card, #FFFFFF);
   font-size: 0.75rem;
   font-weight: 500;
   margin: 0;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .change-image-btn:disabled {

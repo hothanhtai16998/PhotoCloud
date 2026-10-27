@@ -7,9 +7,11 @@
 }
 
 .page-loader-fullscreen {
-  min-height: 100vh;
+  min-height: 100svh;
+  box-sizing: border-box;
   width: 100%;
-  background: hsl(var(--background));
+  background: var(--bg-primary);
+  color: var(--button-primary-bg);
 }
 
 .page-loader-content {

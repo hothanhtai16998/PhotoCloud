@@ -1,3 +1,5 @@
+import { AdminPackageEditorFields } from '../bookings/AdminPackageEditorFields';
+import { normalizePackage, validatePackageForm, packageTabs, packageTabForField, type PackageTab, type AdminPackage, type PackageErrors } from '../bookings/adminPackageForm';
 import { getAdminIntlLocale, adminText, useAdminLocale } from '@/pages/admin/adminLocale';
 import { useEffect, useRef, useState } from 'react';
 import { Save, Plus, Pencil, Eye, EyeOff, X, Clock3, Images, Users, CalendarCheck } from 'lucide-react';
@@ -5,7 +7,7 @@ import { toast } from 'sonner';
 import {
   bookingService,
 } from '@/services/bookingService';
-import type { BookingPackage } from '@/types/booking';
+
 import type { BookingReview } from '@/types/bookingFinal';
 import { getErrorMessage } from '@/lib/utils';
 import { AdminBookingRequests } from '../bookings/AdminBookingRequests';
@@ -15,7 +17,7 @@ import { AdminBookingAvailability } from '../bookings/AdminBookingAvailability';
 import '../bookings/AdminBookingPackages.css';
 import { AdminLanguageSelect } from '../AdminLanguageSelect';
 
-type AdminPackage = BookingPackage & { active?: boolean; sortOrder?: number };
+
 
 const emptyPackage: Omit<AdminPackage, '_id'> = {
   slug: '',
@@ -27,6 +29,7 @@ const emptyPackage: Omit<AdminPackage, '_id'> = {
   includedPeople: 1,
   deliveryDays: 7,
   category: 'portrait',
+  active: true, sortOrder: 0,
 };
 
 export function AdminBookings() {
@@ -46,18 +49,33 @@ export function AdminBookings() {
   const [packageEditorOpen, setPackageEditorOpen] = useState(false);
   const [packageBusy, setPackageBusy] = useState(false);
   const packageVisibilityLock = useRef(false);
+  const packageRequest = useRef(0);
+  const packageMounted = useRef(true);
+  const [packageErrors, setPackageErrors] = useState<PackageErrors>({});
+  const [packageSaveError, setPackageSaveError] = useState('');
+  const [packageTab, setPackageTab] = useState<PackageTab>('info');
+  const [packageMediaBusy, setPackageMediaBusy] = useState(false);
+  const packageMediaLock = useRef(false);
+  useEffect(() => { packageMounted.current = true; return () => { packageMounted.current = false; }; }, []);
   const [packagesLoading, setPackagesLoading] = useState(false);
   const [packagesError, setPackagesError] = useState('');
   const packageDialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
+    if (!packageEditorOpen || (!packageMediaBusy && JSON.stringify(packageForm) === JSON.stringify(editingPackage || emptyPackage))) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', beforeUnload);
+    return () => window.removeEventListener('beforeunload', beforeUnload);
+  }, [packageEditorOpen, packageForm, editingPackage, packageMediaBusy]);
+  useEffect(() => {
     if (!packageEditorOpen) return;
+    const trigger = document.activeElement;
     packageDialog.current?.showModal();
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previousOverflow; };
+    return () => { document.body.style.overflow = previousOverflow; if (trigger instanceof HTMLElement && trigger.isConnected) trigger.focus(); };
   }, [packageEditorOpen]);
   const closePackageEditor = () => {
-    if (packageBusy) return;
+    if (packageBusy || packageMediaLock.current) return;
     const original = editingPackage || emptyPackage;
     if (JSON.stringify(packageForm) !== JSON.stringify(original) &&
       !window.confirm(adminText("Bỏ thay đổi chưa lưu và đóng biểu mẫu?"))) return;
@@ -67,15 +85,16 @@ export function AdminBookings() {
   };
 
   const loadPackages = async () => {
+    const request = ++packageRequest.current;
     setPackagesLoading(true);
     setPackagesError('');
     try {
       const result = await bookingService.getAdminPackages();
-      setPackages(result.packages);
+      if (request === packageRequest.current && packageMounted.current) setPackages(result.packages);
     } catch (error: unknown) {
-      setPackagesError(getErrorMessage(error, adminText("Không thể tải gói chụp")));
+      if (request === packageRequest.current && packageMounted.current) setPackagesError(getErrorMessage(error, adminText("Không thể tải gói chụp")));
     } finally {
-      setPackagesLoading(false);
+      if (request === packageRequest.current && packageMounted.current) setPackagesLoading(false);
     }
   };
   const loadReviews = async () => {
@@ -93,25 +112,39 @@ export function AdminBookings() {
   }, [view]);
 
   const savePackage = async () => {
-    if (packageBusy) return;
+    if (packageBusy || packageMediaLock.current || packageVisibilityLock.current) return;
+    const errors = validatePackageForm(packageForm);
+    setPackageErrors(errors);
+    setPackageSaveError('');
+    if (Object.keys(errors).length) {
+      setPackageTab(packageTabForField(Object.keys(errors)[0]));
+      requestAnimationFrame(() => packageDialog.current?.querySelector<HTMLElement>('[aria-invalid=true]')?.focus());
+      return;
+    }
+    packageVisibilityLock.current = true;
+    packageRequest.current++;
     setPackageBusy(true);
     try {
-      const payload = { ...packageForm, includes: packageForm.includes?.map(line => line.trim()).filter(Boolean), gallery: packageForm.gallery?.map(line => line.trim()).filter(Boolean) };
-      if (editingPackage?._id)
-        await bookingService.updateAdminPackage(
-          editingPackage._id,
-          payload
-        );
-      else await bookingService.createAdminPackage(payload);
+      const payload = normalizePackage(packageForm);
+      const result = editingPackage?._id
+        ? await bookingService.updateAdminPackage(editingPackage._id, payload)
+        : await bookingService.createAdminPackage(payload);
+      if (!packageMounted.current) return;
+      const saved: AdminPackage = result.package;
+      setPackages(current => (current.some(item => item._id === saved._id)
+        ? current.map(item => item._id === saved._id ? saved : item)
+        : [...current, saved]).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)));
+      setPackagesLoading(false);
+      setPackagesError('');
       toast.success(adminText("Đã lưu gói chụp"));
       setEditingPackage(null);
       setPackageForm(emptyPackage);
       setPackageEditorOpen(false);
-      await loadPackages();
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, adminText("Không thể lưu gói chụp")));
+      if (packageMounted.current) setPackageSaveError(getErrorMessage(error, adminText("Không thể lưu gói chụp")));
     } finally {
-      setPackageBusy(false);
+      packageVisibilityLock.current = false;
+      if (packageMounted.current) setPackageBusy(false);
     }
   };
   const archivePackage = async (item: AdminPackage) => {
@@ -127,6 +160,7 @@ export function AdminBookings() {
       } else await bookingService.archiveAdminPackage(item._id);
       // The shared GET wrapper can reuse the pre-mutation response for one second.
       // Reflect the successful write locally instead of reloading that stale list.
+      if (!packageMounted.current) return;
       setPackages(current => current.map(row => row._id === item._id ? { ...row, active: restoring } : row));
       toast.success(restoring ? adminText("Đã hiện lại gói chụp") : adminText("Đã ẩn gói chụp"));
     } catch (error: unknown) {
@@ -230,144 +264,32 @@ export function AdminBookings() {
         <div className={`pc-packages ${packageEditorOpen ? 'is-editing' : ''}`}>
           <header className="pc-packages-header">
             <div><h2>{adminText("Gói chụp")}</h2><p>{adminText("Quản lý giá, thời lượng và quyền lợi của từng gói chụp.")}</p></div>
-            <button type="button" className="admin-btn primary" disabled={packageBusy} onClick={() => {
+            <button type="button" className="admin-btn primary" disabled={packageBusy || packagesLoading} onClick={() => {
               if (packageEditorOpen && !window.confirm(adminText("Bỏ nội dung đang nhập để thêm gói mới?"))) return;
-              setEditingPackage(null); setPackageForm(emptyPackage); setPackageEditorOpen(true);
+              setEditingPackage(null); setPackageForm(emptyPackage); setPackageErrors({}); setPackageSaveError(''); setPackageTab('info'); setPackageEditorOpen(true);
             }}><Plus size={18} />  {adminText("Thêm gói chụp")}</button>
           </header>
           {packageEditorOpen && <dialog lang={locale} ref={packageDialog} className="pc-package-dialog" aria-labelledby="package-dialog-title" onCancel={(event) => { event.preventDefault(); closePackageEditor(); }} onClick={(event) => { if (event.target === event.currentTarget) closePackageEditor(); }}>
-          <form className="admin-package-form" onSubmit={(event) => { event.preventDefault(); void savePackage(); }}>
+          <form className="admin-package-form" noValidate onSubmit={(event) => { event.preventDefault(); void savePackage(); }}>
             <header className="pc-package-dialog-header">
               <div><h2 id="package-dialog-title">{editingPackage ? adminText("Chỉnh sửa gói chụp") : adminText("Thêm gói chụp")}</h2><p>{adminText("Thiết lập thông tin và quyền lợi dành cho khách đặt lịch.")}</p></div>
               <AdminLanguageSelect />
-              <button type="button" className="admin-btn" aria-label={adminText("Đóng biểu mẫu gói chụp")} disabled={packageBusy} onClick={closePackageEditor}><X size={20} /></button>
+              <button type="button" className="admin-btn" aria-label={adminText("Đóng biểu mẫu gói chụp")} disabled={packageBusy || packageMediaBusy} onClick={closePackageEditor}><X size={20} /></button>
             </header>
-            <fieldset disabled={packageBusy} className="admin-package-fields">
-              {(['name', 'slug', 'category', 'description'] as const).map(
-                (key) => (
-                  <label key={key}>
-                    {key === 'slug'
-                      ? adminText("Đường dẫn")
-                      : key === 'name'
-                        ? adminText("Tên gói")
-                        : key === 'category'
-                          ? adminText("Danh mục")
-                          : adminText("Mô tả")}
-                    {key === 'description' ? (
-                      <textarea
-                        required maxLength={1000}
-                        rows={3}
-                        value={packageForm[key]}
-                        onChange={(e) =>
-                          setPackageForm({
-                            ...packageForm,
-                            [key]: e.target.value,
-                          })
-                        }
-                      />
-                    ) : (
-                      <input
-                        required
-                        placeholder={key === 'slug' ? 'vd: chan-dung-ca-nhan' : key === 'name' ? adminText("vd: Chân dung cá nhân") : undefined}
-                        value={packageForm[key]}
-                        onChange={(e) =>
-                          setPackageForm({
-                            ...packageForm,
-                            [key]: e.target.value,
-                          })
-                        }
-                      />
-                    )}
-                  </label>
-                )
-              )}
-              <label>
-                 {adminText("Thời lượng (phút)")} <input
-                  type="number"
-                  required min={15} max={1440}
-                  value={packageForm.durationMinutes}
-                  onChange={(e) =>
-                    setPackageForm({
-                      ...packageForm,
-                      durationMinutes: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label>
-                 {adminText("Giá tham khảo")} <input
-                  type="number"
-                  required min={0}
-                  value={packageForm.basePrice}
-                  onChange={(e) =>
-                    setPackageForm({
-                      ...packageForm,
-                      basePrice: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label>
-                 {adminText("Số ảnh")} <input
-                  type="number"
-                  required min={0}
-                  value={packageForm.includedPhotos}
-                  onChange={(e) =>
-                    setPackageForm({
-                      ...packageForm,
-                      includedPhotos: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label>
-                 {adminText("Số người")} <input
-                  type="number"
-                  required min={1} max={100}
-                  value={packageForm.includedPeople}
-                  onChange={(e) =>
-                    setPackageForm({
-                      ...packageForm,
-                      includedPeople: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label>
-                 {adminText("Ngày giao ảnh")} <input
-                  type="number"
-                  required min={1} max={365}
-                  value={packageForm.deliveryDays}
-                  onChange={(e) =>
-                    setPackageForm({
-                      ...packageForm,
-                      deliveryDays: Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label className="pc-package-content-field">Mô tả chi tiết trên trang Gói chụp
-                <textarea rows={5} maxLength={5000} value={packageForm.detailDescription || ''} onChange={e => setPackageForm({ ...packageForm, detailDescription: e.target.value })} />
-              </label>
-              <label className="pc-package-content-field">Quyền lợi bổ sung — mỗi dòng một mục (tối đa 20)
-                <textarea rows={4} value={(packageForm.includes || []).join('\n')} onChange={e => setPackageForm({ ...packageForm, includes: e.target.value.split('\n') })} />
-                <small>Thời lượng, số ảnh, số người và ngày giao đã được hiển thị tự động từ thông số gói.</small>
-              </label>
-              <label className="pc-package-content-field">Đường dẫn ảnh bìa
-                <input type="url" placeholder="https://..." value={packageForm.coverUrl || ''} onChange={e => setPackageForm({ ...packageForm, coverUrl: e.target.value })} />
-                <small>Để trống nếu chưa có ảnh. Dùng URL HTTPS của ảnh studio có quyền công bố.</small>
-              </label>
-              <label className="pc-package-content-field">Ảnh buổi chụp — mỗi dòng một URL HTTPS (tối đa 12)
-                <textarea rows={5} value={(packageForm.gallery || []).join('\n')} onChange={e => setPackageForm({ ...packageForm, gallery: e.target.value.split('\n') })} />
-                <small>Giữ đúng thứ tự ảnh muốn xuất hiện. Có thể dán đường dẫn ảnh từ thư viện; chưa có ảnh thì để trống.</small>
-              </label>
-            </fieldset>
+            <div className="pc-package-tabs" role="tablist" aria-label={adminText('Chỉnh sửa gói chụp')}>
+              {packageTabs.map((item, index) => <button type="button" role="tab" id={`package-tab-${item.id}`} aria-controls={`package-panel-${item.id}`} aria-selected={packageTab === item.id} tabIndex={packageTab === item.id ? 0 : -1} key={item.id} disabled={packageBusy || packageMediaBusy} onClick={() => { setPackageTab(item.id); packageDialog.current?.querySelector('.pc-package-fields-scroll')?.scrollTo(0, 0); }} onKeyDown={event => {
+                const next = event.key === 'ArrowRight' ? (index + 1) % packageTabs.length : event.key === 'ArrowLeft' ? (index + packageTabs.length - 1) % packageTabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? packageTabs.length - 1 : -1;
+                if (next >= 0) { event.preventDefault(); setPackageTab(packageTabs[next].id); packageDialog.current?.querySelector<HTMLElement>(`#package-tab-${packageTabs[next].id}`)?.focus(); }
+              }}>{adminText(item.label)}{Object.keys(packageErrors).some(key => packageTabForField(key) === item.id) && <span aria-label={adminText('Có lỗi')}>!</span>}</button>)}
+            </div>
+            {packageSaveError && <p role="alert" className="pc-package-save-error">{packageSaveError}</p>}
+            <div className="pc-package-fields-scroll"><fieldset disabled={packageBusy} className="admin-package-fields"><AdminPackageEditorFields form={packageForm} onChange={next => { setPackageForm(next); if (Object.keys(packageErrors).length) setPackageErrors(validatePackageForm(next)); setPackageSaveError(''); }} errors={packageErrors} tab={packageTab} onMediaBusyChange={busy => { packageMediaLock.current = busy; setPackageMediaBusy(busy); }} /></fieldset></div>
             <div className="admin-package-actions">
-              <button type="submit" disabled={packageBusy}>
+              <button type="submit" disabled={packageBusy || packageMediaBusy}>
                 <Save size={16} /> {packageBusy ? adminText("Đang lưu…") : adminText("Lưu gói chụp")}
               </button>
                 <button
-                  type="button" disabled={packageBusy}
+                  type="button" disabled={packageBusy || packageMediaBusy}
                   onClick={closePackageEditor}
                 >
                    {adminText("Đóng")} </button>
@@ -386,6 +308,7 @@ export function AdminBookings() {
                     <div><Users size={17} aria-hidden="true" /><dt>{adminText("Số người")}</dt><dd>{item.includedPeople}  {adminText("người")}</dd></div>
                     <div><CalendarCheck size={17} aria-hidden="true" /><dt>{adminText("Giao ảnh")}</dt><dd>{item.deliveryDays}  {adminText("ngày")}</dd></div>
                   </dl>
+                  <p className="pc-package-content-summary">{adminText(item.coverUrl ? 'Có ảnh bìa' : 'Chưa có ảnh bìa')} · {adminText('Album: {0} ảnh', { 0: item.gallery?.length || 0 })} · {adminText('Thứ tự: {0}', { 0: item.sortOrder || 0 })}</p>
                 </div>
                 <p className="pc-package-price">
                     {new Intl.NumberFormat(getAdminIntlLocale(), {
@@ -397,17 +320,17 @@ export function AdminBookings() {
                 </p>
                 <div>
                   <button
-                    disabled={packageBusy}
+                    disabled={packageBusy || packageMediaBusy}
                     aria-label={adminText("Sửa gói {0}", { 0: item.name })}
                     onClick={() => {
                       if (packageEditorOpen && !window.confirm(adminText("Bỏ nội dung đang nhập để sửa gói này?"))) return;
                       setEditingPackage(item);
                       setPackageForm(item);
-                      setPackageEditorOpen(true);
+                      setPackageErrors({}); setPackageSaveError(''); setPackageTab('info'); setPackageEditorOpen(true);
                     }}
                   >
                     <Pencil size={16} />  {adminText("Sửa")} </button>
-                  <button disabled={packageBusy} aria-label={adminText("{0} gói {1}", { 0: item.active === false ? adminText('Hiện lại') : adminText('Ẩn'), 1: item.name })} onClick={() => archivePackage(item)}>{item.active === false ? <Eye size={16} /> : <EyeOff size={16} />} {item.active === false ? adminText("Hiện lại") : adminText("Ẩn")}</button>
+                  <button disabled={packageBusy || packageMediaBusy} aria-label={adminText("{0} gói {1}", { 0: item.active === false ? adminText('Hiện lại') : adminText('Ẩn'), 1: item.name })} onClick={() => archivePackage(item)}>{item.active === false ? <Eye size={16} /> : <EyeOff size={16} />} {item.active === false ? adminText("Hiện lại") : adminText("Ẩn")}</button>
                 </div>
               </div>
             ))}

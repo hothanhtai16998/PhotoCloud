@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useEffect, useRef, useState } from 'react';
 
 export function SliderZoomImage({src, preview, alt, close}: {
@@ -29,7 +30,7 @@ export function SliderZoomImage({src, preview, alt, close}: {
   }, [src]);
 
   return <>
-    {status === 'loading' && <div className="slider-zoom-loading" role="progressbar" aria-label="Đang tải ảnh gốc"><span /></div>}
+    {status === 'loading' && <div className="slider-zoom-loading"><LoadingIndicator label="Đang tải ảnh gốc" /></div>}
     <button className="slider-zoom-image-button" aria-label="Thu nhỏ ảnh" aria-busy={status === 'loading'} onClick={close}>
       {status !== 'ready' && <img className="zoom-image zoom-preview" src={preview} alt="" aria-hidden="true" />}
       <img ref={imageRef} className="zoom-image zoom-original" src={src} alt={alt} style={{visibility: status === 'ready' ? 'visible' : 'hidden'}} />

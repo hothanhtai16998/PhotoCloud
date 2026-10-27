@@ -1,3 +1,6 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
+import { BookingContactFields } from '@/components/booking/BookingContactFields';
+import { normalizeBookingContact, validateBookingContact } from '@/components/booking/bookingContact';
 import { BookingDatePicker } from '@/components/booking/BookingDatePicker';
 import { getBookingToday } from '@/components/booking/bookingDate';
 import { BookingLocationPicker } from '@/components/booking/BookingLocationPicker';
@@ -109,8 +112,8 @@ export function BookingModal() {
         ...current,
         contact: {
           ...current.contact,
-          name: current.contact.name || user.displayName || user.username,
-          email: current.contact.email || user.email,
+          name: current.contact.name || user.displayName || user.username || '',
+          email: current.contact.email || user.email || '',
           phone: current.contact.phone || user.phone || '',
         },
       }));
@@ -137,13 +140,8 @@ export function BookingModal() {
   const visibleStep = skipPackage && !isCustomQuote ? step - 1 : step;
   const visibleTotal = skipPackage && !isCustomQuote ? 3 : totalSteps;
 
-  const contactError = () => {
-    if (!form.contact.name.trim()) return 'Vui lòng nhập họ và tên.';
-    if (!/^\S+@\S+\.\S+$/.test(form.contact.email.trim())) return 'Vui lòng nhập email hợp lệ.';
-    if (form.contact.phone.trim().length < 7) return 'Vui lòng nhập số điện thoại có ít nhất 7 ký tự.';
-    if (!form.location.address.trim()) return 'Vui lòng nhập địa chỉ hoặc khu vực muốn chụp.';
-    return null;
-  };
+  const maxPeople = selectedPackage?.includedPeople || 50;
+  const contactError = () => Object.values(validateBookingContact(form, maxPeople))[0];
 
   const rejectStep = (message: string) => {
     setStepError(message);
@@ -160,12 +158,14 @@ export function BookingModal() {
     if (isCustomQuote) {
       if (step === 1 && !form.requestedDate) return rejectStep('Bạn chọn ngày muốn chụp nhé.');
       if (step === 2) { const message = contactError(); if (message) return rejectStep(message); }
+      if (step === 2) setForm(current => normalizeBookingContact(current));
       setStep((current) => current + 1);
       return;
     }
     if ((step === 1 || step === 2) && !selectedPackage) return rejectStep('Bạn chọn một gói chụp để tiếp tục nhé.');
     if (step === 2 && !form.requestedDate) return rejectStep('Bạn chọn ngày muốn chụp nhé.');
     if (step === 3) { const message = contactError(); if (message) return rejectStep(message); }
+    if (step === 3) setForm(current => normalizeBookingContact(current));
     setStep((current) => current + 1);
   };
 
@@ -181,7 +181,7 @@ export function BookingModal() {
     }
     setLoading(true);
     try {
-      const result = await bookingService.create(form);
+      const result = await bookingService.create(normalizeBookingContact(form));
       setSubmittedCode(result.booking.bookingCode);
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, 'Không thể gửi yêu cầu đặt lịch'));
@@ -215,7 +215,7 @@ export function BookingModal() {
             <p>Chúng tôi sẽ liên hệ để xác nhận lịch của bạn trong 24h.</p>
             <strong>{submittedCode}</strong>
             <div className="booking-modal-success-actions">
-              <button type="button" onClick={() => { close(); navigate('/profile'); }}>Xem chi tiết booking <ArrowRight size={16} /></button>
+              <button type="button" onClick={() => { close(); navigate('/my-bookings'); }}>Theo dõi lịch chụp <ArrowRight size={16} /></button>
               <button type="button" className="secondary" onClick={() => toast.success('Bạn có thể thêm lịch sau khi booking được xác nhận.')}>Thêm vào lịch</button>
             </div>
           </div>
@@ -270,13 +270,7 @@ export function BookingModal() {
                 <div className="booking-modal-step">
                   <h3>Thông tin liên hệ</h3>
                   <p className="booking-modal-help">Chúng tôi chỉ dùng thông tin này để trao đổi về yêu cầu của bạn.</p>
-                  <div className="booking-modal-fields">
-                    <label>Họ và tên<input aria-label="Họ và tên" aria-invalid={showErrors && !form.contact.name.trim()} aria-describedby={showErrors && !form.contact.name.trim() ? 'booking-name-error' : undefined} value={form.contact.name} onChange={(event) => update('contact', { ...form.contact, name: event.target.value })} />{showErrors && !form.contact.name.trim() && <small id="booking-name-error" className="booking-inline-error">Bạn nhập họ và tên nhé.</small>}</label>
-                    <label>Email<input aria-label="Email" type="email" aria-invalid={showErrors && !/^\S+@\S+\.\S+$/.test(form.contact.email.trim())} aria-describedby={showErrors && !/^\S+@\S+\.\S+$/.test(form.contact.email.trim()) ? 'booking-email-error' : undefined} value={form.contact.email} onChange={(event) => update('contact', { ...form.contact, email: event.target.value })} />{showErrors && !/^\S+@\S+\.\S+$/.test(form.contact.email.trim()) && <small id="booking-email-error" className="booking-inline-error">Bạn nhập email hợp lệ nhé.</small>}</label>
-                    <label>Số điện thoại<input aria-label="Số điện thoại" type="tel" aria-invalid={showErrors && form.contact.phone.trim().length < 7} aria-describedby={showErrors && form.contact.phone.trim().length < 7 ? 'booking-phone-error' : undefined} value={form.contact.phone} onChange={(event) => update('contact', { ...form.contact, phone: event.target.value })} />{showErrors && form.contact.phone.trim().length < 7 && <small id="booking-phone-error" className="booking-inline-error">Bạn nhập số điện thoại có ít nhất 7 ký tự nhé.</small>}</label>
-                    <label>Số người<input type="number" min={1} max={selectedPackage?.includedPeople || 50} value={form.participants} onChange={(event) => update('participants', Number(event.target.value))} /></label>
-                    <label>Địa chỉ / khu vực<input aria-label="Địa chỉ / khu vực" placeholder="Ví dụ: Hồ Tây, Hà Nội" aria-invalid={showErrors && !form.location.address.trim()} aria-describedby={showErrors && !form.location.address.trim() ? 'booking-address-error' : undefined} value={form.location.address} onChange={(event) => update('location', { ...form.location, address: event.target.value })} />{showErrors && !form.location.address.trim() && <small id="booking-address-error" className="booking-inline-error">Bạn nhập địa chỉ hoặc khu vực muốn chụp nhé.</small>}</label>
-                  </div>
+                  <BookingContactFields form={form} maxPeople={maxPeople} showErrors={showErrors} onChange={setForm} />
                 </div>
               )}
 
@@ -313,7 +307,7 @@ export function BookingModal() {
 
             <footer className="booking-modal-footer">
               {visibleStep > 1 ? <button type="button" className="booking-modal-back" onClick={() => setStep((current) => current - 1)}><ArrowLeft size={16} /> Quay lại</button> : <button type="button" className="booking-modal-full-page" onClick={() => { close(); navigate('/booking'); }}>{isCustomQuote ? 'Mở form báo giá đầy đủ' : 'Đặt lịch đầy đủ'}</button>}
-              {step < totalSteps ? <button key="next-step" type="button" className="booking-modal-next" onClick={(event) => { event.preventDefault(); next(); }}>Tiếp tục <ArrowRight size={16} /></button> : <button key="submit-request" type="submit" className="booking-modal-next" disabled={loading}>{loading && <span className="booking-modal-spinner" />} {loading ? 'Đang gửi' : (isCustomQuote ? 'Gửi yêu cầu báo giá' : 'Gửi yêu cầu')} <Check size={16} /></button>}
+              {step < totalSteps ? <button key="next-step" type="button" className="booking-modal-next" onClick={(event) => { event.preventDefault(); next(); }}>Tiếp tục <ArrowRight size={16} /></button> : <button key="submit-request" type="submit" className="booking-modal-next" disabled={loading}>{loading && <LoadingIndicator size="small" aria-hidden="true" />} {loading ? 'Đang gửi' : (isCustomQuote ? 'Gửi yêu cầu báo giá' : 'Gửi yêu cầu')} <Check size={16} /></button>}
             </footer>
           </form>
         )}

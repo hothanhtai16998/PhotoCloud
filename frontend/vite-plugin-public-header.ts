@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { LoadingIndicatorFrame } from './src/components/ui/LoadingIndicatorFrame';
 import { fileURLToPath } from 'node:url';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -10,6 +11,7 @@ import { CollectionDetailSkeleton } from './src/pages/collection/components/Coll
 import { ExploreStartup } from './src/pages/explore/ExploreToolbar';
 import { readExploreCategories } from './src/pages/explore/categorySnapshot';
 import { CollectionsToolbar } from './src/components/collection/CollectionsToolbar';
+import { PackagesStartup } from './src/pages/packages/PackagesFrame';
 import { gallery as viGallery } from './src/i18n/locales/vi/gallery';
 import { gallery as enGallery } from './src/i18n/locales/en/gallery';
 import { account as viAccount } from './src/i18n/locales/vi/account';
@@ -37,11 +39,12 @@ export function publicHeaderStartup(): Plugin {
     transformIndexHtml: {
       order: 'pre',
       handler(html): string {
-        const css = ['./src/components/user/DataLoading.css', './src/pages/ExplorePage.css', './src/components/HeaderFrame.css', './src/components/PublicHeaderActions.css', './src/components/collection/CollectionsToolbar.css', './src/pages/collection/components/CollectionDetailFrame.css'].map(file => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8')).join('\n');
+        const css = ['./src/components/ui/LoadingIndicator.css', './src/components/user/DataLoading.css', './src/pages/ExplorePage.css', './src/components/HeaderFrame.css', './src/components/PublicHeaderActions.css', './src/components/collection/CollectionsToolbar.css', './src/pages/collection/components/CollectionDetailFrame.css', './src/pages/PackagesPage.css', './src/styles/public-content-layout.css'].map(file => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8').replace(/^@import .*public-content-layout\.css.*;\r?\n/gm, '')).join('\n');
         const palette = JSON.parse(fs.readFileSync(fileURLToPath(new URL('../shared/sitePalette.json', import.meta.url)), 'utf8')) as unknown;
         const detail = renderToStaticMarkup(createElement(CollectionDetailSkeleton));
         const explore = renderToStaticMarkup(createElement(ExploreStartup));
-        const markup = startupMarkup('vi') + `<template id="public-startup-en">${startupMarkup('en')}</template><div id="public-collection-detail-startup" class="public-collection-detail-startup app-body" aria-hidden="true" inert>${detail}</div><div id="public-explore-startup" class="public-explore-startup app-body" aria-hidden="true" inert>${explore}</div>`;
+        const packages = renderToStaticMarkup(createElement(PackagesStartup));
+        const markup = startupMarkup('vi') + `<template id="public-startup-en">${startupMarkup('en')}</template><div id="public-collection-detail-startup" class="public-collection-detail-startup app-body" aria-hidden="true" inert>${detail}</div><div id="public-explore-startup" class="public-explore-startup app-body" aria-hidden="true" inert>${explore}</div><div id="public-packages-startup" class="public-packages-startup app-body" aria-hidden="true" inert>${packages}</div>`;
         // Run before the generated stylesheet link: a body script would wait for CSS
         // and could paint the empty category row while a cached list already exists.
         const restoreCategories = `<script>(()=>{
@@ -76,7 +79,7 @@ export function publicHeaderStartup(): Plugin {
             if(link.dataset.exact==='true'?location.pathname===href:location.pathname===href||location.pathname.startsWith(href+'/'))link.setAttribute('aria-current','page');
           }
         })();</script>`;
-        return html.replace('/* public-palette-defaults */ {}', JSON.stringify(palette)).replace('<!-- public-header-critical -->', `${restoreCategories}<style id="public-header-critical">${css}</style>`).replace('<!-- public-header-startup -->', markup).replace('<!-- public-header-activate -->', activate);
+        return html.replace('<!-- startup-loading -->', `<div id="startup-loading">${renderToStaticMarkup(createElement(LoadingIndicatorFrame, { size: 'large' }))}</div>`).replace('/* public-palette-defaults */ {}', JSON.stringify(palette)).replace('<!-- public-header-critical -->', `${restoreCategories}<style id="public-header-critical">${css}</style>`).replace('<!-- public-header-startup -->', markup).replace('<!-- public-header-activate -->', activate);
       },
     },
   };

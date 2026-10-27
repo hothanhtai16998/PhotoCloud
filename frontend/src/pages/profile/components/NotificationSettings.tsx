@@ -1,5 +1,6 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { memo, useEffect, useState } from 'react';
-import { Bell, Mail, Smartphone, Check, Loader2 } from 'lucide-react';
+import { Bell, Mail, Smartphone, Check } from 'lucide-react';
 import { userService, type NotificationPreferences, type NotificationChannel } from '@/services/userService';
 import { toast } from 'sonner';
 import { DataLoading } from '@/components/user/DataLoading';
@@ -134,7 +135,7 @@ export default memo(function NotificationSettings() {
                         onClick={handleSave}
                         disabled={!isDirty || saving}
                     >
-                        {saving ? <Loader2 size={14} className="spin" aria-hidden="true" /> : <Check size={14} aria-hidden="true" />}
+                        {saving ? <LoadingIndicator size="small" aria-hidden="true" /> : <Check size={14} aria-hidden="true" />}
                         {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
                     </Button>
                 </div>

@@ -19,9 +19,9 @@ const {chromium}=require('C:/Users/Fenn/.cache/codex-runtimes/codex-primary-runt
  await modal.getByRole('combobox',{name:'Ngôn ngữ quản trị',exact:true}).selectOption('en');assert.equal(await modal.getByPlaceholder('Image title',{exact:true}).inputValue(),'Bản nháp không đổi');assert.equal(preuploads,1);assert.equal(finalizes,0);
  await page.evaluate(()=>document.documentElement.classList.add('dark-theme'));await page.screenshot({path:'qa-policy-checkbox/admin-language-upload-en-dark.png',fullPage:true,animations:'disabled'});
  await modal.getByRole('button',{name:'Close upload modal',exact:true}).click();await modal.waitFor({state:'detached'});assert.deepEqual(errors,[]);
- // The public upload entry point keeps its own locale even while admin is English.
- await page.goto(origin+'/explore');await page.locator('.header-upload-button').click();await page.locator('.upload-modal-overlay').getByRole('heading',{name:'Thêm ảnh vào PhotoApp',exact:true}).waitFor();assert.equal(await page.locator('.upload-modal-overlay .admin-language-picker').count(),0);assert.equal(await page.evaluate(()=>localStorage.getItem('app_locale')),'vi');
- console.log('PASS admin upload English/Vietnamese, selected file/title retained, exactly one fixture pre-upload, no finalize, public upload stays Vietnamese');
+ // Public upload entry was removed when PhotoCloud switched to booking focus.
+ await page.goto(origin+'/explore');assert.equal(await page.locator('.header-upload-button').count(),0);assert.equal(await page.evaluate(()=>localStorage.getItem('app_locale')),'vi');
+ console.log('PASS admin upload English/Vietnamese, selected file/title retained, exactly one fixture pre-upload, no finalize, public upload hidden and locale isolated');
  }finally{await browser?.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
 

@@ -1,5 +1,6 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Bell, X, Check, CheckCheck, Trash2, Users, Image as ImageIcon, Shield, Folder, RefreshCw, Heart, Download, Share2, Upload, CheckCircle, XCircle, Loader2, Star, AlertTriangle, Ban, User, Eye, Key, Mail, Smartphone, LogIn, Megaphone, Wrench, FileText, Sparkles, Flag, UserPlus, UserMinus } from 'lucide-react';
+import { Bell, X, Check, CheckCheck, Trash2, Users, Image as ImageIcon, Shield, Folder, RefreshCw, Heart, Download, Share2, Upload, CheckCircle, XCircle, Star, AlertTriangle, Ban, User, Eye, Key, Mail, Smartphone, LogIn, Megaphone, Wrench, FileText, Sparkles, Flag, UserPlus, UserMinus } from 'lucide-react';
 import { type Notification } from '@/services/notificationService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -405,7 +406,7 @@ export default function NotificationBell() {
 			case 'upload_failed':
 				return <XCircle size={16} />;
 			case 'upload_processing':
-				return <Loader2 size={16} className="spinning" />;
+				return <LoadingIndicator size="small" aria-hidden="true" />;
 			case 'bulk_upload_completed':
 				return <Upload size={16} />;
 			case 'collection_updated':
@@ -499,12 +500,12 @@ export default function NotificationBell() {
 						<div className="notification-dropdown-actions">
 							<button
 								type="button"
-								className={`notification-action-btn ${refreshing ? 'refreshing' : ''}`}
+								className="notification-action-btn"
 								onClick={handleManualRefresh}
 								title={t('notifications.refresh')}
 								disabled={refreshing}
 							>
-								<RefreshCw size={16} />
+								{refreshing ? <LoadingIndicator size="small" aria-hidden="true" /> : <RefreshCw size={16} />}
 							</button>
 							{displayUnreadCount > 0 && (
 								<button

@@ -1,5 +1,5 @@
 import { t } from '@/i18n';
-import LoadingSpinner from './LoadingSpinner';
+import { LoadingIndicator } from './LoadingIndicator';
 import './PageLoader.css';
 
 interface PageLoaderProps {
@@ -17,9 +17,9 @@ export function PageLoader({ message, fullScreen = true }: PageLoaderProps) {
     : 'page-loader';
 
   return (
-    <div className={containerClass}>
+    <div className={containerClass} role="status" aria-label={message ? undefined : t('common.loading')}>
       <div className="page-loader-content">
-        <LoadingSpinner size="large" />
+        <LoadingIndicator size="large" aria-hidden="true" />
         {message && <p className="page-loader-message">{message}</p>}
       </div>
     </div>

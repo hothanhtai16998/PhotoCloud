@@ -55,16 +55,6 @@
   padding: 0 16px 48px;
 }
 
-/* Loading Spinner for Cover Update */
-.cover-loading-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid color-mix(in srgb, var(--bg-card) 30%, transparent);
-  border-top-color: var(--bg-card);
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
 /* Drag Handle - colors derive from palette so the admin editor retints it. */
 .collection-image-drag-handle {
   position: absolute;

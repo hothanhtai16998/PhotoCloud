@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/Avatar";
 // import { ProfileCompletion } from "./ProfileCompletion";
@@ -81,7 +82,7 @@ export function ProfileHeader({
                             >
                                 {isFollowingLoading ? (
                                     <>
-                                        <span className="loading-spinner" />
+                                        <LoadingIndicator size="small" aria-hidden="true" />
                                         <span>{t('common.loading')}</span>
                                     </>
                                 ) : followStats.isFollowing ? (

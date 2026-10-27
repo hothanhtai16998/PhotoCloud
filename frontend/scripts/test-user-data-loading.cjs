@@ -47,7 +47,7 @@ const assert = require('node:assert/strict');
         await loader.scrollIntoViewIfNeeded();
         const style = await loader.evaluate(el => {
           const p = getComputedStyle(el.querySelector('p'));
-          const bar = getComputedStyle(el.querySelector('.user-data-loading-track span'));
+          const bar = getComputedStyle(el.querySelector('.pc-loading-indicator > i'));
           return { font: p.fontFamily, size: p.fontSize, animation: bar.animationName, visibility: getComputedStyle(el).visibility, opacity: getComputedStyle(el).opacity };
         });
         assert.match(style.font, /Explore Fraunces/);

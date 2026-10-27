@@ -1,0 +1,122 @@
+/* Public page geometry, shared by startup HTML and live user pages. */
+html .app-body :is(.explore-page,.collections-page,.packages-page,.about-page,.contact-page,.blog-page,.booking-page,.my-bookings-page) {
+  --public-content-max:1296px;
+  --public-content-gutter:24px;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* Only the content frame owns horizontal gutters; full-width bands do not. */
+html .app-body :is(.explore-hero,.explore-filters,.about-page > section,.blog-hero,.booking-page,.my-bookings-page,.contact-page,.packages-page) {
+  padding-inline:0;
+}
+
+html .app-body :is(.explore-hero-inner,.explore-filter-row,.explore-category-error,.explore-page .page-photo-search,.explore-grid-wrap,.collections-page-shell,.packages-container,.about-container,.contact-container,.blog-hero-inner,.blog-list,.booking-hero,.booking-layout,.my-bookings-wrap) {
+  width:100%;
+  max-width:var(--public-content-max);
+  margin-inline:auto;
+  padding-inline:var(--public-content-gutter);
+  box-sizing:border-box;
+}
+
+/* Preserve a readable measure for FAQs and long-form sections within the frame. */
+html .app-body .about-container--narrow { max-width:720px; }
+
+/* Match the scrollbar space before and after the application's CSS loads. */
+html[data-startup-surface] { scrollbar-gutter:stable;scrollbar-width:auto!important; }
+html[data-startup-surface]::-webkit-scrollbar { display:block!important;width:8px!important;height:8px!important; }
+
+@media(max-width:768px) {
+  html .app-body :is(.explore-page,.collections-page,.packages-page,.about-page,.contact-page,.blog-page,.booking-page,.my-bookings-page) { --public-content-gutter:16px; }
+}
+
+/* One type scale for public/member pages; admin retains its own typography. */
+html .app-body :is(.homepage,.explore-page,.collections-page,.collection-detail-page,.packages-page,.about-page,.contact-page,.blog-page,.blog-detail,.blog-detail-page,.booking-page,.booking-detail-page,.my-bookings-page,.favorites-page,.favorite-collections-page,.download-history-page,.notification-page,.search-results-page,.profile-settings-page,.settings-page,.newsletter-page,.notfound-page,.image-page) {
+  --studio-font-display:'Explore Fraunces',Georgia,serif;
+  --studio-font-body:Arial,sans-serif;
+  --public-title-size:44px;
+  --public-title-line:1.2;
+  --public-description-size:16px;
+  font-family:var(--studio-font-body);
+  font-size:16px;
+  line-height:1.6;
+  color:var(--text-primary);
+}
+
+html .app-body :is(.homepage,.explore-page,.collections-page,.collection-detail-page,.packages-page,.about-page,.contact-page,.blog-page,.blog-detail,.blog-detail-page,.booking-page,.booking-detail-page,.my-bookings-page,.favorites-page,.favorite-collections-page,.download-history-page,.notification-page,.search-results-page,.settings-page,.newsletter-page,.notfound-page) h1,
+html .app-body .search-results-heading {
+  font-family:var(--studio-font-display);
+  font-size:var(--public-title-size);
+  font-weight:500;
+  line-height:var(--public-title-line);
+  letter-spacing:-.03em;
+  margin:0;
+  color:var(--text-primary);
+  text-align:left;
+  overflow-wrap:anywhere;
+}
+html .app-body :is(.explore-page,.collections-page,.packages-page,.about-page,.contact-page,.blog-page,.booking-page,.my-bookings-page) h1 em,
+html .app-body .about-title-accent {
+  color:var(--button-primary-hover);
+  background:none;
+  -webkit-text-fill-color:currentColor;
+  font-weight:inherit;
+}
+
+/* Shared first baseline, with the fixed header reserved by the app shell. */
+html .app-body :is(.explore-hero,.about-hero,.blog-hero) { padding-top:32px; }
+html .app-body > :is(.collections-page,.packages-page,.contact-page,.booking-page,.my-bookings-page,.notification-page,.favorites-page,.favorite-collections-page,.download-history-page,.search-results-page,.settings-page) { padding-top:32px; }
+html .app-body :is(.contact-header,.my-bookings-header,.collections-header,.booking-hero,.notification-header) { align-items:flex-start; }
+html .app-body :is(.contact-header,.collections-header-titles) { gap:0; }
+html .app-body :is(.about-hero,.about-title,.blog-hero-inner,.contact-header) { text-align:left; }
+html .app-body :is(.contact-eyebrow,.notification-eyebrow,.blog-hero .booking-eyebrow,.booking-hero .booking-eyebrow,.home-explore-heading > span) { display:none; }
+
+html .app-body :is(.explore-hero-inner > p,.collections-header-subtitle,.about-hero-sub,.contact-subtitle,.blog-hero-inner > p:not(.booking-eyebrow),.my-bookings-header .my-bookings-subtitle,.booking-hero p:not(.booking-eyebrow):not(.booking-hero-tagline),.notification-subtitle,.favorites-subtitle,.download-history-page-description,.settings-page-subtitle) {
+  font-family:var(--studio-font-body);
+  font-size:var(--public-description-size,16px);
+  font-weight:400;
+  line-height:1.6;
+  letter-spacing:normal;
+  color:var(--text-secondary);
+  margin:12px 0 0;
+  text-align:left;
+  max-width:80ch;
+}
+html .app-body .packages-intro { margin-top:12px; }
+html .app-body .packages-intro p { font-family:var(--studio-font-body);font-size:16px;line-height:1.6; }
+html .app-body :is(.about-hero-sub,.blog-hero-inner > p,.contact-subtitle) { margin-inline:0; }
+
+/* Form panels and image tools use the same families at an appropriate scale. */
+html .auth-layout { --studio-font-display:'Explore Fraunces',Georgia,serif;--studio-font-body:Arial,sans-serif;font-family:var(--studio-font-body); }
+html .auth-layout :is(h1,.auth-form h2),html .app-body .profile-settings-page h1 { font-family:'Explore Fraunces',Georgia,serif;font-size:32px;font-weight:500;line-height:1.2;letter-spacing:-.03em; }
+html .app-body .image-page h1 { font-family:var(--studio-font-display);font-size:28px;font-weight:500;line-height:1.25; }
+
+@media(max-width:768px) {
+  html .app-body :is(.homepage,.explore-page,.collections-page,.collection-detail-page,.packages-page,.about-page,.contact-page,.blog-page,.blog-detail,.blog-detail-page,.booking-page,.booking-detail-page,.my-bookings-page,.favorites-page,.favorite-collections-page,.download-history-page,.notification-page,.search-results-page,.settings-page,.newsletter-page,.notfound-page) { --public-title-size:32px; }
+}
+
+/* Secondary account pages share the same heading edge as the public catalogue. */
+html .app-body :is(.favorites-page,.favorite-collections-page,.download-history-page,.notification-page,.search-results-page,.settings-page) {
+  --public-content-max:1296px;
+  --public-content-gutter:24px;
+  width:100%;
+  padding-inline:0;
+  margin-inline:0;
+  box-sizing:border-box;
+}
+html .app-body :is(.favorites-container,.favorite-collections-header,.download-history-page-container,.notification-container,.search-results-content,.search-results-grid-container,.search-results-grid-wrapper) {
+  width:100%;max-width:var(--public-content-max);padding-inline:var(--public-content-gutter);margin-inline:auto;box-sizing:border-box;
+}
+html .app-body .settings-page { max-width:1296px;padding-inline:var(--public-content-gutter);margin-inline:auto; }
+html .app-body .settings-tab-content { max-width:900px; }
+html .app-body .favorites-header-icon,html .app-body .favorite-collections-header h1 > svg { display:none; }
+html .app-body :is(.favorites-header,.favorite-collections-header) { align-items:flex-start; }
+html .app-body .category-intro > span { display:none; }
+@media(max-width:768px) {
+  html .app-body :is(.favorites-page,.favorite-collections-page,.download-history-page,.notification-page,.search-results-page,.settings-page) { --public-content-gutter:16px; }
+}
+html :is(.forgot-password-page,.auth-layout) { font-family:Arial,sans-serif;font-size:16px;line-height:1.6; }
+html .forgot-password-page h1 { font-family:'Explore Fraunces',Georgia,serif;font-size:32px;font-weight:500;line-height:1.2;letter-spacing:-.03em; }
+html :is(.auth-subtitle,.forgot-password-subtitle) { font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:var(--text-secondary); }
+html .app-body :is(.newsletter-page > p,.notfound-subtitle,.favorite-collections-count) { font-family:Arial,sans-serif;font-size:16px;line-height:1.6;letter-spacing:normal;color:var(--text-secondary);text-align:left; }
+html .app-body .profile-settings-page :is(.sidebar-title,.profile-form-header h2) { font-family:'Explore Fraunces',Georgia,serif;font-weight:500;line-height:1.2; }

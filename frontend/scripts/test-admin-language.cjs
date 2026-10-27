@@ -19,7 +19,7 @@ const {chromium}=require('C:/Users/Fenn/.cache/codex-runtimes/codex-primary-runt
  await page.reload();await page.getByRole('heading',{name:'System Logs',exact:true}).waitFor();
  await page.screenshot({path:'qa-policy-checkbox/admin-language-logs-en.png',fullPage:true,animations:'disabled'});
  const routes=['/admin','/admin/images','/admin/categories','/admin/collections','/admin/moderation','/admin/bookings','/admin/users','/admin/roles','/admin/settings'];const headings=[];
- for(const route of routes){await page.goto(origin+route);await page.locator('main h1').waitFor();const h=await page.locator('main h1').innerText();headings.push({route,heading:h});assert.ok(!/[À-ỹĐđ]/.test(h),`${route}: ${h}`);}
+ for(const route of routes){await page.goto(origin+route);await page.locator('#root main h1').waitFor();const h=await page.locator('#root main h1').innerText();headings.push({route,heading:h});assert.ok(!/[À-ỹĐđ]/.test(h),`${route}: ${h}`);}
  // A setting draft must survive switching languages; no reload or mutation.
  await page.getByRole('textbox').first().fill('Draft giữ nguyên');
  const field=await page.getByRole('textbox').first().inputValue();

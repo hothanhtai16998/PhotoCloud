@@ -8,15 +8,11 @@
 }
 .user-data-loading { min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; color: var(--text-primary); }
 .user-data-loading p { margin: 0; font-family: 'Explore Fraunces', Georgia, serif; font-size: 22px; font-style: italic; font-weight: 500; line-height: 1.4; letter-spacing: -.02em; }
-.user-data-loading-track { width: 120px; height: 2px; border-radius: 2px; overflow: hidden; background: var(--border-color); }
-.user-data-loading-track span { display: block; width: 40%; height: 100%; border-radius: inherit; background: var(--accent); animation: user-data-loading-progress 1.8s cubic-bezier(.22,.61,.36,1) infinite; }
-@keyframes user-data-loading-progress { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
-@media (prefers-reduced-motion: reduce) { .user-data-loading-track span { animation: none; width: 100%; } }
+
 
 .user-data-loading--compact { min-height: 128px; gap: 14px; }
 .user-data-loading--compact p { font-size: 18px; }
 body.global-loading-active :is(.favorites-page,.favorite-collections-page,.download-history-page,.search-results-page):has(.user-data-loading) { visibility: visible; opacity: 1; transition: none; }
 .user-data-loading--inline { min-height: 28px; flex-direction: row; justify-content: flex-start; gap: 10px; margin: 8px 0 16px; }
 .user-data-loading--inline p { font: 400 14px/1.5 Arial, sans-serif; letter-spacing: normal; }
-.user-data-loading--inline .user-data-loading-track { width: 40px; flex-shrink: 0; }
 body.global-loading-active :is(.homepage,.profile-page,.image-page,.favorites-page,.favorite-collections-page,.download-history-page,.search-results-page)[data-loading-scope='local'] { visibility: visible; opacity: 1; transition: none; }

@@ -1,4 +1,5 @@
 import React from 'react';
+import { LoadingIndicatorFrame } from '../ui/LoadingIndicatorFrame';
 
 export interface DataLoadingProps {
   message?: string;
@@ -9,6 +10,5 @@ export interface DataLoadingProps {
 export function DataLoadingFrame({ message = 'Đang tải dữ liệu', size = 'section' }: DataLoadingProps) {
   return React.createElement('div', { className: `user-data-loading user-data-loading--${size}`, role: 'status' },
     React.createElement('p', null, message),
-    React.createElement('span', { className: 'user-data-loading-track', 'aria-hidden': true },
-      React.createElement('span')));
+    React.createElement(LoadingIndicatorFrame, { size: size === 'inline' ? 'small' : 'medium', 'aria-hidden': true }));
 }

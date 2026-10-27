@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, CalendarDays, Home, Search, User } from 'lucide-react';
+import { Bell, CalendarDays, Home, Search } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { useUserStore } from '@/stores/useUserStore';
+
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useEffect, useState } from 'react';
@@ -26,7 +26,7 @@ export function MobileBottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
     const accessToken = useAuthStore((state) => state.accessToken);
-    const user = useUserStore((state) => state.user);
+
     const [modalOpen, setModalOpen] = useState(false);
 
     /**
@@ -59,7 +59,7 @@ export function MobileBottomNav() {
     if (modalOpen) return null;
 
     const isAuthed = Boolean(accessToken);
-    const profilePath = user?.username ? `/@${user.username}` : '/profile';
+
 
     const items: NavItem[] = [
         {
@@ -102,14 +102,12 @@ export function MobileBottomNav() {
             activeMatch: (pathname) => pathname === '/notifications',
         },
         {
-            id: 'profile',
-            label: 'Hồ sơ',
-            icon: User,
-            to: profilePath,
-            activeMatch: (pathname) =>
-                pathname === profilePath ||
-                pathname.startsWith(`/@${user?.username ?? ''}`) ||
-                pathname.startsWith('/profile'),
+            id: 'my-bookings',
+            label: 'Lịch của tôi',
+            icon: CalendarDays,
+            to: '/my-bookings',
+            authOnly: true,
+            activeMatch: (pathname) => pathname === '/my-bookings' || pathname.startsWith('/booking/'),
         },
     ];
 

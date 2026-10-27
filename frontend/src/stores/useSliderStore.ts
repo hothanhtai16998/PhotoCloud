@@ -68,6 +68,7 @@ function readSliderCache(): { slides: SlideData[]; lastFetchedAt: number | null 
   }
 }
 
+let latestSlideRequest = 0;
 const initialCache = readSliderCache();
 // Start the first cached image before the lazy homepage mounts.
 if (initialCache.slides[0] && typeof window !== 'undefined') {
@@ -102,6 +103,7 @@ export const useSliderStore = create(
 		lastFetchedAt: initialCache.lastFetchedAt,
 
 		fetchSlides: async (signal?: AbortSignal) => {
+			const request = ++latestSlideRequest;
 			const currentState = get();
 			set(state => { state.error = false; });
 			
@@ -119,14 +121,14 @@ export const useSliderStore = create(
 				}, signal);
 				
 				// Check if request was aborted after fetch completes
-				if (signal?.aborted) {
+				if (signal?.aborted || request !== latestSlideRequest) {
 					return;
 				}
 				
 				const slideData = toSlides(response.images || []);
 
 				// Check again if aborted before updating state
-				if (signal?.aborted) {
+				if (signal?.aborted || request !== latestSlideRequest) {
 					return;
 				}
 				
@@ -139,6 +141,7 @@ export const useSliderStore = create(
 					state.loading = false;
 				});
 			} catch (error: unknown) {
+				if (request !== latestSlideRequest) return;
 				// Ignore abort/cancellation errors (expected when component unmounts)
 				if (
 					(error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) ||
@@ -171,6 +174,7 @@ export const useSliderStore = create(
 		},
 
 		clearSlides: () => {
+			latestSlideRequest++;
 			removeSessionItem(SLIDER_CACHE_KEY);
 			set((state) => {
 				state.slides = [];
@@ -195,6 +199,7 @@ export const useSliderStore = create(
 				return;
 			}
 			
+			const request = ++latestSlideRequest;
 			// Silent background refresh - no loading state
 			try {
 				const response = await imageService.fetchImages({ 
@@ -202,7 +207,7 @@ export const useSliderStore = create(
 					_refresh: true 
 				}, signal);
 				
-				if (signal?.aborted) return;
+				if (signal?.aborted || request !== latestSlideRequest) return;
 				const slideData = toSlides(response.images || []);
 
 				const fetchedAt = Date.now();
@@ -213,6 +218,7 @@ export const useSliderStore = create(
 					// Don't set loading - this is a silent background refresh
 				});
 			} catch (error: unknown) {
+				if (request !== latestSlideRequest) return;
 				// Ignore abort/cancellation errors
 				if (
 					(error instanceof Error && (error.name === 'AbortError' || error.name === 'CanceledError')) ||

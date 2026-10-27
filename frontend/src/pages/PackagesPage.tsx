@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { PackagesHeroFrame, PackagesCatalogHeading, CustomQuoteFrame } from './packages/PackagesFrame';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useSpring, useTransform, type MotionStyle } from 'motion/react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowDown, ArrowLeft, ArrowRight, Check, MoveUpRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, MoveUpRight } from 'lucide-react';
 import { PackageServices, ServicePhoto, ServiceGallery } from './packages/PackageServices';
 import { DataLoading } from '@/components/user/DataLoading';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
@@ -14,10 +15,9 @@ function PackageImage({ src, priority = false, className = '', frameStyle }: {
     src: string; priority?: boolean; className?: string; frameStyle?: MotionStyle;
 }) {
     const [failedUrl, setFailedUrl] = useState<string | null>(null);
-    const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
     if (!src || failedUrl === src) return null;
     return <motion.figure className={`package-photo ${className}`} style={frameStyle}>
-        <img src={src} alt="" loading={priority ? 'eager' : 'lazy'} decoding="async" data-loaded={loadedUrl === src} onLoad={() => setLoadedUrl(src)} onError={() => setFailedUrl(src)} />
+        <img src={src} alt="" loading={priority ? 'eager' : 'lazy'} decoding="async" onError={() => setFailedUrl(src)} />
         <figcaption>Ảnh minh họa</figcaption>
     </motion.figure>;
 }
@@ -40,27 +40,15 @@ function PackagesHero() {
     // Open the pair like prints on a desk, inside the hero rather than across sections.
     const back = useTransform(settledProgress, progress => `translate3d(calc(${28 * progress}px * var(--package-motion-scale, 1)), calc(${-20 * progress}px * var(--package-motion-scale, 1)), 0) rotate(calc(5deg + ${3 * progress}deg * var(--package-motion-scale, 1)))`);
     const front = useTransform(settledProgress, progress => `translate3d(calc(${-44 * progress}px * var(--package-motion-scale, 1)), calc(${-128 * progress}px * var(--package-motion-scale, 1)), 0) rotate(calc(-7deg - ${4 * progress}deg * var(--package-motion-scale, 1)))`);
-    return <header ref={ref} className="packages-hero">
-        <div className="packages-hero-copy">
-            <h1>Một buổi chụp,<br /><em>đúng chất bạn.</em></h1>
-            <div className="packages-intro">
-            <p>Chọn gói theo thời lượng, số ảnh và ngân sách của bạn. Từ một bức chân dung đến những khoảnh khắc bên người thân.</p>
-            <a href="#packages-catalog" className="package-card-cta">Tìm gói chụp của bạn <ArrowDown size={17} aria-hidden="true" /></a>
-            <Link to="/explore" className="packages-compare-jump">Tìm cảm hứng <ArrowRight size={15} aria-hidden="true" /></Link>
-            </div>
-        </div>
-        <div className="packages-hero-photos">
-            <div className="packages-hero-portrait-anchor">
-                <PackageImage src={CORE_PACKAGES.find(pkg => pkg.accent === 'portrait')?.coverUrl ?? ''} priority className="packages-hero-portrait" frameStyle={reducedMotion ? undefined : { transform: back }} />
-            </div>
-            <div className="packages-hero-moment-anchor">
-                <PackageImage src={CORE_PACKAGES.find(pkg => pkg.accent === 'family')?.coverUrl ?? ''} priority className="packages-hero-moment" frameStyle={reducedMotion ? undefined : { transform: front }} />
-            </div>
-        </div>
-    </header>;
+    return <PackagesHeroFrame heroRef={ref}
+        portrait={<PackageImage src={CORE_PACKAGES.find(pkg => pkg.accent === 'portrait')?.coverUrl ?? ''} priority className="packages-hero-portrait" frameStyle={reducedMotion ? undefined : { transform: back }} />}
+        moment={<PackageImage src={CORE_PACKAGES.find(pkg => pkg.accent === 'family')?.coverUrl ?? ''} priority className="packages-hero-moment" frameStyle={reducedMotion ? undefined : { transform: front }} />}
+        inspirationLink={<Link to="/explore" className="packages-compare-jump">Tìm cảm hứng <ArrowRight size={15} aria-hidden="true" /></Link>}
+    />;
 }
 
 export default function PackagesPage() {
+    useLayoutEffect(() => { document.getElementById('public-packages-startup')?.remove(); }, []);
     const { slug } = useParams<{ slug?: string }>();
     const data = usePublicPackages();
     const activePackage = slug ? data.packages.find(pkg => pkg.slug === slug) : undefined;
@@ -69,10 +57,10 @@ export default function PackagesPage() {
     const initialLoading = data.loading && data.source !== 'api';
     return <main className="packages-page" data-loading-scope="local">
         <div className="packages-container">
-            {slug && !initialLoading ? <>
+            {slug ? <>
                 <Link to="/packages" className="packages-back"><ArrowLeft size={16} aria-hidden="true" /> Tất cả gói chụp</Link>
                 <PackageNotice {...data} />
-                {activePackage ? <PackageDetail pkg={activePackage} /> : <section className="packages-empty">
+                {initialLoading ? <DataLoading message="Đang tải thông tin gói chụp" /> : activePackage ? <PackageDetail pkg={activePackage} /> : <section className="packages-empty">
                     <h1>{data.error ? 'Chưa tải được gói chụp' : 'Không tìm thấy gói chụp này'}</h1>
                     <p>{data.error ? 'Thử tải lại thông tin hoặc quay về danh sách gói.' : 'Gói có thể đã được thay đổi hoặc ngừng hiển thị. Bạn có thể chọn một gói khác.'}</p>
                     <Link to="/packages" className="package-card-cta">Xem các gói chụp <ArrowRight size={16} aria-hidden="true" /></Link>
@@ -80,28 +68,17 @@ export default function PackagesPage() {
             </> : <>
                 <PackagesHero />
                 <section id="packages-catalog" className="packages-catalog" aria-labelledby="packages-catalog-title">
-                    <div className="packages-section-heading">
-                        <h2 id="packages-catalog-title">Chọn cách lưu giữ <em>khoảnh khắc.</em></h2>
-                        <p>Một mình, bên nhau, hay cùng gia đình.</p>
-                    </div>
+                    <PackagesCatalogHeading />
                     <PackageNotice {...data} />
                     {initialLoading ? <DataLoading message="Đang tải gói chụp" /> : <>
                         {data.loading && <DataLoading size="inline" message="Đang cập nhật gói chụp" />}
                         {data.packages.length ? <PackageServices packages={data.packages} /> : !data.error && <div className="packages-empty"><h3>Hiện chưa có gói chụp</h3><p>Bạn có thể gửi yêu cầu riêng để trao đổi về buổi chụp.</p></div>}
                     </>}
                 </section>
-                {!initialLoading && <CustomQuote />}
+                <CustomQuoteFrame onClick={() => openBookingModal({ mode: 'custom-quote' })} />
             </>}
         </div>
     </main>;
-}
-
-function CustomQuote() {
-    return <section id="packages-custom" className="packages-custom" aria-labelledby="packages-custom-title">
-        <div><h2 id="packages-custom-title">Một ý tưởng <em>của riêng bạn?</em></h2>
-            <p>Chưa tìm thấy gói phù hợp? Chia sẻ ý tưởng, số người và thời gian dự kiến để trao đổi về một buổi chụp theo yêu cầu.</p></div>
-        <button type="button" className="package-card-cta package-card-cta--secondary" onClick={() => openBookingModal({ mode: 'custom-quote' })}>Trao đổi về buổi chụp <MoveUpRight size={17} aria-hidden="true" /></button>
-    </section>;
 }
 
 function PackageDetail({ pkg }: { pkg: StudioPackage }) {

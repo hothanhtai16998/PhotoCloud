@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useState, useEffect, useRef, memo, useMemo } from 'react';
 import { X, MapPin } from 'lucide-react';
 import type { ImageData } from './hooks/useImageUpload';
@@ -203,7 +204,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
                 animation: 'fadeIn 0.2s ease'
               }}
             />
-            {/* Scrolling Loader - above overlay */}
+            {/* Shared loading indicator above the image overlay */}
             <div
               className="upload-loader-container"
               style={{
@@ -215,18 +216,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
                 pointerEvents: 'none'
               }}
             >
-              <div className="loader">
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="text"><span>{t('upload.loading')}</span></div>
-                <div className="line"></div>
-              </div>
+              <LoadingIndicator size="large" label={t('upload.loading')} />
             </div>
           </>
         )}
@@ -360,7 +350,7 @@ export const UploadPreview = memo(({ imageData, index, onRemove, onLocationUpdat
                 title={t('upload.autoDetectLocation')}
               >
                 {isDetectingLocation ? (
-                  <div className="upload-location-spinner" />
+                  <LoadingIndicator size="small" aria-hidden="true" />
                 ) : (
                   <MapPin size={16} />
                 )}

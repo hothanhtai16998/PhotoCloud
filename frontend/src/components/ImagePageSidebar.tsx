@@ -6,7 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { t, getLocale, setLocale, type Locale } from '@/i18n';
-import { useState, useEffect, useCallback, useRef, memo, startTransition } from 'react';
+import { useState, useEffect, useCallback, memo, startTransition } from 'react';
 import { favoriteService } from '@/services/favoriteService';
 import { useFavoriteStore } from '@/stores/useFavoriteStore';
 import type { Image } from '@/types/image';
@@ -16,9 +16,6 @@ import americaFlag from '@/assets/america.svg';
 import './ImagePageSidebar.css';
 import { getSessionItem, setSessionItem, removeSessionItem } from '@/utils/safeStorage';
 import { LANGUAGE_SWITCHER_ENABLED } from '@/config/features';
-import { validateModalState } from '@/utils/modalNavigation';
-import { getImagePageScroll } from '@/utils/imagePageScroll';
-import { useIsMobile } from '@/hooks/useIsMobile';
 
 // NOTE: refreshToken cookie is httpOnly, so we can't check it from JavaScript
 // Instead, we use optimistic rendering based on isInitializing and accessToken state
@@ -52,7 +49,6 @@ const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }:
     void fetch.catch(() => { if (active) setLibraryError(true); });
     return () => { active = false; };
   }, [libraryOpen]);
-  const isMobile = useIsMobile();
   const location = useLocation();
   const accessToken = useAuthStore(state => state.accessToken);
   const userId = useUserStore(state => state.user?._id);
@@ -161,41 +157,6 @@ const ImagePageSidebar = memo(function ImagePageSidebar({ variant = 'sidebar' }:
     if (!showAuthIcons || !userId || !hasStoreData) return;
     setPreview(previous => ({ ownerId: userId, thumbnail: firstFavorite ? toFavoriteThumbnail(firstFavorite) : storedFavoriteTotal === 0 ? null : previous.ownerId === userId ? previous.thumbnail : null, total: storedFavoriteTotal ?? (previous.ownerId === userId ? previous.total : 0) }));
   }, [showAuthIcons, userId, hasStoreData, firstFavorite, storedFavoriteTotal]);
-
-  // Scroll to top immediately when navigating via sidebar (not smooth scroll)
-  // Track previous pathname to detect route changes
-  const previousPathnameRef = useRef<string>(location.pathname);
-  useEffect(() => {
-    let frame = 0;
-    // Only scroll if pathname actually changed (not just a re-render)
-    if (previousPathnameRef.current !== location.pathname) {
-      // Don't scroll if this is modal navigation (ImagePage)
-      // Modal navigation has location.state with modal flag
-      const isModalNavigation = !isMobile && validateModalState(location.state).isValid;
-      
-      // Don't scroll if scroll restoration is in progress (when closing ImagePage modal)
-      const scrollRestoreInProgress = getSessionItem('scrollRestoreInProgress') === 'true';
-      
-      // Don't scroll if there's a saved scroll position (modal was just closed)
-      const hasSavedScroll = getSessionItem('imageGridScrollPosition') !== null;
-      
-      if (!isModalNavigation && !scrollRestoreInProgress && !hasSavedScroll && !getImagePageScroll(location)) {
-        // Use requestAnimationFrame to ensure it happens after scroll restoration
-        frame = requestAnimationFrame(() => {
-          // Double-check scroll restoration didn't just complete
-          const stillRestoring = getSessionItem('scrollRestoreInProgress') === 'true';
-          const stillHasScroll = getSessionItem('imageGridScrollPosition') !== null;
-          if (!stillRestoring && !stillHasScroll && !getImagePageScroll(location)) {
-            window.scrollTo({ top: 0, behavior: 'instant' });
-          }
-        });
-      }
-      
-      previousPathnameRef.current = location.pathname;
-    }
-    return () => cancelAnimationFrame(frame);
-  }, [location, isMobile]);
-
 
   const isActive = (path: string) => {
     if (path === '/') {

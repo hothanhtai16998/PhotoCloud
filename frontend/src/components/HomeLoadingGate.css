@@ -1,0 +1,6 @@
+.home-loading-error { position: fixed; inset: 0; z-index: 2001; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; background: var(--bg-primary); color: var(--text-primary); text-align: center; }
+.home-loading-error h1 { font-size: 22px; margin: 0 0 12px; }
+.home-loading-error p { font-size: 14px; color: var(--text-secondary); margin: 0 0 24px; }
+.home-loading-error button { min-height: 44px; padding: 10px 20px; border: 0; border-radius: 8px; background: var(--button-primary-bg); color: var(--button-primary-fg); cursor: pointer; font: inherit; }
+.home-loading-error button:focus-visible { outline: 2px solid var(--button-focus); outline-offset: 3px; }
+.app-body .homepage[data-loading-scope='local'] { transition: none !important; }

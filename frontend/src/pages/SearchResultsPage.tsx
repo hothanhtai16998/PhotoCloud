@@ -1,5 +1,5 @@
 import { DataLoading } from '@/components/user/DataLoading';
-import { useCallback, useContext, useLayoutEffect, useRef } from 'react';
+import { useCallback, useContext, useRef } from 'react';
 import { useLocation, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { Camera, RefreshCw } from 'lucide-react';
 import { useGlobalKeyboardShortcuts } from '@/hooks/useGlobalKeyboardShortcuts';
@@ -34,9 +34,6 @@ export default function SearchResultsPage() {
     description: 'Tìm ảnh theo từ khóa và bộ lọc trên PhotoCloud.' });
   useGlobalKeyboardShortcuts({ onFocusSearch: triggerSearchFocus,
     isModalOpen: actualLocation?.pathname.startsWith('/photos/') || false });
-  useLayoutEffect(() => {
-    if (navigationType !== 'POP') window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [query, navigationType]);
   useImagePageScrollRestore(location, pageRef,
     navigationType === 'POP' && data.ready && !data.loading, false, undefined, data.images.length);
 

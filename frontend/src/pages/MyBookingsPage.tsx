@@ -1,3 +1,4 @@
+import { useUserStore } from '@/stores/useUserStore';
 import { formatRequestedTime } from '@/utils/bookingTime';
 import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useState } from 'react';
@@ -45,13 +46,18 @@ const daysUntil = (isoDate: string): number => {
   return Math.round(diffMs / (1000 * 60 * 60 * 24));
 };
 
-
 export default function MyBookingsPage() {
   useDocumentMeta({
-    title: 'Lịch đặt của tôi',
+    title: 'Lịch chụp của tôi',
     description: `Theo dõi các yêu cầu đặt lịch chụp ảnh tại ${BRAND.nameLong}.`,
   });
 
+  const userId = useUserStore(state => state.user?._id);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [loadedFor, setLoadedFor] = useState<string>();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
@@ -64,13 +70,20 @@ export default function MyBookingsPage() {
 
   useEffect(() => {
     let active = true;
-    bookingService
-      .getMine(1)
-      .then((data) => { if (active) setBookings(data.bookings); })
-      .catch((error: unknown) => toast.error(getErrorMessage(error, 'Không thể tải danh sách booking.')))
+    setLoading(true);
+    setError('');
+    if (!userId) return () => { active = false; };
+    bookingService.getMine(page)
+      .then(data => {
+        if (!active) return;
+        setBookings(data.bookings);
+        setPages(Math.max(1, data.pagination.pages));
+        setLoadedFor(userId);
+      })
+      .catch((cause: unknown) => { if (active) setError(getErrorMessage(cause, 'Không thể tải lịch chụp. Bạn thử lại nhé.')); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, []);
+  }, [userId, page, retry]);
 
   const handleReschedule = async (bookingId: string) => {
     if (!rescheduleDate) {
@@ -95,7 +108,8 @@ export default function MyBookingsPage() {
     }
   };
 
-  const filtered = bookings.filter((b) => {
+  const visibleBookings = loadedFor === userId ? bookings : [];
+  const filtered = visibleBookings.filter((b) => {
     if (activeFilter === 'all') return true;
     if (activeFilter === 'upcoming')
       return ['pending', 'reviewing', 'needs_information', 'confirmed', 'rescheduled'].includes(b.status);
@@ -106,12 +120,12 @@ export default function MyBookingsPage() {
   });
 
   const counts = {
-    all: bookings.length,
-    upcoming: bookings.filter((b) =>
+    all: visibleBookings.length,
+    upcoming: visibleBookings.filter((b) =>
       ['pending', 'reviewing', 'needs_information', 'confirmed', 'rescheduled'].includes(b.status),
     ).length,
-    completed: bookings.filter((b) => b.status === 'completed').length,
-    cancelled: bookings.filter((b) =>
+    completed: visibleBookings.filter((b) => b.status === 'completed').length,
+    cancelled: visibleBookings.filter((b) =>
       ['cancelled_by_client', 'cancelled_by_photographer', 'rejected', 'expired'].includes(b.status),
     ).length,
   };
@@ -121,8 +135,8 @@ export default function MyBookingsPage() {
       <div className="my-bookings-wrap">
         <header className="my-bookings-header">
           <div>
-            <p className="booking-eyebrow">LỊCH ĐẶT CỦA TÔI</p>
-            <h1>Các yêu cầu đặt lịch của bạn</h1>
+
+            <h1>Lịch chụp của tôi</h1>
             <p className="my-bookings-subtitle">
               Theo dõi trạng thái, cập nhật thông tin và xem lịch sử các buổi chụp tại {BRAND.nameLong}.
             </p>
@@ -135,14 +149,15 @@ export default function MyBookingsPage() {
         <nav className="my-bookings-filters" aria-label="Lọc booking">
           {[
             { key: 'all', label: 'Tất cả' },
-            { key: 'upcoming', label: 'Sắp tới' },
+            { key: 'upcoming', label: 'Đang xử lý / đã xác nhận' },
             { key: 'completed', label: 'Hoàn thành' },
-            { key: 'cancelled', label: 'Đã hủy' },
+            { key: 'cancelled', label: 'Đã kết thúc khác' },
           ].map((item) => (
             <button
               key={item.key}
               type="button"
               className={`my-bookings-filter${activeFilter === item.key ? ' is-active' : ''}`}
+              aria-pressed={activeFilter === item.key}
               onClick={() => setActiveFilter(item.key as typeof activeFilter)}
             >
               {item.label}
@@ -151,12 +166,13 @@ export default function MyBookingsPage() {
           ))}
         </nav>
 
-        {loading ? (
+        <p className="my-bookings-subtitle">Bộ lọc áp dụng cho lịch trong trang hiện tại.</p>
+        {error ? <div className="my-bookings-empty" role="alert"><h2>Chưa tải được lịch chụp</h2><p>{error}</p><button type="button" className="booking-secondary-button" onClick={() => setRetry(value => value + 1)}>Thử lại</button></div> : loading || loadedFor !== userId ? (
           <DataLoading message="Đang tải lịch đặt" />
         ) : filtered.length === 0 ? (
           <div className="my-bookings-empty">
             <Camera size={48} aria-hidden />
-            <h2>Chưa có lịch đặt nào</h2>
+            <h2>{bookings.length ? 'Không có lịch phù hợp bộ lọc' : 'Chưa có lịch đặt nào'}</h2>
             <p>Bắt đầu bằng cách chọn gói chụp và gửi yêu cầu cho đội ngũ {BRAND.nameLong}.</p>
             <Link to="/packages" className="booking-primary-button">
               Khám phá gói chụp
@@ -165,7 +181,7 @@ export default function MyBookingsPage() {
         ) : (
           <ul className="my-bookings-list">
             {filtered.map((booking) => {
-              const days = daysUntil(booking.requestedDate);
+              const days = daysUntil(booking.confirmedDate || booking.requestedDate);
               const showCountdown =
                 days >= 0 &&
                 (booking.status === 'confirmed' || booking.status === 'rescheduled');
@@ -213,15 +229,15 @@ export default function MyBookingsPage() {
                     <div>
                       <CalendarDays size={15} />
                       <span>
-                        <small>Ngày mong muốn</small>
-                        <strong>{formatDate(booking.requestedDate)}</strong>
+                        <small>{booking.confirmedDate ? 'Ngày đã xác nhận' : 'Ngày mong muốn'}</small>
+                        <strong>{formatDate(booking.confirmedDate || booking.requestedDate)}</strong>
                       </span>
                     </div>
                     <div>
                       <Clock3 size={15} />
                       <span>
                         <small>Khung giờ</small>
-                        <strong>{formatRequestedTime(booking)}</strong>
+                        <strong>{booking.confirmedStartTime || formatRequestedTime(booking)}</strong>
                       </span>
                     </div>
                     <div>
@@ -309,6 +325,7 @@ export default function MyBookingsPage() {
             })}
           </ul>
         )}
+        {!loading && !error && pages > 1 && <nav className="my-bookings-pagination" aria-label="Phân trang lịch chụp"><button type="button" className="booking-secondary-button" disabled={page <= 1} onClick={() => setPage(value => value - 1)}>Trang trước</button><span>Trang {page} / {pages}</span><button type="button" className="booking-secondary-button" disabled={page >= pages} onClick={() => setPage(value => value + 1)}>Trang sau</button></nav>}
       </div>
     </main>
   );

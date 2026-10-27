@@ -281,7 +281,6 @@
     rgba(184, 134, 91, 0.08) 100%
   );
   background-size: 200% 100%;
-  animation: heroSkeleton 1.6s ease-in-out infinite;
 }
 
 .hero-collection-card--skeleton img,
@@ -290,10 +289,7 @@
   display: none;
 }
 
-@keyframes heroSkeleton {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+
 
 /* ---------- Scroll indicator ---------- */
 .hero-scroll-hint {

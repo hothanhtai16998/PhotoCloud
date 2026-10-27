@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Images, Folder, Heart, Calendar, Users, UserPlus, RefreshCw, ArrowRight, Eye } from 'lucide-react';
@@ -53,7 +54,7 @@ export default memo(function UserDashboardPage() {
                     onClick={() => void refresh()}
                     disabled={loading}
                 >
-                    <RefreshCw size={14} className={loading ? 'spin' : ''} aria-hidden="true" />
+                    {loading ? <LoadingIndicator size="small" aria-hidden="true" /> : <RefreshCw size={14} aria-hidden="true" />}
                     Làm mới
                 </Button>
             </header>

@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import type { Image } from '@/types/image';
 import type { ApiErrorResponse } from '@/types/errors';
@@ -555,8 +556,8 @@ export function BlurUpImage({
 
                 {isOpening && (
                     <div className="blur-up-image-opening" role="status">
-                        <div className="blur-up-image-opening-bar" aria-hidden="true" />
-                        <span>Đang mở ảnh…</span>
+                        <LoadingIndicator aria-hidden="true" />
+                        <span className="blur-up-image-opening-label">Đang mở ảnh…</span>
                     </div>
                 )}
 

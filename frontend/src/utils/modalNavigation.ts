@@ -7,6 +7,8 @@ import type { Location } from 'react-router-dom';
 import { INLINE_MODAL_FLAG_KEY } from '@/constants/modalKeys';
 
 const GRID_SCROLL_POSITION_KEY = 'imageGridScrollPosition';
+const GRID_SCROLL_POSITION_PATH_KEY = 'imageGridScrollPositionPath';
+const SCROLL_RESTORE_FLAG_KEY = 'scrollRestoreInProgress';
 
 // Cache refresh check result - only check once per actual page load
 // This persists across component remounts but resets on actual page reload
@@ -67,7 +69,37 @@ export function clearModalStateOnRefresh(): void {
   if (isRefresh) {
     sessionStorage.removeItem(INLINE_MODAL_FLAG_KEY);
     sessionStorage.removeItem(GRID_SCROLL_POSITION_KEY);
+    sessionStorage.removeItem(GRID_SCROLL_POSITION_PATH_KEY);
   }
+}
+
+/** A grid is actively writing a saved scroll position back. */
+export function isGridScrollRestoreInProgress(): boolean {
+  if (typeof window === 'undefined') return false;
+  return sessionStorage.getItem(SCROLL_RESTORE_FLAG_KEY) === 'true';
+}
+
+/**
+ * This entry has a grid position saved by itself and will consume it after
+ * mount, so the page must not be pulled to the top in the meantime.
+ */
+export function hasSavedScrollFor(pathname: string): boolean {
+  if (typeof window === 'undefined') return false;
+  if (sessionStorage.getItem(GRID_SCROLL_POSITION_KEY) === null) return false;
+  return sessionStorage.getItem(GRID_SCROLL_POSITION_PATH_KEY) === pathname;
+}
+
+/**
+ * Drop a grid position saved for a different page. Only the page that saved it
+ * can consume it, so a deliberate move elsewhere makes it stale.
+ */
+export function discardSavedScrollForOtherPath(pathname: string): void {
+  if (typeof window === 'undefined') return;
+  if (sessionStorage.getItem(GRID_SCROLL_POSITION_KEY) === null) return;
+  if (sessionStorage.getItem(GRID_SCROLL_POSITION_PATH_KEY) === pathname) return;
+  sessionStorage.removeItem(GRID_SCROLL_POSITION_KEY);
+  sessionStorage.removeItem(GRID_SCROLL_POSITION_PATH_KEY);
+  sessionStorage.removeItem(SCROLL_RESTORE_FLAG_KEY);
 }
 
 /**
@@ -79,6 +111,7 @@ export function saveScrollPosition(): void {
   // Only save if not already saved (prevent overwriting)
   if (!sessionStorage.getItem(GRID_SCROLL_POSITION_KEY)) {
     sessionStorage.setItem(GRID_SCROLL_POSITION_KEY, window.scrollY.toString());
+    sessionStorage.setItem(GRID_SCROLL_POSITION_PATH_KEY, window.location.pathname);
   }
 }
 
@@ -91,10 +124,9 @@ export function restoreScrollPosition(): void {
   const savedScroll = sessionStorage.getItem(GRID_SCROLL_POSITION_KEY);
   if (savedScroll) {
     const scrollY = parseInt(savedScroll, 10);
-    const restoreFlagKey = 'scrollRestoreInProgress';
     
     // Set flag to prevent sidebar from scrolling to top during restoration
-    sessionStorage.setItem(restoreFlagKey, 'true');
+    sessionStorage.setItem(SCROLL_RESTORE_FLAG_KEY, 'true');
     
     // Use requestAnimationFrame for smooth restoration
     requestAnimationFrame(() => {
@@ -103,9 +135,10 @@ export function restoreScrollPosition(): void {
         behavior: 'instant' as ScrollBehavior, // Use instant to avoid animation conflicts
       });
       sessionStorage.removeItem(GRID_SCROLL_POSITION_KEY);
+      sessionStorage.removeItem(GRID_SCROLL_POSITION_PATH_KEY);
       // Clear flag after a short delay to allow scroll to complete
       setTimeout(() => {
-        sessionStorage.removeItem(restoreFlagKey);
+        sessionStorage.removeItem(SCROLL_RESTORE_FLAG_KEY);
       }, 100);
     });
   }

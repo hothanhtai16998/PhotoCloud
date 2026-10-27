@@ -284,16 +284,11 @@
   height: 42px;
   border-radius: 6px;
   background: var(--admin-hover);
-  animation: admin-pulse 1.5s ease-in-out infinite alternate;
 }
 .admin-skeleton.tall {
   min-height: 260px;
 }
-@keyframes admin-pulse {
-  to {
-    opacity: 0.45;
-  }
-}
+
 .admin-bulk-bar {
   display: flex;
   align-items: center;

@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -5,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, ArrowLeft, ArrowRight, LoaderCircle, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { signInSchema, type SignInFormValue } from "@/types/forms";
 import { t } from "@/i18n";
@@ -136,7 +137,7 @@ function SignInPage() {
                             disabled={isSubmitting}
                         >
                             {isSubmitting ? t('auth.signingIn') : t('auth.signIn')}
-                            {isSubmitting ? <LoaderCircle size={17} className="auth-loading" /> : <ArrowRight size={17} />}
+                            {isSubmitting ? <LoadingIndicator size="small" aria-hidden="true" /> : <ArrowRight size={17} />}
                         </Button>
                         {capsLock && <p className="auth-caps-warning" role="status">Caps Lock đang bật</p>}
                         <p className="auth-forgot-link">

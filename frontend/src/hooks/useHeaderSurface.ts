@@ -2,6 +2,9 @@ import { useLayoutEffect } from 'react';
 
 export function useHeaderSurface(pathname: string): void {
   useLayoutEffect(() => {
+    if (pathname !== '/') {
+      delete document.documentElement.dataset.homeLoading;
+    }
     const header = document.querySelector<HTMLElement>('.PHOTOCLOUD-header');
     const root = document.getElementById('root');
     if (!header || !root) return;

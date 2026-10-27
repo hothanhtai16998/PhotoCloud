@@ -364,3 +364,57 @@ Người dùng yêu cầu thêm đổi ngôn ngữ và áp dụng admin trước
 - AdminBookingRequests và AdminBookingCalendar hiển thị giờ cụ thể ở danh sách/detail/calendar, vẫn ưu tiên confirmedStartTime khi đã chốt. Dữ liệu cũ hiển thị sáng/chiều/tối/linh hoạt như trước. Không sửa quy tắc quyền, xác nhận, availability hoặc đổi lịch.
 - Edge fixture chỉ đọc390/1440 qua:list/detail/calendar hiện08:00; kiểm backend pure3test và build đạt. Chưa đối soát Mongo/production; hiện tại date/time không tự chứng minh slot còn trống. Chi tiết luồng user: inventory user20.22.
 - [ ] BOOK-A-TIME01 — Tạo yêu cầu test có08:00, xem list/detail/calendar; chốt giờ09:00 thì lịch ưu tiên09:00 nhưng giờ mong muốn08:00 vẫn lưu. Booking cũ không có field mới phải hiển thị bình thường.
+
+## 30. Hoàn thiện thêm/sửa Gói chụp trong admin — 26/10/2026
+
+Theo yêu cầu trực tiếp chuyển sang phạm vi admin trong chat này. Giữ nguyên dấu nghiệm thu PKG-V01/V02/V03 và các mục cũ; không sửa inventory user trong vòng này.
+
+- Form chia4nhóm: Thông tin gói, Giá và thông số, Nội dung website, Ảnh bìa và album. Modal980px, khung820px theo giới hạn viewport, header/footer cố định; dùng wrapper cuộn riêng bên ngoài fieldset để fieldset native không tràn/đẩy footer. Tab/ESC/đóng trả focus; thay đổi chưa lưu có xác nhận đóng và bảo vệ beforeunload.
+- Chỉnh tên/slug/danh mục/mô tả, các thông số, thứ tự hiển thị, active, mô tả chi tiết, quyền lợi, cover và gallery. Giữ URLHTTPS ảnh studio, có preview và fallback ảnh lỗi/thiếu; album giữ thứ tự, không tự thêm ảnh/nội dung nghiệp vụ. Đây là nhập URL sẵn có, chưa phải uploader mới.
+- Tách AdminPackageEditorFields và adminPackageForm khỏi AdminBookings; normalize và validate ở một nguồn trước mutation: chuỗi bắt buộc/độ dài, slug chữ thường-số-gạch nối, số nguyên trong giới hạn model, coverHTTPS không credentials, quyền lợi20×300, gallery12URLHTTPS khác nhau. Lỗi gắn aria-invalid/aria-describedby, focus ô lỗi, sửa đúng tự hết. Lưu503 giữ bản nháp và báo trong dialog; ref khóa submit kép.
+- Sau create/update dùng response API cập nhật danh sách tại chỗ và sắp theo sortOrder, không GET lại cache cũ làm tên/giá quay về. Giữ thứ tự tương đối khi cùng sortOrder. GET cũ/request sau unmount không ghi lại state; giữ luồng ẩn/hiện đã nghiệm thu. Row có tóm tắt cover/album/thứ tự. Nhãn/validation/hướng dẫn mới có English trong adminMessages, không đổi locale public hoặc nội dung khách nhập.
+- Phạm vi admin frontend: components/tabs/AdminBookings.tsx, components/bookings/AdminPackageEditorFields.tsx, adminPackageForm.ts, AdminBookingPackages.css, i18n/adminMessages.json. Test fixture test-package-content-admin.cjs; test-admin-language.cjs chỉ giới hạn selector heading vào #root để không đếm main của startupHTML ẩn. Không sửa API/model/backend, service/type dùng chung hoặc UI user.
+
+### Bằng chứng và giới hạn
+
+- Build PASS; focused ESLint0error/1warning effect loadPackages đã có. Typecheck còn lỗi ngoài phạm vi, không diagnostic AdminBookings/AdminPackageEditorFields/adminPackageForm sau sửa; log frontend/qa-policy-checkbox/admin-packages-types-2026-10-26.txt. Detector UI/CSS[].
+- Edge headless390/1440×900 sáng/tối với API giả lập: PASS sửa đủ nội dung/cover/album2ảnh/thứ tự3, URLHTTP bị chặn không request,503giữ draft rồi retry, danh sách đổi tên ngay dù GET fixture vẫn trả tên cũ; tạo gói ẩn, số người101bị chặn, submit đồng bộ2lần chỉ1request, gói cũ vẫn trong danh sách và gói mới có Hiện lại. Kiểm wrapper thực sự có overflow, footer trong viewport, preview2ảnh; đã xem dialog1440dark sau sửa clipping, screenshot admin-content-after-error.png và packages-form-* tại QA local.
+- test-package-visibility PASS giữ gói admin/GETreload/restoreerror-thửlại/payloadactive-sortOrder. test-admin-language PASS vi/en10route, đổi ngôn ngữ giữ draft package/settings/role, không gửi mutation và public locale giữ nguyên.
+- Không sửa dữ liệu/gói thật, không ghi Mongo/R2/mail thật; chưa xác nhận production hoặc responsive/touch/thiết bị thật. Luồng URL ảnh có sẵn cần studio nhập nội dung thật để xuất bản; không điền giả thay studio.
+
+### Checklist chờ người dùng xác nhận
+
+- [ ] PKG-A02 — Thêm/sửa: nhập thông tin, giá/thông số, thứ tự và active; lỗi đúng trường, sửa đúng đi tiếp được; không mất nội dung khi lỗi lưu/đổi ngôn ngữ.
+- [ ] PKG-A03 — Nhập mô tả chi tiết/quyền lợi/cover/galleryURL thật được phép; preview đúng thứ tự, thiếu/ảnh lỗi có fallback; mở lại sau lưu và đối chiếu website.
+- [ ] PKG-A04 — Lưu cập nhật tên/giá/thứ tự hiện ngay trong list, không quay về giá trị cũ; tạo gói ẩn chỉ xuất hiện admin, có thể hiện lại theo luồng cũ. Submit liên tục không tạo trùng.
+- [ ] PKG-A05 — Dialog cuộn body riêng, header/footer luôn dùng được; Tab/Escape/đóng trả focus, hủy giữ draft khi chọn không bỏ. F5 khi có thay đổi có cảnh báo của trình duyệt.
+- [ ] PKG-A-R02 — Responsive/thiết bị thật vẫn nghiệm thu riêng.
+
+## 31. Tab trong modal và chọn ảnh gói chụp — 27/10/2026
+
+- Theo yêu cầu người dùng: chia modal thành 4 tab Thông tin / Giá và thông số / Nội dung / Ảnh. Giữ bản nháp giữa các tab; validation tự chuyển đến tab có lỗi. Header, thanh tab và footer cố định; chỉ nội dung tab cuộn. Hỗ trợ phím mũi tên/Home/End trên thanh tab.
+- Ảnh bìa và album chọn từ thư viện admin có tìm kiếm/phân trang hoặc tải từ máy bằng luồng pre-upload/finalize hiện có. Có preview, bỏ ảnh, đổi thứ tự album và giới hạn 12 ảnh. Nhập URL nằm trong mục nâng cao thu gọn. Upload lỗi có thử lại, tái sử dụng uploadId để tránh tải trùng; khóa thao tác xung đột trong khi tải. Ảnh tải lên vẫn thuộc thư viện, chỉ gắn vào gói sau khi lưu; giao diện nói rõ điều này.
+- Phạm vi admin frontend: AdminBookings, AdminPackageEditorFields, adminPackageForm, AdminBookingPackages.css, adminMessages; thêm PackageImageLibrary và PackageMediaEditor. Tái sử dụng adminService và uploadService hiện có, không sửa service/backend/model hoặc trang user.
+- Bằng chứng: build PASS; Edge headless 1440/390 × 900 sáng/tối với API giả lập PASS test-package-tabs-media và test-package-content-admin: giữ draft, bàn phím, thư viện phân trang, chọn/bỏ/sắp ảnh, upload lỗi-thử lại không pre-upload trùng, chuyển tab lỗi, lưu 503 giữ draft rồi retry. test-package-visibility và test-admin-language PASS. Đã xem ảnh chụp desktop sáng/mobile tối của bản build cuối. git diff --check không lỗi whitespace.
+- Typecheck toàn dự án còn lỗi sẵn có ngoài phạm vi (log frontend/qa-policy-checkbox/admin-package-tabs-types.txt), không diagnostic trong 5 module gói chụp. Không ghi dữ liệu thật/Mongo/storage thật; fixture không thay kiểm tra upload thực, quyền production, responsive/touch hoặc thiết bị thật. Không thay dấu nghiệm thu cũ.
+
+### Checklist chờ người dùng xác nhận
+
+- [ ] PKG-A06 — Đổi giữa 4 tab vẫn giữ nội dung; lưu sai trường tự mở đúng tab; header/footer luôn thao tác được.
+- [ ] PKG-A07 — Chọn cover/album từ thư viện hoặc tải ảnh test từ máy; preview đúng, đổi thứ tự/bỏ ảnh; lưu rồi mở lại để đối chiếu.
+- [ ] PKG-A08 — Lỗi upload/lưu giữ bản nháp, thử lại không tạo upload trùng; hủy sửa gói không xóa ảnh đã tải khỏi thư viện.
+- [ ] PKG-A-R03 — Responsive/touch/thiết bị thật nghiệm thu riêng ở vòng cuối.
+
+## 32. Giao diện chờ xác minh phiên — 27/10/2026
+
+- Theo ảnh người dùng gửi: thay dòng chữ sát góc bằng khối căn giữa, nhận diện PhotoCloud, tiêu đề trạng thái và ba chấm chuyển động nhẹ; dùng token sáng/tối, tôn trọng reduced-motion. Phạm vi chung được yêu cầu trực tiếp: components/auth/SessionGate.tsx và SessionGate.css, áp dụng cả ProtectedRoute/AdminRoute. Không đổi kiểm tra phiên, quyền hoặc redirect. Lỗi xác minh/tải tài khoản hiển thị trạng thái tĩnh và hướng dẫn dùng nút Thử lại của recovery hiện có.
+- Build và ESLint SessionGate PASS. Edge headless fixture 1440/390×900 sáng/tối PASS: trì hoãn refresh thấy màn chờ, reduced-motion tắt animation, không tràn ngang, refresh thành công chuyển vào admin. Đã xem screenshot desktop sáng/mobile tối. Không sửa dữ liệu thật; chưa nghiệm thu responsive/thiết bị thật. Test: frontend/scripts/test-session-gate-ui.cjs.
+- [ ] AUTH-UI01 — F5 trang cần đăng nhập: thấy màn chờ đồng bộ PhotoCloud rồi vào đúng trang; lỗi kết nối có thông báo và thử lại. Nghiệm thu responsive riêng.
+
+## 33. Thống nhất animation loading dùng chung — 27/10/2026
+
+- Người dùng yêu cầu rà toàn dự án và chỉ dùng một animation. Shared: LoadingIndicatorFrame (markup thuần dùng cả startup HTML), LoadingIndicator và CSS ba chấm/3 kích thước/reduced-motion. PageLoader, SessionGate, DataLoadingFrame và Button dùng chung. Vite plugin render cùng component vào HTML trước React; bỏ camera/viewfinder và keyframes cũ trong index.html. Giữ các startup shell cố định của explore/collections/packages.
+- Admin: cập nhật CSS loading Button dùng chung; skeleton giữ kích thước nhưng bỏ shimmer/pulse loading. Không đổi API, xác minh phiên hoặc phân quyền. User và upload dùng chung được cập nhật theo yêu cầu toàn dự án; xem inventory user mục 20.34 để theo dõi phạm vi user, không sao chép nghiệm thu.
+- Dọn LoadingSpinner/spinner không còn caller, CSS spinner và keyframes quay/trượt cũ. Thanh tiến độ có phần trăm thật vẫn hiển thị số đo, không dùng animation indeterminate riêng. Không can thiệp animation tương tác/hiệu ứng không phải loading.
+- Bằng chứng Edge fixture: test-unified-loading-ui và test-session-gate-ui PASS 1440/390 sáng/tối, startup trước React chỉ ba chấm, chuyển vào admin đúng, reduced-motion tắt chuyển động; test-admin-upload-language PASS giữ file/tên/locale và chỉ một pre-upload giả lập, không finalize. Đã xem startup mobile tối và các ảnh session của bản dùng chung. Core components ESLint PASS. Lint toàn bộ nơi thay còn 1 lỗi unused err có sẵn tại NotificationSettings và 11 warning cũ; typecheck toàn dự án còn lỗi ngoài phạm vi, không diagnostic các module loading/thành phần đã thay (log loading-unified-types/lint.txt ở frontend/qa-policy-checkbox). Không ghi dữ liệu thật, chưa kiểm thiết bị thật.
+- [ ] LOAD-A01 — Vào/F5 admin, mở dialog và thao tác đang xử lý: animation ba chấm đồng nhất, không che nút hoặc đổi hành vi; sáng/tối dùng được. Responsive nghiệm thu riêng.

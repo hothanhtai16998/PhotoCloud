@@ -89,10 +89,8 @@
 .auth-layout .auth-submit-error svg { flex-shrink:0; margin-top:2px; }
 .auth-layout .continue-btn { gap:10px; }
 .auth-layout input:-webkit-autofill { -webkit-box-shadow:0 0 0 1000px #f6f6f2 inset; -webkit-text-fill-color:#252925; }
-.auth-loading { animation:auth-spin 900ms linear infinite; }
 .auth-layout .auth-caps-warning { color:#966339; font-size:12px; margin:10px 0 0; }
-@keyframes auth-spin { to { transform:rotate(360deg); } }
-@media(prefers-reduced-motion:reduce) { .auth-loading { animation:none; } }
+
 
 .auth-forgot-link {
     margin: 12px 0 0 0;

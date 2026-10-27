@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { FormEvent } from 'react';
-import { Facebook, Linkedin, Send, Mail, Phone, MapPin, Clock3, MessageSquare } from 'lucide-react';
+import { useState, type FormEvent } from 'react';
+import { Facebook, Send, Mail, Phone, MapPin, Clock3, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { BRAND } from '@/constants/brand';
@@ -74,7 +73,7 @@ function ContactPage() {
                 <div className="contact-grid">
                     <aside className="contact-info">
                         <ContactCard icon={<Mail size={18} />} label="Email" value={authorInfo.email} href={`mailto:${authorInfo.email}`} />
-                        <ContactCard icon={<Phone size={18} />} label="Số điện thoại" value={authorInfo.phone} href={`tel:${authorInfo.phone.replace(/\s/g, '')}`} />
+                        {authorInfo.phoneDisplay && authorInfo.phoneHref && <ContactCard icon={<Phone size={18} />} label="Số điện thoại" value={authorInfo.phoneDisplay} href={`tel:${authorInfo.phoneHref}`} />}
                         <ContactCard icon={<MapPin size={18} />} label="Địa chỉ studio" value={authorInfo.address} />
                         <ContactCard icon={<Clock3 size={18} />} label="Giờ làm việc" value="Thứ 2 – Chủ nhật · 09:00 – 21:00" />
                     </aside>
@@ -146,11 +145,6 @@ function ContactPage() {
                         {authorInfo.social.tiktok && (
                             <a href={authorInfo.social.tiktok} target="_blank" rel="noopener noreferrer" className="contact-social-link">
                                 <MessageSquare size={18} /> TikTok
-                            </a>
-                        )}
-                        {authorInfo.social.linkedin && (
-                            <a href={authorInfo.social.linkedin} target="_blank" rel="noopener noreferrer" className="contact-social-link">
-                                <Linkedin size={18} /> LinkedIn
                             </a>
                         )}
                         {authorInfo.social.github && (

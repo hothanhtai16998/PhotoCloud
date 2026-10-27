@@ -50,7 +50,7 @@ html:has(.visual-art-slider) { overflow-anchor: none; }
 @media (max-width: 1100px) { .visual-art-slider:not(.visual-art-slider-collapsed) { width: calc(100% - 40px); } }
 @media (max-height: 760px) { .visual-art-slider:not(.visual-art-slider-collapsed) .fixed-stage { height: max(260px, calc(100dvh - 246px)); } }
 @media (max-width: 768px) { .visual-art-slider { display: none; } }
-@media (prefers-reduced-motion: reduce) { .visual-art-slider *, .zoom-overlay, .slider-zoom-loading span { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .visual-art-slider *, .zoom-overlay { animation: none !important; transition: none !important; } }
 
 /* Portal avoids the homepage containment and stacking context. */
 .zoom-overlay {
@@ -76,11 +76,11 @@ html:has(.visual-art-slider) { overflow-anchor: none; }
   cursor: zoom-out;
 }
 .zoom-overlay .zoom-image { grid-area: 1 / 1; justify-self: center; display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; }
-.slider-zoom-loading { position: absolute; inset: 0 0 auto; height: 3px; overflow: hidden; background: #ffffff18; z-index: 2; pointer-events: none; }
-.slider-zoom-loading span { display: block; width: 35%; height: 100%; background: #f5cf57; box-shadow: 0 0 8px #f5cf5780; animation: sliderZoomLoading 1.2s ease-in-out infinite; }
+
+
 .slider-zoom-error { position: absolute; bottom: 24px; padding: 10px 16px; border-radius: 8px; background: #222e; color: #eee; font-size: 13px; pointer-events: none; }
 .slider-zoom-close:focus-visible, .slider-zoom-image-button:focus-visible { outline: 2px solid white; outline-offset: -3px; }
-@keyframes sliderZoomLoading { from { transform: translateX(-100%); } to { transform: translateX(386%); } }
+
 .slider-zoom-close {
   position: absolute;
   top: 16px;
@@ -106,3 +106,5 @@ html:has(.visual-art-slider) { overflow-anchor: none; }
 @media (min-width: 769px) {
   html:has(.visual-art-slider):not(:has(body.scroll-locked)) { overflow-y: scroll !important; }
 }
+
+.slider-zoom-loading { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; z-index: 2; pointer-events: none; }

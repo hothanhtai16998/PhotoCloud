@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Loader2 } from "lucide-react"
+import { LoadingIndicator } from './LoadingIndicator'
 
 import { cn } from "@/lib/utils"
 
@@ -59,9 +59,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button"
     const isDisabled = disabled || loading
     
-    // Determine spinner size based on button size
-    const spinnerSize = size === "sm" ? 14 : size === "lg" ? 18 : 16
-
     return (
       <Comp
         ref={ref}
@@ -69,10 +66,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         data-variant={variant || "default"}
         className={cn(buttonVariants({ variant, size, className }))}
         disabled={isDisabled}
+        aria-busy={loading || undefined}
         {...props}
       >
         {loading && (
-          <Loader2 className="animate-spin" size={spinnerSize} />
+          <LoadingIndicator size="small" className="pc-button-loading" aria-hidden="true" />
         )}
         {!iconOnly && (
           <span className={cn(loading && "opacity-0")}>{children}</span>

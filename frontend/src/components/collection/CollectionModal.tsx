@@ -1,3 +1,4 @@
+import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, Plus, Search, Folder, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -553,6 +554,7 @@ export default function CollectionModal({
 						</div>
 					) : loading ? (
 						<div className="collection-modal-loading">
+							<LoadingIndicator aria-hidden="true" />
 							<p>{t('common.loading')}</p>
 						</div>
 					) : (

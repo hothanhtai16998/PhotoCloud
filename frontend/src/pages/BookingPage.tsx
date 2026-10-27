@@ -95,7 +95,7 @@ function BookingPage() {
           <p>Chúng tôi sẽ xem xét thông tin và phản hồi cho bạn trong thời gian sớm nhất.</p>
           <div className="booking-code">Mã yêu cầu <strong>{submittedCode}</strong></div>
           <div className="booking-success-actions">
-            <Link to="/profile" className="booking-primary-button">Xem trong hồ sơ <ArrowRight size={17} /></Link>
+            <Link to="/my-bookings" className="booking-primary-button">Theo dõi lịch chụp <ArrowRight size={17} /></Link>
             <button type="button" className="booking-secondary-button" onClick={() => { setSubmittedCode(null); setForm(initialForm); }}>Tạo yêu cầu khác</button>
           </div>
         </section>
