@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PhotoCloud — Mẫu robot có sẵn</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eeede7;color:#27352f;font-family:system-ui,sans-serif}main{max-width:1080px;margin:auto;padding:32px 24px}h1{font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;margin:0 0 12px}p{line-height:1.65;max-width:75ch}canvas{display:block;width:100%;height:min(58vh,510px);background:#e0e4dc;border-radius:24px}nav{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}button{min-height:44px;padding:10px 18px;border:1px solid #576a5d;border-radius:8px;color:inherit;background:transparent;font:inherit;cursor:pointer}button[aria-pressed=true]{background:#273f33;color:white}button:disabled{opacity:.5;cursor:wait}button:focus-visible,a:focus-visible{outline:3px solid #52785e;outline-offset:4px}a{color:#275b40;text-underline-offset:4px}
+</style></head><body><main>
+<h1>Xem mẫu robot có sẵn</h1>
+<p>RobotExpressive — model của Tomás Laulhé, chỉnh sửa bởi Don McCurdy, từ demo Three.js. Giữ tạo hình gốc để kiểm tra trước khi quyết định sử dụng cho PhotoCloud.</p>
+<canvas aria-label="Mẫu robot 3D có sẵn đang thực hiện động tác" role="img"></canvas>
+<nav aria-label="Động tác thử">
+<button data-clip="Idle" disabled aria-pressed="true">Đứng nghỉ</button><button data-clip="Wave" disabled aria-pressed="false">Chào</button><button data-clip="Walking" disabled aria-pressed="false">Đi bộ</button><button data-clip="ThumbsUp" disabled aria-pressed="false">Đồng ý</button><button data-clip="Sitting" disabled aria-pressed="false">Ngồi</button>
+</nav>
+<p id="status" role="status">Đang tải model…</p>
+<p>Đây là mẫu thử, chưa được thay vào homepage. Có sẵn rig và 14 animation; chưa có động tác sử dụng máy ảnh hoặc album. Với tùy chọn giảm chuyển động, mỗi động tác được hiển thị thành một tư thế tĩnh.</p>
+<a href="https://threejs.org/examples/webgl_animation_skinning_morph.html" target="_blank" rel="noopener">Xem demo gốc Three.js</a>
+</main><script type="module" src="/src/components/home/stockGuidePreview.ts"></script></body></html>

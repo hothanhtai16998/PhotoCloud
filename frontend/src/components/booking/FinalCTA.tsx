@@ -2,6 +2,7 @@ import { ArrowRight, CalendarCheck2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
+import { DraftNotice } from '../home/DraftNotice';
 
 export function FinalCTA() {
   const [ref] = useRevealOnScroll<HTMLElement>({ threshold: 0.2 });
@@ -17,6 +18,7 @@ export function FinalCTA() {
         <p>
           Gửi yêu cầu trước, PhotoCloud sẽ xác nhận lịch và tư vấn concept phù hợp trong vòng 24h.
         </p>
+        <DraftNotice />
       </div>
       <div className="home-bottom-cta-actions">
         <button

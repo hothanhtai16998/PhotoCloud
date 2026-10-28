@@ -1,0 +1,41 @@
+.home-tour { position:fixed; top:0; left:0; width:230px; z-index:1400; pointer-events:none; will-change:transform; }
+.home-tour button { pointer-events:auto; font:inherit; cursor:pointer; }
+.home-tour-character { display:block; width:100%; height:240px; padding:0; border:0; background:transparent; touch-action:pan-y; }
+.home-tour-character canvas { width:100%; height:100%; display:block; opacity:0; }
+.home-tour-character canvas.is-ready { opacity:1; filter:drop-shadow(0 8px 8px #00000012); }
+.home-tour-location { display:block; font-size:10px; line-height:1.5; color:var(--text-secondary); margin-bottom:10px; }
+.home-tour[data-immersive="true"] .home-tour-location { color:inherit; }
+.home-tour-speech p { animation:paper-guide-caption .26s ease-out; }
+@keyframes paper-guide-caption { from { opacity:.65; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+@media(min-width:1100px) { .homepage:has(.home-wayfinding) .homepage-content-below-slider { padding-right:clamp(190px,17vw,260px); } }
+@media(min-width:769px) and (max-width:1099px) { .homepage:has(.home-wayfinding) .homepage-content-below-slider { padding-right:44px; } }
+@media(prefers-reduced-motion:reduce) { .home-tour-speech p { animation:none; } }
+.home-tour-close { position:absolute; z-index:2; right:12px; top:12px; display:grid; place-items:center; width:32px; height:32px; border:1px solid var(--border-color,#dfd7ca); border-radius:50%; color:var(--text-secondary,#666); background:var(--bg-primary,#faf8f4); }
+.home-tour-speech { padding:0 12px 8px; text-align:center; color:var(--text-primary,#292621); }
+.home-tour-speech p { font-size:13px; line-height:1.5; margin:0 0 8px; text-wrap:balance; }
+.home-tour-speech button { display:inline-flex; align-items:center; gap:8px; border:0; border-bottom:1px solid currentColor; background:transparent; color:var(--accent-color,#80552e); padding:5px 0; font-size:12px; font-weight:600; }
+.home-tour[data-immersive="true"] .home-tour-speech, .home-tour[data-immersive="true"] .home-tour-speech button { color:#fff; text-shadow:0 1px 8px #000; }
+.home-tour-fallback { position:absolute; inset:40px 0 auto; display:grid; justify-items:center; gap:12px; color:var(--text-secondary,#8c7156); font-size:12px; }
+.home-tour-reopen { width:44px; height:44px; display:grid; place-items:center; border:1px solid var(--border-color,#dfd7ca); border-radius:50%; background:var(--bg-primary,#faf8f4); color:var(--text-primary,#292621); }
+.home-tour.is-collapsed { width:44px; }
+html .app-body .homepage .travel-stage .destination h1 { color:#fff; text-shadow:0 2px 16px #0008; }
+html .app-body .homepage .home-bottom-cta .studio-cta-primary { color:#fff; opacity:1; visibility:visible; }
+.home-tour button:focus-visible { outline:2px solid #bc885b; outline-offset:5px; }
+@media(max-width:768px) {
+ .home-tour { width:142px; }
+ .home-tour-character { height:115px; }
+ .home-tour-close { right:0; top:0; width:24px; height:24px; }
+ .home-tour-speech { background:var(--bg-primary,#faf8f4); border:1px solid var(--border-color,#dfd7ca); border-radius:12px; padding:8px; }
+ .home-tour-speech p { font-size:11px; line-height:1.35; }
+ .home-tour-speech button { font-size:11px; }
+ .home-tour[data-immersive="true"] .home-tour-speech, .home-tour[data-immersive="true"] .home-tour-speech button { color:var(--text-primary,#292621); text-shadow:none; }
+ .home-journey-companion { display:none; }
+}
+.home-tour-expanded[hidden] { display:none; }
+.homepage :is(.hero-section,.home-journey,.home-journey-scene,#home-packages,.home-booking-flow,.home-booking-faq) { scroll-margin-top:100px; }
+/* The guide lives in the measured outer gutter, never over the reading column. */
+.home-tour-compact { display:none; }
+.home-tour[data-compact="true"] .home-tour-expanded, .home-tour[data-compact="true"] .home-tour-reopen { display:none; }
+.home-tour[data-compact="true"] .home-tour-compact { display:grid; place-items:center; width:28px; height:36px; padding:0; border:1px solid var(--border-color,#dfd7ca); border-radius:8px; color:var(--text-primary,#292621); background:var(--bg-primary,#faf8f4); }
+
+@media(max-width:768px) { .homepage-content-below-slider { padding-right:36px; } }

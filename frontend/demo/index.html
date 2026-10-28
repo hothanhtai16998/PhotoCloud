@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PhotoCloud — Demo chuyển động khi cuộn</title>
+<meta name="description" content="Trang mẫu chứng minh khả năng làm animation khi cuộn kiểu Awwwards cho PhotoCloud. Dựng độc lập, không đụng mã nguồn." />
+<link rel="stylesheet" href="../src/assets/fonts/web/fonts.css" />
+<link rel="stylesheet" href="./demo.css" />
+</head>
+<body>
+
+<!-- ===== Thanh tiến trình cuộn (Scroll Progress Bar) ===== -->
+<div class="scroll-progress" aria-hidden="true"><span class="scroll-progress__bar"></span></div>
+
+<header class="demo-header">
+  <a class="demo-logo" href="#top">PHOTOCLOUD</a>
+  <nav class="demo-nav" aria-label="Mục lục demo">
+    <a href="#horizontal">Cuộn ngang</a>
+    <a href="#parallax">Parallax</a>
+    <a href="#editorial">Chữ hiện dần</a>
+    <a href="#stacks">Xếp chồng</a>
+    <a href="#manifest">Danh mục</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ===== 1. HERO ===== -->
+  <section class="hero" data-section="hero">
+    <div class="hero__media" data-parallax="0.18">
+      <img class="hero__img" alt="Ảnh mẫu từ thư viện PhotoCloud" data-hero-image />
+    </div>
+    <div class="hero__veil" aria-hidden="true"></div>
+    <div class="hero__body">
+      <h1 class="hero__title" data-split>Ảnh đẹp kể chuyện của bạn</h1>
+      <p class="hero__lead" data-split>
+        Studio nhiếp ảnh chuyên nghiệp tại Hà Nội — chân dung, gia đình và thương hiệu.
+      </p>
+      <div class="hero__actions" data-hero-actions>
+        <a class="btn btn--solid" href="#horizontal">Xem bộ ảnh</a>
+        <a class="btn btn--ghost" href="#manifest">Danh mục hiệu ứng</a>
+      </div>
+    </div>
+    <div class="hero__scroll" aria-hidden="true"><span>Cuộn</span></div>
+  </section>
+
+  <!-- ===== 2. HORIZONTAL SCROLL GALLERY — khoảnh khắc được biên đạo ===== -->
+  <section class="horizontal" id="horizontal" data-section="horizontal">
+    <div class="horizontal__intro">
+      <h2 class="section-title" data-split>Chuỗi ảnh kéo ngang</h2>
+      <p class="section-lead" data-split>
+        Section được ghim tại chỗ, ảnh trượt ngang theo thanh cuộn dọc.
+      </p>
+    </div>
+
+    <div class="horizontal__viewport">
+      <div class="horizontal__track" data-horizontal-track>
+        <div class="horizontal__spacer" data-horizontal-spacer></div>
+      </div>
+    </div>
+
+    <div class="horizontal__counter" aria-hidden="true">
+      <span data-horizontal-current>01</span>
+      <span class="horizontal__counter-sep">/</span>
+      <span data-horizontal-total>00</span>
+    </div>
+  </section>
+
+  <!-- ===== 3. PARALLAX ===== -->
+  <section class="parallax" id="parallax" data-section="parallax">
+    <div class="parallax__stack">
+      <figure class="parallax__frame parallax__frame--back" data-parallax="0.28">
+        <img alt="Ảnh nền phía sau" data-parallax-image />
+      </figure>
+      <figure class="parallax__frame parallax__frame--mid" data-parallax="0.16">
+        <img alt="Ảnh phía giữa" data-parallax-image />
+      </figure>
+      <figure class="parallax__frame parallax__frame--front" data-parallax="0.06">
+        <img alt="Ảnh phía trước" data-parallax-image />
+      </figure>
+    </div>
+    <div class="parallax__copy">
+      <h2 class="section-title" data-split>Chiều sâu bằng chuyển động</h2>
+      <p class="section-lead" data-split>
+        Ba lớp ảnh trôi với tốc độ khác nhau. Chỉ dùng <code>transform</code> nên chạy trên
+        compositor, không gây dựng lại trang.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== 4. EDITORIAL MASKED REVEAL ===== -->
+  <section class="editorial" id="editorial" data-section="editorial">
+    <div class="editorial__grid">
+      <div class="editorial__text">
+        <h2 class="editorial__quote" data-split>
+          Mỗi bức ảnh là một khoảnh khắc không lặp lại.
+        </h2>
+        <p class="editorial__body" data-split>
+          Chúng tôi không dùng ảnh mẫu có sẵn. Từng đôi chủ thân được tư vấn ánh sáng, tư thế và
+          bối cảnh riêng trước khi bấm máy.
+        </p>
+        <p class="editorial__body" data-split>
+          Quy trình giữ kín ảnh, giao hàng trong 7 ngày, bảo hành miễn phí trọn đời tập ảnh.
+        </p>
+      </div>
+      <div class="editorial__media" data-clip-reveal>
+        <img alt="Ảnh minh hoạ" data-editorial-image />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. STACKED CARDS ===== -->
+  <section class="stacks" id="stacks" data-section="stacks">
+    <h2 class="section-title section-title--center" data-split>Ảnh xếp chồng</h2>
+    <p class="section-lead section-lead--center" data-split>
+      Mỗi thẻ dính lại và xếp chồng khi cuộn, tạo cảm giác một album đang được lật.
+    </p>
+    <div class="stacks__list" data-stacks>
+      <article class="stack-card" data-stack-card>
+        <img alt="Ảnh album 1" data-stack-image />
+        <div class="stack-card__meta"><h3>Chân dung</h3><p>Trong studio hoặc ngoại cảnh tự nhiên</p></div>
+      </article>
+      <article class="stack-card" data-stack-card>
+        <img alt="Ảnh album 2" data-stack-image />
+        <div class="stack-card__meta"><h3>Gia đình</h3><p>Ảnh đời thường, không cố tình dàn dựng</p></div>
+      </article>
+      <article class="stack-card" data-stack-card>
+        <img alt="Ảnh album 3" data-stack-image />
+        <div class="stack-card__meta"><h3>Thương hiệu</h3><p>Ảnh sản phẩm và không gian thương hiệu</p></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 6. MANIFEST — bảng tra cứu hiệu ứng ===== -->
+  <section class="manifest" id="manifest" data-section="manifest">
+    <h2 class="section-title" data-split>Danh mục hiệu ứng &amp; nguồn tham khảo</h2>
+    <p class="section-lead" data-split>
+      Mỗi hiệu ứng dưới đây ghi rõ tên trong Awwwards, trang tham khảo, và công nghệ dùng để dựng.
+    </p>
+
+    <div class="manifest__table-wrap">
+      <table class="manifest__table">
+        <caption class="sr-only">Danh mục hiệu ứng chuyển động khi cuộn</caption>
+        <thead>
+          <tr>
+            <th scope="col">Tên hiệu ứng</th>
+            <th scope="col">Công nghệ</th>
+            <th scope="col">Tham khảo</th>
+          </tr>
+        </thead>
+        <tbody data-manifest-body></tbody>
+      </table>
+    </div>
+
+    <div class="manifest__note">
+      <h3>Ghi chú kỹ thuật</h3>
+      <ul>
+        <li>Trang này là bản mẫu độc lập, nằm ngoài <code>src/</code> — không thay đổi mã nguồn sản phẩm.</li>
+        <li>Ảnh lấy trực tiếp từ API PhotoCloud đang chạy, nên đúng dữ liệu thật của studio.</li>
+        <li>Chữ và màu dùng lại font <code>Fraunces</code> / <code>Inter</code> và bảng màu kem–đồng của PhotoCloud.</li>
+        <li>Toàn bộ hiệu ứng tự tắt khi người dùng bật <code>prefers-reduced-motion</code>; nội dung vẫn hiện đầy đủ.</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="demo-footer">
+  <p>Bản mẫu chuyển động — PhotoCloud. Dữ liệu ảnh thật từ API nội bộ.</p>
+</footer>
+
+<script src="./vendor/gsap.min.js"></script>
+<script src="./vendor/ScrollTrigger.min.js"></script>
+<script src="./vendor/SplitText.min.js"></script>
+<script src="./demo.js"></script>
+</body>
+</html>

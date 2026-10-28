@@ -1,0 +1,58 @@
+.home-journey { --journey-ink:var(--text-primary); --journey-accent:var(--accent,#986b42); width:min(1296px,calc(100% - 64px)); margin:80px auto; color:var(--journey-ink); }
+.home-journey-heading { padding:0 0 56px; border-bottom:1px solid var(--border-color); }
+.home-journey-heading h2 { font-family:var(--studio-font-display,Georgia,serif); font-size:clamp(36px,4.2vw,64px); font-weight:500; line-height:1.12; letter-spacing:-.03em; margin:0 0 24px; }
+.home-journey-heading h2 em,.home-journey-scene h3 em { color:var(--journey-accent); font-weight:inherit; }
+.home-journey-heading > p:not(.home-draft-notice) { max-width:48ch; color:var(--text-secondary); font-size:17px; line-height:1.7; }
+.home-journey-layout { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:clamp(40px,7vw,112px); align-items:start; }
+.home-journey-companion { position:sticky; top:calc(var(--header-height,80px) + 20px); padding-top:20px; min-width:0; }
+.home-journey-chapters { display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px;margin:28px 0;font-size:11px;color:var(--text-secondary); }
+.home-journey-chapters a { padding:10px 0; min-height:44px; color:inherit; text-decoration:none; border-bottom:1px solid transparent; }
+.home-journey-chapters .is-current { color:var(--text-primary);border-color:var(--journey-accent); }
+.home-journey-progress { height:2px;background:var(--border-color);overflow:hidden;margin:16px 24px; }
+.home-journey-progress span { display:block;height:100%;background:var(--accent);transform-origin:left; }
+.home-journey-scene { min-height:75svh;display:flex;flex-direction:column;justify-content:center;padding:72px 0;box-sizing:border-box;border-bottom:1px solid var(--border-color); }
+.home-journey-scene:last-child { border-bottom:0; }
+.home-journey-scene h3 { font-family:var(--studio-font-display,Georgia,serif);font-size:clamp(32px,3.1vw,46px);font-weight:500;line-height:1.2;letter-spacing:-.025em;margin:0 0 24px; }
+.home-journey-scene > p:not(.home-draft-notice) { color:var(--text-secondary);font-size:15px;line-height:1.8;margin:0 0 24px;max-width:52ch; }
+.home-moods { display:grid;margin:8px 0 16px; }
+.home-moods button { display:flex;align-items:center;gap:16px;min-height:64px;padding:16px 0;border:0;border-bottom:1px solid var(--border-color);background:transparent;color:var(--text-secondary);font:inherit;font-size:16px;text-align:left;cursor:pointer; }
+.home-moods button span { flex:1; }
+.home-moods button[aria-pressed=true] { color:var(--journey-accent);font-weight:600; }
+.home-moods button[aria-pressed=true] span { text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:1px; }
+.home-journey-photo-pair { display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0 24px; }
+.home-journey-photo-pair figure { margin:0;min-width:0; }
+.home-journey-photo-pair figure:nth-child(2) { margin-top:50px; }
+.home-journey-photo-pair img { display:block;width:100%;aspect-ratio:3/4;object-fit:cover;background:var(--bg-secondary);border-radius:8px; }
+.home-journey-photo-pair figcaption { font-size:12px;color:var(--text-secondary);margin-top:12px; }
+.home-journey-photo-placeholder { display:grid;place-items:center;gap:16px;min-height:240px;background:var(--bg-secondary);color:var(--text-secondary);text-align:center;padding:24px; }
+.home-journey-scene > .home-photo-source { font-size:12px;line-height:1.6; }
+.home-story-link { display:inline-flex;align-items:center;gap:10px;align-self:flex-start;min-height:44px;padding:8px 0;border:0;background:transparent;color:var(--journey-ink);font:inherit;font-size:14px;text-decoration:underline;text-underline-offset:5px;cursor:pointer; }
+.home-shoot-story { list-style:none;margin:8px 0 28px;padding:0; }
+.home-shoot-story li { padding:22px 0;border-top:1px solid var(--border-color); }
+.home-collection-step { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; min-height:48px; padding:8px 0; border:0; background:none; color:var(--text-primary); font:inherit; font-size:17px; text-align:left; cursor:pointer; }
+.home-collection-step[aria-pressed=true] { text-decoration:underline; text-underline-offset:6px; }
+.home-journey-aside-title { font-family:var(--studio-font-display,Georgia,serif); font-size:30px; line-height:1.3; margin:12px 0 20px; }
+.home-journey-aside-copy { color:var(--text-secondary); line-height:1.8; max-width:32ch; }
+.home-photo-select { display:block; width:100%; padding:0; background:none; border:0; cursor:pointer; border-radius:8px; }
+.home-photo-select[aria-pressed=true] { outline:2px solid var(--text-primary); outline-offset:5px; }
+.home-photo-details { padding:24px 0; border-block:1px solid var(--border-color); margin:8px 0 24px; overflow-wrap:anywhere; }
+.home-photo-details h4 { margin:0 0 20px; font-size:20px; font-weight:600; }
+.home-photo-details dl { margin:0; display:grid; gap:12px; }
+.home-photo-details dl > div { display:grid; grid-template-columns:100px minmax(0,1fr); gap:12px; font-size:13px; line-height:1.6; }
+.home-photo-details dt { color:var(--text-secondary); }
+.home-photo-details dd { margin:0; }
+.home-photo-unavailable { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; aspect-ratio:3/4; padding:20px; background:var(--bg-secondary); color:var(--text-secondary); font-size:13px; line-height:1.7; }
+.home-journey-scene { scroll-margin-top:110px; }
+.home-journey-invitation .studio-cta-primary { align-self:flex-start;display:inline-flex;gap:12px;align-items:center;min-height:48px;padding:12px 22px;text-decoration:none; }
+.home-journey :is(button,a):focus-visible { outline:2px solid var(--button-focus);outline-offset:4px; }
+@media(max-width:768px) {
+ .home-journey { width:calc(100% - 36px);margin:48px auto; }
+ .home-journey-heading { padding-bottom:32px; }
+ .home-journey-layout { grid-template-columns:1fr;gap:0; }
+ .home-journey-companion { position:relative;top:auto;padding-top:20px; }
+ .home-journey-chapters { display:none; }
+ .home-journey-scene { min-height:0;padding:48px 0; }
+ .home-journey-photo-pair { gap:12px; }
+}
+/* `hidden` + visible Y computes to auto and makes body a non-scrolling sticky ancestor. */
+body:has(#root .home-journey) { overflow-x:clip !important; }

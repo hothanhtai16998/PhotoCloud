@@ -21,7 +21,9 @@ import { useSearchFilters } from "@/components/SearchBar/hooks/useSearchFilters"
 import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
 import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
-import { openBookingModal } from '@/utils/bookingModalEvent';
+import { HomeTourGuide } from '@/components/home/HomeTourGuide';
+import { HomeWayfinding } from '@/components/home/HomeWayfinding';
+import { HomeJourney } from '@/components/home/HomeJourney';
 import { HeroBooking } from '@/components/booking/HeroBooking';
 import { VisualArtFormsSlider } from '@/components/VisualArtFormsSlider';
 import { PackagesSection } from '@/components/booking/PackagesSection';
@@ -237,13 +239,16 @@ function HomePage() {
 
     return (
         <>
+            {!isCategoryPage && <HomeTourGuide />}
             <main data-loading-scope="local" className={`homepage layout-preview layout-intro${isCategoryPage && sliderCollapsed && !currentSearch ? ' is-compact' : ''}`}>
                 {(!isCategoryPage || !currentSearch) && <VisualArtFormsSlider />}
                 <div className="homepage-content-below-slider">
                 <LayoutGroup>
                 {(!isCategoryPage || !currentSearch) && (
                     <>
+                        {!isCategoryPage && <HomeWayfinding />}
                         <HeroBooking onViewPackages={scrollToPackages} />
+                        {!isCategoryPage && <HomeJourney />}
                         <PackagesSection />
                         <HowItWorks />
                         <TestimonialsCarousel />

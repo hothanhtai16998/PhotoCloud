@@ -38,7 +38,6 @@
         document.querySelector('meta[name="theme-color"]').content =
           typeof themeColor === 'string' && /^#[a-f\d]{6}$/i.test(themeColor)
             ? themeColor : defaults[dark ? 'dark' : 'light']['--bg-primary'];
-        if (location.pathname === '/') document.documentElement.dataset.homeLoading = 'pending';
         if (/^\/explore\/?$/.test(location.pathname)) document.documentElement.dataset.startupSurface = 'explore';
         if (/^\/packages\/?$/.test(location.pathname)) document.documentElement.dataset.startupSurface = 'packages';
         if (/^\/collections(?:\/|$)/.test(location.pathname)) {
@@ -149,10 +148,6 @@
       body { margin: 0; background: var(--bg-primary, #FAF8F4); }
       #root:empty { min-height: 100svh; }
       #startup-loading { position: fixed; inset: 0; display: grid; place-items: center; color: var(--button-primary-bg, #795431); pointer-events: none; }
-      html[data-home-loading] { overflow: hidden !important; }
-      html[data-home-loading] :is(.PHOTOCLOUD-header,.public-header-startup,.contact-button,.mobile-bottom-nav,#root .homepage) { visibility: hidden; }
-      html[data-home-loading] #startup-loading { display: grid !important; z-index: 2000; background: var(--bg-primary, #FAF8F4); }
-      html[data-home-loading] .home-loading-error { visibility: visible; }
       #root:not(:empty) + #startup-loading,
       html[data-startup-surface="explore"] #startup-loading,
       html[data-startup-surface^="collections"] #startup-loading,

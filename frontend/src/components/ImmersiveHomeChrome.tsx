@@ -1,7 +1,7 @@
 import { useLayoutEffect } from 'react';
 import './ImmersiveHomeChrome.css';
 
-export function ImmersiveHomeChrome() {
+export function ImmersiveHomeChrome({ immersive = true }: { immersive?: boolean }) {
   useLayoutEffect(() => {
     const body = document.body;
     const header = document.querySelector<HTMLElement>('.PHOTOCLOUD-header');
@@ -20,7 +20,7 @@ export function ImmersiveHomeChrome() {
     const update = () => {
       frame = 0;
       const scroll = Math.max(0, window.scrollY);
-      body.classList.toggle('home-cinematic-active', scroll <= 12 && scroll < stageEnd - headerHeight);
+      body.classList.toggle('home-cinematic-active', immersive && scroll <= 12 && scroll < stageEnd - headerHeight);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     const resize = () => {
@@ -41,6 +41,6 @@ export function ImmersiveHomeChrome() {
       body.classList.remove('home-cinematic-layout', 'home-cinematic-active', 'home-header-hidden');
       if (header) header.inert = false;
     };
-  }, []);
+  }, [immersive]);
   return null;
 }

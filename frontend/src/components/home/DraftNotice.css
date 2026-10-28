@@ -1,0 +1,8 @@
+.home-draft-notice { display:flex;align-items:flex-start;gap:7px;font:400 12px/1.6 Arial,sans-serif;color:var(--text-secondary);margin:16px 0; }
+.home-draft-notice span { color:var(--accent);font-size:17px; }
+.home-booking-flow > .home-flow-intro { grid-column:1/-1; }
+.home-flow-intro h2 { font-family:var(--studio-font-display,Georgia,serif);font-size:clamp(28px,3vw,42px);font-weight:500;line-height:1.2;margin:0 0 16px; }
+.home-flow-intro h2 em { color:var(--accent); }
+.home-package-image > svg { position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--text-secondary); }
+.home-package-body button:disabled { opacity:.55;cursor:default; }
+.home-bottom-cta-copy .home-draft-notice { font-size:12px; }

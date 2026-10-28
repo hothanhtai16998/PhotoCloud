@@ -12,16 +12,20 @@ import { SliderZoomImage } from './SliderZoomImage';
 import { ImmersiveHomeChrome } from './ImmersiveHomeChrome';
 import { RefreshCw } from 'lucide-react';
 import { DataLoading } from '@/components/user/DataLoading';
+import { useInitialSlideImage } from '@/hooks/useInitialSlideImage';
 
 export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapsed = false}: {collapsed?: boolean}) {
   const slides = useSliderStore(state => state.slides);
   const loading = useSliderStore(state => state.loading);
   const error = useSliderStore(state => state.error);
+  const hasLoaded = useSliderStore(state => state.hasLoaded);
   const reducedMotion = useReducedMotion();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
   const [playing, setPlaying] = useState(true);
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 769px)').matches);
+  const firstImage = useInitialSlideImage(slides[0]?.image, !collapsed && isDesktop);
+  const imageFailed = firstImage.failed || (slides.length > 0 && !slides[0]?.image);
   const sliderRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -81,16 +85,19 @@ export const VisualArtFormsSlider = memo(function VisualArtFormsSlider({collapse
   if (!isDesktop && collapsed) return null;
   return <motion.div ref={sliderRef} layout layoutDependency={collapsed} initial={false} transition={transition}
     className={`visual-art-slider${collapsed ? ' visual-art-slider-collapsed' : ''}`} style={{originX: 0, originY: 0}}>
-    {!collapsed && slides.length > 0 && <ImmersiveHomeChrome />}
-    {slides.length ? collapsed ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
+    {!collapsed && isDesktop && <ImmersiveHomeChrome immersive={slides.length > 0 && firstImage.ready} />}
+    {slides.length > 0 && firstImage.ready ? collapsed ? <FixedSlideStage slides={slides} current={Math.min(currentSlide, slides.length - 1)}
       collapsed={collapsed} select={selectSlide}
       zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
       : <CardOpeningStage slides={slides} current={Math.min(currentSlide, slides.length - 1)} select={selectSlide}
         playing={playing} togglePlaying={() => setPlaying(value => !value)}
         zoom={button => {triggerRef.current = button; setIsZoomed(true);}} />
-      : <div className="travel-empty"><div role={error ? 'alert' : 'status'}>
-        {loading ? <DataLoading message="Đang tải ảnh nổi bật" /> : <p>{error ? 'Không tải được ảnh nổi bật.' : 'Chưa có ảnh nổi bật'}</p>}
-        {error && !loading && <button type="button" className="slider-retry" onClick={() => void useSliderStore.getState().fetchSlides()}><RefreshCw size={18} /> Thử lại</button>}
+      : <div className="travel-empty"><div role={error || imageFailed ? 'alert' : 'status'}>
+        {imageFailed || (error && !slides.length) ? <><p>Không tải được ảnh nổi bật.</p><p>Vui lòng kiểm tra kết nối và thử lại.</p></> : !hasLoaded || loading || slides.length > 0 ? <DataLoading message="Đang tải ảnh nổi bật" /> : <p>Chưa có ảnh nổi bật</p>}
+        {(imageFailed || error) && !loading && <button type="button" className="slider-retry" onClick={() => {
+          if (imageFailed && slides[0]?.image) firstImage.retry();
+          else void useSliderStore.getState().fetchSlides();
+        }}><RefreshCw size={18} /> Thử lại</button>}
       </div></div>}
     {collapsed && <div className="travel-controls">
       <button className="slider-previous" type="button" disabled={slides.length < 2} aria-label={t('visualArtSlider.previousSlide')} onClick={() => selectSlide(currentSlide - 1)}>

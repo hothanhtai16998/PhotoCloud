@@ -11,7 +11,6 @@ import { useStructuredData, schemaHelpers } from "./hooks/useStructuredData";
 import { ContactButton } from "./components/ContactButton";
 import { BookingModal } from "./components/BookingModal";
 import Header from "./components/Header";
-import { HomeLoadingGate } from './components/HomeLoadingGate';
 import CollectionsPage from './pages/CollectionsPage';
 import { Footer } from "./components/Footer";
 import { MobileBottomNav } from "./components/MobileBottomNav";
@@ -224,7 +223,6 @@ function App() {
 
   return (
     <ActualLocationContext.Provider value={location}>
-      {location.pathname === '/' && <HomeLoadingGate />}
       {/* Header - PHOTOCLOUD-style: Always visible, even during loading */}
       {shouldShowHeader && !isAdminArea && <Header />}
 

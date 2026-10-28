@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import './TestimonialsCarousel.css';
+import { DraftNotice } from './home/DraftNotice';
 
 interface Testimonial {
   name: string;
@@ -68,11 +69,9 @@ export function TestimonialsCarousel() {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
-    timerRef.current = setInterval(goNext, 5000);
+    timerRef.current = setInterval(() => setActive(value => (value + 1) % total), 5000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused, active]);
-
-  const testimonial = TESTIMONIALS[active];
+  }, [paused, active, total]);
 
   return (
     <section
@@ -88,6 +87,7 @@ export function TestimonialsCarousel() {
         <div className="testimonials-title">
           <p className="booking-eyebrow">KHÁCH HÀNG NÓI GÌ</p>
           <h2>Những khoảnh khắc đáng nhớ</h2>
+          <DraftNotice />
         </div>
         <div className="testimonials-nav">
           <button

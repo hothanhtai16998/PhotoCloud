@@ -1,5 +1,6 @@
 import { CalendarDays, Camera, CheckCircle2, Images } from 'lucide-react';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
+import { DraftNotice } from '../home/DraftNotice';
 
 interface Step {
   name: string;
@@ -35,6 +36,7 @@ export function HowItWorks() {
 
   return (
     <section ref={ref} className="home-booking-flow" aria-label="Quy trình đặt lịch chụp">
+      <div className="home-flow-intro"><h2>Từ lời hẹn đầu tiên<br /><em>đến những khung hình.</em></h2><DraftNotice /></div>
       {STEPS.map((step, index) => {
         const Icon = step.icon;
         return (

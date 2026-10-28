@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { DraftNotice } from '../home/DraftNotice';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -48,6 +49,7 @@ export function BookingFAQ() {
           <Link to="/contact" className="home-faq-contact">Trao đổi với studio <ArrowUpRight size={17} aria-hidden="true" /></Link>
         </div>
         <div className="home-faq-list">
+          <DraftNotice />
           {QUESTIONS.map((item, index) => {
             const open = openIndex === index;
             return (

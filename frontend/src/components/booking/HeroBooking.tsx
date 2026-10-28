@@ -16,6 +16,7 @@ import { getHeroCollections, type HeroCollection } from '@/services/heroService'
 import { BRAND } from '@/constants/brand';
 import { HeaderMarquee } from '../HeaderMarquee';
 import './HeroBooking.css';
+import { DraftNotice } from '../home/DraftNotice';
 
 interface HeroBookingProps {
     onViewPackages?: () => void;
@@ -125,6 +126,7 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                     <Sparkles size={12} aria-hidden="true" />
                     {BRAND.subTagline}
                 </p>
+                <DraftNotice />
 
                 <ul className="hero-highlights" aria-label="Điểm nổi bật">
                     {HIGHLIGHTS.map((h, i) => {
@@ -250,8 +252,8 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                         })}
                     </div>
                 )}
+                
             </div>
-
             {/* Scroll indicator (suggests more below) */}
             <div ref={scrollHintRef} className="hero-scroll-hint" aria-hidden="true">
                 <span className="mouse" />
