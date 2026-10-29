@@ -8,20 +8,31 @@ import {
     requestReschedule,
     getAdminBookings,
     updateAdminBooking,
-} from '../controllers/bookingController.js';
+    listAdminPackages,
+    createAdminPackage,
+    updateAdminPackage,
+    archiveAdminPackage,
+    getAvailability,
+    updateAvailability,
+    checkDateAvailability,
+    getMyWorkspace,
+    acceptContract,
+    submitQuestionnaire,
+    getAdminWorkspace,
+    updateAdminWorkspace,
+    getBookingPolicy,
+    updateBookingPolicy,
+    getMyReview,
+    createMyReview,
+    listAdminReviews,
+    replyAdminReview,
+} from '../controllers/booking/index.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { adminRoute } from '../middlewares/adminMiddleware.js';
 import { validateCsrf } from '../middlewares/csrfMiddleware.js';
-import { listAdminPackages, createAdminPackage, updateAdminPackage, archiveAdminPackage } from '../controllers/bookingPackageController.js';
-import { getAvailability, updateAvailability, checkDateAvailability } from '../controllers/bookingAvailabilityController.js';
-import { getMyWorkspace, acceptContract, submitQuestionnaire, getAdminWorkspace, updateAdminWorkspace } from '../controllers/bookingWorkspaceController.js';
-import { getBookingPolicy, updateBookingPolicy, getMyReview, createMyReview, listAdminReviews, replyAdminReview } from '../controllers/bookingFinalController.js';
-
 const router = express.Router();
-
 router.get('/packages', getBookingPackages);
 router.get('/availability/check', checkDateAvailability);
-
 router.use(protectedRoute);
 router.post('/', validateCsrf, createBooking);
 router.get('/mine', getMyBookings);
@@ -33,7 +44,6 @@ router.post('/mine/:bookingId/contract/accept', validateCsrf, acceptContract);
 router.patch('/mine/:bookingId/questionnaire', validateCsrf, submitQuestionnaire);
 router.get('/mine/:bookingId/review', getMyReview);
 router.post('/mine/:bookingId/review', validateCsrf, createMyReview);
-
 router.get('/admin', adminRoute, getAdminBookings);
 router.patch('/admin/:bookingId', adminRoute, validateCsrf, updateAdminBooking);
 router.get('/admin/:bookingId/workspace', adminRoute, getAdminWorkspace);
@@ -48,5 +58,4 @@ router.get('/admin/packages', adminRoute, listAdminPackages);
 router.post('/admin/packages', adminRoute, validateCsrf, createAdminPackage);
 router.patch('/admin/packages/:packageId', adminRoute, validateCsrf, updateAdminPackage);
 router.delete('/admin/packages/:packageId', adminRoute, validateCsrf, archiveAdminPackage);
-
 export default router;

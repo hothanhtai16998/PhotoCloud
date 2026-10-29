@@ -26,11 +26,11 @@ config({ path: join(__dirname, '..', '.env') });
 
 // Import required modules
 import Image from '../src/models/Image.js';
-import { getImageFromR2 } from '../src/libs/s3.js';
-import { extractDominantColors } from '../src/utils/colorExtractor.js';
-import { streamToBuffer } from '../src/utils/imageHelpers.js';
+import { getImageFromR2 } from '../src/config/storage.js';
+import { extractDominantColors } from '../src/services/media/colorExtractor.js';
+import { streamToBuffer } from '../src/services/media/imageHelpers.js';
 import { logger } from '../src/utils/logger.js';
-import { env } from '../src/libs/env.js';
+import { env } from '../src/config/env.js';
 
 // Configuration
 const BATCH_SIZE = 50; // Process 50 images at a time

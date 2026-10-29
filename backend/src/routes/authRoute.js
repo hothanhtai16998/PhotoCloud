@@ -11,36 +11,29 @@ import {
     getActiveSessions,
     signOutAllDevices,
     signOutSession,
-} from '../controllers/authController.js';
+} from '../controllers/auth/index.js';
 import { authLimiter } from '../middlewares/rateLimiter.js';
 import { validateSignUp, validateSignIn } from '../middlewares/validationMiddleware.js';
-import { env } from '../libs/env.js';
+import { env } from '../config/env.js';
 import { protectedRoute } from '../middlewares/authMiddleware.js';
 import { validateCsrf } from '../middlewares/csrfMiddleware.js';
-
 const router = express.Router();
-
 // Check email availability (for real-time validation)
 router.get('/check-email', authLimiter, checkEmailAvailability);
-
 // Check username availability (for real-time validation)
 router.get('/check-username', authLimiter, checkUsernameAvailability);
-
 // Apply strict rate limiting and validation to auth endpoints
 router.post('/signup', authLimiter, validateSignUp, signUp);
 router.post('/signin', authLimiter, validateSignIn, signIn);
 router.post('/signout', signOut);
 router.post('/refresh', refreshToken);
-
 // Google OAuth routes
 router.get('/google', googleAuth);
 router.get('/google/callback', googleCallback);
-
 // Session management routes (require authentication)
 router.get('/sessions', protectedRoute, getActiveSessions);
 router.post('/sessions/signout-all', protectedRoute, validateCsrf, signOutAllDevices);
 router.delete('/sessions/:sessionId', protectedRoute, validateCsrf, signOutSession);
-
 // Test endpoint to check Google OAuth configuration
 router.get('/google/test', (req, res) => {
     res.json({
@@ -51,7 +44,6 @@ router.get('/google/test', (req, res) => {
         backendUrl: env.CLIENT_URL || 'Not configured',
     });
 });
-
 // TEMPORARY: Admin creation endpoint (REMOVE AFTER USE!)
 // Usage: POST /api/auth/make-admin?username=YOUR_USERNAME&secret=YOUR_SECRET
 // Set ADMIN_SECRET in environment variables for security
@@ -145,5 +137,4 @@ router.post('/make-admin', async (req, res) => {
         return res.status(500).json({ message: 'Error making user admin', error: error.message });
     }
 });
-
 export default router;

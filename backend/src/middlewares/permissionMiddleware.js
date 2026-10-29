@@ -57,7 +57,7 @@ export const PERMISSIONS = {
  */
 export const hasPermission = async (userId, permission, clientIP = null) => {
     // Compute admin status from AdminRole (uses cache internally)
-    const { computeAdminStatus } = await import('../utils/adminUtils.js');
+    const { computeAdminStatus } = await import('../services/permissions/adminUtils.js');
     const { isSuperAdmin, adminRole, validation } = await computeAdminStatus(userId, clientIP);
     
     // If role is invalid (expired, inactive, or IP restricted), no permissions
@@ -100,7 +100,7 @@ export const requirePermission = (permission) => {
         // Use computed admin status from authMiddleware (based on AdminRole)
         // If not computed yet, compute it now
         if (req.user.isSuperAdmin === undefined || req.user.isAdmin === undefined) {
-            const { computeAdminStatus } = await import('../utils/adminUtils.js');
+            const { computeAdminStatus } = await import('../services/permissions/adminUtils.js');
             const clientIP = req.clientIP || null;
             const { isAdmin, isSuperAdmin, adminRole } = await computeAdminStatus(req.user._id, clientIP);
             req.user.isAdmin = isAdmin;
@@ -126,7 +126,7 @@ export const requirePermission = (permission) => {
         }
 
         // Check if role is valid (for time-based permissions)
-        const { isAdminRoleValid } = await import('../utils/adminUtils.js');
+        const { isAdminRoleValid } = await import('../services/permissions/adminUtils.js');
         const clientIP = req.clientIP || null;
         const validation = isAdminRoleValid(adminRole, clientIP);
         
@@ -170,7 +170,7 @@ export const requireSuperAdmin = asyncHandler(async (req, res, next) => {
     // Use computed admin status from authMiddleware (based on AdminRole)
     // If not computed yet, compute it now
     if (req.user.isSuperAdmin === undefined) {
-        const { computeAdminStatus } = await import('../utils/adminUtils.js');
+        const { computeAdminStatus } = await import('../services/permissions/adminUtils.js');
         const clientIP = req.clientIP || null;
         const { isSuperAdmin, adminRole } = await computeAdminStatus(req.user._id, clientIP);
         req.user.isSuperAdmin = isSuperAdmin;

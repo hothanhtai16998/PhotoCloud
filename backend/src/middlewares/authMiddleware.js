@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import { env } from "../libs/env.js";
+import { env } from "../config/env.js";
 import { asyncHandler } from "./asyncHandler.js";
-import { enrichUserWithAdminStatus } from "../utils/adminUtils.js";
-import { getClientIp } from "../utils/auditLogger.js";
+import { enrichUserWithAdminStatus } from "../services/permissions/adminUtils.js";
+import { getClientIp } from "../services/audit/auditLogger.js";
 
 /**
  * Optional authentication middleware - attaches user if token is present, but doesn't require it

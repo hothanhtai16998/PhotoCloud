@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import { env } from '../libs/env.js';
+import { env } from '../config/env.js';
 import { enqueueRequest } from './requestQueue.js';
 
 /**

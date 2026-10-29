@@ -4,8 +4,8 @@ import Notification from '../models/Notification.js';
 import { logger } from '../utils/logger.js';
 import { processUploadJob } from './imageProcessor.js';
 import { createUploadJobRunner } from './uploadJobRunner.js';
-import { getObjectFromR2, generateAvifFormats, deleteObjectByKey } from '../libs/s3.js';
-import { streamToBuffer } from '../utils/imageHelpers.js';
+import { getObjectFromR2, generateAvifFormats, deleteObjectByKey } from '../config/storage.js';
+import { streamToBuffer } from '../services/media/imageHelpers.js';
 
 const runner = createUploadJobRunner({
     Job: UploadJob, logger,

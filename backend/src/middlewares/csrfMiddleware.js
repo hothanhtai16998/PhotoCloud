@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { logger } from '../utils/logger.js';
-import { env } from '../libs/env.js';
+import { env } from '../config/env.js';
 
 /**
  * CSRF Protection Middleware - Double-Submit Cookie Pattern

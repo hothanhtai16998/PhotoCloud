@@ -1,5 +1,5 @@
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
-import { getImageFromR2 } from '../../libs/s3.js';
+import { getImageFromR2 } from '../../config/storage.js';
 import Image from '../../models/Image.js';
 import mongoose from 'mongoose';
 

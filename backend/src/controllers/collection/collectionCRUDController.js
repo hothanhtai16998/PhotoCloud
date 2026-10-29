@@ -2,10 +2,10 @@ import Collection from '../../models/Collection.js';
 import Notification from '../../models/Notification.js';
 import { logger } from '../../utils/logger.js';
 import { safeTrim, isValidObjectId } from '../../utils/inputUtils.js';
-import { createCollectionVersion } from '../../utils/collectionVersionHelper.js';
+import { createCollectionVersion } from '../../services/collection/collectionVersionHelper.js';
 import { getUserId, hasPermission } from './collectionHelpers.js';
 import mongoose from 'mongoose';
-import { cached, generateCacheKey, deleteCache } from '../../utils/queryCache.js';
+import { cached, generateCacheKey, deleteCache } from '../../services/cache/queryCache.js';
 
 /**
  * Get all collections for the authenticated user
@@ -604,7 +604,7 @@ export const updateCollection = async (req, res) => {
 
         // Emit WebSocket event for real-time collaboration
         try {
-            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            const { emitCollectionUpdate } = await import('../../services/realtime/socketServer.js');
             const updateData = {
                 type: 'collection_updated',
                 collectionId,

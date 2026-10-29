@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const { chromium } = require('C:/Users/Fenn/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 (async () => {
  const defaults = require('../../shared/sitePalette.json');
- const { validateSitePalette, publicSitePalette } = await import('../../backend/src/utils/sitePalette.js');
+ const { validateSitePalette, publicSitePalette } = await import('../../backend/src/services/palette/sitePalette.js');
  assert.equal(validateSitePalette(defaults), null);
  for (const mutate of [p=>delete p.dark, p=>p.light['--bg-primary']='red;display:none', p=>p.light.unknown='#FFFFFF', p=>p.version=2]) {
   const p=structuredClone(defaults); mutate(p); assert.ok(validateSitePalette(p)); assert.deepEqual(publicSitePalette(p),defaults);

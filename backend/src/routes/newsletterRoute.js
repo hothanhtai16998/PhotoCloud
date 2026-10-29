@@ -2,11 +2,10 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import Subscription from '../models/NewsletterSubscription.js';
 import { createNewsletterService } from '../services/newsletterService.js';
-import { sendUserEmail } from '../utils/emailAlerts.js';
-import { env } from '../libs/env.js';
+import { sendUserEmail } from '../services/email/emailAlerts.js';
+import { env } from '../config/env.js';
 import { asyncHandler } from '../middlewares/asyncHandler.js';
 import { body, validationResult } from 'express-validator';
-
 const router = Router();
 router.use(rateLimit({ windowMs: 60 * 60 * 1000, limit: 20, standardHeaders: 'draft-8', legacyHeaders: false,
     message: { success: false, message: 'Bạn đã thử quá nhiều lần. Vui lòng thử lại sau.' } }));

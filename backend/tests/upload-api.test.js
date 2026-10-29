@@ -26,16 +26,16 @@ await mock.module('../src/workers/jobQueue.js', { namedExports: { addJob: async 
     row.status = 'queued';return row;
 } } });
 const deleted = [];
-await mock.module('../src/libs/s3.js', { namedExports: {
+await mock.module('../src/config/storage.js', { namedExports: {
     generatePresignedUploadUrl: async () => 'https://storage.example.test/upload',
     deleteObjectByKey: async key => deleted.push(key),
     uploadImageWithSizes: async () => ({}), uploadVideo: async () => ({}), deleteImageFromR2: async () => {},
 } });
-await mock.module('../src/utils/imageHelpers.js', { namedExports: {
+await mock.module('../src/services/media/imageHelpers.js', { namedExports: {
     findCategory: async () => ({}), parseTags: value => value, validateCoordinates: value => value, streamToBuffer: async () => Buffer.alloc(0),
 } });
-await mock.module('../src/utils/colorExtractor.js', { namedExports: { extractDominantColors: async () => [] } });
-await mock.module('../src/utils/exifExtractor.js', { namedExports: { extractExifData: async () => ({}) } });
+await mock.module('../src/services/media/colorExtractor.js', { namedExports: { extractDominantColors: async () => [] } });
+await mock.module('../src/services/media/exifExtractor.js', { namedExports: { extractExifData: async () => ({}) } });
 const { preUploadImage, finalizeImageUpload, deletePreUploadedFile } = await import('../src/controllers/image/imageUploadController.js');
 const { getUploadStatus } = await import('../src/controllers/image/uploadStatusController.js');
 

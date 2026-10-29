@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import { addJob } from '../../workers/jobQueue.js';
-import { findCategory, parseTags, validateCoordinates, streamToBuffer } from '../../utils/imageHelpers.js';
+import { findCategory, parseTags, validateCoordinates, streamToBuffer } from '../../services/media/imageHelpers.js';
 import { RAW_UPLOAD_FOLDER } from '../../utils/constants.js';
 import { mimeToExtension, extensionMap, validateFileType, getExtensionsFromMimeType } from '../../utils/fileTypeUtils.js';
 
@@ -18,10 +18,10 @@ import {
     deleteImageFromR2,
     generatePresignedUploadUrl,
     deleteObjectByKey
-} from '../../libs/s3.js';
+} from '../../config/storage.js';
 
-import { extractDominantColors } from '../../utils/colorExtractor.js';
-import { extractExifData } from '../../utils/exifExtractor.js';
+import { extractDominantColors } from '../../services/media/colorExtractor.js';
+import { extractExifData } from '../../services/media/exifExtractor.js';
 import { clearCache } from '../../middlewares/cacheMiddleware.js';
 import { logger } from '../../utils/logger.js';
 

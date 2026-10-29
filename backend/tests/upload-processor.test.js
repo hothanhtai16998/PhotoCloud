@@ -9,18 +9,18 @@ await mock.module('../src/models/Image.js', { exports: { default: {
 } } });
 await mock.module('../src/models/User.js', { exports: { default: { findById: () => ({ select: async () => null }) } } });
 await mock.module('../src/models/Notification.js', { exports: { default: { create: async () => { notifications++; } } } });
-await mock.module('../src/libs/s3.js', { exports: {
+await mock.module('../src/config/storage.js', { exports: {
     getObjectFromR2: async () => { downloads++;return { Body: 'fixture', ContentType: 'image/jpeg' }; },
     uploadImageWithSizes: async () => { transfers++;return { publicId: 'fixture', imageUrl: 'fixture.jpg', thumbnailUrl: 'fixture-thumb.webp', avifPending: true }; },
     deleteObjectByKey: async () => {},
 } });
-await mock.module('../src/utils/imageHelpers.js', { exports: {
+await mock.module('../src/services/media/imageHelpers.js', { exports: {
     streamToBuffer: async () => Buffer.from('fixture'),
     extractMetadata: async () => ({ dominantColors: [], exifData: {}, dimensions: { width: 100, height: 100 } }),
     parseTags: () => [], validateCoordinates: () => undefined,
 } });
 await mock.module('../src/middlewares/cacheMiddleware.js', { exports: { clearCache: async () => {} } });
-await mock.module('../src/utils/emailAlerts.js', { exports: { sendImageProcessingCompleteEmail: async () => {} } });
+await mock.module('../src/services/email/emailAlerts.js', { exports: { sendImageProcessingCompleteEmail: async () => {} } });
 await mock.module('../src/workers/aiTaggingQueue.js', { exports: { addAITaggingJob: () => {} } });
 const { processUploadJob } = await import('../src/workers/imageProcessor.js');
 const job = { uploadKey: 'photo-app-raw/image-123-abcdef12.jpg', imageId: '507f1f77bcf86cd799439012', userId: '507f1f77bcf86cd799439011', isAdmin: false };

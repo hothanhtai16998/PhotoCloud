@@ -2,11 +2,9 @@ import express from 'express';
 import {
     getSearchSuggestions,
     getPopularSearches,
-} from '../controllers/searchSuggestionsController.js';
+} from '../controllers/search/index.js';
 import { cacheMiddleware } from '../middlewares/cacheMiddleware.js';
-
 const router = express.Router();
-
 // Public route - get search suggestions
 // Cache for 5 minutes - suggestions don't change frequently
 router.get('/suggestions',
@@ -16,13 +14,10 @@ router.get('/suggestions',
     }),
     getSearchSuggestions
 );
-
 // Public route - get popular searches
 // Cache for 15 minutes - popular searches change slowly
 router.get('/popular',
     cacheMiddleware(15 * 60 * 1000, () => '/api/search/popular'),
     getPopularSearches
 );
-
 export default router;
-

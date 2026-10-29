@@ -1,7 +1,7 @@
 import express from 'express';
 import helmet from 'helmet';
-import { env } from './libs/env.js';
-import { CONNECT_DB } from './configs/db.js';
+import { env } from './config/env.js';
+import { CONNECT_DB } from './config/database.js';
 import { initializeDefaultSettings } from './models/Settings.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -34,13 +34,13 @@ import { requestQueue } from './middlewares/requestQueue.js';
 import { csrfToken, validateCsrf, getCsrfToken } from './middlewares/csrfMiddleware.js';
 import { setCacheHeaders } from './middlewares/cacheHeaders.js';
 import { logger } from './utils/logger.js';
-import { startSessionCleanup, stopSessionCleanup } from './utils/sessionCleanup.js';
-import { startPreUploadCleanup, stopPreUploadCleanup } from './utils/preUploadCleanup.js';
+import { startSessionCleanup, stopSessionCleanup } from './services/lifecycle/sessionCleanup.js';
+import { startPreUploadCleanup, stopPreUploadCleanup } from './services/lifecycle/preUploadCleanup.js';
 import { startUploadQueue, stopUploadQueue } from './workers/jobQueue.js';
 import UploadJob from './models/UploadJob.js';
-import { startBookingReminders, stopBookingReminders } from './utils/bookingReminders.js';
-import { checkSocialScraper } from './controllers/socialShareController.js';
-import { initializeSocketServer } from './utils/socketServer.js';
+import { startBookingReminders, stopBookingReminders } from './services/booking/bookingReminders.js';
+import { checkSocialScraper } from './controllers/search/socialShareController.js';
+import { initializeSocketServer } from './services/realtime/socketServer.js';
 import { createServer } from 'http';
 import { existsSync } from 'fs';
 import 'dotenv/config';
@@ -202,7 +202,7 @@ app.use('/api', validateCsrf);
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
     try {
-        const { getSystemStatus } = await import('./utils/systemMetrics.js');
+        const { getSystemStatus } = await import('./services/monitoring/systemMetrics.js');
         const systemStatus = await getSystemStatus();
         
         res.status(200).json({
@@ -246,9 +246,9 @@ app.post('/api/admin/analytics/track', async (req, res, next) => {
     if (token) {
         try {
             const jwt = await import("jsonwebtoken");
-            const { env } = await import('./libs/env.js');
+            const { env } = await import('./config/env.js');
             const User = (await import('./models/User.js')).default;
-            const { enrichUserWithAdminStatus } = await import('./utils/adminUtils.js');
+            const { enrichUserWithAdminStatus } = await import('./services/permissions/adminUtils.js');
 
             const decoded = jwt.default.verify(token, env.ACCESS_TOKEN_SECRET);
             const user = await User.findById(decoded.userId).select("-hashedPassword").lean();
@@ -384,7 +384,7 @@ const startServer = async () => {
         startBookingReminders();
         
         // Start system monitoring and alerting
-        const { startMonitoring } = await import('./utils/alertMonitor.js');
+        const { startMonitoring } = await import('./services/monitoring/alertMonitor.js');
         startMonitoring();
 
         const PORT = env.PORT;
@@ -405,7 +405,7 @@ const startServer = async () => {
             stopSessionCleanup();
             stopPreUploadCleanup();
             stopBookingReminders();
-            const { stopMonitoring } = await import('./utils/alertMonitor.js');
+            const { stopMonitoring } = await import('./services/monitoring/alertMonitor.js');
             stopMonitoring();
             process.exit(0);
         });
@@ -414,7 +414,7 @@ const startServer = async () => {
             stopUploadQueue();
             stopSessionCleanup();
             stopPreUploadCleanup();
-            const { stopMonitoring } = await import('./utils/alertMonitor.js');
+            const { stopMonitoring } = await import('./services/monitoring/alertMonitor.js');
             stopMonitoring();
             process.exit(0);
         });

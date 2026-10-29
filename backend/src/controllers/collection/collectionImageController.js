@@ -3,7 +3,7 @@ import Collection from '../../models/Collection.js';
 import Image from '../../models/Image.js';
 import Notification from '../../models/Notification.js';
 import { logger } from '../../utils/logger.js';
-import { createCollectionVersion } from '../../utils/collectionVersionHelper.js';
+import { createCollectionVersion } from '../../services/collection/collectionVersionHelper.js';
 import { getUserId, hasPermission } from './collectionHelpers.js';
 
 /**
@@ -96,7 +96,7 @@ export const addImageToCollection = async (req, res) => {
                 }
             });
 
-            const { createAndEmitNotification } = await import('../../utils/notificationEmitter.js');
+            const { createAndEmitNotification } = await import('../../services/realtime/notificationEmitter.js');
             const notificationPromises = Array.from(notificationRecipients).map(recipientId =>
                 createAndEmitNotification({
                     recipient: recipientId,
@@ -118,7 +118,7 @@ export const addImageToCollection = async (req, res) => {
 
         // Emit WebSocket event for real-time collaboration
         try {
-            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            const { emitCollectionUpdate } = await import('../../services/realtime/socketServer.js');
             const image = await Image.findById(imageId)
                 .select('thumbnailUrl smallUrl imageUrl imageTitle')
                 .lean();
@@ -248,7 +248,7 @@ export const removeImageFromCollection = async (req, res) => {
 
         // Emit WebSocket event for real-time collaboration
         try {
-            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            const { emitCollectionUpdate } = await import('../../services/realtime/socketServer.js');
             emitCollectionUpdate(collectionId, {
                 type: 'image_removed',
                 collectionId,
@@ -435,7 +435,7 @@ export const reorderCollectionImages = async (req, res) => {
 
         // Emit WebSocket event for real-time collaboration
         try {
-            const { emitCollectionUpdate } = await import('../../utils/socketServer.js');
+            const { emitCollectionUpdate } = await import('../../services/realtime/socketServer.js');
             emitCollectionUpdate(collectionId, {
                 type: 'images_reordered',
                 collectionId,

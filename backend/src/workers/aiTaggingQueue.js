@@ -4,11 +4,11 @@
  */
 
 import { logger } from '../utils/logger.js';
-import { generateAITags, mergeTags } from '../utils/aiTaggingService.js';
-import { translateTags, getTargetLanguage } from '../utils/tagTranslator.js';
+import { generateAITags, mergeTags } from '../services/ai/aiTaggingService.js';
+import { translateTags, getTargetLanguage } from '../services/ai/tagTranslator.js';
 import Image from '../models/Image.js';
-import { getObjectFromR2 } from '../libs/s3.js';
-import { streamToBuffer } from '../utils/imageHelpers.js';
+import { getObjectFromR2 } from '../config/storage.js';
+import { streamToBuffer } from '../services/media/imageHelpers.js';
 
 // Queue for AI tagging jobs
 const aiTaggingQueue = [];

@@ -5,7 +5,7 @@
 **Architecture**
 - **Monorepo**: `backend/` (Express + MongoDB, ESM) and `frontend/` (React + Vite + TS). Root scripts orchestrate both.
 - **API base**: All routes under `/api` (see `backend/src/server.js`). SPA assets served by backend in production.
-- **Storage**: Images/videos stored on Cloudflare R2 via S3-compatible SDK (`backend/src/libs/s3.js`). Multiple sizes via `sharp`. Public URLs use `env.R2_PUBLIC_URL` or `https://pub-${R2_ACCOUNT_ID}.r2.dev`.
+- **Storage**: Images/videos stored on Cloudflare R2 via S3-compatible SDK (`backend/src/config/storage.js`). Multiple sizes via `sharp`. Public URLs use `env.R2_PUBLIC_URL` or `https://pub-${R2_ACCOUNT_ID}.r2.dev`.
 - **Security**: CORS allowlist with dynamic origin checks, CSRF double-submit cookie, rate limiting, request deduplication, and per-IP request queuing.
 
 **Run/Build/Test**
@@ -13,12 +13,13 @@
 - Backend only: `npm run dev:backend` (root) or `npm run dev` in `backend/`.
 - Frontend only: `npm run dev:frontend` (root) or `npm run dev` in `frontend/`.
 - Build + start prod: `npm run prod` (root) or `npm run build` (root) then `npm start`.
-- Tests (backend): `cd backend; npm test` (Jest with ESM via `NODE_OPTIONS=--experimental-vm-modules`).
+- Tests (backend): `cd backend; npm test` (Node's built-in test runner via `node --test`).
+- Backend structure checks: `cd backend; npm run verify:structure` (import paths, asset paths, shim export parity) and `npm run verify:admin` (admin import chain still loads).
 - Lint/format (frontend): `npm run lint` (root -> frontend), `npm run format` / `format:check` (root).
 - Utilities: free port 3000 with `npm run kill` (root).
 
 **Env & Assumptions**
-- Backend validates required env at import (`backend/src/libs/env.js`) and will crash if missing:
+- Backend validates required env at import (`backend/src/config/env.js`) and will crash if missing:
   - `MONGODB_URI`, `ACCESS_TOKEN_SECRET`, `CLIENT_URL`
   - R2 required: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
   - Optional: `FRONTEND_URL`, `R2_PUBLIC_URL`, `RESEND_*`, `GOOGLE_*`
@@ -27,8 +28,9 @@
 **API Layer Patterns (Backend)**
 - Mount order in `server.js` matters: `/api` → `requestDeduplication` → `rateLimiter` → `requestQueue` → `csrfToken` → `validateCsrf` → routers.
 - CSRF: cookie `XSRF-TOKEN` must match header `X-XSRF-TOKEN` on state-changing methods; public paths are whitelisted in `csrfMiddleware`.
-- Routes live in `backend/src/routes/*Route.js`, calling controllers in `backend/src/controllers/**`. Use `asyncHandler` and centralized `errorHandler`.
-- When adding media flows, prefer helpers in `backend/src/libs/s3.js` (`uploadImageWithSizes`, `uploadVideo`, `uploadAvatar`).
+- Routes live in `backend/src/routes/*Route.js`, calling controllers in `backend/src/controllers/<domain>/` (each domain folder has an `index.js` barrel). Use `asyncHandler` and centralized `errorHandler`.
+- When adding media flows, prefer helpers in `backend/src/config/storage.js` (`uploadImageWithSizes`, `uploadVideo`, `uploadAvatar`).
+- Backend layering: `routes` → `controllers` → `services` → `models`. `backend/src/utils/` holds pure functions only (no `models/`, no `config/`, no I/O); anything that touches DB, HTTP, S3, mail, sockets or the filesystem belongs in `backend/src/services/<group>/`. See `backend/src/README.md`.
 
 **API Consumption Patterns (Frontend)**
 - Always import the preconfigured Axios client `frontend/src/lib/axios.ts`:

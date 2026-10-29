@@ -4,12 +4,12 @@ import mongoose from 'mongoose';
 import Image from '../models/Image.js';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
-import { getObjectFromR2, uploadImageWithSizes, deleteObjectByKey } from '../libs/s3.js';
-import { streamToBuffer, extractMetadata } from '../utils/imageHelpers.js';
-import { parseTags, validateCoordinates } from '../utils/imageHelpers.js';
+import { getObjectFromR2, uploadImageWithSizes, deleteObjectByKey } from '../config/storage.js';
+import { streamToBuffer, extractMetadata } from '../services/media/imageHelpers.js';
+import { parseTags, validateCoordinates } from '../services/media/imageHelpers.js';
 import { clearCache } from '../middlewares/cacheMiddleware.js';
 // AI tagging moved to background queue - see aiTaggingQueue.js
-import { sendImageProcessingCompleteEmail } from '../utils/emailAlerts.js';
+import { sendImageProcessingCompleteEmail } from '../services/email/emailAlerts.js';
 
 // Safe logger fallback
 const log = (msg, data) => console.log(`[UPLOAD] ${msg}`, data || '');
