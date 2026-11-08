@@ -25,12 +25,20 @@ Danh sách cuối tài liệu là lượt quét từng file nguồn/cấu hình/
 
 - `config/storage.js` hiện 636 dòng, tập trung thao tác R2/biến thể ảnh. Chưa tách chỉ để giảm dòng; các export có nhiều nơi dùng, cần test I/O đủ trước thay đổi lớn.
 - Auth, realtime, worker upload và model vẫn giữ các chính sách/session/lease/schema riêng; quét tĩnh không đủ để khẳng định mọi đường lỗi/race đã đúng.
-- Khối xác định admin status trong adminMiddleware/permissionMiddleware có phần giống nhau nhưng khác việc gắn `_adminRole`; chưa hợp nhất khi chưa có test matrix quyền đầy đủ. Không sửa admin controller.
+- Khối xác định admin status trong adminMiddleware/permissionMiddleware đã gom ở vòng tiếp theo qua `requestAdminStatus`, giữ khác biệt gắn `_adminRole`. Không sửa admin controller.
 - Compatibility shim trong utils/libs được giữ cho admin và các caller cũ; không coi re-export là code nghiệp vụ trùng cần xóa.
 - Không còn file source ngoài admin vượt 1.000 dòng. Số dòng không phải tiêu chí duy nhất để kết luận dễ bảo trì.
 - Health R2 báo connected không xác minh kết nối thật (đã ghi trong DOCKER_DEPLOYMENT.md) vẫn là vấn đề riêng, chưa sửa nghiệp vụ monitoring trong lượt refactor này.
 
 ## Bằng chứng
+
+### Vòng tiếp theo sau commit d61627a
+
+- `d61627a` commit riêng Docker và refactor đầu; các chỉnh sửa đã staged từ phiên khác được giữ nguyên. Chưa push.
+- `b60ecbd` gom resolve admin status cho adminRoute/requirePermission; giữ nguyên thời điểm tính lại flags và hành vi gắn role. Test bao phủ guest, missing role, cached flags, super admin, permission thiếu và role hết hạn. Chưa khẳng định bao phủ toàn bộ IP/time policy thực tế.
+- Gom ba khối xóa cache lặp ở create/update/delete collection vào `services/collection/collectionCache.js`; giữ nguyên thứ tự query cache → response cache, log và không làm request thất bại khi response cache lỗi. Không thay TTL/key hoặc chính sách invalidation.
+- Kết quả cuối vòng: 36/36 tests pass; verify:structure pass và verify:admin pass sau thay đổi quyền. Vòng này chưa chạy lại Docker/HTTP, vì thay đổi nằm ở logic request/cache đã mock kiểm thử; cần kiểm tài khoản thật/quyền thật trước nghiệm thu production.
+- Trong lượt đọc sâu videoConverter thấy timeout GIF dùng `Promise.race` với timer không được clear khi hoàn tất, và timeout không chủ động dừng ffmpeg. Ghi nhận để xử lý riêng cùng kiểm thử tiến trình con; chưa đổi trong refactor quyền/cache.
 
 - 34/34 tests backend pass trên Windows Node 24; thêm regression cho profile update, public response, password settings/fallback, RGB và ngưỡng màu.
 - `verify:structure`: 0 vấn đề. `verify:admin`: chuỗi import còn nguyên.
