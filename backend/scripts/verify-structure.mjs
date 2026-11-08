@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 /**
  * Verifies the restructured backend:
  *  1. every relative import specifier resolves to a real file
@@ -7,7 +8,7 @@
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 
-const BACKEND = 'C:/Users/Fenn/Desktop/PhotoCloud/backend';
+const BACKEND = fileURLToPath(new URL('../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 const norm = (p) => p.replace(/\\/g, '/');
 
 function walk(dir) {

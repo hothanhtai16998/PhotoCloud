@@ -1,3 +1,5 @@
+import { selectDominantColors } from '../../utils/dominantColorSelection.js';
+import { rgbToColorName } from '../../utils/colorNames.js';
 import sharp from 'sharp';
 
 /**
@@ -7,91 +9,7 @@ import sharp from 'sharp';
  * @param {number} b - Blue (0-255)
  * @returns {string} Color name
  */
-function rgbToColorName(r, g, b) {
-    // Normalize RGB values
-    const normalizedR = r / 255;
-    const normalizedG = g / 255;
-    const normalizedB = b / 255;
 
-    // Calculate brightness (lightness)
-    const brightness = (normalizedR + normalizedG + normalizedB) / 3;
-
-    // Calculate saturation
-    const max = Math.max(normalizedR, normalizedG, normalizedB);
-    const min = Math.min(normalizedR, normalizedG, normalizedB);
-    const delta = max - min;
-    const saturation = max === 0 ? 0 : delta / max;
-
-    // === Step 1: Handle achromatic colors (black, white, gray) ===
-    // Black: very dark (brightness < 0.15 for better detection)
-    if (brightness < 0.15) return 'black';
-    
-    // White: bright pixels with very low saturation (relaxed slightly from 0.98 to 0.95 for better detection)
-    // Require: brightness > 0.95 AND saturation < 0.05
-    // This prevents light gray from being classified as white while allowing more white detection
-    if (brightness > 0.95 && saturation < 0.05) return 'white';
-    
-    // Gray: low saturation (includes light gray that didn't meet white threshold)
-    // Use stricter threshold: saturation < 0.15 (was 0.2) to better distinguish gray from muted colors
-    if (saturation < 0.15) return 'gray';
-
-    // === Step 2: Calculate hue ===
-    let hue = 0;
-    if (delta === 0) {
-        // No hue (achromatic), but we already handled this above
-        return 'gray';
-    } else if (max === normalizedR) {
-        hue = 60 * (((normalizedG - normalizedB) / delta) % 6);
-    } else if (max === normalizedG) {
-        hue = 60 * ((normalizedB - normalizedR) / delta + 2);
-    } else {
-        hue = 60 * ((normalizedR - normalizedG) / delta + 4);
-    }
-    if (hue < 0) hue += 360;
-
-    // === Step 3: Handle brown (special case - needs brightness + saturation + hue) ===
-    // Brown: low-medium brightness, low-medium saturation, orange/red/yellow hue range
-    // Improved brown detection for better accuracy
-    if (brightness >= 0.2 && brightness < 0.6 && saturation >= 0.15 && saturation < 0.7) {
-        // Brown covers orange-red to yellow-orange range
-        if (hue >= 10 && hue < 50) {
-            return 'brown';
-        }
-        // Also catch dark reds that look brown
-        if ((hue >= 0 && hue < 10 || hue >= 350) && brightness < 0.45) {
-            return 'brown';
-        }
-    }
-
-    // === Step 4: Map hue to color names (optimized for photography) ===
-    // Standard HSV hue ranges optimized for accurate color detection in photos
-    
-    // Red: 0-15 and 345-360 (wraps around)
-    if (hue >= 0 && hue < 15) return 'red';
-    if (hue >= 345 && hue < 360) return 'red';
-    
-    // Orange: 15-30
-    if (hue >= 15 && hue < 30) return 'orange';
-    
-    // Yellow: 30-60
-    if (hue >= 30 && hue < 60) return 'yellow';
-    
-    // Green: 60-150 (covers all green shades including yellow-green and blue-green)
-    if (hue >= 60 && hue < 150) return 'green';
-    
-    // Blue: 150-240 (covers cyan-blue to blue-purple)
-    if (hue >= 150 && hue < 240) return 'blue';
-    
-    // Purple: 240-270 (violet/purple range)
-    if (hue >= 240 && hue < 270) return 'purple';
-    
-    // Pink: 270-345 (magenta to pink-red range)
-    // This covers the gap between purple and red for pink/magenta colors
-    if (hue >= 270 && hue < 345) return 'pink';
-
-    // Fallback (shouldn't reach here, but safety net)
-    return 'gray';
-}
 
 /**
  * Extract dominant colors from an image using improved algorithm
@@ -195,47 +113,7 @@ async function extractDominantColorsSimple(imageBuffer, maxColors = 3) {
 
         // === Post-processing: Filter out colors with insufficient presence ===
         // This prevents small highlights, reflections, or noise from being classified as dominant
-        const totalPixels = Array.from(colorCounts.values()).reduce((sum, count) => sum + count, 0);
-        if (totalPixels === 0) return [];
-        
-        const MIN_COLOR_PERCENTAGE = 0.08; // 8% minimum to be considered dominant
-        const MIN_WHITE_BLACK_PERCENTAGE = 0.12; // 12% minimum for white/black (they need more presence)
-        
-        const filteredColors = sortedColors.filter(color => {
-            const colorCount = colorCounts.get(color) || 0;
-            const colorPercentage = colorCount / totalPixels;
-            
-            // Special handling for white and black (they need higher threshold)
-            if (color === 'white' || color === 'black') {
-                return colorPercentage >= MIN_WHITE_BLACK_PERCENTAGE;
-            }
-            
-            // For other colors, use standard threshold
-            return colorPercentage >= MIN_COLOR_PERCENTAGE;
-        });
-        
-        // If we filtered out colors, try to fill back to maxColors with remaining valid colors
-        if (filteredColors.length < maxColors && filteredColors.length < sortedColors.length) {
-            const remainingColors = Array.from(colorCounts.entries())
-                .filter(([color]) => !filteredColors.includes(color))
-                .map(([color, count]) => {
-                    const percentage = count / totalPixels;
-                    // Apply same thresholds
-                    if (color === 'white' || color === 'black') {
-                        return percentage >= MIN_WHITE_BLACK_PERCENTAGE ? { color, count, percentage } : null;
-                    }
-                    return percentage >= MIN_COLOR_PERCENTAGE ? { color, count, percentage } : null;
-                })
-                .filter(item => item !== null)
-                .sort((a, b) => b.count - a.count)
-                .slice(0, maxColors - filteredColors.length)
-                .map(item => item.color);
-                
-            return [...filteredColors, ...remainingColors];
-        }
-        
-        // If no colors found after filtering, return empty array
-        return filteredColors.length > 0 ? filteredColors : [];
+        return selectDominantColors(colorCounts, sortedColors, maxColors, 0.12);
     } catch (error) {
         console.error('Error extracting colors:', error);
         // Return empty array on error (don't fail upload)

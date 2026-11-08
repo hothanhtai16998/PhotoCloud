@@ -1,0 +1,63 @@
+name: Docker image
+on:
+  pull_request:
+    paths: ['backend/**', 'frontend/**', 'shared/**', '.github/workflows/docker.yml']
+  push:
+    branches: [main, develop]
+    paths: ['backend/**', 'frontend/**', 'shared/**', '.github/workflows/docker.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          load: true
+          tags: photocloud:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Check image contents and native modules
+        run: |
+          docker image inspect photocloud:ci --format 'Image bytes: {{.Size}}; user: {{.Config.User}}'
+          docker run --rm -i --entrypoint node photocloud:ci --input-type=module < backend/scripts/verify-container.mjs
+      - name: Start with disposable MongoDB and check HTTP
+        run: |
+          docker network create photocloud-test
+          docker run -d --name mongo --network photocloud-test mongo:7
+          docker run -d --name app --network photocloud-test \
+            -e MONGODB_URI=mongodb://mongo:27017/photocloud_container_test \
+            -e ACCESS_TOKEN_SECRET=container-test-only-not-a-real-secret \
+            -e CLIENT_URL=http://localhost:3000 \
+            -e R2_ACCOUNT_ID=container-test -e R2_ACCESS_KEY_ID=test \
+            -e R2_SECRET_ACCESS_KEY=test -e R2_BUCKET_NAME=test photocloud:ci
+          for attempt in $(seq 1 30); do
+            if docker exec app node --input-type=module -e '
+              import assert from "node:assert/strict";
+              const base = "http://127.0.0.1:3000";
+              const health = await fetch(base + "/api/health");
+              assert.equal(health.status, 200);
+              assert.ok((await health.json()).status);
+              const home = await fetch(base + "/");
+              assert.equal(home.status, 200);
+              const html = await home.text();
+              const asset = html.match(/src="(\/assets\/[^" ]+\.js)"/);
+              assert.ok(asset, "Missing application JS in HTML");
+              assert.equal((await fetch(base + asset[1])).status, 200);
+              console.log("PASS: health, homepage and JS asset");
+            '; then exit 0; fi
+            sleep 2
+          done
+          exit 1
+      - name: Logs and cleanup
+        if: always()
+        run: |
+          docker logs app 2>&1 || true
+          docker rm -f app mongo || true
+          docker network rm photocloud-test || true

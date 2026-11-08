@@ -2,9 +2,9 @@
  * Runtime check: every module the admin area imports must actually load and
  * expose the functions the admin controllers destructure from it.
  */
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const BASE = 'C:/Users/Fenn/Desktop/PhotoCloud/backend';
+const BASE = fileURLToPath(new URL('../', import.meta.url)).replace(/\\/g, '/').replace(/\/$/, '');
 const toUrl = (rel) => pathToFileURL(BASE + '/' + rel).href;
 
 const CHECKS = [

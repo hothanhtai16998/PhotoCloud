@@ -1,0 +1,32 @@
+# Dockerfile-specific allowlist, relative to the repository-root build context.
+# Keep credentials, local dependencies, QA output and Git history out of all stages.
+**
+!backend/
+!backend/package.json
+!backend/package-lock.json
+!backend/src/
+!backend/src/**
+!frontend/
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/index.html
+!frontend/*.ts
+!frontend/*.json
+!frontend/src/
+!frontend/src/**
+!frontend/public/
+!frontend/public/**
+!frontend/scripts/
+!frontend/scripts/generate-palette-defaults.cjs
+!shared/
+!shared/**
+**/.env
+**/.env.*
+**/.npmrc
+**/node_modules
+**/.git
+**/*.log
+**/coverage
+**/.cache
+**/*.test.*
+**/*.spec.*

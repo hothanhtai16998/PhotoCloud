@@ -60,5 +60,13 @@ npm run verify:admin                   # chuỗi import của khu vực admin c�
 
 ## Ghi chú lịch sử
 
+### Refactor trách nhiệm ngày 08/11/2026
+
+- `controllers/user/userController.js` giữ vai trò entry point tương thích; implementation nằm trong directory, password, profile, stats, pinned images và preferences controllers.
+- `controllers/collection/collectionCRUDController.js` re-export read/write controllers. Không đổi route hoặc tên handler.
+- `services/auth/passwordRequirements.js` sở hữu đọc chính sách mật khẩu từ settings; `services/media/activityGuard.js` sở hữu kiểm tra chống lạm dụng lượt xem/tải.
+- Utility thuần `profileFields`, `publicUser`, `colorNames`, `dominantColorSelection` dùng lại quy tắc ổn định; không chứa I/O.
+- Chi tiết phạm vi, kiểm chứng và bảng quét từng file: [báo cáo backend](../../BACKEND_MAINTAINABILITY_REVIEW.md).
+
 Cấu trúc này được sắp xếp lại từ bố cục cũ (`libs/`, `configs/`, `utils/` lẫn lộn hàm thuần với code I/O, controller rải theo file ở gốc `controllers/`). Việc di chuyển chỉ đổi vị trí file và đường dẫn import — không đổi route, không đổi tên hàm, không đổi hành vi.
 

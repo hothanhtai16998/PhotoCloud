@@ -2,7 +2,8 @@ app = "photocloud"
 primary_region = "sin"  # Singapore - closest to Vietnam
 
 [build]
-  dockerfile = "Dockerfile"
+  # Run from the repository root: fly deploy . --config backend/fly.toml
+  dockerfile = "backend/Dockerfile"
 
 [env]
   PORT = "3000"

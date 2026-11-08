@@ -1,24 +1,19 @@
-# Dependencies
+# Defense in depth for any tools that use backend/ as their context.
 node_modules
-npm-debug.log
-package-lock.json
-
-# Development files
-.env.local
-.env.development
-
-# Test files
+.env
+.env.*
+.npmrc
+.git
+coverage
+tests
 __tests__
+scripts
 *.test.js
 *.spec.js
-
-# IDE files
+*.log
+.npm
+.cache
 .vscode
 .idea
-*.swp
-*.swo
-
-# OS files
 .DS_Store
 Thumbs.db
-
