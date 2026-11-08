@@ -1,3 +1,4 @@
+import { ensureRequestAdminStatus } from '../services/permissions/requestAdminStatus.js';
 import { asyncHandler } from './asyncHandler.js';
 
 /**
@@ -15,16 +16,7 @@ export const adminRoute = asyncHandler(async (req, res, next) => {
 
     // Use computed admin status from authMiddleware (based on AdminRole)
     // If not computed yet, compute it now
-    if (req.user.isSuperAdmin === undefined || req.user.isAdmin === undefined) {
-        const { computeAdminStatus } = await import('../services/permissions/adminUtils.js');
-        const clientIP = req.clientIP || null;
-        const { isAdmin, isSuperAdmin, adminRole } = await computeAdminStatus(req.user._id, clientIP);
-        req.user.isAdmin = isAdmin;
-        req.user.isSuperAdmin = isSuperAdmin;
-        if (adminRole) {
-            req.adminRole = adminRole;
-        }
-    }
+    await ensureRequestAdminStatus(req);
 
     // Check if user is admin (computed from AdminRole)
     if (!req.user.isAdmin && !req.user.isSuperAdmin) {

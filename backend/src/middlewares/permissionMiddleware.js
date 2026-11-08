@@ -1,3 +1,4 @@
+import { ensureRequestAdminStatus } from '../services/permissions/requestAdminStatus.js';
 import AdminRole from '../models/AdminRole.js';
 import User from '../models/User.js';
 import { asyncHandler } from './asyncHandler.js';
@@ -100,15 +101,8 @@ export const requirePermission = (permission) => {
         // Use computed admin status from authMiddleware (based on AdminRole)
         // If not computed yet, compute it now
         if (req.user.isSuperAdmin === undefined || req.user.isAdmin === undefined) {
-            const { computeAdminStatus } = await import('../services/permissions/adminUtils.js');
-            const clientIP = req.clientIP || null;
-            const { isAdmin, isSuperAdmin, adminRole } = await computeAdminStatus(req.user._id, clientIP);
-            req.user.isAdmin = isAdmin;
-            req.user.isSuperAdmin = isSuperAdmin;
-            if (adminRole) {
-                req.adminRole = adminRole;
-                req.user._adminRole = adminRole;
-            }
+            const resolvedRole = await ensureRequestAdminStatus(req);
+            if (resolvedRole) req.user._adminRole = resolvedRole;
         }
 
         // Super admin has all permissions
