@@ -20,7 +20,7 @@ import { singleUpload } from '../middlewares/multerMiddleware.js';
 import { protectedRoute, optionalAuth } from '../middlewares/authMiddleware.js';
 import { uploadLimiter } from '../middlewares/rateLimiter.js';
 import { validateImageUpload, validateGetImages, validateUserId } from '../middlewares/validationMiddleware.js';
-import { validateCsrf } from '../middlewares/csrfMiddleware.js';
+
 import { cacheMiddleware } from '../middlewares/cacheMiddleware.js';
 const router = express.Router();
 // Public route - get all images (with optional search/category filters)

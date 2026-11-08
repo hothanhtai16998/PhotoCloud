@@ -17,9 +17,12 @@ import { BRAND } from '@/constants/brand';
 import { HeaderMarquee } from '../HeaderMarquee';
 import './HeroBooking.css';
 import { DraftNotice } from '../home/DraftNotice';
+import type { HomeCollectionsState } from '../home/useHomeCollections';
+import { collectionCaption } from '../home/homeGuideFacts';
 
 interface HeroBookingProps {
     onViewPackages?: () => void;
+    collectionState?: HomeCollectionsState;
 }
 
 const HIGHLIGHTS = [
@@ -41,15 +44,15 @@ function pickImageUrl(c: HeroCollection): string | null {
     return img.thumbnailUrl || img.url || null;
 }
 
-export function HeroBooking({ onViewPackages }: HeroBookingProps) {
+export function HeroBooking({ onViewPackages, collectionState }: HeroBookingProps) {
     const scrollHintRef = useRef<HTMLDivElement>(null);
     const [copyRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.1 });
     const [visualRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.05, delay: 150 });
 
     // Fetch 4 collection từ API (cache 24h, fallback random)
-    const [collections, setCollections] = useState<HeroCollection[]>([]);
-    const [isAdminPicked, setIsAdminPicked] = useState(false);
-    const [loading, setLoading] = useState(true);
+    const [localCollections, setCollections] = useState<HeroCollection[]>([]);
+    const [localPicked, setIsAdminPicked] = useState(false);
+    const [localLoading, setLoading] = useState(true);
 
     useEffect(() => {
         let frame = 0;
@@ -70,7 +73,11 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
         };
     }, []);
 
+    const collections = collectionState?.collections ?? localCollections;
+    const isAdminPicked = collectionState?.isAdminPicked ?? localPicked;
+    const loading = collectionState?.loading ?? localLoading;
     useEffect(() => {
+        if (collectionState) return;
         let mounted = true;
         getHeroCollections()
             .then((res) => {
@@ -88,7 +95,7 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
         return () => {
             mounted = false;
         };
-    }, []);
+    }, [collectionState]);
 
     return (
         <section className="hero-section" aria-labelledby="home-booking-title">
@@ -169,7 +176,10 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
             </div>
 
             {/* 4 collections 2x2 — tên nằm phía trên mỗi card */}
-            <div ref={visualRef} className="hero-visual" aria-label="Bộ sưu tập nổi bật">
+            <div ref={visualRef} className="hero-visual" aria-label="Bộ sưu tập nổi bật"
+                data-guide-auto={collections[0] ? 'true' : undefined}
+                data-guide-action="album" data-guide-caption={collections[0] ? collectionCaption(collections[0]) : undefined}
+                data-guide-target={collections[0] ? `/collections/${collections[0]._id}` : undefined}>
                 <div className="hero-visual-heading">
                     <Images size={14} />
                     <span>{isAdminPicked ? 'Bộ sưu tập được chọn' : 'Bộ sưu tập nổi bật'}</span>
@@ -203,6 +213,8 @@ export function HeroBooking({ onViewPackages }: HeroBookingProps) {
                                     key={c._id}
                                     href={`/collections/${c._id}`}
                                     className="hero-collection"
+                                    data-guide-caption={collectionCaption(c)}
+                                    data-guide-action="album"
                                     style={{ ['--collection-index']: i } as React.CSSProperties}
                                 >
                                     <span className="hero-collection-label">

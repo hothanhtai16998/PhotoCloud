@@ -1,7 +1,7 @@
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import mongoose from 'mongoose';
 import Notification from '../../models/Notification.js';
-import { logger } from '../../utils/logger.js';
+
 
 /**
  * Get user's notifications

@@ -2,7 +2,7 @@ import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import mongoose from 'mongoose';
 import CollectionVersion from '../../models/CollectionVersion.js';
 import Collection from '../../models/Collection.js';
-import { logger } from '../../utils/logger.js';
+
 import { createCollectionVersion } from '../../services/collection/collectionVersionHelper.js';
 
 /**

@@ -176,7 +176,6 @@ export const clearFavoritesCache = (userId) => {
 export const clearDownloadHistoryCache = (userId) => {
     if (!userId) return;
     
-    const userIdStr = String(userId);
     let cleared = 0;
     
     // Iterate through all cache keys and delete any that match download history for this user
@@ -224,12 +223,10 @@ export const clearCollectionsCache = (userId) => {
  */
 setInterval(() => {
     const now = Date.now();
-    let cleaned = 0;
     
     for (const [key, value] of cache.entries()) {
         if (now >= value.expiresAt) {
             cache.delete(key);
-            cleaned++;
         }
     }
     

@@ -1,0 +1,347 @@
+import mongoose from 'mongoose';
+import crypto from 'crypto';
+import { asyncHandler } from '../../middlewares/asyncHandler.js';
+import { addJob } from '../../workers/jobQueue.js';
+import { RAW_UPLOAD_FOLDER } from '../../utils/constants.js';
+import { extensionMap, validateFileType } from '../../utils/fileTypeUtils.js';
+import Notification from '../../models/Notification.js';
+import Settings from '../../models/Settings.js';
+import UploadJob from '../../models/UploadJob.js';
+import {
+  generatePresignedUploadUrl,
+  deleteObjectByKey,
+} from '../../config/storage.js';
+import { logger } from '../../utils/logger.js';
+
+// small constants used in this controller
+const UPLOAD_ID_PATTERN = /^image-\d+-[a-f0-9]{8}$/;
+
+// Safe wrapper for optional async helpers (prevents "reading 'catch' of undefined")
+
+/**
+ * Generate secure random upload ID
+ */
+const generateUploadId = () => {
+  const timestamp = Date.now();
+  // 4 bytes -> 8 hex chars, safe and short
+  const rand = crypto.randomBytes(4).toString('hex');
+  return `image-${timestamp}-${rand}`;
+};
+
+const getFileExtension = (fileName = '', fileType = '') => {
+  const nameExt = fileName.includes('.')
+    ? fileName.split('.').pop()?.toLowerCase()
+    : null;
+  if (nameExt && nameExt.length <= 5 && /^[a-z0-9]+$/.test(nameExt)) {
+    return nameExt;
+  }
+
+  if (typeof fileType === 'string' && fileType.includes('/')) {
+    const typePart = fileType.split('/')[1]?.toLowerCase();
+    if (typePart && /^[a-z0-9+\-]+$/.test(typePart)) {
+      return extensionMap[typePart] || typePart;
+    }
+  }
+
+  return 'bin';
+};
+
+/**
+ * Extract metadata from image buffer in parallel
+ */
+export const preUploadImage = asyncHandler(async (req, res) => {
+  const { fileName, fileType, fileSize } = req.body;
+
+  if (!fileName || !fileType || fileSize === undefined || fileSize === null) {
+    return res.status(400).json({
+      message: 'Thiếu thông tin tệp tin',
+    });
+  }
+
+  // Basic filename sanity check
+  if (String(fileName).length > 255) {
+    return res.status(400).json({ message: 'Tên tệp quá dài' });
+  }
+
+  const isImage = fileType.startsWith('image/');
+  const isVideo = fileType.startsWith('video/');
+
+  if (!isImage && !isVideo) {
+    return res.status(400).json({
+      message: 'Tệp phải có định dạng là ảnh hoặc video',
+    });
+  }
+
+  // Get settings for file size and type validation
+  const systemSettings = await Settings.findOne({ key: 'system' });
+  const maxUploadSizeMB = systemSettings?.value?.maxUploadSize || 10;
+  const allowedFileTypes = systemSettings?.value?.allowedFileTypes || [
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+  ];
+  const maxFileSizeBytes = maxUploadSizeMB * 1024 * 1024;
+
+  // Validate file size against settings
+  const numericFileSize = Number(fileSize);
+  if (
+    Number.isNaN(numericFileSize) ||
+    numericFileSize <= 0 ||
+    numericFileSize > maxFileSizeBytes
+  ) {
+    return res.status(413).json({
+      message: `Tệp quá lớn. Vui lòng chọn tệp nhỏ hơn ${maxUploadSizeMB}MB`,
+    });
+  }
+
+  // Validate file type against settings
+  const allowedExtensions = Array.isArray(allowedFileTypes)
+    ? allowedFileTypes.map((t) => t.toLowerCase())
+    : allowedFileTypes.split(',').map((t) => t.trim().toLowerCase());
+
+  if (!validateFileType(fileType, fileName, allowedFileTypes)) {
+    return res.status(400).json({
+      message: `Định dạng file không được phép. Các định dạng được phép: ${allowedExtensions.join(', ')}`,
+    });
+  }
+
+  try {
+    const uploadId = generateUploadId();
+    const extension = getFileExtension(fileName, fileType);
+    const uploadKey = `${RAW_UPLOAD_FOLDER}/${uploadId}.${extension}`;
+    const uploadUrl = await generatePresignedUploadUrl(uploadKey, fileType);
+    await UploadJob.create({ _id: uploadId, userId: req.user._id, uploadKey });
+
+    res.status(200).json({
+      message: 'Khởi tạo tải lên thành công',
+      uploadId,
+      uploadKey,
+      uploadUrl,
+      expiresIn: 300,
+      maxFileSize: maxFileSizeBytes,
+    });
+  } catch (error) {
+    logger.error('Failed to generate upload URL:', error.message);
+    throw new Error('Không thể khởi tạo tải ảnh. Vui lòng thử lại.');
+  }
+});
+
+export const deletePreUploadedFile = asyncHandler(async (req, res) => {
+  const { uploadKey } = req.body;
+
+  if (typeof uploadKey !== 'string' || !uploadKey) {
+    return res.status(400).json({
+      message: 'Thiếu uploadKey',
+    });
+  }
+
+  // Security: Only allow deletion of files in the raw upload folder
+  if (!uploadKey.startsWith(RAW_UPLOAD_FOLDER + '/')) {
+    return res.status(403).json({
+      message: 'Không được phép xóa file này',
+    });
+  }
+
+  try {
+    const reservation = await UploadJob.findOne({
+      uploadKey,
+      userId: req.user._id,
+      kind: 'upload',
+    });
+    if (!reservation)
+      return res
+        .status(404)
+        .json({ message: 'Không tìm thấy file tải lên của bạn.' });
+    if (reservation.status !== 'staged')
+      return res
+        .status(200)
+        .json({ message: 'File đang được xử lý hoặc đã hoàn tất.' });
+    const removed = await UploadJob.findOneAndDelete({
+      _id: reservation._id,
+      userId: req.user._id,
+      status: 'staged',
+    });
+    if (!removed)
+      return res.status(200).json({ message: 'File đã được tiếp nhận xử lý.' });
+    await deleteObjectByKey(uploadKey);
+    logger.info(`Deleted pre-uploaded file: ${uploadKey}`);
+    res.status(200).json({
+      message: 'Đã xóa file tải lên',
+    });
+  } catch (error) {
+    logger.error('Failed to delete pre-uploaded file:', error.message);
+    // Don't fail if file doesn't exist (might have been deleted already)
+    if (error.name === 'NoSuchKey' || error.Code === 'NoSuchKey') {
+      res.status(200).json({
+        message: 'File đã được xóa hoặc không tồn tại',
+      });
+    } else {
+      throw new Error('Không thể xóa file. Vui lòng thử lại.');
+    }
+  }
+});
+
+export const finalizeImageUpload = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  const isAdmin = req.user?.isAdmin || req.user?.isSuperAdmin;
+  const {
+    uploadId,
+    uploadKey,
+    imageTitle,
+    location,
+    cameraModel,
+    coordinates,
+    tags,
+  } = req.body;
+  let { imageCategory } = req.body;
+
+  // Quick validation only — no downloads/processing here
+  if (
+    typeof uploadId !== 'string' ||
+    typeof uploadKey !== 'string' ||
+    !uploadId ||
+    !uploadKey
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'uploadId and uploadKey required' });
+  }
+
+  // Validate uploadId format
+  if (!UPLOAD_ID_PATTERN.test(uploadId)) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'uploadId invalid' });
+  }
+
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  // Title is optional - can be empty for normal users (admin will add later)
+  const trimmedTitle = imageTitle ? String(imageTitle).trim() : '';
+  const finalTitle = trimmedTitle || undefined; // Send undefined if empty
+  if (
+    (location != null && typeof location !== 'string') ||
+    (cameraModel != null && typeof cameraModel !== 'string')
+  ) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Thông tin ảnh không hợp lệ.' });
+  }
+
+  // Category validation: required for admin users, optional for normal users
+  if (isAdmin) {
+    if (
+      typeof imageCategory !== 'string' ||
+      !mongoose.Types.ObjectId.isValid(imageCategory.trim())
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Danh mục ảnh không hợp lệ.' });
+    }
+    // Admin users must provide a category
+    if (typeof imageCategory === 'string') {
+      if (imageCategory.trim() === '') {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: 'imageCategory required for admin users',
+          });
+      }
+    } else if (
+      !imageCategory ||
+      !mongoose.Types.ObjectId.isValid(imageCategory)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'imageCategory invalid' });
+    }
+  } else {
+    // Normal users can upload without category (will be pending, admin adds category later)
+    // Allow empty string or undefined for category
+    if (
+      imageCategory &&
+      typeof imageCategory === 'string' &&
+      imageCategory.trim() === ''
+    ) {
+      // Empty string is allowed for normal users
+      imageCategory = undefined;
+    } else if (
+      imageCategory &&
+      !mongoose.Types.ObjectId.isValid(imageCategory)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'imageCategory invalid' });
+    }
+  }
+
+  // Enqueue background job — server does NOT download/process here
+  const job = await addJob({
+    uploadKey,
+    uploadId,
+    userId: userId.toString(),
+    isAdmin: !!isAdmin,
+    imageTitle: finalTitle,
+    imageCategory,
+    location,
+    cameraModel,
+    coordinates,
+    tags,
+  });
+
+  if (!job)
+    return res
+      .status(404)
+      .json({
+        success: false,
+        message:
+          'Phiên tải lên không tồn tại hoặc không thuộc tài khoản này. Vui lòng chọn lại file.',
+      });
+
+  // Return 202 Accepted immediately
+  return res.status(202).json({
+    success: true,
+    message: 'Đã tiếp nhận ảnh để xử lý.',
+    uploadId: job._id,
+    status: job.status,
+  });
+});
+
+export const createBulkUploadNotification = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { successCount, totalCount, failedCount } = req.body;
+
+  if (typeof successCount !== 'number' || typeof totalCount !== 'number') {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid parameters',
+    });
+  }
+
+  try {
+    await Notification.create({
+      recipient: userId,
+      type: 'bulk_upload_completed',
+      metadata: {
+        successCount,
+        totalCount,
+        failedCount: failedCount || 0,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Bulk upload notification created',
+    });
+  } catch (error) {
+    logger.error('Failed to create bulk notification:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create notification',
+    });
+  }
+});

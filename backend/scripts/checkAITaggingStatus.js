@@ -26,30 +26,30 @@ export async function checkAITaggingStatus() {
 
         // Determine if properly configured
         if (!status.enabled) {
-            status.message = 'AI Tagging is disabled in settings';
+            status.message = 'AI Tagging đã bị vô hiệu hóa trong cài đặt';
             status.configured = false;
         } else if (status.provider === 'fallback') {
-            status.message = 'Provider is set to "fallback" (does not generate tags). Set to "google" or "aws" to enable AI tagging.';
+            status.message = 'Provider đã được đặt thành "fallback" (không tạo tags). Đặt thành "google" hoặc "aws" để kích hoạt AI tagging.';
             status.configured = false;
         } else if (status.provider === 'google' && !status.hasGoogleKey) {
-            status.message = 'Google provider selected but API key is missing';
+            status.message = 'Google provider đã được chọn nhưng API key bị thiếu';
             status.configured = false;
         } else if (status.provider === 'aws' && !status.hasAwsCredentials) {
-            status.message = 'AWS provider selected but credentials are missing';
+            status.message = 'AWS provider đã được chọn nhưng credentials bị thiếu';
             status.configured = false;
         } else {
-            status.message = 'AI Tagging is properly configured';
+            status.message = 'AI Tagging đã được cấu hình chính xác';
             status.configured = true;
         }
 
         return status;
     } catch (error) {
-        logger.error('[AI Tagging Status] Error checking status:', error);
+        logger.error('[AI Tagging Status] Lỗi kiểm tra trạng thái:', error);
         return {
             enabled: false,
             provider: 'unknown',
             configured: false,
-            message: `Error checking status: ${error.message}`,
+            message: `Lỗi kiểm tra trạng thái: ${error.message}`,
         };
     }
 }
@@ -59,7 +59,7 @@ export async function checkAITaggingStatus() {
  */
 export async function logAITaggingStatus() {
     const status = await checkAITaggingStatus();
-    logger.info('[AI Tagging Status]', status);
+    logger.info('[Trạng thái AI Tagging]', status);
     return status;
 }
 

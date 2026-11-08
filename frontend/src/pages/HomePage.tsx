@@ -22,8 +22,9 @@ import { buildFilterParams } from "@/utils/buildFilterParams";
 import { ActiveFiltersIndicator } from "@/components/ActiveFiltersIndicator";
 import { usePreparedGridImages } from '@/hooks/usePreparedGridImages';
 import { HomeTourGuide } from '@/components/home/HomeTourGuide';
-import { HomeWayfinding } from '@/components/home/HomeWayfinding';
 import { HomeJourney } from '@/components/home/HomeJourney';
+import { HomeGuideScene } from '@/components/home/HomeGuideScene';
+import { useHomeCollections } from '@/components/home/useHomeCollections';
 import { HeroBooking } from '@/components/booking/HeroBooking';
 import { VisualArtFormsSlider } from '@/components/VisualArtFormsSlider';
 import { PackagesSection } from '@/components/booking/PackagesSection';
@@ -48,6 +49,7 @@ function HomePage() {
     const visibleImages = usePreparedGridImages(images);
     const actualLocation = useContext(ActualLocationContext);
     const isCategoryPage = Boolean(actualLocation?.pathname.startsWith('/t/'));
+    const homeCollections = useHomeCollections(!isCategoryPage);
     const { category } = useImageGridCategory();
     const { filters } = useSearchFilters();
     const navigate = useNavigate();
@@ -246,12 +248,11 @@ function HomePage() {
                 <LayoutGroup>
                 {(!isCategoryPage || !currentSearch) && (
                     <>
-                        {!isCategoryPage && <HomeWayfinding />}
-                        <HeroBooking onViewPackages={scrollToPackages} />
-                        {!isCategoryPage && <HomeJourney />}
-                        <PackagesSection />
-                        <HowItWorks />
-                        <TestimonialsCarousel />
+                        {isCategoryPage && <HeroBooking onViewPackages={scrollToPackages} />}
+                        {!isCategoryPage && <HomeJourney collectionState={homeCollections} />}
+                        <HomeGuideScene enabled={!isCategoryPage}><PackagesSection sequential={!isCategoryPage} /></HomeGuideScene>
+                        <HomeGuideScene enabled={!isCategoryPage}><HowItWorks /></HomeGuideScene>
+                        {isCategoryPage && <TestimonialsCarousel />}
                     </>
                 )}
                 {isCategoryPage && sliderCollapsed && !currentSearch && <section className="category-intro">
@@ -272,7 +273,7 @@ function HomePage() {
                 />
                 </motion.div>}
                 </LayoutGroup>
-                {(!isCategoryPage || (!currentSearch && !sliderCollapsed)) && <><BookingFAQ /><FinalCTA /></>}
+                {(!isCategoryPage || (!currentSearch && !sliderCollapsed)) && <><HomeGuideScene enabled={!isCategoryPage}><BookingFAQ /></HomeGuideScene><HomeGuideScene enabled={!isCategoryPage}><FinalCTA /></HomeGuideScene></>}
                 </div>
             </main>
         </>

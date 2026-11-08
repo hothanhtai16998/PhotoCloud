@@ -7,6 +7,8 @@ import { logger } from '../../utils/logger.js';
 
 // Cache storage
 const cache = new Map();
+// Ownership tokens prevent invalidated in-flight reads from repopulating stale data.
+const pendingReads = new Map();
 const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes default
 
 /**
@@ -37,6 +39,7 @@ export function getCache(key) {
  * @param {number} ttlMs - Time to live in milliseconds (default: 5 minutes)
  */
 export function setCache(key, value, ttlMs = DEFAULT_TTL) {
+    pendingReads.delete(key);
     cache.set(key, {
         value,
         expiresAt: Date.now() + ttlMs,
@@ -48,6 +51,7 @@ export function setCache(key, value, ttlMs = DEFAULT_TTL) {
  * @param {string} key - Cache key
  */
 export function deleteCache(key) {
+    pendingReads.delete(key);
     cache.delete(key);
 }
 
@@ -55,6 +59,7 @@ export function deleteCache(key) {
  * Clear all cache
  */
 export function clearCache() {
+    pendingReads.clear();
     cache.clear();
 }
 
@@ -80,19 +85,21 @@ export function generateCacheKey(prefix, params) {
  * @returns {Promise<any>} Cached or fresh result
  */
 export async function cached(key, fn, ttlMs = DEFAULT_TTL) {
-    // Try cache first
-    const cached = getCache(key);
-    if (cached !== null) {
-        return cached;
-    }
-    
-    // Execute function
-    const result = await fn();
-    
-    // Cache result
-    setCache(key, result, ttlMs);
-    
-    return result;
+    const value = getCache(key);
+    if (value !== null) return value;
+    const existing = pendingReads.get(key);
+    if (existing) return existing.promise;
+
+    const owner = {};
+    // Defer execution so even synchronous failures run after ownership is registered.
+    owner.promise = Promise.resolve().then(fn).then(result => {
+        if (pendingReads.get(key) === owner) setCache(key, result, ttlMs);
+        return result;
+    }).finally(() => {
+        if (pendingReads.get(key) === owner) pendingReads.delete(key);
+    });
+    pendingReads.set(key, owner);
+    return owner.promise;
 }
 
 /**

@@ -1,8 +1,8 @@
 import Collection from '../../models/Collection.js';
 import { logger } from '../../utils/logger.js';
-import { safeTrim, isValidObjectId } from '../../utils/inputUtils.js';
+import { isValidObjectId } from '../../utils/inputUtils.js';
 import mongoose from 'mongoose';
-import { cached, generateCacheKey, deleteCache } from '../../services/cache/queryCache.js';
+import { cached, generateCacheKey } from '../../services/cache/queryCache.js';
 
 export const getUserCollections = async (req, res) => {
     try {

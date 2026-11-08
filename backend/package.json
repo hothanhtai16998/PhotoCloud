@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "nodemon --quiet --exec \"node --no-deprecation src/server.js\"",
 		"start": "node --no-deprecation src/server.js",
-		"test": "node --test \"tests/**/*.test.js\"",
+		"test": "node --experimental-test-module-mocks --test-force-exit --test \"tests/**/*.test.js\"",
+		"test:coverage": "node scripts/ensure-coverage-dir.mjs && node --experimental-test-module-mocks --test-force-exit --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test \"tests/**/*.test.js\"",
 		"verify:structure": "node scripts/verify-structure.mjs",
 		"verify:admin": "node scripts/verify-admin-imports.mjs",
 		"make:superadmin": "node scripts/makeSuperAdmin.js",

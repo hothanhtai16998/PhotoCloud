@@ -17,18 +17,18 @@ import 'dotenv/config';
 const makeSuperAdmin = async (username) => {
     try {
         if (!username) {
-            logger.error('❌ Username is required');
-            logger.info('Usage: node scripts/makeSuperAdmin.js <username>');
+            logger.error('❌ Username không được để trống');
+            logger.info('Sử dụng: node scripts/makeSuperAdmin.js <username>');
             process.exit(1);
         }
 
         await CONNECT_DB();
-        logger.info(`🌱 Making user "${username}" a super admin...`);
+        logger.info(`🌱 Đang thực hiện việc tạo user "${username}" là super admin...`);
 
         const user = await User.findOne({ username: username.toLowerCase() });
 
         if (!user) {
-            logger.error(`❌ User "${username}" not found`);
+            logger.error(`❌ User "${username}" không tồn tại`);
             await mongoose.connection.close();
             process.exit(1);
         }
@@ -37,7 +37,7 @@ const makeSuperAdmin = async (username) => {
         const existingRole = await AdminRole.findOne({ userId: user._id });
         
         if (existingRole && existingRole.role === 'super_admin') {
-            logger.info(`✅ User "${username}" is already a super admin`);
+            logger.info(`✅ User "${username}" đã là super admin`);
             await mongoose.connection.close();
             process.exit(0);
         }
@@ -150,15 +150,15 @@ const makeSuperAdmin = async (username) => {
         // No need to write to User model - they are computed fields
         // The AdminRole is the single source of truth
 
-        logger.info(`✅ User "${username}" is now a super admin!`);
+        logger.info(`✅ User "${username}" đã trở thành super admin!`);
         logger.info(`   Email: ${user.email}`);
-        logger.info(`   Display Name: ${user.displayName}`);
-        logger.info(`   Super Admin: Can delegate admin roles and has all permissions`);
+        logger.info(`   Tên hiển thị: ${user.displayName}`);
+        logger.info(`   Super Admin: Có thể giao quyền admin và có tất cả quyền`);
 
         await mongoose.connection.close();
         process.exit(0);
     } catch (error) {
-        logger.error('❌ Error making user super admin:', error);
+        logger.error('❌ Lỗi khi tạo user super admin:', error);
         await mongoose.connection.close();
         process.exit(1);
     }

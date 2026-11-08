@@ -46,10 +46,9 @@ export const toggleCollectionFavorite = asyncHandler(async (req, res) => {
         favId => favId.toString() === collectionId
     ) || false;
 
-    let updatedUser;
     if (isFavorited) {
         // Remove from favorites
-        updatedUser = await User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(
             userId,
             { $pull: { favoriteCollections: collectionId } },
             { new: true }
@@ -61,7 +60,7 @@ export const toggleCollectionFavorite = asyncHandler(async (req, res) => {
         });
     } else {
         // Add to favorites
-        updatedUser = await User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(
             userId,
             { $addToSet: { favoriteCollections: collectionId } },
             { new: true }

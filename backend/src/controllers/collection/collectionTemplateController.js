@@ -2,7 +2,7 @@ import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import mongoose from 'mongoose';
 import CollectionTemplate from '../../models/CollectionTemplate.js';
 import Collection from '../../models/Collection.js';
-import { logger } from '../../utils/logger.js';
+
 
 /**
  * Get all templates (system + user's own)

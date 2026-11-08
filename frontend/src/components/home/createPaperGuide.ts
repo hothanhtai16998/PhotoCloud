@@ -3,10 +3,24 @@ import type { GuideAction, PhotographerController } from './createPhotographer';
 const cells: Record<GuideAction, number> = { wave: 0, point: 1, photo: 2, album: 3, listen: 4, calendar: 5 };
 
 /** One opaque paper pose per frame. Position motion belongs to HomeTourGuide. */
-export async function createPaperGuide(canvas: HTMLCanvasElement): Promise<PhotographerController> {
+export async function createPaperGuide(canvas: HTMLCanvasElement, signal?: AbortSignal): Promise<PhotographerController> {
   const atlas = new Image();
-  atlas.src = '/images/home-guide/paper-guide-poses.png';
-  await atlas.decode();
+  await new Promise<void>((resolve, reject) => {
+    const cleanup = (): void => {
+      window.clearTimeout(timeout);
+      signal?.removeEventListener('abort', abort);
+      atlas.onload = null;
+      atlas.onerror = null;
+    };
+    const fail = (message: string): void => { cleanup(); atlas.src = ''; reject(new Error(message)); };
+    const abort = (): void => fail('Paper guide loading cancelled');
+    const timeout = window.setTimeout(() => fail('Paper guide loading timed out'), 8000);
+    atlas.onload = () => { cleanup(); resolve(); };
+    atlas.onerror = () => fail('Paper guide image unavailable');
+    signal?.addEventListener('abort', abort, { once: true });
+    if (signal?.aborted) { abort(); return; }
+    atlas.src = '/images/home-guide/paper-guide-poses.png';
+  });
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Canvas 2D unavailable');
   let action: GuideAction = 'wave';

@@ -1,6 +1,5 @@
 import { CalendarDays, Camera, CheckCircle2, Images } from 'lucide-react';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
-import { DraftNotice } from '../home/DraftNotice';
 
 interface Step {
   name: string;
@@ -11,22 +10,22 @@ interface Step {
 const STEPS: Step[] = [
   {
     name: 'Chọn gói',
-    description: 'Duyệt qua 4 gói cốt lõi hoặc gửi yêu cầu riêng để nhận báo giá.',
+    description: 'Xem các gói đang được công bố hoặc gửi ý tưởng để trao đổi riêng.',
     icon: Camera,
   },
   {
     name: 'Chọn ngày',
-    description: 'Đề xuất ngày và khung giờ mong muốn. PhotoCloud sẽ xác nhận lịch trong 24h.',
+    description: 'Gửi ngày, khung giờ và địa điểm bạn mong muốn.',
     icon: CalendarDays,
   },
   {
     name: 'Xác nhận lịch',
-    description: 'Chốt concept, địa điểm và tư vấn trang phục trước buổi chụp.',
+    description: 'Trao đổi với studio để thống nhất nội dung và xác nhận lịch chụp.',
     icon: CheckCircle2,
   },
   {
     name: 'Nhận gallery',
-    description: 'Ảnh chỉnh màu cao cấp được gửi qua gallery riêng sau 5–7 ngày.',
+    description: 'Số ảnh và thời gian giao theo gói chụp hoặc báo giá đã thống nhất.',
     icon: Images,
   },
 ];
@@ -36,7 +35,7 @@ export function HowItWorks() {
 
   return (
     <section ref={ref} className="home-booking-flow" aria-label="Quy trình đặt lịch chụp">
-      <div className="home-flow-intro"><h2>Từ lời hẹn đầu tiên<br /><em>đến những khung hình.</em></h2><DraftNotice /></div>
+      <div className="home-flow-intro"><h2>Từ yêu cầu<br /><em>đến buổi chụp.</em></h2><p>Gửi yêu cầu để bắt đầu trao đổi. Lịch được chốt sau khi studio xác nhận.</p></div>
       {STEPS.map((step, index) => {
         const Icon = step.icon;
         return (

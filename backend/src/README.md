@@ -70,3 +70,51 @@ npm run verify:admin                   # chuỗi import của khu vực admin c�
 
 Cấu trúc này được sắp xếp lại từ bố cục cũ (`libs/`, `configs/`, `utils/` lẫn lộn hàm thuần với code I/O, controller rải theo file ở gốc `controllers/`). Việc di chuyển chỉ đổi vị trí file và đường dẫn import — không đổi route, không đổi tên hàm, không đổi hành vi.
 
+
+## Cấu trúc sau đợt hoàn tất sắp xếp 08/11/2026
+
+| Khi cần sửa | Mở tại |
+|---|---|
+| Đăng nhập mật khẩu/đăng ký | `controllers/auth/credentialsController.js` |
+| Đăng nhập Google | `controllers/auth/googleAuthController.js` |
+| Refresh, đăng xuất, quản lý phiên | `controllers/auth/sessionController.js` |
+| Tạo phiên/token, thông báo thiết bị mới dùng chung | `services/auth/loginSession.js` |
+| Khởi tạo SDK R2 | `config/r2Client.js` |
+| Đọc/ghi/xóa object, URL upload R2 | `services/storage/r2Objects.js` |
+| Sinh các phiên bản ảnh/WebP/AVIF | `services/storage/imageStorage.js` |
+| Upload video và avatar | `services/storage/mediaStorage.js` |
+| Chạy ffmpeg/ffprobe có timeout | `services/media/mediaCommand.js` |
+| Tạo/dọn workspace tạm | `services/media/mediaTempFiles.js` |
+| Lấy màu/EXIF và kích thước ảnh với fallback | `services/media/imageMetadata.js` |
+| Tạo thumbnail PNG nhỏ | `services/media/blurThumbnail.js` |
+| Upload trực tiếp theo API cũ | `controllers/image/directUploadController.js` |
+| Cấp URL upload, hoàn tất và hủy upload trước | `controllers/image/stagedUploadController.js` |
+| Tạo bản ghi ảnh upload trực tiếp | `services/media/directUpload.js` |
+| Lọc danh sách ảnh | `services/search/imageListing.js` |
+| Truy vấn một trang ảnh, dùng chung các nhánh thử lại | `services/search/imagePage.js` |
+| Chuẩn hóa dữ liệu ảnh trả về | `utils/imageListingResponse.js` |
+| Kiểm quyền vào phòng WebSocket và cache quyền phòng | `services/realtime/roomPermissions.js` |
+| Kiểm địa chỉ IP/CIDR | `utils/ipAccessRules.js` |
+
+`config/storage.js`, authController và imageUploadController vẫn xuất các tên hàm
+cũ để các route, worker và admin không phải sửa cùng lúc. Module triển khai mới
+không import ngược từ những entry point này; riêng các nơi gọi cũ được giữ ổn
+định. Không xóa API upload cũ vì chưa có yêu cầu bỏ tính năng đó.
+
+Một controller không cần tách chỉ vì đạt vài trăm dòng: giữ các handler ngắn
+cùng nghiệp vụ trong cùng file. Model sở hữu schema, worker sở hữu claim/lease,
+server sở hữu thứ tự gắn middleware và khởi động. Đợt này không thay schema hay
+chuyển controller admin. Ba sửa lỗi hành vi được ghi riêng trong báo cáo:
+timeout media, giải phóng slot request một lần, và xử lý IP/CIDR chuẩn.
+
+### Số liệu request và cache bất đồng bộ
+
+- `services/monitoring/requestMetrics.js` sở hữu phép đếm request/lỗi theo cùng
+  cửa sổ năm phút (độ phân giải một giây). `systemMetrics.js` giữ tên export cũ.
+  Các hàm ghi số liệu chưa được nối tự động vào HTTP; không coi giá trị 0 là
+  bằng chứng production không có lỗi. Storage chưa probe trả `unknown`.
+- `services/cache/queryCache.js` gom các lượt đọc đang chạy cùng khóa; invalidation
+  hủy quyền ghi cache của lượt đọc cũ. Giữ `deleteCache`/`clearCache` tại nơi ghi
+  dữ liệu để ngăn kết quả cũ tái tạo cache sau khi thay đổi dữ liệu.
+- `middlewares/requestQueue.js` sở hữu listener trong thời gian request thực sự
+  chờ; gỡ khi chuyển sang chạy hoặc hết hạn/hủy. Không giữ số đếm IP bằng 0.

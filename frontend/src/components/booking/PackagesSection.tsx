@@ -6,8 +6,9 @@ import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { usePublicPackages } from '@/hooks/usePublicPackages';
 import { DataLoading } from '@/components/user/DataLoading';
 import { DraftNotice } from '../home/DraftNotice';
+import { HomePackageStory } from '../home/HomePackageStory';
 
-export function PackagesSection() {
+export function PackagesSection({ sequential = false }: { sequential?: boolean }) {
   const { packages, source, loading, error, refetch } = usePublicPackages();
   const initialLoading = loading && source !== 'api';
   const [headerRef] = useRevealOnScroll<HTMLDivElement>({ threshold: 0.2 });
@@ -25,7 +26,7 @@ export function PackagesSection() {
       {initialLoading ? <DataLoading message="Đang tải gói chụp" /> : <>
         {source !== 'api' && <DraftNotice />}
         {error && <p role="status">Chưa tải được gói chụp hiện tại. <button type="button" className="home-story-link" disabled={loading} onClick={refetch}>Thử tải lại</button></p>}
-        {packages.length ? <div className="home-package-grid">
+        {packages.length ? sequential ? <HomePackageStory packages={packages} preview={source !== 'api'} /> : <div className="home-package-grid">
           {packages.map((pkg, index) => <PackageCard key={pkg.id} pkg={pkg} revealIndex={index} preview={source !== 'api'} />)}
         </div> : <p>Studio chưa công bố gói chụp. Bạn có thể gửi yêu cầu riêng bên dưới.</p>}
       </>}

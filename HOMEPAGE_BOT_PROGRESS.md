@@ -1,6 +1,6 @@
 # PhotoCloud — Tiến độ thiết kế lại homepage và nhân vật hướng dẫn
 
-Cập nhật: 28/10/2026.
+Cập nhật: 29/10/2026.
 
 Tài liệu tổng hợp nội dung đã bàn trong chat, giúp theo dõi phần đã thống nhất và phần còn phải thực hiện. Đây là kế hoạch chi tiết bổ trợ, không thay thế trạng thái nghiệm thu trong [PAGE_INVENTORY_AND_ANALYSIS.md](PAGE_INVENTORY_AND_ANALYSIS.md). Không sao chép hoặc tự đổi các dấu nghiệm thu ở inventory.
 
@@ -12,8 +12,8 @@ Tài liệu tổng hợp nội dung đã bàn trong chat, giúp theo dõi phần
 |---|---|---|
 | 1 — khoảng 20% | Tạo hình và nền tảng nhân vật | Đã duyệt concept Paper; đã tích hợp sáu tư thế, chờ duyệt trên website |
 | 2 — khoảng 25% | Cấu trúc homepage, khám phá ảnh/chi tiết/bộ sưu tập và lời dẫn | Đã triển khai bốn chương tương tác, thông tin ảnh thật và đường đi; chờ kiểm |
-| 3 — khoảng 25% | Dịch vụ/quy trình/FAQ, tương tác theo nội dung, đạo cụ tiếp theo | Chưa làm |
-| 4 — khoảng 20% | Nối cảnh/lấy cất đồ, trạng thái lỗi, accessibility và hồi quy | Chưa làm |
+| 3 — khoảng 25% | Dịch vụ/quy trình/FAQ, tương tác theo nội dung, đạo cụ tiếp theo | Đã nối hội thoại theo cảnh và lựa chọn nội dung; chưa hoàn thiện đạo cụ/chuyển động |
+| 4 — khoảng 20% | Nối cảnh/lấy cất đồ, trạng thái lỗi, accessibility và hồi quy | Đã kiểm lỗi tải, menu/focus, modal và hồi quy hội thoại; lấy/cất đồ chưa làm |
 | Vòng cuối — khoảng 10% | Responsive và nghiệm thu riêng sau chức năng | Chưa làm |
 
 ### Kết quả đợt 1 — 27/10/2026
@@ -204,6 +204,80 @@ Thứ tự dưới đây là phương án phân tích đã được người dù
 - Nghiệm thu chính thức: [PAGE_INVENTORY_AND_ANALYSIS.md](PAGE_INVENTORY_AND_ANALYSIS.md).
 
 ## 11. Nhật ký cập nhật
+
+### Paper một bên, BST trực tiếp, gói đổi theo cuộn — 30/10/2026
+
+- Theo yêu cầu mới: Paper trái/nội dung phải xuyên suốt; bỏ chọn side và nội suy ngang, giữ neo đáy/bong bóng đầu trang. Phương án đổi bên trước đây được thay thế, không phải lỗi tự đổi yêu cầu.
+- HomeCollectionCards hiện tối đa2bộ có bìa/tên/mô tả/số ảnh/link, bỏ bước chọn tên rồi preview. Chấp nhận thumbnailUrl khi hero không cóurl; nếu dữ liệu không có ảnh dùng được, tải chi tiết chính bộ đó khi gần viewport (tối đa2), hủy khi rời trang và có retry. Không sửa backend hoặc lấy ảnh bộ khác.
+- HomePackageStory chỉ hiện1panel, sticky+tiến độ cuộn. Cuộn xuôi/ngược đổi gói, hết track vẫn cuộn trang; nút trước/sau dùng bàn phím. Viewport không đủ chỗ dùng nút thay sticky. Panels khác hidden/inert; PackageCard và form cũ giữ nguyên. Bot nói/chọn đúng card đang hiện.
+- Phạm vi user/homepage+QA/tài liệu; không admin/backend/chung. Build PASS, lint0error/1warning cũ HomePage; typecheck20lỗi ngoài phần sửa. Edge fixture PASS122mẫu chỉ bên trái/neo đáy,9cảnh/68frame,2BST/thumbnail/detail fallback, gói0/1/2/error/scroll xuôi-ngược/nút/Enter390px, form/route và0writes; journey3môi trường PASS. Log home-single-side-*; checklist HOME-ONESIDE01–04 ở inventory, chưa tự nghiệm thu production/responsive.
+
+### Một mạch nội dung, cân bằng ảnh và dịch vụ — 30/10/2026
+
+- Người dùng xác nhận ưu tiên cân bằng khám phá ảnh/dịch vụ và giao dọn nội dung sau khi bot tương đối ổn. Không sửa renderer/asset/định vị/bong bóng của bot trong lượt này.
+- Homepage gom thành ảnh nổi bật → intro/chọn lối duy nhất → ảnh và thông tin → bộ sưu tập thật → buổi chụp/gói → quy trình → FAQ → yêu cầu/liên hệ. Bỏ HomeWayfinding lặp và xóa module/CSS không caller. HeroBooking/reviews minh họa chỉ còn ở route danh mục cũ, không chen vào homepage. Intro có1h1, chương dùngh2, nav cùng intro thay sidebar dư thừa.
+- Checklist ý tưởng là details; các nút chính vẫn hiện trực tiếp. Quy trình/CTA bỏ lời hứa24h/5–7ngày và số gói cứng, mốc giao theo gói/báo giá. Bỏ khoảng cuộn min-height/sticky thừa ở section ngắn; quy trình gom2cột. Không tự thêm dữ kiện kinh doanh.
+- Build PASS, lint0error/1warning cũ HomePage; typecheck20lỗi ngoài phần sửa, detector[]. Fixture Edge PASS thứ tự/một intro/không block lặp,9cảnh có nội dung,122mẫu neo đáy/68frame, dữ liệu ảnh/album/gói/menu/form/retry/route và0writes; journey3môitrường PASS. Log/ảnh home-content-* trong QA. Checklist HOME-FLOW01–04 trong inventory; chưa nghiệm thu dữ liệu thật/responsive/production. Chỉ user/QA/tài liệu, không admin/backend/chung.
+
+### Hội thoại mở đầu lớn rồi thu theo cuộn — 30/10/2026
+
+- Bỏ section tên/chủ đề/tác giả của slider theo yêu cầu vì trùng lời bot. Giữ lưu ảnh ở slider-controls, Play/Pause hiện có và dữ liệu/link ảnh cho bot.
+- Hội thoại full đầu trang rộng560px/chữ22px, thu theo scrollY0–420 về440px/chữ16px; cuộn ngược phục hồi, Paper giữ kích thước và đáy. Viewport hẹp vẫn theo cơ chế portrait hiện có.
+- Build/focused lint PASS; typecheck không diagnostic phần sửa, còn lỗi ngoài phạm vi. Edge fixture PASS large→small→large, không destination/có bookmark,122mẫu neo đáy và hồi quy đầy đủ; journey3môi trường PASS. Log bubble-intro-* trong QA; checklist HOME-BUBBLE01 ở inventory. Chỉ user/QA/tài liệu; chưa nghiệm thu responsive/production.
+
+### Neo đáy viewport, chỉ chuyển ngang — 30/10/2026
+
+- Người dùng báo20.54 vẫn nhảy. Đã xem lại sebg.ch và xác nhận mascot fixed bottom0, các sân khấu nội dung sticky trong parent dài hơn viewport. Bản cũ vẫn clampY theo dock nên chưa giải quyết nguyên nhân.
+- Bỏ định vịY/đo dock/portrait theo chỗ trống. Paper fixed cách đáy24px desktop, giữ chân bottom0 trong khung330px; chỉ chuyểnX trái/phải theo nhóm cảnh với giới hạn36px/frame. Form không kéo bot lên header; giữ portrait passive góc dưới, mobile chừa bottomnav. Nội dung/bong bóng đảo phía theo bot, bỏ dock cũ.
+- Cảnh ngắn lối đi/quy trình/CTA dùng sticky khi đủ chiều cao; nội dung ảnh/album dài tiếp tục cuộn tự nhiên. Chưa sao chép toàn bộ timeline3D của trang tham khảo. Giữ hành vi chọn ảnh/bộ sưu tập/gói và no-hover-outline.
+- Build/lint không error, lint còn1warning cũ HomePage; typecheck còn20lỗi ngoài phần sửa. Edge fixture PASS122 điểm xuôi/ngược đo root/chân giữ24px,12cảnh hai bên,68frame/silhouette/chuyển ngang và toàn bộ hồi quy. Log bottom-anchor-* trong QA; checklist HOME-BOTTOM01–02 tại inventory. Chờ kiểm dữ liệu thật/cảm giác cuộn; responsive chưa nghiệm thu. Chỉ file user,QA,tài liệu; không sửa admin/backend/chung.
+
+### Bỏ viền hover và giới hạn Paper trong vùng trống — 29/10/2026
+
+- Theo hai ảnh phản hồi: bỏ cơ chế data-guide-highlight và CSS outline của bot trên toàn homepage, giữ lời dẫn đúng đối tượng, focus-visible bàn phím và trạng thái chọn ảnh. Ref mục phản hồi vẫn dùng để tránh lặp và kết thúc phản hồi khi cuộn ra ngoài.
+- Vị trí actor giới hạn trong dock thực, cả target và bước nội suy, cách nội dung dưới16px. Khi dock không đủ chiều cao dùng chân dung Paper; giữ số đo chiều cao đầy đủ để không nhấp nháy trạng thái. Không đổi nội dung hai cột.
+- Phạm vi user HomeTourGuide/CSS, hai script QA và tài liệu; không sửa admin/backend/chung. Build/lint PASS, typecheck không diagnostic HomeTourGuide nhưng còn lỗi ngoài phạm vi. Edge fixture PASS no-hover-outline/focus-visible, không chồng chữ tại1584×890, hồi quy bot12cảnh/68frame và journey3môi trường. Log home-hover-*, ảnh home-guide-{overlap,hover}-fixed trong QA. Checklist HOME-HOVER01/HOME-OVERLAP01 ở inventory; chưa tự đánh x hoặc nghiệm thu responsive/production.
+
+### Rút gọn và nối nội dung cột phải — 29/10/2026
+
+- Người dùng làm rõ cột phải là phần thiếu kết nối. Đã trả thử nghiệm cột trái ở lượt bị ngắt về snapshot trước đó, giữ tiêu đề/đoạn giới thiệu/tiến độ/nav/dock trái và vị trí bot hiện có.
+- HomeJourney nối tiêu đề/câu dẫn theo ảnh → bộ sưu tập → buổi chụp, thêm đường chuyển chương rõ. Hướng dẫn ba bước bộ sưu tập nằm trong details thay vì luôn trải dài dưới nội dung thật; vẫn chọn được từng bước. Checklist ý tưởng gom thành bốn nhóm ngắn, hai CTA chung một hàng, ghi chú xác nhận lịch đi cùng nhóm. Không tự gán ảnh vào bộ sưu tập hoặc nghiệp vụ chưa được xác minh.
+- Phạm vi user HomeJourney/CSS, hai script hồi quy và tài liệu; không sửa admin/backend/chung. Build/lint PASS, detector[]; typecheck không diagnostic HomeJourney, còn lỗi ngoài phạm vi. Fixture Edge journey3môi trường và bot12cảnh/68frame, details/nav/chuyển chương/CTA/ảnh/gói/modal/error/route PASS; log home-right-* trong QA, ảnh home-right-invitation.png. Checklist HOME-CONTENT01–02 ở inventory, chờ người dùng kiểm; responsive thiết bị thật chưa nghiệm thu.
+
+### Paper hiện xuyên suốt và kể chuyện bằng dữ liệu thật — 29/10/2026
+
+- Người dùng giao kết hợp hai phần: giữ nhân vật hiện diện như trang tham khảo và khai thác thông tin ảnh/bộ sưu tập/gói. HomeGuideScene dành cột/dock cho Paper trong các section homepage; vùng hẹp giữ chân dung Paper thay icon chat. Thu gọn chỉ khép lời thoại. Modal/nhập liệu giữ Paper nhỏ, inert, khép lời thoại và nằm ngoài vùng thao tác. Header/main/body và admin CSS không đổi.
+- Ảnh slider có lời dẫn theo ảnh đang hiện. Chương ảnh lấy mô tả, tác giả, chủ đề, địa điểm và EXIF có sẵn; trường thiếu bỏ qua. Các dòng metadata là nhịp cuộn nhỏ; phản hồi chọn ảnh kết thúc khi mục được chọn đã ra khỏi vùng xem.
+- useHomeCollections để homepage sở hữu một request dùng chung hero + chương bộ sưu tập. Khách chọn bộ thật rồi xem mô tả/số ảnh/ảnh mẫu do API trả, mở đúng bộ. Các bước hướng dẫn cũ còn dùng được. Không tải tất cả ảnh hoặc tạo ảnh minh họa thay dữ liệu thiếu.
+- Gói API có lời dẫn giá/thời lượng/số ảnh và details includes (số người/thời gian giao nếu API cung cấp); chọn đúng gói qua nút hiện có. Gói fallback mang lời dẫn minh họa. Checklist ý tưởng gồm ảnh tham khảo/số người/địa điểm/ngày, dẫn tới form báo giá cũ; không đổi nội dung draft thành cam kết thật.
+- Tách homeGuideDialogue/homeGuideFacts; dùng chung lời dẫn bộ sưu tập ở hero và hành trình. Phạm vi file user + QA/tài liệu, không sửa admin/backend/CI/hook settings hoặc CSS dùng chung. Chưa làm rig/lấy-cất đồ và không thay atlas đã có.
+- Build PASS, focused lint 0 error/1 warning cũ HomePage, typecheck còn 20 lỗi ngoài phần sửa. Edge fixture PASS 12 cảnh, 68 frame xuôi/ngược, nhân vật còn hiện khi thu gọn/modal, dữ liệu ảnh/thiếu metadata/nhịp cuộn, bộ sưu tập request chung và retry, gói, menu/focus/giảm chuyển động/route/danh mục, 0 business writes. Journey sáng 1705, tối-reduce 390, không WebGL 1440 PASS. Log/ảnh bot-presence-* trong frontend/qa-policy-checkbox. Detector chỉ cảnh báo nhầm hình tam giác tiếp tục.
+- Checklist HOME-PRES01–06 ở inventory user; chưa tự đánh x hoặc nâng phần trăm theo fixture. Metadata production, cảm giác cuộn và responsive/thiết bị thật vẫn cần người dùng kiểm. Bản thay đổi này thay thế hành vi compact ẩn nhân vật trong mục 20.50 trước đó.
+
+### Hội thoại theo mẫu đã xem và nội dung cuộn — 29/10/2026
+
+- Sau khi xem mẫu kem ngà và storyboard 32 cảnh / 8 tờ, người dùng yêu cầu triển khai bot đổi tương tác khi cuộn. Dùng cùng sáu tư thế Paper, bong bóng cạnh đầu, nhãn caramel nghiêng và các nút lựa chọn bo tròn; không tự coi mẫu là nghiệm thu website.
+- 12 cảnh có một nơi sở hữu lời dẫn/tư thế/lựa chọn. Cuộn xuôi/ngược/nhanh vào đúng cảnh; mốc đọc không bỏ Quy trình ngắn hoặc CTA cuối. Phản hồi chọn ảnh/gói ưu tiên đúng đối tượng; hover do nội dung trôi qua con trỏ không đổi lời dẫn. Xử lý race khi click/focus làm trình duyệt tự cuộn mục vào màn hình.
+- Bot nằm trong dock hành trình khi đủ rộng. Những đoạn chỉ có lề hẹp dùng nút mở hội thoại, không mở rộng layout homepage hoặc che nội dung một cách tự động. Có ẩn/mở, menu hỏi, Escape/focus, bấm ngoài, nhường form/modal/nhập liệu và giữ khoảng cách với bottom nav.
+- Trạng thái tải/rỗng/lỗi gói và thiếu ảnh đi theo section thật; thử lại dùng refetch sẵn có. Atlas timeout 8 giây/hủy khi unmount, fallback còn lời dẫn và các nút. Đổi reduced-motion không tải lại hình, bỏ phản hồi tạm đúng cách. Chưa làm rig lấy/cất đồ hoặc lật trang; các cảnh chuyển đạo cụ trong storyboard mới là khung đầu/cuối.
+- Build/focused lint PASS; typecheck toàn dự án còn 20 diagnostic ngoài bot. Edge fixture PASS 12 cảnh, 68 frame/2 ranh giới/hai chiều không ghost/mất hình/teleport, chọn ảnh/gói, menu/ẩn-mở/modal/nhập liệu, reduced-motion, empty/error/retry, atlas lỗi, route cleanup và 0 business writes. Hồi quy journey sáng 1705, tối/reduce 390 và không WebGL 1440 PASS. Bằng chứng `frontend/qa-policy-checkbox/bot-dialogue-*`; detector chỉ cảnh báo nhầm viền tam giác tiếp tục.
+- Phạm vi chỉ ba file bot user, script QA và hai tài liệu user; không sửa admin/backend/chung. Checklist HOME-DIALOG01–06 ở inventory; giữ các dấu x/o trước đó. Chưa nghiệm thu dữ liệu production hoặc responsive/thiết bị thật; không tăng tỷ lệ tiến độ chỉ dựa trên fixture.
+
+### Sửa độ rộng và tích hợp nhân vật vào bố cục — 29/10/2026
+
+- Người dùng phản hồi rail ngoài trang/padding một phía làm cả nội dung lệch trái và bong bóng chưa đẹp. Đã gỡ padding-right260–320px cùng padding44/36px từng dùng để chừa rail. Các section trở lại căn giữa theo khung main; không thay width body/header hoặc CSS dùng chung.
+- Nhân vật theo cột trái và dock thực trong HomeJourney thay vì đo gutter bên phải; dock nằm trong aside với khoảng trống riêng. Tiêu đề hành trình căn theo cột nội dung bên phải; hero desktop có cột dẫn chuyện bên trong full-width section. Khi thiếu chỗ vẫn compact; ngoài hành trình dùng khoảng trống bên trái. Giữ nội suy liên tục và renderer một pose.
+- Bong bóng graphite/chữ kem, nhãn ngữ cảnh và CTA màu cát, font16px/line-height1,65; đồng nhất tương phản trên nền sáng/tối, bỏ thẻ cùng màu nền khó nhận thấy.
+- Build/lint module PASS; Edge fixture journey ba môi trường PASS. Test guide-layout kiểm paddingRight0/căn giữa theo main thực (body1697px trong viewport1705 do scrollbar8px),136frame không biến mất/teleport, single-pose silhouette với dung sai raster nhỏ và hồi quy modal/hide-reopen/route/compact PASS. Log guide-layout-{verified,journey-confirm,build-confirm,types}.txt trong QA; đã xem screenshot guide-feedback-menu.png bản mới.
+- Phạm vi user HomeJourney/CSS và HomeTourGuide/CSS; script/tài liệu user. Không sửa admin/backend/chung. Chờ duyệt độ rộng/vị trí/bong bóng trên dữ liệu thật, responsive thiết bị thật vẫn vòng riêng; không tăng tiến độ cho sửa lỗi bố cục này.
+
+### Làm phản hồi nhân vật dễ nhận ra và chủ động dùng — 29/10/2026
+
+- Phản hồi người dùng: lời dẫn nhỏ phía dưới không đáng chú ý, chưa cảm nhận được tương tác. Đã thay chữ rời bằng bong bóng có đuôi, nền theo theme, chữ15px, CTA tối thiểu44px; bỏ số cảnh nhỏ để ưu tiên danh tính/ngữ cảnh phản hồi. Nới rail desktop cho khối250px, không chồng lên cột nội dung.
+- Bấm nhân vật hoặc “Bấm để hỏi tôi” mở ba lựa chọn thật: giới thiệu phần đang xem, đi xem ảnh, tới gói chụp. Escape đóng/trả focus; click ngoài hoặc thao tác nội dung đóng bảng chọn. Không gọi đây là chat AI, không phát sinh request gửi thông tin.
+- Khi xem/chọn một mục, mục được đánh dấu bằng outline và lời dẫn đổi đồng thời, giữ phản hồi6,5giây thay vì3,5. Dọn highlight khi đổi cảnh/hết thời gian/unmount; không thêm fade hoặc chồng pose, giữ đường di chuyển đã được xác nhận.
+- Build/focused lint PASS; tsc -b còn lỗi ngoài phạm vi, không diagnostic HomeTourGuide. Edge fixture PASS menu/aria-expanded/Escape/mở lại/giới thiệu phần và highlight đúng lựa chọn. Journey sáng1705/tối390-reduce/1440khôngWebGL và motion136frame/no ghost/route/modal/compact PASS. Log guide-feedback-{build,interactions,motion,types}.txt; ảnh guide-feedback-menu.png trong QA. Đã xem bản chạy thực qua screenshot; không suy thành nghiệm thu production hoặc thiết bị thật.
+- Chưa làm animation từng khớp/tương tác vật lý với đạo cụ; mobile hiện vẫn compact theo nền tảng cũ, nghiệm thu responsive riêng. Không tăng phần trăm chỉ vì sửa độ dễ nhận ra của tính năng hiện có.
 
 ### Đợt tiếp theo: bốn chương khám phá có kết quả thật — 28/10/2026
 

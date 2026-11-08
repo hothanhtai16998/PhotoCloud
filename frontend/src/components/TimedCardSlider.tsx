@@ -10,6 +10,8 @@ import { useBatchedFavoriteCheck, updateFavoriteCache } from '@/hooks/useBatched
 import { onLogout } from '@/utils/authEvents';
 import type { Image as PhotoImage } from '@/types/image';
 import './TimedCardSlider.css';
+import { photoCaption } from './home/homeGuideFacts';
+import { generateImageSlug } from '@/lib/utils';
 
 export interface TimedCard { id?: string; imageData?: PhotoImage; place: string; region: string; title: string; image: string; description: string; }
 const url = (source: string) => source;
@@ -289,18 +291,15 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
   }, [active, playing, focusWithin, moving, slides.length, reducedMotion]);
 
   return <main className={`travel-stage ${moving ? 'is-moving' : ''}`} ref={stage}
+    data-guide-auto="true" data-guide-action="photo"
+    data-guide-caption={photoCaption({ title: slide.imageData?.imageTitle || slide.region, author: slide.imageData?.uploadedBy?.username, category: slide.place })}
+    data-guide-target={slide.id ? `/photos/${generateImageSlug(slide.imageData?.imageTitle || slide.region, slide.id)}` : undefined}
     onFocusCapture={() => setFocusWithin(true)}
     onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocusWithin(false); }}
     style={{ '--slide-interval': `${interval}ms`, '--transition-duration': `${reducedMotion ? 0 : duration}ms` } as React.CSSProperties}>
     <div className="landscape" style={{ backgroundImage: `url("${url(slides[background].image)}")` }} />
     <div className="shade" />
     <header className="travel-header"><a href="/" className="brand"><Globe2 size={20} /> {brandName}</a><span className="header-caption">BỘ SƯU TẬP ẢNH</span></header>
-    <section className="destination" key={active}>
-      <div className="destination-rule" /><p className="location">{slide.place}</p>
-      <h1>{slide.title.split('\n').map(line => <span key={line}>{line}</span>)}</h1>
-      <p className="description">{slide.description}</p>
-      <div className="destination-actions"><button className={`bookmark ${isFavorited ? 'saved' : ''}`} onClick={toggleFavorite} title={isFavorited ? t('image.removeBookmark') : t('image.bookmark')} aria-pressed={isFavorited} disabled={favoriteBusy || !slide.id} aria-busy={favoriteBusy}><Bookmark size={18} fill={isFavorited ? 'currentColor' : 'none'} /></button><button className="discover" onClick={() => setPlaying(!playing)}>{playing ? 'PAUSE EXPLORING' : 'CONTINUE EXPLORING'}</button></div>
-    </section>
     <div className="card-window"><div className="card-track">
       {Array.from({ length: Math.min(5, slides.length - 1) }, (_, offset) => (active + offset + 1) % slides.length).map((index, position) => <button className="destination-card" data-slide={index} key={index} style={{ '--position': position, backgroundImage: `url("${url(slides[index].image)}")` } as React.CSSProperties} onClick={() => change(index)} aria-label={`Explore ${slides[index].region}`}><div className="card-copy"><i /><span>{slides[index].place}</span><strong>{slides[index].region}</strong></div></button>)}
     </div></div>
@@ -308,6 +307,7 @@ export function TimedCardSlider({ slides, brandName = 'PhotoCloud', current = 0,
       <button title="Previous destination" onClick={() => change((active + slides.length - 1) % slides.length)} disabled={moving}><ArrowLeft size={20} /></button>
       <button title="Next destination" onClick={() => change((active + 1) % slides.length)} disabled={moving}><ArrowRight size={20} /></button>
       <button title={playing ? 'Pause' : 'Play'} onClick={() => setPlaying(!playing)}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>
+      <button className={`bookmark ${isFavorited ? 'saved' : ''}`} onClick={toggleFavorite} title={isFavorited ? t('image.removeBookmark') : t('image.bookmark')} aria-label={isFavorited ? t('image.removeBookmark') : t('image.bookmark')} aria-pressed={isFavorited} disabled={favoriteBusy || !slide.id} aria-busy={favoriteBusy}><Bookmark size={18} fill={isFavorited ? 'currentColor' : 'none'} /></button>
       <div className="progress-line"><div className="slide-progress" style={{ width: `${((active + 1) / slides.length) * 100}%` }} /><div ref={bottomProgress} className="timer-progress" style={{ animation: 'none' }} /></div>
       <span className="slide-number">{String(active + 1).padStart(2, '0')}</span>
     </footer>

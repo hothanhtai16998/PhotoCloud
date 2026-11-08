@@ -54,7 +54,6 @@ const isExpired = (entry) => {
  * Runs periodically to prevent memory leaks
  */
 const cleanExpiredEntries = () => {
-    const now = new Date();
     let cleaned = 0;
     
     for (const [key, entry] of permissionCache.entries()) {
@@ -173,7 +172,6 @@ export const clearAllCache = () => {
  * @returns {Object} Cache stats
  */
 export const getCacheStats = () => {
-    const now = new Date();
     let valid = 0;
     let expired = 0;
     

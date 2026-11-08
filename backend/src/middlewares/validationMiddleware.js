@@ -1,5 +1,5 @@
 import { body, param, query, validationResult } from 'express-validator';
-import { asyncHandler } from './asyncHandler.js';
+
 import { logger } from '../utils/logger.js';
 import { getPasswordRequirements } from '../services/auth/passwordRequirements.js';
 

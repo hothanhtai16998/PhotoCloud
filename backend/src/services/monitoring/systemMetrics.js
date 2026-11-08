@@ -1,3 +1,4 @@
+import { createRequestMetrics } from './requestMetrics.js';
 import os from 'os';
 import fs from 'fs/promises';
 import { promisify } from 'util';
@@ -85,7 +86,7 @@ export async function getDiskUsage() {
         // Fallback: try to check available space using fs.stat
         // Note: This is a simplified check and may not be accurate on all systems
         try {
-            const stats = await fs.stat('.');
+            await fs.stat('.');
             // This is a basic check - in production, use a library like 'diskusage' for accurate disk usage
             // For now, return null if we can't get accurate data
         } catch (err) {
@@ -114,16 +115,9 @@ export function getDatabaseStatus() {
     }
 }
 
-/**
- * Get storage connection status
- * This would check your storage provider (R2, S3, etc.)
- * For now, we'll assume connected if we can reach it
- */
+/** No storage probe is performed here; never infer connectivity from configuration. */
 export function getStorageStatus() {
-    // In a real implementation, you would check your storage provider
-    // For now, we'll return 'connected' as a default
-    // You can enhance this to actually ping your storage service
-    return 'connected';
+    return 'unknown';
 }
 
 /**
@@ -163,44 +157,10 @@ export function getAverageResponseTime() {
     return Math.round(sum / recent.length);
 }
 
-/**
- * Calculate error rate
- * This would typically be tracked over time
- * For now, we'll return a mock value or track it in memory
- */
-let errorCount = 0;
-let requestCount = 0;
-const errorRateWindow = 5 * 60 * 1000; // 5 minutes
-let errorHistory = [];
-
-export function recordRequest(isError = false) {
-    requestCount++;
-    if (isError) {
-        errorCount++;
-        errorHistory.push(Date.now());
-    }
-    
-    // Clean old errors
-    const cutoff = Date.now() - errorRateWindow;
-    errorHistory = errorHistory.filter(time => time > cutoff);
-}
-
-export function getErrorRate() {
-    if (requestCount === 0) {
-        return 0;
-    }
-    
-    // Calculate error rate from last 5 minutes
-    const fiveMinutesAgo = Date.now() - errorRateWindow;
-    const recentErrors = errorHistory.filter(time => time > fiveMinutesAgo).length;
-    
-    // Estimate requests in last 5 minutes (rough approximation)
-    // In production, you'd track this more accurately
-    const estimatedRequests = Math.max(1, Math.floor(requestCount / 10));
-    const rate = (recentErrors / estimatedRequests) * 100;
-    
-    return Math.round(rate * 100) / 100; // Round to 2 decimal places
-}
+// Count requests and errors over the same five-minute window (one-second buckets).
+const requestMetrics = createRequestMetrics();
+export const recordRequest = requestMetrics.recordRequest;
+export const getErrorRate = requestMetrics.getErrorRate;
 
 /**
  * Get comprehensive system status
@@ -244,7 +204,8 @@ export async function getSystemStatus() {
         (memoryUsage !== null && memoryUsage > 70) ||
         (diskUsage !== null && diskUsage > 75) ||
         (responseTime !== null && responseTime > 500) ||
-        (errorRate !== null && errorRate > 2)
+        (errorRate !== null && errorRate > 2) ||
+        storageStatus === 'unknown'
     ) {
         status = 'warning';
     }

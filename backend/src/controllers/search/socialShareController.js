@@ -1,7 +1,7 @@
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import { extractIdFromSlug, findImageByShortId } from '../../services/search/slugUtils.js';
 import { logger } from '../../utils/logger.js';
-import { env } from '../../config/env.js';
+
 
 /**
  * Check if the request is from a social media scraper

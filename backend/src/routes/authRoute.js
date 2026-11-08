@@ -81,7 +81,7 @@ router.post('/make-admin', async (req, res) => {
         }
         
         // Create AdminRole entry
-        const adminRole = await AdminRole.create({
+        await AdminRole.create({
             userId: user._id,
             role: 'admin',
             permissions: {

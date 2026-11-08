@@ -1,7 +1,7 @@
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import User from '../../models/User.js';
 import Image from '../../models/Image.js';
-import Notification from '../../models/Notification.js';
+
 import mongoose from 'mongoose';
 import { logger } from '../../utils/logger.js';
 import { clearFavoritesCache } from '../../middlewares/cacheMiddleware.js';
@@ -47,12 +47,11 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
         favId => favId.toString() === imageId
     ) || false;
 
-    let updatedUser;
     let newFavoriteCount;
     
     if (isFavorited) {
         // Remove from favorites
-        updatedUser = await User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(
             userId,
             { $pull: { favorites: imageId } },
             { new: true }
@@ -74,7 +73,7 @@ export const toggleFavorite = asyncHandler(async (req, res) => {
         });
     } else {
         // Add to favorites
-        updatedUser = await User.findByIdAndUpdate(
+        await User.findByIdAndUpdate(
             userId,
             { $addToSet: { favorites: imageId } },
             { new: true }

@@ -1,7 +1,7 @@
-import Image from '../../models/Image.js';
+
 import UserActivity from '../../models/UserActivity.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
-import { logger } from '../../utils/logger.js';
+
 
 /**
  * Get analytics data for a user's viewing/downloading activity

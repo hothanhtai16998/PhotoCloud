@@ -14,7 +14,11 @@
 - Frontend only: `npm run dev:frontend` (root) or `npm run dev` in `frontend/`.
 - Build + start prod: `npm run prod` (root) or `npm run build` (root) then `npm start`.
 - Tests (backend): `cd backend; npm test` (Node's built-in test runner via `node --test`).
+  - The script passes `--experimental-test-module-mocks` (required by `mock.module`) and `--test-force-exit` (the module-mock loader keeps the process alive otherwise).
+  - Backend tests need **Node >= 22**: the test runner only accepts glob patterns from Node 21+, and `mock.module` needs Node >= 22.3. CI pins Node 22.
+  - `mock.module` options are ESM-shaped: use `defaultExport` / `namedExports`. The old `exports: { default: ... }` shape only works for CommonJS and throws `does not provide an export named 'default'` under ESM.
 - Backend structure checks: `cd backend; npm run verify:structure` (import paths, asset paths, shim export parity) and `npm run verify:admin` (admin import chain still loads).
+- Coverage: `cd backend; npm run test:coverage` writes `backend/coverage/lcov.info` (the script creates the gitignored `coverage/` directory first, so it works on a fresh clone and on CI).
 - Lint/format (frontend): `npm run lint` (root -> frontend), `npm run format` / `format:check` (root).
 - Utilities: free port 3000 with `npm run kill` (root).
 
@@ -40,7 +44,7 @@
 - Organize network logic in `frontend/src/services/*.ts`; state in `frontend/src/stores/*` (Zustand). Keep components lean and delegate side-effects to services/stores.
 
 **Conventions**
-- Frontend naming: see `frontend/src/NAMING_CONVENTIONS.md` (components `PascalCase.tsx`, hooks `useXxx.ts`, utils/types/config `camelCase.ts`, feature folders lowercase).
+- Frontend naming: components `PascalCase.tsx`, hooks `useXxx.ts`, utils/types/config `camelCase.ts`, feature folders lowercase.
 - Example service call:
   ```ts
   import api from '@/lib/axios';

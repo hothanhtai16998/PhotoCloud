@@ -3,7 +3,7 @@
  * Limits concurrent Sharp operations to prevent CPU overload
  */
 
-import sharp from 'sharp';
+
 import { logger } from '../../utils/logger.js';
 
 // Maximum concurrent Sharp operations (prevents CPU overload)

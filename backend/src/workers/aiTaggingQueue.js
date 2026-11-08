@@ -7,8 +7,8 @@ import { logger } from '../utils/logger.js';
 import { generateAITags, mergeTags } from '../services/ai/aiTaggingService.js';
 import { translateTags, getTargetLanguage } from '../services/ai/tagTranslator.js';
 import Image from '../models/Image.js';
-import { getObjectFromR2 } from '../config/storage.js';
-import { streamToBuffer } from '../services/media/imageHelpers.js';
+
+
 
 // Queue for AI tagging jobs
 const aiTaggingQueue = [];

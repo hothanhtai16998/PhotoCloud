@@ -257,7 +257,7 @@ export const checkUserActivity = async (ipAddress, sessionId, userAgent, imageId
         // This allows pattern detection to see multiple views of the same image
         // and rapid-fire detection when swapping between different images
         try {
-            const activity = await AnonymousActivity.create({
+            await AnonymousActivity.create({
                 ipAddress,
                 deviceFingerprint: deviceFingerprint || null,
                 userAgent: userAgent || null,

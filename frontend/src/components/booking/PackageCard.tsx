@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { useRevealOnScroll } from '@/hooks/useRevealOnScroll';
 import { openBookingModal } from '@/utils/bookingModalEvent';
 import { formatPackageDuration, formatPackagePhotos, formatPackagePrice, type StudioPackage } from '@/constants/packages';
+import { packageCaption } from '../home/homeGuideFacts';
 
 interface PackageCardProps {
   pkg: StudioPackage;
@@ -14,6 +15,8 @@ export function PackageCard({ pkg, revealIndex = 0, preview = false }: PackageCa
   const [ref] = useRevealOnScroll<HTMLElement>({ threshold: 0.1 });
   return (
     <article ref={ref} className="home-package-card studio-card is-hoverable" data-accent={pkg.accent}
+      data-guide-caption={preview ? 'Gói này đang là nội dung minh họa. Hãy trao đổi với studio để biết thông tin đang được công bố.' : packageCaption(pkg)}
+      data-guide-action="point"
       style={{ '--package-reveal-delay': `${revealIndex * 70}ms` } as CSSProperties}>
       <div className="home-package-image studio-package-image">
         {pkg.popular && <span className="home-package-badge"><Star size={11} /> Phổ biến</span>}
@@ -37,6 +40,11 @@ export function PackageCard({ pkg, revealIndex = 0, preview = false }: PackageCa
           <Clock3 size={13} /> {formatPackageDuration(pkg)} · <Camera size={13} /> {formatPackagePhotos(pkg)}
         </p>
         <span className="home-package-summary">{pkg.description}</span>
+        {!preview && <details className="home-package-details" data-guide-step="true" data-guide-caption={`${pkg.name}: ${pkg.includes.join('. ')}`} data-guide-action="calendar">
+          <summary>Xem gồm những gì</summary>
+          <ul>{pkg.includes.map(item => <li key={item}>{item}</li>)}</ul>
+          {pkg.detailDescription && <p>{pkg.detailDescription}</p>}
+        </details>}
         <button
           type="button"
           disabled={preview}

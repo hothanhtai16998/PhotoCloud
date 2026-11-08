@@ -1,9 +1,6 @@
 import mongoose from 'mongoose';
 import Category from '../../models/Category.js';
 import { logger } from '../../utils/logger.js'; // <--- ADD THIS LINE (top of file)
-import { extractDominantColors } from './colorExtractor.js';
-import { extractExifData } from './exifExtractor.js';
-import sharp from 'sharp';
 
 const MAX_TAG_LENGTH = 50;
 const MAX_TAGS_PER_IMAGE = 20;
@@ -100,33 +97,4 @@ export const streamToBuffer = async (stream) => {
     return Buffer.concat(chunks);
 };
 
-/**
- * Extract metadata from image buffer in parallel
- */
-export const extractMetadata = async (imageBuffer) => {
-    try {
-        const [dominantColors, exifData, dimensions] = await Promise.all([
-            extractDominantColors(imageBuffer, 3).catch(err => {
-                logger.warn('Failed to extract colors:', err.message);
-                return [];
-            }),
-            extractExifData(imageBuffer).catch(err => {
-                logger.warn('Failed to extract EXIF:', err.message);
-                return {};
-            }),
-            // Extract image dimensions using Sharp
-            sharp(imageBuffer).metadata().then(metadata => ({
-                width: metadata.width || null,
-                height: metadata.height || null,
-            })).catch(err => {
-                logger.warn('Failed to extract dimensions:', err.message);
-                return { width: null, height: null };
-            }),
-        ]);
-
-        return { dominantColors, exifData, dimensions };
-    } catch (error) {
-        logger.warn('Failed to extract metadata:', error.message);
-        return { dominantColors: [], exifData: {}, dimensions: { width: null, height: null } };
-    }
-};
+export { extractImageMetadata as extractMetadata } from './imageMetadata.js';

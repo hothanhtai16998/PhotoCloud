@@ -102,7 +102,7 @@
 ### Chuẩn hóa danh mục thực tế — 2026-10-15
 
 - Theo yêu cầu dọn mục không liên quan, đã đọc MongoDB thật:9 danh mục,49 ảnh. Giữ8 nhóm chủ đề ảnh (Chân dung, Du lịch, Kiến trúc, Ngoài trời, Phong cảnh, Thời trang, Thú cưng, Ẩm thực), sửa toàn bộ mô tả tiếng Anh đang sai sang mô tả tiếng Việt đúng. Bỏ mục Nho quá cụ thể;4 ảnh của mục đó giữ nguyên, chỉ chuyển imageCategory=null để quản trị phân loại lại, không đoán nội dung từ tên cũ.
-- Áp dụng bằng transaction trong `backend/scripts/normalize-photocloud-categories.js --apply`, có snapshot danh mục và liên kết ảnh trước thay đổi tại `.local-backups/categories-2026-10-15T11-28-27-974Z.json` (đã gitignore). Sau cập nhật8 danh mục/49 ảnh; chạy lại preview không còn thay đổi, không xóa file ảnh hay nội dung ảnh.
+- Áp dụng bằng transaction trong script chuẩn hóa danh mục (đã xoá sau khi chạy xong — preview ra 0 thay đổi), có snapshot danh mục và liên kết ảnh trước thay đổi tại `.local-backups/categories-2026-10-15T11-28-27-974Z.json` (đã gitignore). Sau cập nhật8 danh mục/49 ảnh; chạy lại preview không còn thay đổi, không xóa file ảnh hay nội dung ảnh.
 - Form danh mục bỏ slug vì model/API không lưu; thêm tùy chọn hiển thị khi sửa, gửi đúng description rỗng khi muốn xóa mô tả, giữ form khi API lỗi; cập nhật cache và sự kiện categoriesUpdated sau lưu. Không khóa quản trị vào một danh sách cứng khi tạo danh mục tương lai. Build Vite PASS.
 - Edge fixture PASS form sửa: không còn slug, gửi isActive=false/description rỗng đúng,503 giữ draft và retry thành công; regression thao tác admin PASS. Detector form trả[]. Dữ liệu Mongo đã cập nhật thật; kiểm thử form dùng API giả lập để không sửa thêm nội dung thật.
 
