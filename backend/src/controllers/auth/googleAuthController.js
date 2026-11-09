@@ -62,7 +62,7 @@ export const googleCallback = asyncHandler(async (req, res) => {
 
   // Verify state to prevent CSRF attacks
   if (!state || state !== storedState) {
-    logger.error('OAuth state mismatch', { state, storedState, ip: req.ip });
+    logger.error('OAuth state mismatch', { ip: req.ip });
     if (!env.CLIENT_URL) {
       logger.error('CLIENT_URL không được để trống');
       return res.status(500).json({ message: 'Lỗi server' });
@@ -113,7 +113,7 @@ export const googleCallback = asyncHandler(async (req, res) => {
     const tokenData = await tokenResponse.json();
 
     if (!tokenData.access_token) {
-      logger.error('Failed to get access token from Google', { tokenData });
+      logger.error('Failed to get access token from Google', { status: tokenResponse.status });
       if (!env.CLIENT_URL) {
         logger.error('CLIENT_URL not configured');
         return res.status(500).json({ message: 'Server configuration error' });

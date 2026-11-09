@@ -1,3 +1,4 @@
+import User from '../../models/User.js';
 import jwt from 'jsonwebtoken';
 import Session from '../../models/Session.js';
 import { env } from '../../config/env.js';
@@ -42,11 +43,19 @@ export const refreshToken = asyncHandler(async (req, res) => {
   }
 
   // Check expiration
-  if (session.expiresAt < new Date()) {
+  const expiresAt = new Date(session.expiresAt).getTime();
+  if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
     await Session.deleteOne({ refreshToken: token });
     return res.status(403).json({
       message: 'Refresh token đã hết hạn',
     });
+  }
+
+  // Refresh must respect current account state, not just the session's existence.
+  const user = await User.findById(session.userId).select('_id isBanned').lean();
+  if (!user || user.isBanned) {
+    await Session.deleteMany({ userId: session.userId });
+    return res.status(403).json({ message: 'Tài khoản không còn được phép đăng nhập' });
   }
 
   // Generate new access token

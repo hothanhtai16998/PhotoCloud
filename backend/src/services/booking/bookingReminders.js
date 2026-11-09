@@ -1,9 +1,9 @@
+import { createPeriodicTask } from '../lifecycle/periodicTask.js';
 import Booking from '../../models/Booking.js';
 import Notification from '../../models/Notification.js';
 import { sendBookingEmail } from '../email/bookingEmails.js';
 import { logger } from '../../utils/logger.js';
 
-let timer;
 
 const processReminders = async () => {
     const now = Date.now();
@@ -24,9 +24,10 @@ const processReminders = async () => {
     }
 };
 
-export const startBookingReminders = () => {
-    processReminders().catch((error) => logger.error('Booking reminder run failed', error));
-    timer = setInterval(() => processReminders().catch((error) => logger.error('Booking reminder run failed', error)), 60 * 60 * 1000);
-};
-
-export const stopBookingReminders = () => { if (timer) clearInterval(timer); timer = undefined; };
+const reminderTask = createPeriodicTask({
+    run: processReminders,
+    intervalMs: 60 * 60 * 1000,
+    onError: error => logger.error('Booking reminder run failed', error),
+});
+export const startBookingReminders = reminderTask.start;
+export const stopBookingReminders = reminderTask.stop;

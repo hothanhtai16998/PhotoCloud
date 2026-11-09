@@ -1,3 +1,4 @@
+import { createPeriodicTask } from './periodicTask.js';
 import Session from '../../models/Session.js';
 import { logger } from '../../utils/logger.js';
 
@@ -20,33 +21,10 @@ export const cleanupExpiredSessions = async () => {
     }
 };
 
-// Store interval ID so it can be cleared on shutdown
-let cleanupIntervalId = null;
-
-/**
- * Start periodic session cleanup
- * Runs every hour
- */
-export const startSessionCleanup = () => {
-    // Run immediately on startup
-    cleanupExpiredSessions();
-
-    // Then run every hour
-    cleanupIntervalId = setInterval(() => {
-        cleanupExpiredSessions();
-    }, 60 * 60 * 1000); // 1 hour
-
-    // Scheduler runs silently - only logs on errors or actual cleanup
-};
-
-/**
- * Stop periodic session cleanup
- * Should be called on graceful shutdown
- */
-export const stopSessionCleanup = () => {
-    if (cleanupIntervalId) {
-        clearInterval(cleanupIntervalId);
-        cleanupIntervalId = null;
-    }
-};
-
+// Starting again replaces the schedule; long-running cleanup never overlaps itself.
+const cleanupTask = createPeriodicTask({
+    run: cleanupExpiredSessions, intervalMs: 60 * 60 * 1000,
+    onError: error => logger.error('Cleanup scheduler failed', error),
+});
+export const startSessionCleanup = cleanupTask.start;
+export const stopSessionCleanup = cleanupTask.stop;

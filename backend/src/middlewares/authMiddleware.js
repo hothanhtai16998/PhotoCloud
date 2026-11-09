@@ -25,7 +25,7 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
         // Find user - using lean() for better performance since we only need data
         const user = await User.findById(decoded.userId).select("-hashedPassword").lean();
 
-        if (user) {
+        if (user && !user.isBanned) {
             // Get client IP for IP restriction checks
             const clientIP = getClientIp(req);
             req.clientIP = clientIP;
@@ -75,6 +75,10 @@ export const protectedRoute = asyncHandler(async (req, res, next) => {
             return res.status(404).json({
                 message: "User not found",
             });
+        }
+
+        if (user.isBanned) {
+            return res.status(403).json({ message: 'Tài khoản không còn được phép đăng nhập' });
         }
 
         // Get client IP for IP restriction checks

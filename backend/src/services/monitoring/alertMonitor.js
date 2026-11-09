@@ -1,9 +1,9 @@
+import { createPeriodicTask } from '../lifecycle/periodicTask.js';
 import Settings from '../../models/Settings.js';
 import { getSystemStatus } from './systemMetrics.js';
 import { sendAlertEmail } from '../email/emailAlerts.js';
 import { logger } from '../../utils/logger.js';
 
-let monitoringInterval = null;
 let lastAlertTimes = {}; // Track when we last sent alerts for each type
 
 // Cache settings to reduce database queries
@@ -226,37 +226,20 @@ async function checkThresholds() {
     }
 }
 
-/**
- * Start monitoring system health and sending alerts
- */
-export function startMonitoring() {
-    // Clear any existing interval
-    if (monitoringInterval) {
-        clearInterval(monitoringInterval);
-    }
+const monitoringTask = createPeriodicTask({
+    run: checkThresholds,
+    async intervalMs() {
+        try {
+            const settings = await getMonitoringSettings();
+            const seconds = Number(settings?.healthCheckInterval || 60);
+            return Number.isFinite(seconds) && seconds > 0 && seconds <= 2_147_483
+                ? seconds * 1000 : 60_000;
+        } catch {
+            return 60_000;
+        }
+    },
+    onError: error => logger.error('Monitoring scheduler failed', { error: error.message }),
+});
 
-    // Check immediately
-    checkThresholds();
-
-    // Then check at configured interval (default: 60 seconds)
-    getMonitoringSettings().then(settings => {
-        const interval = (settings?.healthCheckInterval || 60) * 1000;
-        monitoringInterval = setInterval(checkThresholds, interval);
-        // Monitoring starts silently
-    }).catch(error => {
-        // Default to 60 seconds if we can't read settings
-        const interval = 60 * 1000;
-        monitoringInterval = setInterval(checkThresholds, interval);
-    });
-}
-
-/**
- * Stop monitoring
- */
-export function stopMonitoring() {
-    if (monitoringInterval) {
-        clearInterval(monitoringInterval);
-        monitoringInterval = null;
-    }
-}
-
+export const startMonitoring = monitoringTask.start;
+export const stopMonitoring = monitoringTask.stop;

@@ -146,6 +146,11 @@ export const reorderPinnedImages = asyncHandler(async (req, res) => {
         }
     }
 
+    const uniqueIds = new Set(imageIds.map(id => String(id).toLowerCase()));
+    if (uniqueIds.size !== imageIds.length) {
+        return res.status(400).json({ message: 'Image IDs must not contain duplicates' });
+    }
+
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -157,6 +162,10 @@ export const reorderPinnedImages = asyncHandler(async (req, res) => {
         if (image.uploadedBy.toString() !== userId.toString()) {
             return res.status(403).json({ message: 'You can only reorder your own images' });
         }
+    }
+
+    if (images.length !== uniqueIds.size) {
+        return res.status(404).json({ message: 'One or more images no longer exist' });
     }
 
     // Update pinned images order

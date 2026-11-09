@@ -2,6 +2,87 @@
 
 Cập nhật: 08/11/2026.
 
+## Rà phiên đăng nhập và tài khoản — 09/11/2026
+
+- Đã xác nhận đăng nhập mới kiểm `isBanned` nhưng refresh/access middleware và
+  WebSocket handshake chưa áp dụng. Hiện refresh tra tài khoản hiện tại; tài
+  khoản mất/bị khóa trả 403 và xóa các refresh session của tài khoản đó. Hạn
+  session thiếu/sai hoặc đã đến thời điểm hết hạn cũng bị từ chối.
+- API cần đăng nhập từ chối user bị khóa; optional auth coi tài khoản bị khóa
+  như không có danh tính xác thực để các API công khai vẫn hoạt động. Handshake
+  WebSocket mới từ chối tài khoản bị khóa trước khi gắn user/phòng cá nhân.
+- Log OAuth không còn in raw state/query-cookie hay toàn bộ token response.
+  Giữ thông tin chẩn đoán tối thiểu (IP hoặc mã HTTP).
+- **64/64 test backend pass** trên Windows Node 24; structure/admin import và
+  hai rule biến/import đạt. Test dùng mock/fixture, không khóa tài khoản thật,
+  không gọi Google thật và không thao tác dữ liệu production.
+- Giới hạn: không tự ngắt WebSocket đã kết nối trước lúc ban; request đã vượt
+  kiểm quyền trước thời điểm ban có thể vẫn hoàn tất. Chưa thêm cơ chế thu hồi
+  toàn bộ access token theo session/version. Optional auth vẫn giữ chính sách
+  lỗi hiện có; không tuyên bố bao phủ mọi lỗi DB/network.
+- Đọc tiếp reset password cho thấy bước tìm token, lưu mật khẩu và đánh dấu
+  token đã dùng còn rời nhau; chưa sửa trong vòng này vì cần thiết kế tính nguyên
+  tử và kiểm thử DB phù hợp. Đây là hạng mục còn mở, không coi reset password
+  đã được kiểm đầy đủ chỉ nhờ test các luồng xác thực khác.
+
+Bằng chứng: `.local-backups/backend-monitoring-review-20261108/auth-review-20261109.txt`.
+Phần mới chưa commit. Không sửa frontend hay admin controller.
+
+## Rà tiếp ngày 09/11/2026 — lịch nhắc và ảnh ghim
+
+- Lịch nhắc đặt chụp đã chuyển sang `periodicTask`: giữ chu kỳ một giờ và nghiệp
+  vụ nhắc như trước, tránh start nhiều timer/chạy chồng trong cùng tiến trình.
+  Chưa chống trùng thông báo giữa nhiều instance; không gửi email thật khi test.
+- Sắp xếp ảnh ghim trước đây chỉ kiểm quyền trên các ảnh tìm thấy, không kiểm
+  ID bị thiếu hoặc lặp. Hiện ID lặp trả 400, ảnh không tồn tại trả 404 trước khi
+  lưu; ảnh người khác vẫn trả 403. Danh sách rỗng vẫn cho phép bỏ toàn bộ ảnh ghim.
+- **60/60 test pass** trên Windows Node 24; structure/admin import pass; hai rule
+  biến/import pass trên 190 source JS ngoài admin controller. Không chạy công cụ
+  triển khai. Phần sửa mới chưa commit.
+- Bản đồ folder, từng file nguồn ngoài admin, export và test nằm trong
+  [BACKEND_FILE_MAP.md](BACKEND_FILE_MAP.md). `AGENTS.md` gốc chỉ giữ quy tắc chung và dẫn tới `frontend/AGENTS.md` hoặc
+  `backend/AGENTS.md`;
+  quy tắc mở rộng chi tiết nằm trong `backend/src/README.md`.
+
+### Tiêu chí kết thúc đợt rà code
+
+Cấu trúc chính đã tách và có bản đồ tra cứu. Tuy nhiên chưa tuyên bố toàn bộ đợt
+rà logic hoàn tất: còn đọc sâu các nhánh ghi booking/collection, refresh/reset
+session và upload job/AI khi dữ liệu đổi trong lúc chờ. Những vấn đề mới phát
+hiện sẽ được sửa kèm regression thay vì cam kết một thời hạn không có căn cứ.
+Không bao gồm nghiệm thu production, frontend hoặc admin controller.
+
+## Vòng rà mới nhất: vòng đời tác vụ nền
+
+Đã lưu toàn bộ thay đổi hiện có vào commit local `15f2a47`, theo yêu cầu người
+dùng; chưa push. Ngay sau commit checkout sạch. Các thay đổi dưới đây phát sinh
+sau commit đó và chưa được commit.
+
+**Vấn đề tìm thấy trong code:**
+
+- `startSessionCleanup` và `startPreUploadCleanup` tạo timer mới mỗi lần gọi mà
+  không dọn timer trước; `stop` chỉ biết timer cuối nên có thể để lại lượt chạy.
+- `startMonitoring` chờ đọc settings rồi mới gắn timer. Nếu `stopMonitoring`
+  chạy trong lúc chờ, kết quả settings cũ vẫn có thể tạo lại timer.
+- Các timer dùng callback async không ngăn lượt mới chạy khi lượt trước chưa
+  hoàn tất, có thể tạo nhiều lượt đọc/xóa/kiểm tra đồng thời trong cùng tiến trình.
+
+**Đã sửa:** `services/lifecycle/periodicTask.js` sở hữu vòng đời timer dùng chung
+cho ba tác vụ. Start thay lịch cũ; một mã phiên nhận diện kết quả khởi động còn
+hợp lệ; có khóa ngăn tự chạy chồng. Settings interval sai dùng mặc định 60 giây
+ở monitoring. Chu kỳ dọn session/upload giữ một giờ/sáu giờ như trước. Timer
+không tự giữ Node sống khi không còn công việc khác.
+
+**Giới hạn:** stop chỉ chặn lượt tiếp theo, không hủy DB/network I/O đang chạy.
+Khóa chỉ có hiệu lực trong một tiến trình; chưa chống trùng giữa nhiều instance.
+Không chạy cleanup hay gửi email thật để kiểm thử thay đổi này.
+
+**Kiểm tra:** 58/58 test backend đạt trên Windows Node 24. Test thêm cho dừng
+trong lúc đọc settings, start nhiều lần, callback timer cũ, chạy lâu, lỗi tác vụ
+và interval sai. Verify structure/admin đạt; hai rule biến chưa khai báo và
+biến/import thừa đạt trên 190 file JavaScript nguồn ngoài admin controller.
+Bằng chứng nằm trong `.local-backups/backend-monitoring-review-20261108/`.
+
 ## Kết quả rà tiếp: monitoring, hàng đợi và cache
 
 Vòng này chỉ kiểm và sửa code backend; không làm công cụ triển khai, frontend
@@ -28,8 +109,7 @@ phần định nghĩa của module; sửa phép tính không có nghĩa đã t�
 Đây là việc cần nối và kiểm riêng trước khi dùng số liệu làm cảnh báo vận hành.
 Không gửi email cảnh báo thật trong kiểm thử.
 
-Bằng chứng: `.local-backups/backend-monitoring-review-20261108/`. Chưa tạo commit
-mới cho vòng này, không đổi các dấu nghiệm thu của người dùng.
+Bằng chứng: `.local-backups/backend-monitoring-review-20261108/`. Vòng monitoring/hàng đợi/cache đã được lưu trong `15f2a47`; không đổi các dấu nghiệm thu của người dùng.
 
 ## 1. Đã làm được gì?
 

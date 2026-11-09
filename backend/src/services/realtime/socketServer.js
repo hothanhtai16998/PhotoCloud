@@ -49,6 +49,11 @@ export const initializeSocketServer = (httpServer) => {
 				return next(new Error('User not found'));
 			}
 
+            if (user.isBanned) {
+                socketMetrics.recordError('auth');
+                return next(new Error('Account access denied'));
+            }
+
 			// Enrich user with admin status
 			const clientIP = socket.handshake.address || socket.request.connection.remoteAddress;
 			const enrichedUser = await enrichUserWithAdminStatus(user, clientIP);

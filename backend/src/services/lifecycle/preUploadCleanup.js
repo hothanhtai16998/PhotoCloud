@@ -1,3 +1,4 @@
+import { createPeriodicTask } from './periodicTask.js';
 import { logger } from '../../utils/logger.js';
 import { r2Client, getBucketName, deleteObjectByKey } from '../../config/storage.js';
 import { ListObjectsV2Command } from '@aws-sdk/client-s3';
@@ -80,33 +81,10 @@ export const cleanupOldPreUploadedFiles = async () => {
     }
 };
 
-// Store interval ID so it can be cleared on shutdown
-let cleanupIntervalId = null;
-
-/**
- * Start periodic pre-upload cleanup
- * Runs every 6 hours
- */
-export const startPreUploadCleanup = () => {
-    // Run immediately on startup
-    cleanupOldPreUploadedFiles();
-
-    // Then run every 6 hours
-    cleanupIntervalId = setInterval(() => {
-        cleanupOldPreUploadedFiles();
-    }, 6 * 60 * 60 * 1000); // 6 hours
-
-    // Scheduler runs silently - only logs when files are actually cleaned up
-};
-
-/**
- * Stop periodic pre-upload cleanup
- * Should be called on graceful shutdown
- */
-export const stopPreUploadCleanup = () => {
-    if (cleanupIntervalId) {
-        clearInterval(cleanupIntervalId);
-        cleanupIntervalId = null;
-    }
-};
-
+// Starting again replaces the schedule; long-running cleanup never overlaps itself.
+const cleanupTask = createPeriodicTask({
+    run: cleanupOldPreUploadedFiles, intervalMs: 6 * 60 * 60 * 1000,
+    onError: error => logger.error('Cleanup scheduler failed', error),
+});
+export const startPreUploadCleanup = cleanupTask.start;
+export const stopPreUploadCleanup = cleanupTask.stop;
