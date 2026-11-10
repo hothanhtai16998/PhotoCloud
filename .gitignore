@@ -78,3 +78,6 @@ Help/
 qa-policy-checkbox/
 *.tsbuildinfo
 *.tmp
+
+# Documentation stays local; never track Markdown files.
+*.md
