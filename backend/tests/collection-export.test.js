@@ -1,6 +1,7 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import JSZip from 'jszip';
+import { EventEmitter } from 'node:events';
 const owner = '000000000000000000000001', viewer = '000000000000000000000002';
 const id = '000000000000000000000003';
 let collection, projection, notifications, downloads, failDownloads, fetchImage;
@@ -30,7 +31,7 @@ mock.module('../src/models/Collection.js', { defaultExport: {
     },
 } });
 mock.module('../src/models/Notification.js', { defaultExport: { create: async data => notifications.push(data) } });
-mock.module('axios', { defaultExport: { get: async url => { downloads.push(url); if (fetchImage) return fetchImage(url); if (failDownloads) throw new Error('fixture download failure'); return { data: Buffer.from(url) }; } } });
+mock.module('axios', { defaultExport: { get: async (url, options) => { downloads.push(url); if (fetchImage) return fetchImage(url, options); if (failDownloads) throw new Error('fixture download failure'); return { data: Buffer.from(url) }; } } });
 const { exportCollection, trackCollectionShare } = await import('../src/controllers/collection/collectionExportController.js');
 function reset() {
     notifications = []; downloads = []; projection = null; failDownloads = false; fetchImage = null;
@@ -38,9 +39,9 @@ function reset() {
 }
 function invoke(handler, user = viewer, origin) {
     return new Promise((resolve, reject) => {
-        const res = { code: 200, headers: {}, status(code) { this.code = code; return this; },
+        const res = Object.assign(new EventEmitter(), { code: 200, headers: {}, status(code) { this.code = code; return this; },
             setHeader(name, value) { this.headers[name] = value; }, json(body) { resolve({ ...this, body }); },
-            send(body) { resolve({ ...this, body }); } };
+            send(body) { resolve({ ...this, body }); } });
         Promise.resolve(handler({ params: { collectionId: id }, user: { _id: user }, headers: { origin } }, res, reject)).catch(reject);
     });
 }
@@ -90,12 +91,12 @@ test('ZIP preserves middleware CORS and private cache policy', async () => {
     reset();
     collection.images = [{ imageUrl: 'https://example.test/a.jpg' }];
     const response = await new Promise((resolve, reject) => {
-        const res = {
+        const res = Object.assign(new EventEmitter(), {
             headers: { 'Cache-Control': 'private, no-store', 'Access-Control-Allow-Origin': 'https://allowed.test' },
             setHeader(name, value) { this.headers[name] = value; },
             status() { return this; },
             send(body) { resolve({ headers: this.headers, body }); },
-        };
+        });
         exportCollection({ params: { collectionId: id }, user: { _id: owner },
             headers: { origin: 'https://denied.test' } }, res, reject);
     });
@@ -178,4 +179,62 @@ test('export selects fallback URLs and downloads them when primary URL is missin
     const zip = await JSZip.loadAsync(response.body);
     assert.equal(Object.keys(zip.files).length, 2);
     assert.equal(await zip.file('1_image_1.webp').async('string'), 'https://example.test/regular.webp');
+});
+
+test('disconnect aborts active downloads, stops remaining work and removes the close listener', async () => {
+    reset();
+    collection.images = Array.from({ length: 12 }, (_, index) => ({ imageUrl: 'https://example.test/' + index + '.jpg' }));
+    let cancelled = 0, writes = 0, nextCalls = 0;
+    const res = Object.assign(new EventEmitter(), {
+        setHeader() { writes++; },
+        status() { writes++; return this; },
+        send() { writes++; },
+        json() { writes++; },
+    });
+    fetchImage = (url, { signal }) => new Promise((resolve, reject) => {
+        assert.equal(signal.aborted, false);
+        signal.addEventListener('abort', () => { cancelled++; reject(signal.reason); }, { once: true });
+    });
+    exportCollection({ params: { collectionId: id }, user: { _id: owner } }, res, () => { nextCalls++; });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(downloads.length, 4);
+    assert.equal(res.listenerCount('close'), 1);
+    res.destroyed = true;
+    res.emit('close');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(cancelled, 4);
+    assert.equal(downloads.length, 4);
+    assert.equal(writes, 0);
+    assert.equal(nextCalls, 0);
+    assert.equal(res.listenerCount('close'), 0);
+});
+
+test('service rejects an already aborted export without starting downloads', async () => {
+    reset();
+    const { createCollectionExport } = await import('../src/services/collection/collectionExport.js');
+    const cancellation = new AbortController();
+    cancellation.abort();
+    await assert.rejects(createCollectionExport(id, owner, { signal: cancellation.signal }), { name: 'AbortError' });
+    assert.deepEqual(downloads, []);
+});
+
+test('normal completion removes its close listener without aborting successful downloads', async () => {
+    reset();
+    collection.images = [{ imageUrl: 'https://example.test/a.jpg' }];
+    let downloadSignal;
+    fetchImage = async (url, { signal }) => { downloadSignal = signal; return { data: Buffer.from(url) }; };
+    const res = Object.assign(new EventEmitter(), {
+        setHeader() {},
+        status() { return this; },
+        send() { this.writableEnded = true; this.emit('close'); },
+    });
+    let error;
+    exportCollection({ params: { collectionId: id }, user: { _id: owner } }, res, value => { error = value; });
+    for (let attempt = 0; attempt < 50 && !res.writableEnded; attempt++) {
+        await new Promise(resolve => setImmediate(resolve));
+    }
+    assert.equal(error, undefined);
+    assert.equal(res.writableEnded, true);
+    assert.equal(downloadSignal.aborted, false);
+    assert.equal(res.listenerCount('close'), 0);
 });

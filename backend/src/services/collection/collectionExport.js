@@ -32,7 +32,8 @@ export async function recordCollectionShare(collectionId, userId) {
     return 'Collection share tracked';
 }
 
-export async function createCollectionExport(collectionId, userId) {
+export async function createCollectionExport(collectionId, userId, { signal } = {}) {
+    signal?.throwIfAborted();
     const collection = await Collection.findOne({
         _id: collectionId,
         $or: [{ createdBy: userId }, { isPublic: true }],
@@ -42,6 +43,7 @@ export async function createCollectionExport(collectionId, userId) {
         match: publicImageFilter(),
     });
 
+    signal?.throwIfAborted();
     if (!collection) {
         return { status: 404, message: 'Không tìm thấy bộ sưu tập' };
     }
@@ -55,6 +57,7 @@ export async function createCollectionExport(collectionId, userId) {
         // Share the iterator so each worker takes the next image as soon as it is free.
         await Promise.all(Array.from({ length: Math.min(DOWNLOAD_CONCURRENCY, collection.images.length) }, async () => {
             for (const [index, image] of entries) {
+                if (signal?.aborted) return;
                 const url = image.imageUrl || image.regularUrl || image.smallUrl;
                 if (!url) {
                     logger.warn(`Image ${image._id} has no URL, skipping`);
@@ -62,7 +65,8 @@ export async function createCollectionExport(collectionId, userId) {
                 }
 
                 try {
-                    const { data } = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+                    const { data } = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000, signal });
+                    if (signal?.aborted) return;
                     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
                     if (!buffer.length) {
                         logger.warn(`Image ${image._id} returned no bytes, skipping`);
@@ -74,11 +78,13 @@ export async function createCollectionExport(collectionId, userId) {
                     // Keep equal titles as separate entries regardless of download order.
                     zip.file(`${position}_${title}.${extension}`, buffer);
                 } catch (error) {
+                    if (signal?.aborted) return;
                     logger.error(`Failed to fetch image ${image._id}:`, error?.code || 'download failed');
                 }
             }
         }));
 
+        signal?.throwIfAborted();
         if (!Object.keys(zip.files).length) {
             return { status: 502, message: 'Không tải được ảnh nào để xuất. Vui lòng thử lại.' };
         }
@@ -88,8 +94,10 @@ export async function createCollectionExport(collectionId, userId) {
             compression: 'DEFLATE',
             compressionOptions: { level: 6 },
         });
+        signal?.throwIfAborted();
         return { buffer, filename: `${sanitizeName(collection.name)}_${Date.now()}.zip` };
     } catch (error) {
+        signal?.throwIfAborted();
         logger.error('Error exporting collection:', error);
         return { status: 500, message: 'Lỗi khi xuất bộ sưu tập. Vui lòng thử lại.' };
     }

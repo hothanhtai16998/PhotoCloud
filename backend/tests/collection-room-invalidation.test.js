@@ -17,4 +17,3 @@ test('collaborator removal invalidates room permissions after save and before no
  await new Promise((resolve,reject)=>{res.json=body=>{assert.equal(body.success,true);resolve();};removeCollaborator({params:{collectionId:id,collaboratorId:collab},user:{_id:owner}},res,reject);});
  assert.deepEqual(order,['save','invalidate','list-cache','notification']);assert.deepEqual(collection.collaborators,[]);
 });
-

@@ -27,13 +27,26 @@ export const exportCollection = asyncHandler(async (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid collection ID' });
     }
 
-    const result = await createCollectionExport(collectionId, req.user._id);
-    if (!result.buffer) {
-        return res.status(result.status).json({ success: false, message: result.message });
-    }
+    const cancellation = new AbortController();
+    const onClose = () => {
+        if (!res.writableEnded) cancellation.abort();
+    };
+    res.once('close', onClose);
+    if (res.destroyed) cancellation.abort();
+    try {
+        const result = await createCollectionExport(collectionId, req.user._id, { signal: cancellation.signal });
+        if (cancellation.signal.aborted || res.destroyed) return;
+        if (!result.buffer) {
+            return res.status(result.status).json({ success: false, message: result.message });
+        }
 
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(result.filename)}"`);
-    res.setHeader('Content-Length', result.buffer.length);
-    return res.status(200).send(result.buffer);
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(result.filename)}"`);
+        res.setHeader('Content-Length', result.buffer.length);
+        return res.status(200).send(result.buffer);
+    } catch (error) {
+        if (!cancellation.signal.aborted) throw error;
+    } finally {
+        res.removeListener('close', onClose);
+    }
 });

@@ -118,7 +118,7 @@ export const addImageToCollection = async ({ collectionId, imageId, userId }) =>
         const image = await Image.findOne({ _id: imageId, ...publicImageFilter() })
             .select('thumbnailUrl smallUrl imageUrl imageTitle')
             .lean();
-        
+
         if (image) {
             emitCollectionUpdate(collectionId, {
                 type: 'image_added',
@@ -398,4 +398,3 @@ export const reorderCollectionImages = async ({ collectionId, imageIds, userId }
         },
     };
 };
-
