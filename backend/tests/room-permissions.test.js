@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mock } from 'node:test';
+let pendingRead;
 let queries = 0,
   collection = null,
   image = {},
@@ -10,6 +11,7 @@ mock.module('../src/models/Collection.js', {
     findOne: () => ({
       lean: async () => {
         queries++;
+        if (pendingRead) return pendingRead;
         return collection;
       },
     }),
@@ -38,4 +40,14 @@ test('room permission cache keeps allow/deny decisions and invalidates the resou
   assert.equal(await rooms.canJoinProfileRoom(owner, id), true);
   user = null;
   assert.equal(await rooms.canJoinProfileRoom(owner, id), false);
+});
+
+test('an in-flight permission query cannot recreate cache after resource invalidation', async () => {
+ const owner='507f1f77bcf86cd799439021',id='507f1f77bcf86cd799439022';
+ let resolve;pendingRead=new Promise(r=>{resolve=r;});
+ const old=rooms.canJoinCollectionRoom(owner,id);
+ rooms.clearPermissionCache('collection',id);pendingRead=undefined;collection=null;
+ assert.equal(await rooms.canJoinCollectionRoom(owner,id),false);
+ resolve({});assert.equal(await old,true);
+ assert.equal(await rooms.canJoinCollectionRoom(owner,id),false);
 });

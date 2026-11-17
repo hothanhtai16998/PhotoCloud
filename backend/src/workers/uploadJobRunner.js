@@ -5,21 +5,21 @@ const LEASE_MS = 120_000;
 
 /** Mongo claims are atomic; a lease lets another API instance recover crashed work. */
 export function createUploadJobRunner({ Job, processUpload, processAvif, onFailure, logger, concurrency = 2 }) {
-    const owner = randomUUID();
     let timer = null;
     let running = false;
     let active = 0;
     let claiming = false;
 
     async function execute(job) {
-        const identity = { _id: job._id, status: 'processing', leaseOwner: owner };
+        const identity = { _id: job._id, status: 'processing', leaseOwner: job.leaseOwner };
+        const liveIdentity = () => ({ ...identity, leaseUntil: { $gt: new Date() } });
         const assertLease = async () => {
-            if (!await Job.exists({ ...identity, leaseUntil: { $gt: new Date() } })) {
+            if (!await Job.exists(liveIdentity())) {
                 throw new Error('Upload processing lease expired');
             }
         };
         const heartbeat = setInterval(() => {
-            Job.updateOne(identity, { $set: { leaseUntil: new Date(Date.now() + LEASE_MS) } })
+            Job.updateOne(liveIdentity(), { $set: { leaseUntil: new Date(Date.now() + LEASE_MS) } })
                 .catch(error => logger.error('Upload heartbeat failed', error.message));
         }, LEASE_MS / 3);
         heartbeat.unref?.();
@@ -35,11 +35,11 @@ export function createUploadJobRunner({ Job, processUpload, processAvif, onFailu
                     payload: { filename: result.filename }, status: 'queued', attempts: 0, nextAttemptAt: new Date(),
                 } }, { upsert: true });
             }
-            await Job.updateOne(identity, { $set: { status: 'completed', completedAt: new Date(), lastError: null },
+            await Job.updateOne(liveIdentity(), { $set: { status: 'completed', completedAt: new Date(), lastError: null },
                 $unset: { leaseUntil: 1, leaseOwner: 1 } });
         } catch (error) {
             const terminal = job.attempts >= MAX_ATTEMPTS;
-            const updated = await Job.updateOne(identity, {
+            const updated = await Job.updateOne(liveIdentity(), {
                 $set: { status: terminal ? 'failed' : 'queued', lastError: 'Không xử lý được ảnh. Vui lòng thử lại.',
                     nextAttemptAt: new Date(Date.now() + 5000 * 2 ** (job.attempts - 1)) },
                 $unset: { leaseUntil: 1, leaseOwner: 1 },
@@ -62,7 +62,7 @@ export function createUploadJobRunner({ Job, processUpload, processAvif, onFailu
                 const job = await Job.findOneAndUpdate({ attempts: { $lt: MAX_ATTEMPTS }, $or: [
                     { status: 'queued', nextAttemptAt: { $lte: now } },
                     { status: 'processing', leaseUntil: { $lte: now } },
-                ] }, { $set: { status: 'processing', leaseOwner: owner, leaseUntil: new Date(Date.now() + LEASE_MS) },
+                ] }, { $set: { status: 'processing', leaseOwner: randomUUID(), leaseUntil: new Date(Date.now() + LEASE_MS) },
                     $inc: { attempts: 1 } }, { new: true, sort: { kind: -1, createdAt: 1 } });
                 if (!job) break;
                 active++;

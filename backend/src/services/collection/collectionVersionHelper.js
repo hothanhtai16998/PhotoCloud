@@ -9,24 +9,14 @@ export const createCollectionVersion = async (collectionId, changedBy, changeTyp
     try {
         // Get the current collection
         const collection = await Collection.findById(collectionId)
-            .populate('coverImage')
-            .populate('images')
-            .populate('collaborators.user')
-            .populate('collaborators.invitedBy')
+            // Snapshots store references, not populated documents. Deleted references
+            // must not silently disappear while recording unrelated changes.
             .lean();
 
         if (!collection) {
             logger.warn(`Collection not found for versioning: ${collectionId}`);
             return null;
         }
-
-        // Get the next version number
-        const lastVersion = await CollectionVersion.findOne({ collection: collectionId })
-            .sort({ versionNumber: -1 })
-            .select('versionNumber')
-            .lean();
-
-        const nextVersionNumber = lastVersion ? lastVersion.versionNumber + 1 : 1;
 
         // Create snapshot
         const snapshot = {
@@ -45,9 +35,8 @@ export const createCollectionVersion = async (collectionId, changedBy, changeTyp
         };
 
         // Create version document
-        const version = await CollectionVersion.create({
+        const versionData = {
             collection: collectionId,
-            versionNumber: nextVersionNumber,
             snapshot,
             changes: {
                 type: changeType,
@@ -60,9 +49,26 @@ export const createCollectionVersion = async (collectionId, changedBy, changeTyp
             },
             changedBy,
             note: changeDetails.note,
-        });
+        };
 
-        logger.info(`Created version ${nextVersionNumber} for collection ${collectionId}`, {
+        // Concurrent writers can choose the same number. The unique index is the
+        // arbiter; retry only that conflict, keeping this call's snapshot intact.
+        let version;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const lastVersion = await CollectionVersion.findOne({ collection: collectionId })
+                .sort({ versionNumber: -1 }).select('versionNumber').lean();
+            const versionNumber = lastVersion ? lastVersion.versionNumber + 1 : 1;
+            try {
+                version = await CollectionVersion.create({ ...versionData, versionNumber });
+                break;
+            } catch (error) {
+                const numberConflict = error.code === 11000 &&
+                    error.keyPattern?.collection && error.keyPattern?.versionNumber;
+                if (!numberConflict || attempt === 2) throw error;
+            }
+        }
+
+        logger.info(`Created version ${version.versionNumber} for collection ${collectionId}`, {
             changeType,
             changedBy,
         });

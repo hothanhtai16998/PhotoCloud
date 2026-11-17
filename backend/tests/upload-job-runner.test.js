@@ -84,3 +84,44 @@ test('failure backs off, terminal failures are explicit, and AVIF is a persisted
         assert.equal(Job.records.find(row => row._id === 'avif:ready').status, 'queued');
     } finally { runner.stop(); }
 });
+
+test('reclaim within the same runner gives each attempt a distinct lease owner', async () => {
+    const Job = store([job('same-runner')]);
+    let releaseFirst, releaseSecond, calls=0, staleRejected=false;
+    const runner = createUploadJobRunner({ Job, logger, concurrency:2,
+        onFailure:async()=>{}, processAvif:async()=>({}),
+        processUpload:async(data,assertLease)=>{
+            calls++;
+            if(calls===1){
+                await new Promise(resolve=>{releaseFirst=resolve;});
+                try{await assertLease();}catch(error){staleRejected=true;throw error;}
+            }else await new Promise(resolve=>{releaseSecond=resolve;});
+            return {imageId:data.imageId};
+        },
+    });
+    runner.start();
+    try {
+        await until(()=>releaseFirst);
+        const firstOwner=Job.records[0].leaseOwner;
+        Job.records[0].leaseUntil=new Date(0);
+        await runner.wake();await until(()=>releaseSecond);
+        const secondOwner=Job.records[0].leaseOwner;
+        assert.notEqual(secondOwner,firstOwner);
+        releaseFirst();await until(()=>staleRejected);
+        assert.equal(Job.records[0].leaseOwner,secondOwner);
+        assert.equal(Job.records[0].status,'processing');
+        releaseSecond();await until(()=>Job.records[0].status==='completed');
+    } finally { releaseFirst?.();releaseSecond?.();runner.stop(); }
+});
+
+test('an expired attempt cannot requeue itself before the next claimant recovers it',async()=>{
+    const Job=store([job('expired')]);let release;
+    const runner=createUploadJobRunner({Job,logger,onFailure:async()=>{},processAvif:async()=>({}),
+      processUpload:async()=>{await new Promise(resolve=>{release=resolve;});throw new Error('fixture failure');}});
+    runner.start();
+    await until(()=>release);
+    runner.stop();Job.records[0].leaseUntil=new Date(0);release();
+    await new Promise(resolve=>setTimeout(resolve,20));
+    assert.equal(Job.records[0].status,'processing');
+    assert.equal(Job.records[0].attempts,1);
+});

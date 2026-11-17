@@ -1,3 +1,6 @@
+import { getUserId, hasPermission, sameCollaboratorGrants } from './collectionHelpers.js';
+import { clearPermissionCache } from '../../services/realtime/roomPermissions.js';
+import { invalidateCollectionLists } from '../../services/collection/collectionCache.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import mongoose from 'mongoose';
 import CollectionVersion from '../../models/CollectionVersion.js';
@@ -129,12 +132,7 @@ export const restoreCollectionVersion = asyncHandler(async (req, res) => {
     }
 
     // Check permissions
-    const isOwner = collection.createdBy._id.toString() === userId.toString();
-    const collaborator = collection.collaborators?.find(
-        c => c.user._id.toString() === userId.toString()
-    );
-    const canEdit = isOwner || collaborator?.permission === 'admin' || collaborator?.permission === 'edit';
-
+    const canEdit = hasPermission(collection, userId, 'edit');
     if (!canEdit) {
         return res.status(403).json({
             success: false,
@@ -155,6 +153,12 @@ export const restoreCollectionVersion = asyncHandler(async (req, res) => {
         });
     }
 
+    const canManageCollaborators = hasPermission(collection, userId, 'admin');
+    if (!canManageCollaborators && !sameCollaboratorGrants(collection.collaborators, version.snapshot.collaborators)) {
+        return res.status(403).json({ success: false, message: 'Managing collaborators is required to restore different access permissions' });
+    }
+    const previousMembers = (collection.collaborators || []).map(entry => getUserId(entry.user));
+
     // Restore collection from snapshot
     collection.name = version.snapshot.name;
     collection.description = version.snapshot.description;
@@ -162,9 +166,12 @@ export const restoreCollectionVersion = asyncHandler(async (req, res) => {
     collection.tags = version.snapshot.tags || [];
     collection.coverImage = version.snapshot.coverImage || null;
     collection.images = version.snapshot.images || [];
-    collection.collaborators = version.snapshot.collaborators || [];
+    // An editor restoring content must not replace invitation/access metadata.
+    if (canManageCollaborators) collection.collaborators = version.snapshot.collaborators || [];
 
     await collection.save();
+    clearPermissionCache('collection', collectionId);
+    await invalidateCollectionLists(collection, previousMembers);
 
     // Create a new version documenting the restore
     await createCollectionVersion(
@@ -191,7 +198,7 @@ export const restoreCollectionVersion = asyncHandler(async (req, res) => {
         })
         .populate({
             path: 'collaborators.user',
-            select: 'username displayName avatarUrl email',
+            select: canManageCollaborators ? 'username displayName avatarUrl email' : 'username displayName avatarUrl',
         })
         .lean();
 

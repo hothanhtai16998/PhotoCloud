@@ -5,6 +5,7 @@ import { safeTrim, escapeRegex } from '../../utils/inputUtils.js';
 import { normalizeListedImages } from '../../utils/imageListingResponse.js';
 import { buildSortQuery } from '../../utils/imageSort.js';
 import { fetchImagePage } from './imagePage.js';
+import { publicImageFilter } from '../../utils/publicImageFilter.js';
 
 export async function listImages(params) {
   const page = Math.max(1, parseInt(params.page) || PAGINATION.DEFAULT_PAGE);
@@ -221,13 +222,7 @@ export async function listImages(params) {
   // Only show approved images on homepage (or images with no moderation status for backward compatibility)
   // This ensures unapproved images don't appear until admin approves them
   // Use $or for moderation status check, but combine with existing query properly
-  const moderationFilter = {
-    $or: [
-      { moderationStatus: 'approved' },
-      { moderationStatus: { $exists: false } }, // Backward compatibility - show old images without moderation status
-      { moderationStatus: null }, // Also handle null values
-    ],
-  };
+  const moderationFilter = publicImageFilter();
 
   // Combine all conditions - need to handle $or (search) with other conditions
   // Build the main conditions object (everything except $and)

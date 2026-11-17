@@ -54,21 +54,22 @@ async function processAITaggingQueue() {
  * @param {Object} job - Job data
  */
 async function processAITaggingJob(job) {
-    const { imageId, buffer, mimetype, userTags } = job;
+    const { imageId, buffer, mimetype } = job;
     const startTime = Date.now();
 
     try {
         logger.info(`[AI Tagging Queue] Processing AI tags for image ${imageId}`);
+
+        // Read current tags before slow external work; never overwrite edits made meanwhile.
+        const image = await Image.findById(imageId).select('tags').lean();
+        if (!image) return;
+        const originalTags = image.tags;
 
         // Generate AI tags (in English from Google Vision API)
         const aiTagsEnglish = await generateAITags(buffer, mimetype);
         
         if (aiTagsEnglish.length === 0) {
             logger.info(`[AI Tagging Queue] No AI tags generated for image ${imageId}`);
-            // Update image with user tags only
-            await Image.findByIdAndUpdate(imageId, {
-                $set: { tags: userTags || [] },
-            }, { new: true });
             return;
         }
 
@@ -80,14 +81,17 @@ async function processAITaggingJob(job) {
         const aiTagsTranslated = await translateTags(aiTagsEnglish, targetLanguage);
 
         // Merge with user tags (use translated tags for display)
-        const mergedTags = mergeTags(userTags || [], aiTagsTranslated);
+        const mergedTags = mergeTags(originalTags || [], aiTagsTranslated);
 
-        // Store translated tags (Vietnamese) - automatically translated!
-        await Image.findByIdAndUpdate(imageId, {
-            $set: { 
-                tags: mergedTags, // Vietnamese tags (automatically translated)
-            },
-        }, { new: true });
+        // Exact array match is intentional: reordered/removed tags are user edits too.
+        const result = await Image.updateOne({
+            _id: imageId,
+            tags: originalTags === undefined ? { $exists: false } : originalTags,
+        }, { $set: { tags: mergedTags } });
+        if (!result.matchedCount) {
+            logger.info('[AI Tagging Queue] Skipped stale result', { imageId });
+            return;
+        }
 
         const duration = Date.now() - startTime;
         logger.info(`[AI Tagging Queue] ✅ Updated image ${imageId} with ${mergedTags.length} Vietnamese tags (${aiTagsEnglish.length} English → ${aiTagsTranslated.length} ${targetLanguage}) in ${duration}ms`);

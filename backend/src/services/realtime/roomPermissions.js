@@ -6,6 +6,7 @@ import { logger } from '../../utils/logger.js';
 
 // Permission cache to reduce database queries
 const permissionCache = new Map();
+let cacheGeneration = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
@@ -17,6 +18,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export const canJoinCollectionRoom = async (userId, collectionId) => {
   const cacheKey = `collection:${userId}:${collectionId}`;
   const cached = permissionCache.get(cacheKey);
+  const generation = cacheGeneration;
 
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.hasPermission;
@@ -39,7 +41,7 @@ export const canJoinCollectionRoom = async (userId, collectionId) => {
     const hasPermission = !!collection;
 
     // Cache the result
-    permissionCache.set(cacheKey, {
+    if (generation === cacheGeneration) permissionCache.set(cacheKey, {
       hasPermission,
       timestamp: Date.now(),
     });
@@ -61,6 +63,7 @@ export const canJoinCollectionRoom = async (userId, collectionId) => {
 export const canJoinImageRoom = async (userId, imageId) => {
   const cacheKey = `image:${userId}:${imageId}`;
   const cached = permissionCache.get(cacheKey);
+  const generation = cacheGeneration;
 
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     return cached.hasPermission;
@@ -75,7 +78,7 @@ export const canJoinImageRoom = async (userId, imageId) => {
     const hasPermission = !!image; // All images are public for now
 
     // Cache the result
-    permissionCache.set(cacheKey, {
+    if (generation === cacheGeneration) permissionCache.set(cacheKey, {
       hasPermission,
       timestamp: Date.now(),
     });
@@ -115,9 +118,10 @@ export const canJoinProfileRoom = async (userId, targetUserId) => {
  * @param {string} resourceId - Resource ID
  */
 export const clearPermissionCache = (resourceType, resourceId) => {
+  cacheGeneration++;
   const keysToDelete = [];
   for (const key of permissionCache.keys()) {
-    if (key.includes(`${resourceType}:`) && key.includes(`:${resourceId}`)) {
+    if (key.startsWith(`${resourceType}:`) && key.endsWith(`:${resourceId}`)) {
       keysToDelete.push(key);
     }
   }

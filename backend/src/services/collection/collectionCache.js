@@ -20,3 +20,10 @@ export async function invalidateUserCollections(userId) {
         // Don't fail the request if cache clear fails
     }
 }
+
+/** Invalidate lists of everyone affected by collection membership, including removed users. */
+export async function invalidateCollectionLists(collection, extraUsers = []) {
+    const users = [collection.createdBy, ...(collection.collaborators || []).map(item => item.user), ...extraUsers];
+    const ids = new Set(users.filter(Boolean).map(user => String(user._id || user)));
+    await Promise.all([...ids].map(invalidateUserCollections));
+}

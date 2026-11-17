@@ -1,3 +1,5 @@
+import { publicImageFilter } from '../../utils/publicImageFilter.js';
+import { hasPermission } from './collectionHelpers.js';
 import Collection from '../../models/Collection.js';
 import { logger } from '../../utils/logger.js';
 import { isValidObjectId } from '../../utils/inputUtils.js';
@@ -215,10 +217,10 @@ export const getCollectionById = async (req, res) => {
             ] } : { isPublic: true }),
         })
             .populate('createdBy', 'username displayName avatarUrl')
-            .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
+            .populate({ path: 'coverImage', select: 'thumbnailUrl smallUrl imageUrl imageTitle', match: publicImageFilter() })
             .populate({
                 path: 'collaborators.user',
-                select: 'username displayName avatarUrl email',
+                select: 'username displayName avatarUrl',
             })
             .populate({
                 path: 'collaborators.invitedBy',
@@ -226,6 +228,7 @@ export const getCollectionById = async (req, res) => {
             })
             .populate({
                 path: 'images',
+                match: publicImageFilter(),
                 select: 'thumbnailUrl smallUrl regularUrl imageUrl imageTitle location uploadedBy views downloads createdAt width height',
                 populate: {
                     path: 'uploadedBy',
@@ -245,7 +248,7 @@ export const getCollectionById = async (req, res) => {
             success: true,
             collection: {
                 ...collection,
-                ...(!userId ? { collaborators: [] } : {}),
+                ...(!userId || !hasPermission(collection, userId, 'view') ? { collaborators: [] } : {}),
                 imageCount: collection.images ? collection.images.length : 0,
             },
         });

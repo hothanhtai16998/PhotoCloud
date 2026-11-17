@@ -1,3 +1,4 @@
+import { clearPermissionCache } from '../../services/realtime/roomPermissions.js';
 import Collection from '../../models/Collection.js';
 import Notification from '../../models/Notification.js';
 import { logger } from '../../utils/logger.js';
@@ -5,7 +6,7 @@ import { safeTrim, isValidObjectId } from '../../utils/inputUtils.js';
 import { createCollectionVersion } from '../../services/collection/collectionVersionHelper.js';
 import { getUserId, hasPermission } from './collectionHelpers.js';
 import mongoose from 'mongoose';
-import { invalidateUserCollections } from '../../services/collection/collectionCache.js';
+import { invalidateCollectionLists } from '../../services/collection/collectionCache.js';
 
 export const createCollection = async (req, res) => {
     if (!req.user.isAdmin && !req.user.isSuperAdmin) return res.status(403).json({ success: false, message: 'Chỉ quản trị viên được tạo bộ sưu tập.' });
@@ -47,10 +48,11 @@ export const createCollection = async (req, res) => {
         });
 
         await collection.save();
+        clearPermissionCache('collection', collection._id.toString());
 
         // Create initial version
         // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)
-        await invalidateUserCollections(userId);
+        await invalidateCollectionLists(collection);
 
         await createCollectionVersion(
             collection._id,
@@ -188,9 +190,10 @@ export const updateCollection = async (req, res) => {
         }
 
         await collection.save();
+        clearPermissionCache('collection', collection._id.toString());
 
         // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)
-        await invalidateUserCollections(userId);
+        await invalidateCollectionLists(collection);
 
         // Create version for each change
         if (changes.length > 0) {
@@ -371,9 +374,10 @@ export const deleteCollection = async (req, res) => {
         }
 
         await Collection.findByIdAndDelete(collectionId);
+        clearPermissionCache('collection', collectionId);
 
         // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)
-        await invalidateUserCollections(userId);
+        await invalidateCollectionLists(collection);
 
         res.json({
             success: true,

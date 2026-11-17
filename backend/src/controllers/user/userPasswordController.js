@@ -169,16 +169,19 @@ export const resetPassword = asyncHandler(async (req, res) => {
     }
 
     // Hash new password
-    const bcrypt = await import('bcrypt');
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Update password
+    // Claim after hashing: recheck expiry and single-use atomically before mutation.
+    const claimedToken = await PasswordResetToken.consumeToken(resetToken._id);
+    if (!claimedToken) {
+        return res.status(400).json({ message: 'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.' });
+    }
+
+    // Do not reopen the token if saving fails: retrying an uncertain write must
+    // never allow reuse. The user can request a fresh reset link instead.
     user.hashedPassword = hashedPassword;
     await user.save();
-
-    // Consume token (mark as used)
-    await PasswordResetToken.consumeToken(resetToken._id);
 
     return res.status(200).json({ message: 'Máº­t kháº©u Ä‘Ã£ Ä‘Æ°á»£c Ä‘áº·t láº¡i thÃ nh cÃ´ng. Báº¡n cÃ³ thá»ƒ Ä‘Äƒng nháº­p ngay.' });
 });

@@ -40,7 +40,7 @@ const passwordResetTokenSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// TTL index tự động xóa token hết hạn sau 24h
+// TTL index tự động dọn token sau expiresAt; không dùng TTL thay validation.
 passwordResetTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Static helpers
@@ -77,8 +77,9 @@ passwordResetTokenSchema.statics.findByToken = async function (plainToken) {
 };
 
 passwordResetTokenSchema.statics.consumeToken = async function (tokenId) {
-    return this.findByIdAndUpdate(
-        tokenId,
+    // Atomically claim one still-valid token; concurrent requests cannot both win.
+    return this.findOneAndUpdate(
+        { _id: tokenId, usedAt: null, expiresAt: { $gt: new Date() } },
         { $set: { usedAt: new Date() } },
         { new: true }
     );

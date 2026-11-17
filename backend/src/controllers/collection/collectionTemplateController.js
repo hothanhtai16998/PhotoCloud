@@ -1,3 +1,4 @@
+import { invalidateCollectionLists } from '../../services/collection/collectionCache.js';
 import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import mongoose from 'mongoose';
 import CollectionTemplate from '../../models/CollectionTemplate.js';
@@ -173,6 +174,7 @@ export const createCollectionFromTemplate = asyncHandler(async (req, res) => {
     });
 
     await collection.save();
+    await invalidateCollectionLists(collection);
 
     // Increment template usage count
     await CollectionTemplate.findByIdAndUpdate(templateId, {

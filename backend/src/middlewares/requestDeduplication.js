@@ -58,78 +58,54 @@ export const requestDeduplication = (req, res, next) => {
     const pending = pendingRequests.get(key);
 
     if (pending && (now - pending.timestamp) < DEDUPLICATION_WINDOW) {
-        // Duplicate request detected - wait for the original request to complete
-        return pending.promise
-            .then((result) => {
-                // Return cached JSON response if available; otherwise proceed
-                if (result && result.data !== undefined) {
-                    return res.status(result.status).json(result.data);
-                }
-
-                // If original didn't produce JSON, fall through to normal handling
-                return next();
-            })
-            .catch((error) => {
-                // If original request failed, let this one proceed
-                next();
-            });
+        return pending.promise.then((result) => {
+            if (res.destroyed || res.writableEnded) return;
+            if (result && result.data !== undefined) {
+                return res.status(result.status).json(result.data);
+            }
+            return next();
+        });
     }
 
-    // Store original json method
     const originalJson = res.json.bind(res);
-    const originalStatus = res.status.bind(res);
-
-    let responseStatus = 200;
-    let responseData = null;
-    let requestResolve = null;
-    let requestReject = null;
-
-    // Create a promise for this request (without referencing itself)
-    const requestPromise = new Promise((resolve, reject) => {
-        requestResolve = resolve;
-        requestReject = reject;
-    });
-
-    // Store the promise (now that it's created)
-    pendingRequests.set(key, {
-        promise: requestPromise,
+    let responseData;
+    let resolveRequest;
+    const entry = {
         timestamp: now,
-    });
-
-    // Override json method to capture response
+        promise: new Promise(resolve => { resolveRequest = resolve; }),
+    };
+    pendingRequests.set(key, entry);
+    const removeEntry = () => {
+        // An older response must not delete a replacement request's entry.
+        if (pendingRequests.get(key) === entry) pendingRequests.delete(key);
+    };
+    let settled = false;
+    let timer;
+    const settle = (result) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolveRequest(result);
+        if (result) {
+            timer = setTimeout(removeEntry, Math.max(0, DEDUPLICATION_WINDOW - (Date.now() - now)));
+            timer.unref?.();
+        } else {
+            removeEntry();
+        }
+    };
+    // Bound waiting even if the upstream handler never finishes or emits close.
+    timer = setTimeout(() => settle(null), DEDUPLICATION_WINDOW * 2);
+    timer.unref?.();
     res.json = function (data) {
         responseData = data;
-        responseStatus = res.statusCode || 200;
         return originalJson(data);
     };
-
-    res.status = function (code) {
-        responseStatus = code;
-        return originalStatus(code);
-    };
-
-    // Resolve when response finishes to ensure headers/body are complete
-    res.on('finish', () => {
-        if (requestResolve) {
-            requestResolve({
-                status: responseStatus,
-                data: responseData,
-            });
-        }
-
-        // Clean up after deduplication window
-        setTimeout(() => {
-            pendingRequests.delete(key);
-        }, DEDUPLICATION_WINDOW);
-    });
-
-    // Handle errors
-    res.on('error', (error) => {
-        pendingRequests.delete(key);
-        if (requestReject) {
-            requestReject(error);
-        }
-    });
+    res.once('finish', () => settle(responseData === undefined ? null : {
+        status: res.statusCode || 200, data: responseData,
+    }));
+    res.once('close', () => settle(null));
+    // Resolve rather than reject: originals may have no duplicate subscriber.
+    res.once('error', () => settle(null));
 
     // Call next to proceed with request
     next();

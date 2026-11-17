@@ -1,3 +1,5 @@
+import { invalidateCollectionLists } from '../../services/collection/collectionCache.js';
+import { clearPermissionCache } from '../../services/realtime/roomPermissions.js';
 import mongoose from 'mongoose';
 import Collection from '../../models/Collection.js';
 import User from '../../models/User.js';
@@ -90,6 +92,8 @@ export const addCollaborator = asyncHandler(async (req, res) => {
         });
 
         await collection.save();
+        clearPermissionCache('collection', collection._id.toString());
+        await invalidateCollectionLists(collection, [req.params.collaboratorId]);
 
         // Create notification for the invited user
         try {
@@ -175,6 +179,8 @@ export const removeCollaborator = asyncHandler(async (req, res) => {
         ) || [];
 
         await collection.save();
+        clearPermissionCache('collection', collection._id.toString());
+        await invalidateCollectionLists(collection, [req.params.collaboratorId]);
 
         // Notify the removed collaborator
         if (collaboratorToRemove) {
@@ -271,6 +277,8 @@ export const updateCollaboratorPermission = asyncHandler(async (req, res) => {
 
         collaborator.permission = permission;
         await collection.save();
+        clearPermissionCache('collection', collection._id.toString());
+        await invalidateCollectionLists(collection, [req.params.collaboratorId]);
 
         // Notify the collaborator whose permission was changed
         try {

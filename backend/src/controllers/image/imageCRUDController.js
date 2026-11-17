@@ -1,3 +1,5 @@
+import { parseImageCoordinates } from '../../utils/imageCoordinates.js';
+import { publicImageFilter } from '../../utils/publicImageFilter.js';
 import mongoose from 'mongoose';
 import { getImageFromR2 } from '../../config/storage.js';
 import Image from '../../models/Image.js';
@@ -29,8 +31,10 @@ export const getImagesByUserId = asyncHandler(async (req, res) => {
     );
     const skip = (page - 1) * limit;
 
+    const isOwner = req.user?._id?.toString() === userId;
+    const query = { uploadedBy: userId, ...(isOwner ? {} : publicImageFilter()) };
     const [imagesRaw, total] = await Promise.all([
-        Image.find({ uploadedBy: userId })
+        Image.find(query)
             .populate('uploadedBy', 'username displayName avatarUrl')
             .populate({
                 path: 'imageCategory',
@@ -41,7 +45,7 @@ export const getImagesByUserId = asyncHandler(async (req, res) => {
             .skip(skip)
             .limit(limit)
             .lean(),
-        Image.countDocuments({ uploadedBy: userId }),
+        Image.countDocuments(query),
     ]);
 
     // Handle images with invalid or missing category references
@@ -73,7 +77,8 @@ export const getImagesByUserId = asyncHandler(async (req, res) => {
 
     // Set cache headers
     const hasCacheBust = req.query._t;
-    if (hasCacheBust) {
+    res.vary('Authorization');
+    if (isOwner || hasCacheBust) {
         res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     } else {
         res.set('Cache-Control', 'public, max-age=30');
@@ -103,11 +108,7 @@ export const getImageById = asyncHandler(async (req, res) => {
 
     // Match public gallery visibility; full IDs keep the indexed lookup.
     const query = {
-        $or: [
-            { moderationStatus: 'approved' },
-            { moderationStatus: { $exists: false } },
-            { moderationStatus: null },
-        ],
+        ...publicImageFilter(),
         ...(imageId.length === 24
             ? { _id: imageId }
             : { $expr: { $eq: [{ $substrBytes: [{ $toString: '$_id' }, 12, 12] }, imageId.toLowerCase()] } }),
@@ -150,7 +151,7 @@ export const downloadImage = asyncHandler(async (req, res) => {
     }
 
     // Find the image (only fetch needed fields)
-    const image = await Image.findById(imageId)
+    const image = await Image.findOne({ _id: imageId, ...publicImageFilter() })
         .select('imageTitle imageUrl regularUrl smallUrl uploadedBy')
         .lean();
 
@@ -197,7 +198,7 @@ export const downloadImage = asyncHandler(async (req, res) => {
         if (r2Response.ContentLength) {
             res.setHeader('Content-Length', r2Response.ContentLength);
         }
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('Cache-Control', 'no-store');
 
         // Create notification for image owner (async, don't wait)
         if (userId && image.uploadedBy) {
@@ -290,16 +291,8 @@ export const updateImage = asyncHandler(async (req, res) => {
     }
 
     if (coordinates !== undefined) {
-        const latRaw = coordinates?.latitude;
-        const lonRaw = coordinates?.longitude;
-        const lat = latRaw !== undefined ? parseFloat(latRaw) : NaN;
-        const lon = lonRaw !== undefined ? parseFloat(lonRaw) : NaN;
-
-        if (!Number.isNaN(lat) && !Number.isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
-            updateData.coordinates = { latitude: lat, longitude: lon };
-        } else {
-            updateData.coordinates = null;
-        }
+        // This endpoint historically accepts an object, not JSON encoded text.
+        updateData.coordinates = (typeof coordinates === 'object' && parseImageCoordinates(coordinates)) || null;
     }
 
     if (cameraMake !== undefined) {

@@ -64,27 +64,7 @@ export const parseTags = (tagsInput) => {
 /**
  * Validate and parse coordinates
  */
-export const validateCoordinates = (coordinates) => {
-    if (!coordinates) return undefined;
-
-    try {
-        const parsed = typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates;
-
-        if (!parsed.latitude || !parsed.longitude) return undefined;
-
-        const lat = parseFloat(parsed.latitude);
-        const lng = parseFloat(parsed.longitude);
-
-        if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            return undefined;
-        }
-
-        return { latitude: lat, longitude: lng };
-    } catch (error) {
-        logger.warn('Invalid coordinates format:', error.message);
-        return undefined;
-    }
-};
+export { parseImageCoordinates as validateCoordinates } from '../../utils/imageCoordinates.js';
 
 /**
  * Convert stream to buffer

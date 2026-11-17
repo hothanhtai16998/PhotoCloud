@@ -2,6 +2,7 @@ import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import { getImageFromR2 } from '../../config/storage.js';
 import Image from '../../models/Image.js';
 import mongoose from 'mongoose';
+import { publicImageFilter } from '../../utils/publicImageFilter.js';
 
 /**
  * Proxy image with proper CORS headers
@@ -19,7 +20,7 @@ export const proxyImage = asyncHandler(async (req, res) => {
     }
 
     // Find the image (only fetch needed fields)
-    const image = await Image.findById(imageId)
+    const image = await Image.findOne({ _id: imageId, ...publicImageFilter() })
         .select('imageTitle imageUrl thumbnailUrl smallUrl regularUrl videoUrl isVideo')
         .lean();
 
@@ -78,7 +79,7 @@ export const proxyImage = asyncHandler(async (req, res) => {
         res.setHeader('Content-Type', r2Response.ContentType || 'image/jpeg');
         
         // Set cache headers
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('Cache-Control', 'no-store');
 
         // Stream the image
         r2Response.Body.pipe(res);
