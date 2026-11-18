@@ -3,6 +3,7 @@ import { asyncHandler } from '../../middlewares/asyncHandler.js';
 import mongoose from 'mongoose';
 import CollectionTemplate from '../../models/CollectionTemplate.js';
 import Collection from '../../models/Collection.js';
+import { logger } from '../../utils/logger.js';
 
 
 /**
@@ -151,9 +152,13 @@ export const createCollectionFromTemplate = asyncHandler(async (req, res) => {
         });
     }
 
+    if (description !== undefined && (typeof description !== 'string' || description.trim().length > 500)) {
+        return res.status(400).json({ success: false, message: 'Mô tả phải là văn bản không quá 500 ký tự.' });
+    }
+
     // Use template defaults, but allow overrides
     const collectionName = String(name || '').trim() || template.templateName;
-    const collectionDescription = String(description || '').trim() || template.description || '';
+    const collectionDescription = description !== undefined ? description.trim() : (template.description || '');
     const collectionIsPublic = isPublic !== undefined ? isPublic : template.defaultIsPublic;
 
     // Merge template tags with provided tags
@@ -177,9 +182,12 @@ export const createCollectionFromTemplate = asyncHandler(async (req, res) => {
     await invalidateCollectionLists(collection);
 
     // Increment template usage count
-    await CollectionTemplate.findByIdAndUpdate(templateId, {
-        $inc: { usageCount: 1 },
-    });
+    try {
+        await CollectionTemplate.findByIdAndUpdate(templateId, { $inc: { usageCount: 1 } });
+    } catch (error) {
+        // A usage statistic must not report a successfully created collection as failed.
+        logger.error('Failed to increment template usage count:', error?.code || 'update failed');
+    }
 
     // Create version for new collection
     const { createCollectionVersion } = await import('../../services/collection/collectionVersionHelper.js');
