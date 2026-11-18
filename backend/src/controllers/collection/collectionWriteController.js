@@ -1,18 +1,33 @@
 import { clearPermissionCache } from '../../services/realtime/roomPermissions.js';
 import Collection from '../../models/Collection.js';
+import { publicImageFilter } from '../../utils/publicImageFilter.js';
 import Notification from '../../models/Notification.js';
 import { logger } from '../../utils/logger.js';
 import { safeTrim, isValidObjectId } from '../../utils/inputUtils.js';
 import { createCollectionVersion } from '../../services/collection/collectionVersionHelper.js';
-import { getUserId, hasPermission } from './collectionHelpers.js';
+import { hasPermission } from './collectionHelpers.js';
+import { getCollectionMemberIds } from '../../utils/collectionAccess.js';
 import mongoose from 'mongoose';
 import { invalidateCollectionLists } from '../../services/collection/collectionCache.js';
+
+function metadataInputError({ name, description, isPublic, tags }) {
+    if (name !== undefined && typeof name !== 'string') return 'Tên bộ sưu tập phải là văn bản.';
+    if (description !== undefined && typeof description !== 'string') return 'Mô tả phải là văn bản.';
+    if (description !== undefined && description.trim().length > 500) return 'Mô tả không được vượt quá 500 ký tự.';
+    if (isPublic !== undefined && typeof isPublic !== 'boolean') return 'Trạng thái công khai không hợp lệ.';
+    if (tags !== undefined && (!Array.isArray(tags) || tags.some(tag => typeof tag !== 'string'))) {
+        return 'Danh sách nhãn phải gồm các chuỗi văn bản.';
+    }
+    return null;
+}
 
 export const createCollection = async (req, res) => {
     if (!req.user.isAdmin && !req.user.isSuperAdmin) return res.status(403).json({ success: false, message: 'Chỉ quản trị viên được tạo bộ sưu tập.' });
     try {
         const userId = req.user._id;
         const { name, description, isPublic, tags } = req.body;
+        const inputError = metadataInputError(req.body);
+        if (inputError) return res.status(400).json({ success: false, message: inputError });
 
         if (!name || safeTrim(name).length === 0) {
             return res.status(400).json({
@@ -62,7 +77,7 @@ export const createCollection = async (req, res) => {
         );
 
         const populatedCollection = await Collection.findById(collection._id)
-            .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
+            .populate({ path: 'coverImage', select: 'thumbnailUrl smallUrl imageUrl imageTitle', match: publicImageFilter() })
             .lean();
 
         res.status(201).json({
@@ -113,12 +128,25 @@ export const updateCollection = async (req, res) => {
             });
         }
 
+        const inputError = metadataInputError(req.body);
+        if (inputError) return res.status(400).json({ success: false, message: inputError });
+
+        if (coverImage !== undefined && coverImage !== null && coverImage !== '' &&
+            (typeof coverImage !== 'string' || !mongoose.Types.ObjectId.isValid(coverImage))) {
+            return res.status(400).json({ success: false, message: 'Mã ảnh bìa không hợp lệ.' });
+        }
+        const coverImageId = coverImage ? new mongoose.Types.ObjectId(coverImage).toHexString() : null;
+        if (coverImage !== undefined && coverImageId &&
+            !collection.images.some(image => String(image).toLowerCase() === coverImageId)) {
+            return res.status(400).json({ success: false, message: 'Cover image must be in the collection' });
+        }
+
         // Capture original values before applying updates so we can create accurate change records
         const original = {
             name: collection.name,
             description: collection.description,
             isPublic: collection.isPublic,
-            coverImage: collection.coverImage ? collection.coverImage.toString() : null,
+            coverImage: collection.coverImage ? collection.coverImage.toString().toLowerCase() : null,
             tags: Array.isArray(collection.tags) ? [...collection.tags] : [],
         };
 
@@ -148,14 +176,7 @@ export const updateCollection = async (req, res) => {
         }
 
         if (coverImage !== undefined) {
-            // Verify the cover image is in the collection
-            if (coverImage && !collection.images.map(i => i.toString()).includes(String(coverImage))) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Cover image must be in the collection',
-                });
-            }
-            collection.coverImage = coverImage || null;
+            collection.coverImage = coverImageId;
         }
 
         if (tags !== undefined) {
@@ -182,7 +203,7 @@ export const updateCollection = async (req, res) => {
         if (isPublic !== undefined && original.isPublic !== collection.isPublic) {
             changes.push({ field: 'isPublic', oldValue: original.isPublic, newValue: collection.isPublic });
         }
-        if (coverImage !== undefined && String(original.coverImage) !== (collection.coverImage ? collection.coverImage.toString() : null)) {
+        if (coverImage !== undefined && original.coverImage !== coverImageId) {
             changes.push({ field: 'coverImage', oldValue: original.coverImage, newValue: collection.coverImage });
         }
         if (tags !== undefined && JSON.stringify(original.tags) !== JSON.stringify(collection.tags)) {
@@ -211,38 +232,8 @@ export const updateCollection = async (req, res) => {
                 );
             }
 
-            // Notify collaborators and owner about collection updates
-            // If owner updates, notify collaborators
-            // If collaborator updates, notify owner and other collaborators
-            const collaborators = collection.collaborators || [];
-            const notificationRecipients = new Set();
-
-            const isOwner = collection.createdBy.toString() === userId.toString();
-
-            if (isOwner) {
-                // Owner updated - notify all collaborators
-                collaborators.forEach(collab => {
-                    const collabUserId = getUserId(collab.user);
-                    if (collabUserId && collabUserId !== userId.toString()) {
-                        notificationRecipients.add(collabUserId);
-                    }
-                });
-            } else {
-                // Collaborator updated - notify owner and other collaborators
-                if (collection.createdBy.toString() !== userId.toString()) {
-                    notificationRecipients.add(collection.createdBy.toString());
-                }
-
-                collaborators.forEach(collab => {
-                    const collabUserId = getUserId(collab.user);
-                    if (collabUserId && collabUserId !== userId.toString()) {
-                        notificationRecipients.add(collabUserId);
-                    }
-                });
-            }
-
-            if (notificationRecipients.size > 0) {
-                const recipients = Array.from(notificationRecipients);
+            const recipients = getCollectionMemberIds(collection, userId);
+            if (recipients.length > 0) {
                 // Check if cover image was changed
                 const coverChanged = changes.some(c => c.field === 'coverImage');
                 const nameChanged = changes.some(c => c.field === 'name');
@@ -255,45 +246,45 @@ export const updateCollection = async (req, res) => {
                 );
 
                 // Create notifications for each collaborator
-                const notificationPromises = [];
-
-                // Create specific notifications
-                if (coverChanged) {
-                    recipients.forEach(recipientId => {
-                        notificationPromises.push(
-                            Notification.create({
-                                recipient: recipientId,
-                                type: 'collection_cover_changed',
-                                collection: collectionId,
-                                actor: userId,
-                                metadata: {
-                                    collectionName: collection.name,
-                                },
-                            })
-                        );
-                    });
-                }
-
-                // Create general update notification for other changes
-                if (nameChanged || descriptionChanged || otherChanges.length > 0) {
-                    recipients.forEach(recipientId => {
-                        notificationPromises.push(
-                            Notification.create({
-                                recipient: recipientId,
-                                type: 'collection_updated',
-                                collection: collectionId,
-                                actor: userId,
-                                metadata: {
-                                    collectionName: collection.name,
-                                    changes: changes.map(c => c.field),
-                                },
-                            })
-                        );
-                    });
-                }
-
-                // Create all notifications in parallel
                 try {
+                    const notificationPromises = [];
+
+                    // Create specific notifications
+                    if (coverChanged) {
+                        recipients.forEach(recipientId => {
+                            notificationPromises.push(
+                                Promise.resolve().then(() => Notification.create({
+                                    recipient: recipientId,
+                                    type: 'collection_cover_changed',
+                                    collection: collectionId,
+                                    actor: userId,
+                                    metadata: {
+                                        collectionName: collection.name,
+                                    },
+                                }))
+                            );
+                        });
+                    }
+
+                    // Create general update notification for other changes
+                    if (nameChanged || descriptionChanged || otherChanges.length > 0) {
+                        recipients.forEach(recipientId => {
+                            notificationPromises.push(
+                                Promise.resolve().then(() => Notification.create({
+                                    recipient: recipientId,
+                                    type: 'collection_updated',
+                                    collection: collectionId,
+                                    actor: userId,
+                                    metadata: {
+                                        collectionName: collection.name,
+                                        changes: changes.map(c => c.field),
+                                    },
+                                }))
+                            );
+                        });
+                    }
+
+                    // Create all notifications in parallel
                     await Promise.all(notificationPromises);
                 } catch (notifError) {
                     logger.error('Failed to create collection update notifications:', notifError);
@@ -303,8 +294,8 @@ export const updateCollection = async (req, res) => {
         }
 
         const populatedCollection = await Collection.findById(collection._id)
-            .populate('coverImage', 'thumbnailUrl smallUrl imageUrl imageTitle')
-            .populate('images', 'thumbnailUrl smallUrl imageUrl imageTitle')
+            .populate({ path: 'coverImage', select: 'thumbnailUrl smallUrl imageUrl imageTitle', match: publicImageFilter() })
+            .populate({ path: 'images', select: 'thumbnailUrl smallUrl imageUrl imageTitle', match: publicImageFilter() })
             .lean();
 
         // Emit WebSocket event for real-time collaboration
@@ -361,7 +352,7 @@ export const deleteCollection = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid collection ID' });
         }
 
-        const collection = await Collection.findOne({
+        const collection = await Collection.findOneAndDelete({
             _id: collectionId,
             createdBy: userId,
         });
@@ -373,7 +364,6 @@ export const deleteCollection = async (req, res) => {
             });
         }
 
-        await Collection.findByIdAndDelete(collectionId);
         clearPermissionCache('collection', collectionId);
 
         // Invalidate cache for this user's collections (both queryCache and cacheMiddleware)

@@ -709,3 +709,79 @@ test('archive filenames follow declared media format and never use query or host
         assert.equal(await zip.file((index + 1) + '_fixture.' + extension).async('string'), url);
     }
 });
+function invokeReport(body = {}, user = viewer) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        const res = Object.assign(new EventEmitter(), {
+            code: 200, headers: {}, status(code) { this.code = code; return this; },
+            setHeader(name, value) { this.headers[name] = value; },
+            json(body) { resolve({ code: this.code, body, headers: this.headers }); },
+            write(buffer) { chunks.push(buffer); },
+            end(buffer) { chunks.push(buffer); resolve({ code: this.code, body: Buffer.concat(chunks), headers: this.headers }); },
+        });
+        exportCollection({ method: 'POST', params: { collectionId: id }, user: { _id: user }, body }, res, reject);
+    });
+}
+function retryFixture() {
+    reset();
+    collection.images = [
+        { _id: 'abcdefabcdefabcdefabcdef', imageTitle: 'Ảnh lỗi <b>thử</b>', imageUrl: 'https://example.test/fail.jpg' },
+        { _id: '000000000000000000000011', imageTitle: 'Ảnh tốt', imageUrl: 'https://example.test/good.jpg' },
+    ];
+}
+test('POST reports failed image titles beside exact ZIP bytes and retry downloads only the missing selection', async () => {
+    retryFixture();
+    fetchImage = async url => { if (url.includes('/fail.')) throw new Error('fixture failure'); return { data: Buffer.from(url) }; };
+    const first = await invokeReport();
+    assert.equal(first.code, 200);
+    const form = await new Response(first.body, { headers: { 'Content-Type': first.headers['Content-Type'] } }).formData();
+    const report = JSON.parse(form.get('report'));
+    assert.equal(report.total, 2);
+    assert.equal(report.downloaded, 1);
+    assert.deepEqual(report.failed, [{ id: collection.images[0]._id, title: collection.images[0].imageTitle }]);
+    const zip = await JSZip.loadAsync(await form.get('archive').arrayBuffer());
+    assert.deepEqual(Object.keys(zip.files), ['2__nh_t_t.jpg']);
+    assert.equal(await Object.values(zip.files)[0].async('string'), 'https://example.test/good.jpg');
+    downloads = []; fetchImage = null;
+    const second = await invokeReport({ imageIds: [report.failed[0].id.toUpperCase(), report.failed[0].id] });
+    const retry = await new Response(second.body, { headers: { 'Content-Type': second.headers['Content-Type'] } }).formData();
+    assert.deepEqual(downloads, ['https://example.test/fail.jpg']);
+    assert.deepEqual(JSON.parse(retry.get('report')), { total: 1, downloaded: 1, failed: [] });
+});
+test('retry rejects invalid, foreign, removed or newly hidden IDs before downloading', async () => {
+    retryFixture();
+    for (const imageIds of [[], 'bad', ['invalid'], [null]]) {
+        assert.equal((await invokeReport({ imageIds })).code, 400);
+    }
+    assert.equal((await invokeReport({ imageIds: ['000000000000000000000099'] })).code, 409);
+    collection.images[0].moderationStatus = 'pending';
+    assert.equal((await invokeReport({ imageIds: [collection.images[0]._id] })).code, 409);
+    assert.deepEqual(downloads, []);
+    collection.isPublic = false;
+    assert.equal((await invokeReport()).code, 404);
+});
+test('all-failed POST returns safe retry details without URLs while legacy GET remains binary-compatible', async () => {
+    retryFixture(); failDownloads = true;
+    const failed = await invokeReport();
+    assert.equal(failed.code, 502);
+    assert.equal(failed.body.failed.length, 2);
+    assert.equal(JSON.stringify(failed.body).includes('https://'), false);
+    failDownloads = false;
+    const legacy = await invoke(exportCollection);
+    assert.equal(legacy.code, 200);
+    assert.equal(legacy.headers['Content-Type'], 'application/zip');
+});
+test('duplicate stored image references produce one failure and retry remains usable', async () => {
+    retryFixture();
+    collection.images.push(collection.images[0]);
+    failDownloads = true;
+    const result = await invokeReport();
+    assert.equal(result.body.failed.length, 2);
+    assert.equal(downloads.length, 2);
+    downloads = []; failDownloads = false;
+    const retry = await invokeReport({ imageIds: [collection.images[0]._id] });
+    assert.equal(retry.code, 200);
+    assert.deepEqual(downloads, ['https://example.test/fail.jpg']);
+    collection.images.forEach(image => { image.moderationStatus = 'pending'; });
+    assert.equal((await invokeReport({ imageIds: [collection.images[0]._id] })).code, 409);
+});

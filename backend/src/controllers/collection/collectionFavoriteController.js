@@ -4,6 +4,8 @@ import Collection from '../../models/Collection.js';
 import Notification from '../../models/Notification.js';
 import mongoose from 'mongoose';
 import { logger } from '../../utils/logger.js';
+import { publicImageFilter } from '../../utils/publicImageFilter.js';
+import { hasPermission } from '../../utils/collectionAccess.js';
 
 /**
  * Toggle favorite status for a collection
@@ -11,7 +13,7 @@ import { logger } from '../../utils/logger.js';
  */
 export const toggleCollectionFavorite = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { collectionId } = req.params;
+    let { collectionId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(collectionId)) {
         return res.status(400).json({
@@ -21,8 +23,12 @@ export const toggleCollectionFavorite = asyncHandler(async (req, res) => {
         });
     }
 
-    // Validate collection exists
-    const collection = await Collection.findById(collectionId);
+    collectionId = new mongoose.Types.ObjectId(collectionId).toHexString();
+    // Being able to guess an ID must not grant access to a private collection.
+    const collection = await Collection.findOne({
+        _id: collectionId,
+        $or: [{ isPublic: true }, { createdBy: userId }, { 'collaborators.user': userId }],
+    });
     if (!collection) {
         return res.status(404).json({
             success: false,
@@ -31,46 +37,25 @@ export const toggleCollectionFavorite = asyncHandler(async (req, res) => {
         });
     }
 
-    // Get user with favorite collections
-    const user = await User.findById(userId);
+    const collectionObjectId = new mongoose.Types.ObjectId(collectionId);
+    const favorites = { $ifNull: ['$favoriteCollections', []] };
+    // Each toggle uses the state at the write itself, not a separate stale read.
+    const user = await User.findByIdAndUpdate(userId, [{
+        $set: {
+            favoriteCollections: {
+                $cond: [
+                    { $in: [collectionObjectId, favorites] },
+                    { $filter: { input: favorites, as: 'favoriteId', cond: { $ne: ['$$favoriteId', collectionObjectId] } } },
+                    { $concatArrays: [favorites, [collectionObjectId]] },
+                ],
+            },
+        },
+    }], { new: false }).select('favoriteCollections');
     if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: 'User not found',
-            errorCode: 'USER_NOT_FOUND',
-        });
+        return res.status(404).json({ success: false, message: 'User not found', errorCode: 'USER_NOT_FOUND' });
     }
-
-    // Check if already favorited
-    const isFavorited = user.favoriteCollections?.some(
-        favId => favId.toString() === collectionId
-    ) || false;
-
-    if (isFavorited) {
-        // Remove from favorites
-        await User.findByIdAndUpdate(
-            userId,
-            { $pull: { favoriteCollections: collectionId } },
-            { new: true }
-        ).select('favoriteCollections');
-
-        logger.info('Collection removed from favorites', {
-            userId,
-            collectionId,
-        });
-    } else {
-        // Add to favorites
-        await User.findByIdAndUpdate(
-            userId,
-            { $addToSet: { favoriteCollections: collectionId } },
-            { new: true }
-        ).select('favoriteCollections');
-
-        logger.info('Collection added to favorites', {
-            userId,
-            collectionId,
-        });
-
+    const isFavorited = user.favoriteCollections?.some(id => id.toString() === collectionId) || false;
+    if (!isFavorited) {
         // Create notification for collection owner (if different from user who favorited)
         if (collection.createdBy && collection.createdBy.toString() !== userId.toString()) {
             try {
@@ -117,7 +102,6 @@ export const getFavoriteCollections = asyncHandler(async (req, res) => {
     }
 
     const favoriteIds = user.favoriteCollections || [];
-    const total = favoriteIds.length;
 
     // Get favorite collections with pagination
     // IMPORTANT: Sort by the order in user.favoriteCollections array (most recently favorited first)
@@ -126,10 +110,11 @@ export const getFavoriteCollections = asyncHandler(async (req, res) => {
     
     const collections = await Collection.find({
         _id: { $in: favoriteIds },
+        $or: [{ isPublic: true }, { createdBy: userId }, { 'collaborators.user': userId }],
     })
         .populate('createdBy', 'username displayName avatarUrl')
-        .populate('coverImage', 'imageUrl regularUrl smallUrl')
-        .populate('images', 'imageUrl regularUrl smallUrl')
+        .populate({ path: 'coverImage', select: 'imageUrl regularUrl smallUrl', match: publicImageFilter() })
+        .populate({ path: 'images', select: 'imageUrl regularUrl smallUrl', match: publicImageFilter() })
         .lean();
     
     // Sort collections by their position in the reversed favorites array (most recent first)
@@ -147,7 +132,15 @@ export const getFavoriteCollections = asyncHandler(async (req, res) => {
     });
     
     // Apply pagination after sorting
-    const paginatedCollections = sortedCollections.slice(skip, skip + limit);
+    const total = sortedCollections.length;
+    const paginatedCollections = sortedCollections.slice(skip, skip + limit).map(collection => {
+        const { collaborators, ...publicCollection } = collection;
+        return {
+            ...publicCollection,
+            ...(hasPermission(collection, userId, 'view') ? { collaborators } : {}),
+            imageCount: collection.images?.length || 0,
+        };
+    });
 
     res.status(200).json({
         success: true,
@@ -189,7 +182,7 @@ export const checkCollectionFavorites = asyncHandler(async (req, res) => {
         const isValidMongoose = mongoose.Types.ObjectId.isValid(idString);
 
         if (matchesRegex && isValidMongoose) {
-            validCollectionIds.push(idString);
+            validCollectionIds.push({ key: idString, id: idString.toLowerCase() });
         } else {
             invalidCollectionIds.push(idString);
             logger.warn('Invalid collectionId format in checkCollectionFavorites', { collectionId: idString });
@@ -215,18 +208,17 @@ export const checkCollectionFavorites = asyncHandler(async (req, res) => {
         });
     }
 
-    const favoriteIds = (user.favoriteCollections || []).map(id => id.toString());
-
-    // Create map of favorited collection IDs
-    const favoritesMap = {};
-    validCollectionIds.forEach(collectionId => {
-        favoritesMap[collectionId] = favoriteIds.some(favId => favId === collectionId || String(favId) === String(collectionId));
-    });
-
-    // Include invalid IDs as false in the response
-    invalidCollectionIds.forEach(collectionId => {
-        favoritesMap[collectionId] = false;
-    });
+    const favoriteIds = new Set((user.favoriteCollections || []).map(id => id.toString().toLowerCase()));
+    const requestedFavorites = [...new Set(validCollectionIds.map(entry => entry.id).filter(id => favoriteIds.has(id)))];
+    const accessible = requestedFavorites.length ? await Collection.find({
+        _id: { $in: requestedFavorites },
+        $or: [{ isPublic: true }, { createdBy: userId }, { 'collaborators.user': userId }],
+    }).select('_id').lean() : [];
+    const accessibleIds = new Set(accessible.map(collection => collection._id.toString()));
+    const favoritesMap = Object.fromEntries([
+        ...validCollectionIds.map(({ key, id }) => [key, accessibleIds.has(id)]),
+        ...invalidCollectionIds.map(key => [key, false]),
+    ]);
 
     res.status(200).json({
         success: true,

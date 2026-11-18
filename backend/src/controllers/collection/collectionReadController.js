@@ -4,18 +4,14 @@ import Collection from '../../models/Collection.js';
 import { logger } from '../../utils/logger.js';
 import { isValidObjectId } from '../../utils/inputUtils.js';
 import mongoose from 'mongoose';
-import { cached, generateCacheKey } from '../../services/cache/queryCache.js';
 
 export const getUserCollections = async (req, res) => {
     try {
         const userId = req.user?._id;
 
-        // Generate cache key
         const browse = req.query.scope === 'browse';
         if (!userId && !browse) return res.status(401).json({ success: false, message: 'Đăng nhập để xem bộ sưu tập cá nhân.' });
-        const cacheKey = userId ? generateCacheKey('userCollections', { userId: userId.toString() }) : null;
 
-        // Use cached query result (5 minute TTL)
         const loadCollections = async () => {
             // Use aggregation to get collections with sample images (2-3 per collection)
             return await Collection.aggregate([
@@ -33,7 +29,7 @@ export const getUserCollections = async (req, res) => {
             {
                 $lookup: {
                     from: 'images', localField: 'images', foreignField: '_id',
-                    pipeline: [{ $project: { _id: 1 } }], as: 'existingImages',
+                    pipeline: [{ $match: publicImageFilter() }, { $project: { _id: 1 } }], as: 'existingImages',
                 },
             },
             {
@@ -46,7 +42,7 @@ export const getUserCollections = async (req, res) => {
                     },
                 },
             },
-            // The browse surface only publishes collections with surviving images.
+            // The browse surface only publishes collections with visible surviving images.
             // Personal pickers still need empty collections so images can be added.
             ...(browse ? [{ $match: { 'validImageIds.0': { $exists: true } } }] : []),
             {
@@ -67,6 +63,7 @@ export const getUserCollections = async (req, res) => {
                     foreignField: '_id',
                     as: 'coverImageData',
                     pipeline: [
+                        { $match: publicImageFilter() },
                         {
                             $project: {
                                 _id: 1,
@@ -88,6 +85,7 @@ export const getUserCollections = async (req, res) => {
                     foreignField: '_id',
                     as: 'sampleImagesData',
                     pipeline: [
+                        { $match: publicImageFilter() },
                         {
                             $project: {
                                 _id: 1,
@@ -180,12 +178,16 @@ export const getUserCollections = async (req, res) => {
             { $sort: { createdAt: -1 } },
             ]);
         };
-        // Public visibility changes must take effect immediately across accounts.
-        const collections = browse ? await loadCollections() : await cached(cacheKey, loadCollections, 5 * 60 * 1000);
+        // Do not reuse list snapshots after image moderation changes.
+        const collections = await loadCollections();
 
         res.json({
             success: true,
-            collections: userId ? collections : collections.map(({ collaborators: _collaborators, ...collection }) => collection),
+            collections: collections.map(collection => {
+                if (userId && hasPermission(collection, userId, 'view')) return collection;
+                const { collaborators: _collaborators, ...publicCollection } = collection;
+                return publicCollection;
+            }),
         });
     } catch (error) {
         logger.error('Error fetching user collections:', error);

@@ -87,7 +87,7 @@ export async function recordCollectionShare(collectionId, userId) {
     return 'Collection share tracked';
 }
 
-export async function createCollectionExport(collectionId, userId, { signal } = {}) {
+export async function createCollectionExport(collectionId, userId, { signal, imageIds } = {}) {
     signal?.throwIfAborted();
     const collection = await Collection.findOne({
         _id: collectionId,
@@ -103,19 +103,38 @@ export async function createCollectionExport(collectionId, userId, { signal } = 
         return { status: 404, message: 'Không tìm thấy bộ sưu tập' };
     }
     if (!collection.images?.length) {
+        if (imageIds) return { status: 409, message: 'Các ảnh cần tải lại không còn được phép tải. Vui lòng tải lại trang.' };
         return { status: 400, message: 'Bộ sưu tập không có ảnh nào để xuất' };
     }
 
+    const retryIds = imageIds ? new Set(imageIds) : null;
+    const seenImageIds = new Set();
+    const targets = collection.images.map((image, index) => ({ image, index }))
+        .filter(({ image }) => {
+            const id = image._id && String(image._id);
+            if (id && seenImageIds.has(id)) return false;
+            if (id) seenImageIds.add(id);
+            return !retryIds || retryIds.has(id);
+        });
+    if (imageIds && targets.length !== imageIds.length) {
+        return { status: 409, message: 'Một số ảnh không còn trong bộ sưu tập hoặc không còn được phép tải. Vui lòng tải lại trang.' };
+    }
+    const failed = [];
+    const failImage = (image, index) => failed.push({
+        id: String(image._id),
+        title: image.imageTitle || `Ảnh ${index + 1}`,
+    });
     try {
         const zip = new JSZip();
-        const entries = collection.images.entries();
+        const entries = targets.values();
         // Share the iterator so each worker takes the next image as soon as it is free.
-        await Promise.all(Array.from({ length: Math.min(DOWNLOAD_CONCURRENCY, collection.images.length) }, async () => {
-            for (const [index, image] of entries) {
+        await Promise.all(Array.from({ length: Math.min(DOWNLOAD_CONCURRENCY, targets.length) }, async () => {
+            for (const { image, index } of entries) {
                 if (signal?.aborted) return;
                 const url = image.imageUrl || image.regularUrl || image.smallUrl;
                 if (!url) {
                     logger.warn(`Image ${image._id} has no URL, skipping`);
+                    failImage(image, index);
                     continue;
                 }
 
@@ -145,6 +164,7 @@ export async function createCollectionExport(collectionId, userId, { signal } = 
                     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
                     if (!buffer.length) {
                         logger.warn(`Image ${image._id} returned no bytes, skipping`);
+                        failImage(image, index);
                         continue;
                     }
                     const position = index + 1;
@@ -157,13 +177,14 @@ export async function createCollectionExport(collectionId, userId, { signal } = 
                 } catch (error) {
                     if (signal?.aborted) return;
                     logger.error(`Failed to fetch image ${image._id}:`, error?.code || 'download failed');
+                    failImage(image, index);
                 }
             }
         }));
 
         signal?.throwIfAborted();
         if (!Object.keys(zip.files).length) {
-            return { status: 502, message: 'Không tải được ảnh nào để xuất. Vui lòng thử lại.' };
+            return { status: 502, message: 'Không tải được ảnh nào để xuất. Vui lòng thử lại.', failed };
         }
 
         const buffer = await zip.generateAsync({
@@ -172,7 +193,7 @@ export async function createCollectionExport(collectionId, userId, { signal } = 
             compressionOptions: { level: 6 },
         });
         signal?.throwIfAborted();
-        return { total: collection.images.length, downloaded: Object.keys(zip.files).length, buffer, filename: `${sanitizeName(collection.name)}_${Date.now()}.zip` };
+        return { failed, total: targets.length, downloaded: Object.keys(zip.files).length, buffer, filename: `${sanitizeName(collection.name)}_${Date.now()}.zip` };
     } catch (error) {
         signal?.throwIfAborted();
         logger.error('Error exporting collection:', error);

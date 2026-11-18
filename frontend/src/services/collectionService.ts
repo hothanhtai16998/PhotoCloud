@@ -6,6 +6,21 @@ import type {
 	CollectionResponse,
 } from '@/types/collection';
 
+export interface FailedCollectionImage { id: string; title: string; }
+
+export function readFailedCollectionImages(value: unknown): FailedCollectionImage[] | null {
+    if (!Array.isArray(value)) return null;
+    const result: FailedCollectionImage[] = [];
+    const ids = new Set<string>();
+    for (const entry of value) {
+        if (!entry || typeof entry !== 'object' || typeof entry.id !== 'string' ||
+            !/^[a-f0-9]{24}$/.test(entry.id) || typeof entry.title !== 'string' || ids.has(entry.id)) return null;
+        ids.add(entry.id);
+        result.push({ id: entry.id, title: entry.title });
+    }
+    return result;
+}
+
 export const collectionService = {
 	/**
 	 * Get all collections for the authenticated user
@@ -148,20 +163,31 @@ export const collectionService = {
 	/**
 	 * Export collection as ZIP file
 	 */
-	exportCollection: async (collectionId: string): Promise<{ blob: Blob; total: number | null; downloaded: number | null }> => {
-		const response = await api.get(`/collections/${collectionId}/export`, {
-			responseType: 'blob',
-		});
-		const readCount = (value: unknown): number | null => {
-			if (typeof value !== 'string' || !/^\d+$/.test(value)) return null;
-			const count = Number(value);
-			return Number.isSafeInteger(count) ? count : null;
-		};
-		const total = readCount(response.headers['x-export-total']);
-		const downloaded = readCount(response.headers['x-export-downloaded']);
-		const valid = total !== null && downloaded !== null && total > 0 && downloaded > 0 && downloaded <= total;
-		return { blob: response.data, total: valid ? total : null, downloaded: valid ? downloaded : null };
-	},
+    exportCollection: async (collectionId: string, imageIds?: string[]): Promise<{
+        blob: Blob; total: number; downloaded: number; failed: FailedCollectionImage[];
+    }> => {
+        const response = await api.post(`/collections/${collectionId}/export`, imageIds ? { imageIds } : {}, {
+            responseType: 'blob',
+        });
+        const form = await new Response(response.data, {
+            headers: { 'Content-Type': String(response.headers['content-type'] || '') },
+        }).formData();
+        const report = form.get('report');
+        const blob = form.get('archive');
+        if (typeof report !== 'string' || report.length > 1024 * 1024 || !(blob instanceof Blob) || !blob.size) {
+            throw new Error('Không đọc được kết quả tải. Vui lòng thử lại.');
+        }
+        const details: unknown = JSON.parse(report);
+        if (!details || typeof details !== 'object' || !('total' in details) || !('downloaded' in details) || !('failed' in details)) {
+            throw new Error('Kết quả tải không hợp lệ.');
+        }
+        const { total, downloaded } = details;
+        const failed = readFailedCollectionImages(details.failed);
+        if (typeof total !== 'number' || !Number.isSafeInteger(total) || total < 1 ||
+            typeof downloaded !== 'number' || !Number.isSafeInteger(downloaded) || downloaded < 1 ||
+            !failed || downloaded + failed.length !== total) throw new Error('Số lượng ảnh tải về không hợp lệ.');
+        return { blob, total, downloaded, failed };
+    },
 
 	/**
 	 * Add collaborator to collection

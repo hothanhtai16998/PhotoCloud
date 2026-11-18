@@ -29,6 +29,7 @@ router.get('/containing/:imageId', getCollectionsContainingImage);
 router.post('/:collectionId/share', validateCsrf, trackCollectionShare);
 // Export collection as ZIP
 router.get('/:collectionId/export', exportCollection);
+router.post('/:collectionId/export', validateCsrf, exportCollection);
 // Create a new collection
 router.post('/', validateCsrf, createCollection);
 // Update a collection

@@ -1,6 +1,7 @@
 import { DataLoading } from '@/components/user/DataLoading';
 import { useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react';
-import { collectionService } from '@/services/collectionService';
+import { collectionService, readFailedCollectionImages, type FailedCollectionImage } from '@/services/collectionService';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCollectionStore, markCollectionOffline } from '@/stores/useCollectionStore';
 import { useCollectionDetail } from './hooks/useCollectionDetail';
@@ -203,7 +204,7 @@ export default function CollectionDetailPage() {
 	const exportPending = useRef(false);
 	const exportGeneration = useRef(0);
 	const [exportingScope, setExportingScope] = useState<string | null>(null);
-	const [exportNotice, setExportNotice] = useState<{ scope: string; session: number; message: string } | null>(null);
+	const [exportNotice, setExportNotice] = useState<{ scope: string; session: number; message: string; failed: FailedCollectionImage[] } | null>(null);
 	useEffect(() => {
 		const generation = ++exportGeneration.current;
 		exportPending.current = false;
@@ -211,7 +212,7 @@ export default function CollectionDetailPage() {
 	}, [collectionId, user?._id]);
 
 	// Handle export collection
-	const handleExportCollection = useCallback(async () => {
+	const handleExportCollection = useCallback(async (retryImages?: FailedCollectionImage[]) => {
 		if (!user) { toast.info('Vui lòng đăng nhập để xuất bộ sưu tập.'); return; }
 		if (exportPending.current) return;
 		if (!collectionId || !collection || images.length === 0) {
@@ -224,11 +225,11 @@ export default function CollectionDetailPage() {
 		const isCurrent = (): boolean => generation === exportGeneration.current && session === getAuthSessionVersion();
 		exportPending.current = true;
 		setExportingScope(pageScope);
-		setExportNotice(null);
+		if (!retryImages) setExportNotice(null);
 		try {
 			toast.loading('Đang tạo file ZIP...', { id: 'export-collection' });
 
-			const { blob, total, downloaded } = await collectionService.exportCollection(collectionId);
+			const { blob, total, downloaded, failed } = await collectionService.exportCollection(collectionId, retryImages?.map(image => image.id));
 			if (!isCurrent()) return;
 			const blobUrl = URL.createObjectURL(blob);
 			const link = document.createElement('a');
@@ -239,7 +240,7 @@ export default function CollectionDetailPage() {
 				.replace(/[^a-z0-9]/gi, '_')
 				.toLowerCase()
 				.substring(0, 50);
-			link.download = `${safeCollectionName}_${Date.now()}.zip`;
+			link.download = `${safeCollectionName}${retryImages ? "_bo_sung" : ""}_${Date.now()}.zip`;
 
 			document.body.appendChild(link);
 			link.click();
@@ -249,23 +250,26 @@ export default function CollectionDetailPage() {
 				URL.revokeObjectURL(blobUrl);
 			}, 100);
 
-			if (total === null || downloaded === null || downloaded < total) {
-				const message = total === null || downloaded === null
-					? 'Đã tải tệp nén, nhưng chưa xác nhận được số ảnh bên trong. Vui lòng kiểm tra lại.'
-					: `Chỉ tải được ${downloaded}/${total} ảnh; ${total - downloaded} ảnh chưa tải được. Vui lòng thử lại.`;
-				setExportNotice({ scope: pageScope, session, message });
+			if (failed.length) {
+				const message = `Chỉ tải được ${downloaded}/${total} ảnh${retryImages ? ' trong phần thử lại' : ''}; ${failed.length} ảnh chưa tải được.`;
+				setExportNotice({ scope: pageScope, session, message, failed });
 				toast.warning(message, { id: 'export-collection', duration: 15000 });
 			} else {
-				toast.success(`Đã tải đủ ${downloaded} ảnh.`, { id: 'export-collection' });
+				setExportNotice(null);
+				toast.success(retryImages ? `Đã tải đủ ${downloaded} ảnh còn thiếu vào tệp bổ sung.` : `Đã tải đủ ${downloaded} ảnh.`, { id: 'export-collection' });
 			}
 		} catch (error: unknown) {
 			if (!isCurrent()) return;
 			const data: unknown = (error as { response?: { data?: unknown } })?.response?.data;
 			let details: unknown = data;
-			if (data instanceof Blob && data.type.includes('json') && data.size <= 65536) {
+			if (data instanceof Blob && data.type.includes('json') && data.size <= 1024 * 1024) {
 				try { details = JSON.parse(await data.text()); } catch { /* Use the fallback for unreadable responses. */ }
 			}
 			if (!isCurrent()) return;
+			if (details && typeof details === 'object' && 'failed' in details) {
+				const failed = readFailedCollectionImages(details.failed);
+				if (failed?.length) setExportNotice({ scope: pageScope, session, message: 'Các ảnh sau chưa tải được. Bạn có thể thử lại.', failed });
+			}
 			const message = details && typeof details === 'object' && 'message' in details &&
 				typeof details.message === 'string' ? details.message : undefined;
 			toast.error(
@@ -306,7 +310,7 @@ export default function CollectionDetailPage() {
 					canEdit={canEdit}
 					isExporting={exportingScope === pageScope}
 					handleToggleFavorite={handleToggleFavorite}
-					handleExportCollection={handleExportCollection}
+					handleExportCollection={() => { void handleExportCollection(); }}
 					toggleSelectionMode={toggleSelectionMode}
 				/>
 
@@ -317,6 +321,17 @@ export default function CollectionDetailPage() {
 						<div role="note" className="rounded-lg border border-border bg-muted/50 p-4 font-sans text-sm">
 							<p className="font-medium">Cần kiểm tra tệp vừa tải</p>
 							<p>{exportNotice.message}</p>
+                            <details className="mt-2">
+                                <summary className="cursor-pointer">Xem {exportNotice.failed.length} ảnh chưa tải được</summary>
+                                <ul className="mt-2 max-h-48 list-disc overflow-auto pl-5">
+                                    {exportNotice.failed.map(image => <li key={image.id} className="break-words">{image.title}</li>)}
+                                </ul>
+                            </details>
+                            <p className="mt-2">Thử lại chỉ tải các ảnh còn thiếu vào một tệp nén bổ sung, không tải lại ảnh đã thành công.</p>
+                            <Button className="mt-3" disabled={exportingScope === pageScope}
+                                onClick={() => { void handleExportCollection(exportNotice.failed); }}>
+                                {exportingScope === pageScope ? 'Đang thử lại…' : 'Thử lại phần còn thiếu'}
+                            </Button>
 						</div>
 					</div>
 				)}
