@@ -28,8 +28,20 @@ export const exportCollection = asyncHandler(async (req, res) => {
     }
 
     const cancellation = new AbortController();
+    // Leave room for the browser's 120-second request timeout to receive a clear error.
+    const deadline = setTimeout(() => {
+        if (cancellation.signal.aborted || res.destroyed || res.writableEnded) return;
+        cancellation.abort();
+        res.status(504).json({
+            success: false,
+            message: 'Tạo tệp tải về quá lâu. Vui lòng thử lại với bộ sưu tập nhỏ hơn.',
+        });
+        res.removeListener('close', onClose);
+    }, 110000);
+    deadline.unref?.();
     const onClose = () => {
         if (!res.writableEnded) cancellation.abort();
+        clearTimeout(deadline);
     };
     res.once('close', onClose);
     if (res.destroyed) cancellation.abort();
@@ -40,6 +52,9 @@ export const exportCollection = asyncHandler(async (req, res) => {
             return res.status(result.status).json({ success: false, message: result.message });
         }
 
+        res.setHeader('X-Export-Total', result.total);
+        res.setHeader('X-Export-Downloaded', result.downloaded);
+        res.setHeader('Access-Control-Expose-Headers', 'X-Export-Total, X-Export-Downloaded');
         res.setHeader('Content-Type', 'application/zip');
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(result.filename)}"`);
         res.setHeader('Content-Length', result.buffer.length);
@@ -47,6 +62,7 @@ export const exportCollection = asyncHandler(async (req, res) => {
     } catch (error) {
         if (!cancellation.signal.aborted) throw error;
     } finally {
+        clearTimeout(deadline);
         res.removeListener('close', onClose);
     }
 });

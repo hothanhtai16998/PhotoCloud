@@ -148,11 +148,19 @@ export const collectionService = {
 	/**
 	 * Export collection as ZIP file
 	 */
-	exportCollection: async (collectionId: string): Promise<Blob> => {
+	exportCollection: async (collectionId: string): Promise<{ blob: Blob; total: number | null; downloaded: number | null }> => {
 		const response = await api.get(`/collections/${collectionId}/export`, {
 			responseType: 'blob',
 		});
-		return response.data;
+		const readCount = (value: unknown): number | null => {
+			if (typeof value !== 'string' || !/^\d+$/.test(value)) return null;
+			const count = Number(value);
+			return Number.isSafeInteger(count) ? count : null;
+		};
+		const total = readCount(response.headers['x-export-total']);
+		const downloaded = readCount(response.headers['x-export-downloaded']);
+		const valid = total !== null && downloaded !== null && total > 0 && downloaded > 0 && downloaded <= total;
+		return { blob: response.data, total: valid ? total : null, downloaded: valid ? downloaded : null };
 	},
 
 	/**

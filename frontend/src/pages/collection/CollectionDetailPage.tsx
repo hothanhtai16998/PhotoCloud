@@ -203,6 +203,7 @@ export default function CollectionDetailPage() {
 	const exportPending = useRef(false);
 	const exportGeneration = useRef(0);
 	const [exportingScope, setExportingScope] = useState<string | null>(null);
+	const [exportNotice, setExportNotice] = useState<{ scope: string; session: number; message: string } | null>(null);
 	useEffect(() => {
 		const generation = ++exportGeneration.current;
 		exportPending.current = false;
@@ -223,10 +224,11 @@ export default function CollectionDetailPage() {
 		const isCurrent = (): boolean => generation === exportGeneration.current && session === getAuthSessionVersion();
 		exportPending.current = true;
 		setExportingScope(pageScope);
+		setExportNotice(null);
 		try {
 			toast.loading('Đang tạo file ZIP...', { id: 'export-collection' });
 
-			const blob = await collectionService.exportCollection(collectionId);
+			const { blob, total, downloaded } = await collectionService.exportCollection(collectionId);
 			if (!isCurrent()) return;
 			const blobUrl = URL.createObjectURL(blob);
 			const link = document.createElement('a');
@@ -247,10 +249,25 @@ export default function CollectionDetailPage() {
 				URL.revokeObjectURL(blobUrl);
 			}, 100);
 
-			toast.success(`Đã xuất ${images.length} ảnh thành công`, { id: 'export-collection' });
+			if (total === null || downloaded === null || downloaded < total) {
+				const message = total === null || downloaded === null
+					? 'Đã tải tệp nén, nhưng chưa xác nhận được số ảnh bên trong. Vui lòng kiểm tra lại.'
+					: `Chỉ tải được ${downloaded}/${total} ảnh; ${total - downloaded} ảnh chưa tải được. Vui lòng thử lại.`;
+				setExportNotice({ scope: pageScope, session, message });
+				toast.warning(message, { id: 'export-collection', duration: 15000 });
+			} else {
+				toast.success(`Đã tải đủ ${downloaded} ảnh.`, { id: 'export-collection' });
+			}
 		} catch (error: unknown) {
 			if (!isCurrent()) return;
-			const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+			const data: unknown = (error as { response?: { data?: unknown } })?.response?.data;
+			let details: unknown = data;
+			if (data instanceof Blob && data.type.includes('json') && data.size <= 65536) {
+				try { details = JSON.parse(await data.text()); } catch { /* Use the fallback for unreadable responses. */ }
+			}
+			if (!isCurrent()) return;
+			const message = details && typeof details === 'object' && 'message' in details &&
+				typeof details.message === 'string' ? details.message : undefined;
 			toast.error(
 				message || 'Xuất bộ sưu tập thất bại. Vui lòng thử lại.',
 				{ id: 'export-collection' }
@@ -294,6 +311,15 @@ export default function CollectionDetailPage() {
 				/>
 
 
+
+				{exportNotice?.scope === pageScope && exportNotice.session === getAuthSessionVersion() && (
+					<div className="mx-auto mb-4 w-full max-w-[1296px] px-4">
+						<div role="note" className="rounded-lg border border-border bg-muted/50 p-4 font-sans text-sm">
+							<p className="font-medium">Cần kiểm tra tệp vừa tải</p>
+							<p>{exportNotice.message}</p>
+						</div>
+					</div>
+				)}
 
 				{/* Bulk Action Bar */}
 				<CollectionBulkActions
